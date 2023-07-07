@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyx2cscope"
+version = "0.0.1"
+dependencies = ["pyserial",
+                "panda",
+                "pyelftools",
+                "numpy",
+                "subprocess",
+                "re",
+                "logging",
+                "PyQt5"]
+authors = [
+  {name = "Yash Agarwal", email = "yash.agarwal@microchip.com"},
+  {name = "Edras Pacola"},
+  {name = "Christoph Baumgartner"},
+  {name = "Mark Wendler"},
+]
+license={file = "LICENSE"}
+readme = "README.md"
+
+[project.urls]
+Homepage = "https://x2cscope.github.io/"
+Documentation = "https://x2cscope.github.io/"
+Repository = "https://github.com/X2Cscope/pylnet"
+
+[tool.setuptools.packages.find]
+exclude = ["test", "doc", "examples"]  # empty by default
