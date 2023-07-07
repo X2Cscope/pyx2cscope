@@ -5,6 +5,9 @@ class PyX2Cscope(object):
 
 
 if __name__ == "__main__":
-    #TODO start GUI
+    #TODO start the example GUI?
+    #use serial interface
+    #set interface
+    #set elf file
     pass
 
