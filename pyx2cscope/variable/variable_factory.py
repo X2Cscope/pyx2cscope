@@ -1,7 +1,7 @@
+from pyx2cscope.parser.Elf16Parser import Elf16Parser
+from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *
 from pyx2cscope.variable.vartypes import VarTypes
-from pyx2cscope.parser.Elf32Parser import Elf32Parser
-from pyx2cscope.parser.Elf16Parser import Elf16Parser
 
 
 class VariableFactory:
@@ -13,7 +13,6 @@ class VariableFactory:
 
         self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
-
 
     def get_var_list_elf(self) -> list[str]:
         """
@@ -41,13 +40,19 @@ class VariableFactory:
             # ELF parsing
             var_result = self.parser.get_var_info(name)
             if var_result:
-                variable = self.get_variable_raw(var_result.address, var_result.type, var_result.name)
+                variable = self.get_variable_raw(
+                    var_result.address, var_result.type, var_result.name
+                )
             return variable
         except Exception as e:
-            logging.error(f"Error while getting variable '{name}' from ELF file: {str(e)}")
+            logging.error(
+                f"Error while getting variable '{name}' from ELF file: {str(e)}"
+            )
             raise
 
-    def get_variable_raw(self, address: int, var_type: VarTypes, name: str = "unknown") -> Variable:
+    def get_variable_raw(
+        self, address: int, var_type: VarTypes, name: str = "unknown"
+    ) -> Variable:
         """
         Get a variable object based on the provided address, type, and name.
 
@@ -84,31 +89,35 @@ class VariableFactory:
             Exception: If the variable type is not found.
         """
         type_factory = {
-            'bool': Variable_uint8,
-            'char': Variable_int8,
-            'double': Variable_float,
-            'float': Variable_float,
-            'int': Variable_int32,
-            'long': Variable_int32,
-            'long int': Variable_int32,
-            'long long': Variable_int64,
-            'long long unsigned int': Variable_uint64,
-            'long unsigned int': Variable_uint32,
-            'pointer': Variable_uint16 if self.device_info == 2 else Variable_uint32,  # TODO v 0.2.0
-            'short': Variable_int16,
-            'short unsigned int': Variable_uint16,
-            'signed char': Variable_int8,
-            'signed int': Variable_int32,
-            'signed long': Variable_int32,
-            'signed long long': Variable_int64,
-            'unsigned char': Variable_uint8,
-            'unsigned int': Variable_uint16,
-            'unsigned long': Variable_uint32,
-            'unsigned long long': Variable_uint64
+            "bool": Variable_uint8,
+            "char": Variable_int8,
+            "double": Variable_float,
+            "float": Variable_float,
+            "int": Variable_int32,
+            "long": Variable_int32,
+            "long int": Variable_int32,
+            "long long": Variable_int64,
+            "long long unsigned int": Variable_uint64,
+            "long unsigned int": Variable_uint32,
+            "pointer": Variable_uint16
+            if self.device_info == 2
+            else Variable_uint32,  # TODO v 0.2.0
+            "short": Variable_int16,
+            "short unsigned int": Variable_uint16,
+            "signed char": Variable_int8,
+            "signed int": Variable_int32,
+            "signed long": Variable_int32,
+            "signed long long": Variable_int64,
+            "unsigned char": Variable_uint8,
+            "unsigned int": Variable_uint16,
+            "unsigned long": Variable_uint32,
+            "unsigned long long": Variable_uint64,
         }
 
         try:
-            var_type = var_type.lower().replace('_','')
+            var_type = var_type.lower().replace("_", "")
             return type_factory[var_type](self.l_net, address, name)
         except IndexError:
-            raise Exception(f"Type {var_type} not found. Cannot select the right variable representation.")
+            raise Exception(
+                f"Type {var_type} not found. Cannot select the right variable representation."
+            )

@@ -1,27 +1,21 @@
-import sys, os
 import logging
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QWidget,
-    QLabel,
-    QCheckBox,
-    QComboBox,
-    QLineEdit,
-    QGridLayout,
-    QMessageBox,
-    QHBoxLayout,
-    QFileDialog,
-    QPushButton,
-    QSlider
-)
-from PyQt5.QtGui import *
-from PyQt5.QtCore import QFileInfo, Qt, QMutex, QTimer, QSettings, QRegExp, pyqtSlot
-from pyx2cscope.variable.variable_factory import VariableFactory
+import os
+import sys
+
 import serial.tools.list_ports
-from pylnet.interfaces.factory import InterfaceFactory, InterfaceType as IType
+from PyQt5.QtCore import (QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer,
+                          pyqtSlot)
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
+                             QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+                             QMainWindow, QMessageBox, QPushButton, QSlider,
+                             QWidget)
+
+from pylnet.interfaces.factory import InterfaceFactory
+from pylnet.interfaces.factory import InterfaceType as IType
 from pylnet.lnet import LNet
 from pyx2cscope.gui import img as img_src
+from pyx2cscope.variable.variable_factory import VariableFactory
 
 logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
 
@@ -242,6 +236,7 @@ class X2Cscope_GUI(QMainWindow):
     def error_box_closed(self):
         # Handle closing of the error pop-up box if needed
         pass
+
     def update_scaled_value1(self):
         scaling_text = self.Scaling_var1.text()
         value_text = self.Value_var1.text()
@@ -296,7 +291,9 @@ class X2Cscope_GUI(QMainWindow):
     @pyqtSlot()
     def Variable1_getram(self):
         try:
-            self.counter1 = self.var_factory.get_variable_elf(self.combo_box1.currentText())
+            self.counter1 = self.var_factory.get_variable_elf(
+                self.combo_box1.currentText()
+            )
             self.Value_var1.setText(str(self.counter1.get_value()))
         except Exception as e:
             print(e)
@@ -379,10 +376,13 @@ class X2Cscope_GUI(QMainWindow):
             self.Value_var2.setText(str(value))
             self.update_scaled_value2()
             self.Variable2_putram()
+
     @pyqtSlot()
     def Variable2_getram(self):
         try:
-            self.counter2 = self.var_factory.get_variable_elf(self.combo_box2.currentText())
+            self.counter2 = self.var_factory.get_variable_elf(
+                self.combo_box2.currentText()
+            )
             self.Value_var2.setText(str(self.counter2.get_value()))
             self.slider_var2.setValue(int(self.counter2.get_value()))
         except Exception as e:
@@ -414,14 +414,11 @@ class X2Cscope_GUI(QMainWindow):
                 self.file_path = selected_files[0]
                 self.settings.setValue("file_path", self.file_path)
 
-
     def refreshComboBox(self):
         self.combo_box1.clear()
         self.combo_box1.addItems(self.VariableList)
         self.combo_box2.clear()
         self.combo_box2.addItems(self.VariableList)
-
-
 
     # ...
 
@@ -479,7 +476,9 @@ class X2Cscope_GUI(QMainWindow):
         baud_rate = int(self.baud_combo.currentText())
 
         try:
-            self.ser = InterfaceFactory.get_interface(IType.SERIAL, port=port, baudrate=baud_rate)
+            self.ser = InterfaceFactory.get_interface(
+                IType.SERIAL, port=port, baudrate=baud_rate
+            )
             l_net = LNet(self.ser)
             # self.ser = serial.Serial(port, baud_rate)
             # lnet = LNet(self.ser)
@@ -522,4 +521,3 @@ if __name__ == "__main__":
 
     ex = X2Cscope_GUI()
     ex.show()
-

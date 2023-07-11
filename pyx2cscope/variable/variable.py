@@ -1,7 +1,8 @@
 import logging
 import struct
-import pylnet.lnet as LNet
 from numbers import Number
+
+import pylnet.lnet as LNet
 
 
 class Variable:
@@ -228,6 +229,7 @@ class Variable_uint32(Variable):
         )  # reconstruct the real value
         return int_value
 
+
 class Variable_uint64(Variable):
     def _get_width(self) -> int:
         """UINT64 width is 8"""
@@ -246,7 +248,9 @@ class Variable_uint64(Variable):
 
     def get_value(self) -> int:
         bytes_data = self._get_value_raw()
-        value = int.from_bytes(bytes_data, "little", signed=False)  # reconstruct the real value
+        value = int.from_bytes(
+            bytes_data, "little", signed=False
+        )  # reconstruct the real value
         return value
 
 
@@ -268,8 +272,11 @@ class Variable_int64(Variable):
 
     def get_value(self) -> int:
         bytes_data = self._get_value_raw()
-        value = int.from_bytes(bytes_data, "little", signed=True)  # reconstruct the real value
+        value = int.from_bytes(
+            bytes_data, "little", signed=True
+        )  # reconstruct the real value
         return value
+
 
 #################################  FLOAT  #########################################################
 

@@ -22,8 +22,8 @@ class VariableInfo:
     #     if self.name == attr:
     #         return attr
 
-class ElfParser(ABC):
 
+class ElfParser(ABC):
     @abstractmethod
     def get_var_info(self, var_name: str) -> VariableInfo:
         pass
