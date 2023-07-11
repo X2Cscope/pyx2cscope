@@ -1,7 +1,9 @@
 import logging
 
 import pyx2cscope
-from pyx2cscope.Interfaces.serialsetup import start_serial
+from pylnet.pylnet.interfaces.factory import InterfaceFactory, InterfaceType as IType
+
+
 
 # Configure logging
 logging.basicConfig(
@@ -15,7 +17,7 @@ def example():
         # Initialize serial communication
         serial_port = "COM8"
         baud_rate = 115200
-        serial_connection = start_serial(port_name=serial_port, baudrate=baud_rate)
+        serial_connection = InterfaceFactory.get_interface(IType.SERIAL, port=serial_port, baudrate=baud_rate)
 
         # elf_file = 'C:\\Users\\m67250\\Downloads\\mc_apps_sam_d5x_e5x-master\\apps\\pmsm_foc_pll_estimator_sam_e54\\' \
         #            'firmware\\mclv2_sam_e54_pim.X\\dist\\mclv2_sam_e54_pim\\production\\' \

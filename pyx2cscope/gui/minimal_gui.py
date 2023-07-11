@@ -1,5 +1,4 @@
-import sys
-import serial.tools.list_ports
+import sys, os
 import logging
 from PyQt5.QtWidgets import (
     QApplication,
@@ -18,8 +17,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import *
 from PyQt5.QtCore import QFileInfo, Qt, QMutex, QTimer, QSettings, QRegExp, pyqtSlot
-from pylnet import LNet, VariableFactory
+from pyx2cscope.variable.variable_factory import VariableFactory
 import serial.tools.list_ports
+from pylnet.interfaces.factory import InterfaceFactory, InterfaceType as IType
+from pylnet.lnet import LNet
+from pyx2cscope.gui import img as img_src
 
 logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
 
@@ -37,6 +39,8 @@ class X2Cscope_GUI(QMainWindow):
         self.variable_factory = None
         self.counter1 = None
         self.counter2 = None
+        self.error_shown = False
+        self.shown_errors = set()
 
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
@@ -60,7 +64,8 @@ class X2Cscope_GUI(QMainWindow):
         refresh_button.setFixedHeight(10)
         refresh_button.setFixedSize(25, 25)
         refresh_button.clicked.connect(self.refresh_ports)
-        refresh_button.setIcon(QIcon('../docs/img/refresh.png'))
+        refresh_img = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
+        refresh_button.setIcon(QIcon(refresh_img))
 
         # Elf file loader button
         self.select_file_button = QPushButton("Select elf file")
@@ -218,14 +223,25 @@ class X2Cscope_GUI(QMainWindow):
         # Set the central widget and example window properties
         self.setCentralWidget(central_widget)
         self.setWindowTitle("PyX2Cscope")
-        self.setWindowIcon(QIcon('../docs/img/MCHP.png'))
+        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "MCHP.png")
+        self.setWindowIcon(QIcon(mchp_img))
 
         # Populate the available ports combo box
         self.refresh_ports()
 
     def handle_error(self, error_message: str):
-        QMessageBox.critical(self, "Error", error_message)
+        if error_message not in self.shown_errors:
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("Error")
+            msg_box.setText(error_message)
+            msg_box.setStandardButtons(QMessageBox.Ok)
+            msg_box.buttonClicked.connect(self.error_box_closed)
+            msg_box.exec_()
+            self.shown_errors.add(error_message)
 
+    def error_box_closed(self):
+        # Handle closing of the error pop-up box if needed
+        pass
     def update_scaled_value1(self):
         scaling_text = self.Scaling_var1.text()
         value_text = self.Value_var1.text()
@@ -253,7 +269,9 @@ class X2Cscope_GUI(QMainWindow):
                 value = float(value_text)
                 scaled_value = scaling * value
                 self.ScaledValue_var2.setText("{:.2f}".format(scaled_value))
+
             except Exception as e:
+                print(e)
                 error_message = f"Error: {e}"
                 logging.error(error_message)
                 self.handle_error(error_message)
@@ -355,9 +373,12 @@ class X2Cscope_GUI(QMainWindow):
             print("var2_update", e)
 
     def slider_var2_changed(self, value):
-        self.Value_var2.setText(str(value))
-        self.update_scaled_value2()
-        self.Variable2_putram()
+        if self.combo_box2.currentIndex() == 0:
+            self.handle_error("Select Variable")
+        else:
+            self.Value_var2.setText(str(value))
+            self.update_scaled_value2()
+            self.Variable2_putram()
     @pyqtSlot()
     def Variable2_getram(self):
         try:
@@ -424,7 +445,7 @@ class X2Cscope_GUI(QMainWindow):
 
     def disconnect_serial(self):
         if self.ser is not None and self.ser.is_open:
-            self.ser.close()
+            self.ser.stop()
             self.ser = None
             self.Connect_button.setText("Connect")
             self.Connect_button.setEnabled(True)
@@ -458,9 +479,11 @@ class X2Cscope_GUI(QMainWindow):
         baud_rate = int(self.baud_combo.currentText())
 
         try:
-            self.ser = serial.Serial(port, baud_rate)
-            lnet = LNet(self.ser)
-            self.var_factory = VariableFactory(lnet, self.file_path)
+            self.ser = InterfaceFactory.get_interface(IType.SERIAL, port=port, baudrate=baud_rate)
+            l_net = LNet(self.ser)
+            # self.ser = serial.Serial(port, baud_rate)
+            # lnet = LNet(self.ser)
+            self.var_factory = VariableFactory(l_net, self.file_path)
             self.VariableList = self.var_factory.get_var_list_elf()
 
             self.refreshComboBox()
@@ -496,6 +519,7 @@ class X2Cscope_GUI(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
     ex = X2Cscope_GUI()
     ex.show()
-    app.exec_()
+

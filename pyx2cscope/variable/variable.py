@@ -1,6 +1,6 @@
 import logging
 import struct
-import pylnet
+import pylnet.lnet as LNet
 from numbers import Number
 
 

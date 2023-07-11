@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyx2cscope"
 version = "0.0.1"
-dependencies = ["pyserial",
-                "pyelftools",
-                "numpy",
-                "subprocess",
-                "re",
-                "logging",
-                "PyQt5"]
+dependencies = [
+    "pyserial",
+    "pyelftools",
+    "numpy",
+    "PyQt5",
+    "pylnet",
+]
 authors = [
   {name = "Yash Agarwal", email = "yash.agarwal@microchip.com"},
   {name = "Edras Pacola"},

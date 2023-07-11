@@ -4,15 +4,14 @@ from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 
 
-
 class VariableFactory:
     def __init__(self, l_net: LNet, Elf_path=None):
         self.l_net = l_net
         self.elfFile = Elf_path  # Initialize the ELF file as None
         self.parser = None  # Initialize the parser as None
-        self.width_value = self.l_net.device_info()
+        self.device_info = self.l_net.handshake()
 
-        self.parser_obj = Elf16Parser if self.width_value == 2 else Elf32Parser
+        self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
 
 
@@ -95,7 +94,7 @@ class VariableFactory:
             'long long': Variable_int64,
             'long long unsigned int': Variable_uint64,
             'long unsigned int': Variable_uint32,
-            'pointer': Variable_uint16 if self.width_value == 2 else Variable_uint32,  # TODO v 0.2.0
+            'pointer': Variable_uint16 if self.device_info == 2 else Variable_uint32,  # TODO v 0.2.0
             'short': Variable_int16,
             'short unsigned int': Variable_uint16,
             'signed char': Variable_int8,
