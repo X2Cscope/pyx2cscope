@@ -33,7 +33,7 @@ class Elf32Parser(ElfParser):
                     type_offset = type_attr.value + child_die.cu.cu_offset
                     try:
                         member_type = self._get_member_type(type_offset)
-                    except Exception as e:
+                    except Exception:
                         # there are some missing fields
                         # it will be handled on future versions
                         continue
@@ -254,11 +254,14 @@ class Elf32Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    elf_path = "C:\\Users\\m67250\Downloads\mc_apps_pic32mk-3.1.0\mc_apps_pic32mk-3.1.0\\apps\pmsm_foc_pll_estimator_pic32_mk\\firmware\mclv2_pic32_mk_mcf_pim.X\dist\mclv2_pic32_mk_mcf_pim\production\mclv2_pic32_mk_mcf_pim.X.production.elf"  #
-    parser = Elf32Parser(elf_path)
-    #
-    variable_name = "gMCRPOS_Parameters.rs"
-    variable_info = parser.get_var_info(variable_name)
+    elf_file = (
+        "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
+        "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
+        "production\\mclv2_pic32_mk_mcf_pim.X.production.elf"
+    )
+    parser = Elf32Parser(elf_file)
+    variable = "gMCRPOS_Parameters.rs"
+    variable_info = parser.get_var_info(variable)
 
     var_list = parser.get_var_list()
     print(var_list)

@@ -1,4 +1,3 @@
-import logging
 import struct
 from numbers import Number
 
@@ -68,11 +67,11 @@ class Variable:
             )
         return bytes_data
 
-    def _set_value_raw(self, bytes_data: bytearray) -> None:
+    def _set_value_raw(self, bytes_data: bytes) -> None:
         self.l_net.put_ram(self.address, self._get_width(), bytes_data)
 
 
-#################################  INT_8  #########################################################
+# ------------------------------INT_8------------------------------
 
 
 class Variable_int8(Variable):
@@ -80,7 +79,7 @@ class Variable_int8(Variable):
         """INT8_T width is 1"""
         return 1
 
-    def set_value(self, value: Number):
+    def set_value(self, value: int):
         if value > 127 or value < -128:
             raise ValueError(f"Value = {value}: Expected in range -128 to 127")
 
@@ -98,7 +97,7 @@ class Variable_int8(Variable):
         return int_value
 
 
-#################################  UINT_8  #########################################################
+# ------------------------------ UINT_8 ------------------------------
 
 
 class Variable_uint8(Variable):
@@ -106,7 +105,7 @@ class Variable_uint8(Variable):
         """UINT8_T width is 1"""
         return 1
 
-    def set_value(self, value: Number):
+    def set_value(self, value: int):
         if value > 255 or value < 0:
             raise ValueError(f"Value = {value}: Expected in range 0 to 255")
 
@@ -124,7 +123,7 @@ class Variable_uint8(Variable):
         return int_value
 
 
-#################################  INT_16  #########################################################
+# ------------------------------ INT_16 ------------------------------
 
 
 class Variable_int16(Variable):
@@ -132,7 +131,7 @@ class Variable_int16(Variable):
         """INT16_T width is 2"""
         return 2
 
-    def set_value(self, value: Number):
+    def set_value(self, value: int):
         if value > 32767 or value < -32768:
             raise ValueError(f"Value = {value}: Expected in range -32768 to 32767")
 
@@ -150,7 +149,7 @@ class Variable_int16(Variable):
         return int_value
 
 
-#################################  UINT_16  #########################################################
+# ------------------------------ UINT_16 ------------------------------
 
 
 class Variable_uint16(Variable):
@@ -158,7 +157,7 @@ class Variable_uint16(Variable):
         """UINT16_T width is 2"""
         return 2
 
-    def set_value(self, value: Number):
+    def set_value(self, value: int):
         if value > 65535 or value < 0:
             raise ValueError(f"Value = {value}: Expected in range 0 to 65535")
 
@@ -176,7 +175,7 @@ class Variable_uint16(Variable):
         return int_value
 
 
-#################################  INT_32  #########################################################
+# ------------------------------ INT_32 ------------------------------
 
 
 class Variable_int32(Variable):
@@ -184,7 +183,7 @@ class Variable_int32(Variable):
         """INT32_T width is 4"""
         return 4
 
-    def set_value(self, value: Number):
+    def set_value(self, value: int):
         if value > 0x7FFFFFFF or value < -0x80000000:
             raise ValueError(
                 f"Value = {value}: Expected in range -2,147,483,648 to 2,147,483,647"
@@ -204,7 +203,7 @@ class Variable_int32(Variable):
         return int_value
 
 
-#################################  UINT_32  #########################################################
+# ------------------------------ UINT_32 ------------------------------
 
 
 class Variable_uint32(Variable):
@@ -212,7 +211,7 @@ class Variable_uint32(Variable):
         """UINT32_T width is 4"""
         return 4
 
-    def set_value(self, value: Number):
+    def set_value(self, value: int):
         if value > 0xFFFFFFFF or value < 0:
             raise ValueError(f"Value = {value}: Expected in range 0 to 4,294,967,295")
 
@@ -278,7 +277,7 @@ class Variable_int64(Variable):
         return value
 
 
-#################################  FLOAT  #########################################################
+# ------------------------------ FLOAT ------------------------------
 
 
 class Variable_float(Variable):
@@ -286,7 +285,7 @@ class Variable_float(Variable):
         """FLOAT width is 4"""
         return 4
 
-    def set_value(self, value: Number):
+    def set_value(self, value: float):
         float_value = float(value)
         bytes_data = bytearray(struct.pack("f", float_value))
         self._set_value_raw(bytes_data)

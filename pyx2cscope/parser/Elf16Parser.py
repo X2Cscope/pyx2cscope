@@ -1,7 +1,6 @@
 import logging
 import re
 import subprocess
-import sys
 from typing import List
 
 from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
@@ -9,7 +8,9 @@ from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
 
-xc16_readelf_path = "C:/Program Files/Microchip/xc16/v2.00/bin/xc16-readelf.exe"  # TODO set the util for self set the exe https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
+xc16_readelf_path = "C:/Program Files/Microchip/xc16/v2.00/bin/xc16-readelf.exe"
+# TODO set the util for self set the exe
+#  https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
 
 
 class Elf16Parser(ElfParser):
@@ -18,7 +19,7 @@ class Elf16Parser(ElfParser):
         Initialize the Elf16Parser.
 
         Args:
-            xc16_readelf_path (str): Path to the xc16-readelf executable.
+            self.xc16_readelf_path (str): Path to the xc16-readelf executable.
             elf_path (str): Path to the input ELF file.
         """
         self.xc16_readelf_path = xc16_readelf_path
@@ -69,7 +70,7 @@ class Elf16Parser(ElfParser):
             key = values[0].strip()
             value = ":".join(values[1:]).strip()
             if key == "DW_AT_name":
-                # Remove the indirect string part and leading whitespace
+                # Remove the indirect string part and leading space
 
                 value = re.sub(
                     r"\(indirect string, offset: 0x[0-9a-fA-F]+\):", "", value
@@ -165,7 +166,7 @@ class Elf16Parser(ElfParser):
                         "byte_size": end_die["DW_AT_byte_size"],
                     }
                 }
-            except Exception as e:
+            except Exception:
                 # there are some missing values
                 # this will be addressed on future versions
                 # print(structure_die)
@@ -258,8 +259,7 @@ class Elf16Parser(ElfParser):
         address = self._get_address_location(die_var["DW_AT_location"])
 
         # If the address already includes the "0x" prefix, you can skip the above code and directly use:
-        # address = location[address_start:address_end].strip()
-        # if not "DW_AT_name" in end_die or end_die["DW_AT_name"] == "_SCCP3_TMR_OBJ_STRUCT" or end_die["DW_AT_name"] == "_SCCP1_TMR_OBJ_STRUCT": # TODO setup this part
+        # address = location[address_start:address_end].strip() # TODO recursive structure
         # NO need to check for the avaibility of DW_AT_name
         if end_die["tag"] == "DW_TAG_pointer_type":
             variabledata = VariableInfo(
@@ -328,14 +328,17 @@ class Elf16Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    input_elf_file = "C:\_DESKTOP\_Projects\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\dist\MCLV2\production/bldc_MCLV2.X.production.elf"
+    input_elf_file = (
+        "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2"
+        "\\production\\bldc_MCLV2.X.production.elf"
+    )
     elf_reader = Elf16Parser(input_elf_file)
 
-    variable_name = "sccp3_timer_obj.secondaryTimer16Elapsed"
+    variable = "sccp3_timer_obj.secondaryTimer16Elapsed"
     # variable_name = 'V_pot'
     # variable_name = 'DesiredSpeed'
     variable_list = elf_reader.get_var_list()
-    variable_data = elf_reader.get_var_info(variable_name)
+    variable_data = elf_reader.get_var_info(variable)
     print(variable_data.name)
     print(variable_data.byte_size)
     print(variable_data.type)

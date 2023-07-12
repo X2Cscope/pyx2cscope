@@ -1,3 +1,6 @@
+import logging
+
+from pylnet.lnet import LNet
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *
@@ -9,7 +12,7 @@ class VariableFactory:
         self.l_net = l_net
         self.elfFile = Elf_path  # Initialize the ELF file as None
         self.parser = None  # Initialize the parser as None
-        self.device_info = self.l_net.handshake()
+        self.device_info = self.l_net.interface_handshake()
 
         self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
@@ -54,14 +57,15 @@ class VariableFactory:
         self, address: int, var_type: VarTypes, name: str = "unknown"
     ) -> Variable:
         """
-        Get a variable object based on the provided address, type, and name.
+        get a variable object based on the provided address, type, and name.
 
         Args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
-            name (str, optional): Name of the variable. Defaults to "unknown".
+            name (str, optional): Name of the variable.
+            defaults to "unknown".
 
-        Returns:
+        returns:
             Variable: Variable object based on the provided information.
         """
         # TODO check address range
@@ -75,14 +79,14 @@ class VariableFactory:
 
     def _create_variable(self, address: int, var_type: str, name: str) -> Variable:
         """
-        Create a variable object based on the provided address, type, and name.
+        create a variable object based on the provided address, type, and name.
 
         Args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
             name (str): Name of the variable.
 
-        Returns:
+        returns:
             Variable: Variable object based on the provided information.
 
         Raises:

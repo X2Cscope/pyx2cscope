@@ -467,7 +467,7 @@ class X2Cscope_GUI(QMainWindow):
             self.counter1 = None
             self.counter2 = None
 
-            # Re-populate combo box with variable list from the previously selected ELF file
+            # Re-populate the combo box with variable list from the previously selected ELF file
             if self.file_path:
                 self.refreshComboBox()
 
@@ -506,7 +506,7 @@ class X2Cscope_GUI(QMainWindow):
             if self.Live_var2.isChecked():
                 self.timer2.start(self.timerValue)
 
-            # Re-populate combo box with variable list from the previously selected ELF file
+            # Re-populate the combo box with variable list from the previously selected ELF file
             if self.file_path:
                 self.refreshComboBox()
 
@@ -521,3 +521,4 @@ if __name__ == "__main__":
 
     ex = X2Cscope_GUI()
     ex.show()
+    app.exec_()

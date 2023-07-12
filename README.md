@@ -11,16 +11,21 @@
 1. You can install the module using pip: <br>`pip install pyx2cscope`
 2. Go to the `Examples` directory in the PyX2CScope project to check out the available examples or create a new .py file according to your requirements.
 3. start with importing PyX2CScope:  `import pyx2cscope`
-4. Choose the communication interface from the interfaces' module. Currently, only Serial is supported: CAN and LIN coming in near future: <br> `from pyx2cscope.Interfaces.serialsetup import start_serial` 
+4. Choose the communication interface from the interfaces' module. Currently, only Serial is supported: CAN and LIN coming in near future: <br> 
+```
+from pylnet.interfaces.factory import InterfaceFactory
+from pylnet.interfaces.factory import InterfaceType as IType
+from pylnet.lnet import LNet
+``` 
 5. Set up the Serial connection with the desired COM port and baud rate:
 ```
 serial_port = "COM9"
 baud_rate = 115200
-serial_connection = start_serial(port_name=serial_port, baudrate=baud_rate)
+interface = InterfaceFactory.get_interface(IType.SERIAL, port = serial_port, baudrate = baud_rate)
 ```
 6. Initialize the LNet object with the serial connection:
 ```
-l_net = pyx2cscope.LNet(serial_connection)
+l_net = pyx2cscope.LNet(interface)
 ```
 7.  Setup the Variable factory.  
 ```
