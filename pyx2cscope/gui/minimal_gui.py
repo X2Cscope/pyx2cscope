@@ -10,10 +10,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
                              QGridLayout, QHBoxLayout, QLabel, QLineEdit,
                              QMainWindow, QMessageBox, QPushButton, QSlider,
                              QWidget)
-
-from pylnet.interfaces.factory import InterfaceFactory
-from pylnet.interfaces.factory import InterfaceType as IType
-from pylnet.lnet import LNet
+from mchplnet.interfaces.factory import InterfaceFactory
+from mchplnet.interfaces.factory import InterfaceType as IType
+from mchplnet.lnet import LNet
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.variable.variable_factory import VariableFactory
 

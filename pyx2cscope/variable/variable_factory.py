@@ -1,6 +1,6 @@
 import logging
 
-from pylnet.lnet import LNet
+from mchplnet.lnet import LNet
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *

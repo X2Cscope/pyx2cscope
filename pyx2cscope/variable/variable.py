@@ -1,7 +1,7 @@
 import struct
 from numbers import Number
 
-import pylnet.lnet as LNet
+import mchplnet.lnet as LNet
 
 
 class Variable:

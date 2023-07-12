@@ -13,9 +13,9 @@
 3. start with importing PyX2CScope:  `import pyx2cscope`
 4. Choose the communication interface from the interfaces' module. Currently, only Serial is supported: CAN and LIN coming in near future: <br> 
 ```
-from pylnet.interfaces.factory import InterfaceFactory
-from pylnet.interfaces.factory import InterfaceType as IType
-from pylnet.lnet import LNet
+from mchplnet.interfaces.factory import InterfaceFactory
+from mchplnet.interfaces.factory import InterfaceType as IType
+from mchplnet.lnet import LNet
 ``` 
 5. Set up the Serial connection with the desired COM port and baud rate:
 ```

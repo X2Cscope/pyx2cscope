@@ -1,8 +1,8 @@
 import logging
 
-from pylnet.interfaces.factory import InterfaceFactory
-from pylnet.interfaces.factory import InterfaceType as IType
-from pylnet.lnet import LNet
+from mchplnet.interfaces.factory import InterfaceFactory
+from mchplnet.interfaces.factory import InterfaceType as IType
+from mchplnet.lnet import LNet
 from pyx2cscope.variable.variable_factory import VariableFactory
 
 # Configure logging
