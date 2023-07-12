@@ -1,30 +1,36 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+
+[tool.poetry]
 name = "pyx2cscope"
 version = "0.0.1"
-dependencies = [
-    "pyserial",
-    "pyelftools",
-    "numpy",
-    "PyQt5",
-    "pylnet",
-]
-authors = [
-  {name = "Yash Agarwal", email = "yash.agarwal@microchip.com"},
-  {name = "Edras Pacola"},
-  {name = "Christoph Baumgartner"},
-  {name = "Mark Wendler"},
-]
-license={file = "LICENSE"}
+description = "python implementation of X2Cscope"
+authors = ["Yash Agarwal <yash.agarwal@microchip.com>",
+  "Edras Pacola",
+  "Christoph Baumgartner",
+  "Mark Wendler",]
 readme = "README.md"
+packages = [{include = "pyx2cscope"}]
 
-[project.urls]
-Homepage = "https://x2cscope.github.io/"
-Documentation = "https://x2cscope.github.io/"
-Repository = "https://github.com/X2Cscope/pylnet"
+license = "Proprietary"
+
+homepage = "https://x2cscope.github.io/"
+documentation = "https://x2cscope.github.io/"
+repository = "https://github.com/X2Cscope/pylnet"
+
+
+
+
+[tool.poetry.dependencies]
+pyserial = "^3.5"
+pyelftools = "^0.29"
+numpy = "^1.25.1"
+PyQt5 = "^5.15.9"
+pylnet = "^0.0.1"
+
+
 
 [tool.setuptools.packages.find]
 exclude = ["test", "doc", "examples"]  # empty by default
