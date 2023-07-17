@@ -21,8 +21,6 @@ import matplotlib.pyplot as plt
 from collections import deque
 from matplotlib.animation import FuncAnimation
 
-
-
 logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
 
 
@@ -43,6 +41,8 @@ class X2Cscope_GUI(QMainWindow):
         self.counter2 = None
         self.error_shown = False
         self.shown_errors = set()
+
+        self.plot_window_open = False
 
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
@@ -209,25 +209,6 @@ class X2Cscope_GUI(QMainWindow):
         self.slider_var2.setMaximum(10000)
         self.slider_var2.setEnabled(False)
 
-
-
-        # Set the style sheet for the slider
-        # self.slider_var2.setStyleSheet(
-        #     """
-        #     QSlider::groove:horizontal {
-        #         height: 10px;
-        #         background-color: qlineargradient(spread:pad, x1:0, y1:0.5, x2:1, y2:0.5, stop:0 rgba(0, 255, 0, 255), stop:1 rgba(255, 0, 0, 255));
-        #     }
-        #
-        #     QSlider::handle:horizontal {
-        #         width: 20px;
-        #         background-color: purple;
-        #         margin: -5px 0;
-        #         border-radius: 10px;
-        #     }
-        #     """
-        # )
-
         self.slider_var2.valueChanged.connect(self.slider_var2_changed)
         self.grid_layout.addWidget(self.slider_var2, 3, 0, 1, 6)
 
@@ -241,6 +222,7 @@ class X2Cscope_GUI(QMainWindow):
 
         # Populate the available ports combo box
         self.refresh_ports()
+
     def plot_data_update(self, value1, value2):
         self.plot_data.append((value1, value2))
 
@@ -250,8 +232,8 @@ class X2Cscope_GUI(QMainWindow):
 
         data = np.array(self.plot_data).T
         self.ax.clear()
-        self.ax.plot(data[0], label="Variable 1")
-        self.ax.plot(data[1], label="Variable 2")
+        self.ax.plot(data[0], label=self.combo_box1.currentText())
+        self.ax.plot(data[1], label=self.combo_box2.currentText())
         self.ax.set_xlabel("Sample")
         self.ax.set_ylabel("Value")
         self.ax.set_title("Live Plot")
@@ -261,9 +243,23 @@ class X2Cscope_GUI(QMainWindow):
         if not self.plot_data:
             return
 
-        self.fig, self.ax = plt.subplots()
-        self.ani = FuncAnimation(self.fig, self.update_plot, interval=500)
-        plt.show()
+        if self.plot_window_open:
+            if self.fig is not None and plt.fignum_exists(self.fig.number):
+                # If the plot window is still open, update the plot and restart the animation with the new interval
+                self.update_plot(0)
+                self.ani.event_source.stop()
+                self.ani.event_source.start(self.timerValue)
+            else:
+                # The plot window was closed manually, recreate it
+                self.fig, self.ax = plt.subplots()
+                self.ani = FuncAnimation(self.fig, self.update_plot, interval=self.timerValue)
+                plt.show(block=False)  # Use block=False to prevent the GUI from freezing
+        else:
+            # Create a new plot window
+            self.fig, self.ax = plt.subplots()
+            self.ani = FuncAnimation(self.fig, self.update_plot, interval=self.timerValue)
+            plt.show(block=False)  # Use block=False to prevent the GUI from freezing
+            self.plot_window_open = True
 
     def handle_error(self, error_message: str):
         if error_message not in self.shown_errors:
@@ -274,9 +270,6 @@ class X2Cscope_GUI(QMainWindow):
             msg_box.buttonClicked.connect(self.error_box_closed)
             msg_box.exec_()
             self.shown_errors.add(error_message)
-
-
-
 
     def error_box_closed(self):
         # Handle closing of the error pop-up box if needed
@@ -445,7 +438,6 @@ class X2Cscope_GUI(QMainWindow):
         self.Variable2 = value
         self.slider_var2.setValue(value)
 
-
     @pyqtSlot()
     def select_elf_file(self):
         file_dialog = QFileDialog()
@@ -521,6 +513,7 @@ class X2Cscope_GUI(QMainWindow):
             # Re-populate the combo box with variable list from the previously selected ELF file
             if self.file_path:
                 self.refreshComboBox()
+
     def connect_serial(self):
         port = self.port_combo.currentText()
         baud_rate = int(self.baud_combo.currentText())
@@ -530,8 +523,6 @@ class X2Cscope_GUI(QMainWindow):
                 IType.SERIAL, port=port, baudrate=baud_rate
             )
             l_net = LNet(self.ser)
-            # self.ser = serial.Serial(port, baud_rate)
-            # lnet = LNet(self.ser)
             self.var_factory = VariableFactory(l_net, self.file_path)
             self.VariableList = self.var_factory.get_var_list_elf()
 
