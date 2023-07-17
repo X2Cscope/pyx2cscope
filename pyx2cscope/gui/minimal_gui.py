@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-
+import time
 import serial.tools.list_ports
 from PyQt5.QtCore import (QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer,
                           pyqtSlot)
@@ -16,12 +16,21 @@ from mchplnet.lnet import LNet
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.variable.variable_factory import VariableFactory
 
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import deque
+from matplotlib.animation import FuncAnimation
+
+
+
 logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
 
 
 class X2Cscope_GUI(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.voltage_value = None
+        self.current_value = None
         self.port_combo: QComboBox = None
         self.select_file_button: QPushButton = None
         self.layout: QGridLayout = None
@@ -41,6 +50,9 @@ class X2Cscope_GUI(QMainWindow):
         decimal_regex = QRegExp("[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
+        self.plot_data = deque(maxlen=250)  # Store plot data for Variable 1 and Variable 2
+        self.fig, self.ax = None, None
+        self.ani = None
         self.init_ui()
 
     def init_ui(self):
@@ -84,6 +96,7 @@ class X2Cscope_GUI(QMainWindow):
         self.Connect_button = QPushButton("Connect")
         self.Connect_button.clicked.connect(self.toggle_connection)
         self.Connect_button.setFixedSize(100, 30)
+
 
         self.sampletime = QLineEdit()
         self.sampletime.setText("500")
@@ -185,11 +198,18 @@ class X2Cscope_GUI(QMainWindow):
 
         self.layout.addLayout(self.grid_layout, 5, 0)
 
+        self.plot_button = QPushButton("Plot")
+        self.plot_button.clicked.connect(self.plot_data_plot)
+        self.layout.addWidget(self.plot_button, 6, 0)
+
+
         # Add slider for Variable 2
         self.slider_var2 = QSlider(Qt.Horizontal)
         self.slider_var2.setMinimum(0)
         self.slider_var2.setMaximum(10000)
         self.slider_var2.setEnabled(False)
+
+
 
         # Set the style sheet for the slider
         # self.slider_var2.setStyleSheet(
@@ -221,6 +241,29 @@ class X2Cscope_GUI(QMainWindow):
 
         # Populate the available ports combo box
         self.refresh_ports()
+    def plot_data_update(self, value1, value2):
+        self.plot_data.append((value1, value2))
+
+    def update_plot(self, frame):
+        if not self.plot_data:
+            return
+
+        data = np.array(self.plot_data).T
+        self.ax.clear()
+        self.ax.plot(data[0], label="Variable 1")
+        self.ax.plot(data[1], label="Variable 2")
+        self.ax.set_xlabel("Sample")
+        self.ax.set_ylabel("Value")
+        self.ax.set_title("Live Plot")
+        self.ax.legend()
+
+    def plot_data_plot(self):
+        if not self.plot_data:
+            return
+
+        self.fig, self.ax = plt.subplots()
+        self.ani = FuncAnimation(self.fig, self.update_plot, interval=500)
+        plt.show()
 
     def handle_error(self, error_message: str):
         if error_message not in self.shown_errors:
@@ -231,6 +274,9 @@ class X2Cscope_GUI(QMainWindow):
             msg_box.buttonClicked.connect(self.error_box_closed)
             msg_box.exec_()
             self.shown_errors.add(error_message)
+
+
+
 
     def error_box_closed(self):
         # Handle closing of the error pop-up box if needed
@@ -340,7 +386,9 @@ class X2Cscope_GUI(QMainWindow):
             if self.counter1 is not None:
                 if self.mutex.tryLock(0):
                     try:
-                        self.Value_var1.setText(str(self.counter1.get_value()))
+                        value = float(self.counter1.get_value())
+                        self.Value_var1.setText(str(value))
+                        self.plot_data_update(value, float(self.Value_var2.text()))
                     finally:
                         self.mutex.unlock()
                 else:
@@ -349,7 +397,6 @@ class X2Cscope_GUI(QMainWindow):
             error_message = f"Error: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
-            print("var1_update", e)
 
     @pyqtSlot()
     def var2_update(self):
@@ -357,7 +404,9 @@ class X2Cscope_GUI(QMainWindow):
             if self.counter2 is not None:
                 if self.mutex.tryLock(0):
                     try:
-                        self.Value_var2.setText(str(self.counter2.get_value()))
+                        value = float(self.counter2.get_value())
+                        self.Value_var2.setText(str(value))
+                        self.plot_data_update(float(self.Value_var1.text()), value)
                     finally:
                         self.mutex.unlock()
                 else:
@@ -366,7 +415,6 @@ class X2Cscope_GUI(QMainWindow):
             error_message = f"Error: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
-            print("var2_update", e)
 
     def slider_var2_changed(self, value):
         if self.combo_box2.currentIndex() == 0:
@@ -397,6 +445,7 @@ class X2Cscope_GUI(QMainWindow):
         self.Variable2 = value
         self.slider_var2.setValue(value)
 
+
     @pyqtSlot()
     def select_elf_file(self):
         file_dialog = QFileDialog()
@@ -419,8 +468,6 @@ class X2Cscope_GUI(QMainWindow):
         self.combo_box2.clear()
         self.combo_box2.addItems(self.VariableList)
 
-    # ...
-
     def refresh_ports(self):
         # Clear and repopulate the available ports combo box
         available_ports = [port.device for port in serial.tools.list_ports.comports()]
@@ -435,6 +482,11 @@ class X2Cscope_GUI(QMainWindow):
             return
 
         if self.ser is None or not self.ser.is_open:
+            if self.timer.isActive():
+                self.timer.stop()
+            if self.timer2.isActive():
+                self.timer2.stop()
+            self.plot_data.clear()  # Clear plot data when disconnected
             self.connect_serial()
         else:
             self.disconnect_serial()
@@ -469,7 +521,6 @@ class X2Cscope_GUI(QMainWindow):
             # Re-populate the combo box with variable list from the previously selected ELF file
             if self.file_path:
                 self.refreshComboBox()
-
     def connect_serial(self):
         port = self.port_combo.currentText()
         baud_rate = int(self.baud_combo.currentText())
