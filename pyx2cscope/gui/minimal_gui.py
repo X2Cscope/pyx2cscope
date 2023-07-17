@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-import time
+from datetime import datetime
 import serial.tools.list_ports
 from PyQt5.QtCore import (QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer,
                           pyqtSlot)
@@ -224,17 +224,28 @@ class X2Cscope_GUI(QMainWindow):
         self.refresh_ports()
 
     def plot_data_update(self, value1, value2):
-        self.plot_data.append((value1, value2))
+        timestamp = datetime.now()
+        if len(self.plot_data) > 0:
+            last_timestamp = self.plot_data[-1][0]
+            time_diff = (timestamp - last_timestamp).total_seconds() * 1000
+        else:
+            time_diff = 0
+        self.plot_data.append((timestamp, time_diff, value1, value2))
 
     def update_plot(self, frame):
         if not self.plot_data:
             return
 
         data = np.array(self.plot_data).T
+        timestamps = data[0]
+        time_diffs = data[1]
+        values1 = data[2]
+        values2 = data[3]
+
         self.ax.clear()
-        self.ax.plot(data[0], label=self.combo_box1.currentText())
-        self.ax.plot(data[1], label=self.combo_box2.currentText())
-        self.ax.set_xlabel("Sample")
+        self.ax.plot(np.cumsum(time_diffs), values1, label=self.combo_box1.currentText())
+        self.ax.plot(np.cumsum(time_diffs), values2, label=self.combo_box2.currentText())
+        self.ax.set_xlabel("Time (ms)")
         self.ax.set_ylabel("Value")
         self.ax.set_title("Live Plot")
         self.ax.legend()
@@ -253,11 +264,19 @@ class X2Cscope_GUI(QMainWindow):
                 # The plot window was closed manually, recreate it
                 self.fig, self.ax = plt.subplots()
                 self.ani = FuncAnimation(self.fig, self.update_plot, interval=self.timerValue)
+                plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
+                self.ax.axhline(0, color='black', linewidth=0.5)  # Reference line at y=0
+                self.ax.axvline(0, color='black', linewidth=0.5)  # Reference line at x=0
+                plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
                 plt.show(block=False)  # Use block=False to prevent the GUI from freezing
         else:
             # Create a new plot window
             self.fig, self.ax = plt.subplots()
             self.ani = FuncAnimation(self.fig, self.update_plot, interval=self.timerValue)
+            plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
+            self.ax.axhline(0, color='black', linewidth=0.5)  # Reference line at y=0
+            self.ax.axvline(0, color='black', linewidth=0.5)  # Reference line at x=0
+            plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
             plt.show(block=False)  # Use block=False to prevent the GUI from freezing
             self.plot_window_open = True
 
