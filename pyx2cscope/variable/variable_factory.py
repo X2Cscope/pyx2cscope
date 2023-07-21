@@ -1,6 +1,5 @@
 import logging
 
-from mchplnet.lnet import LNet
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *
@@ -16,6 +15,7 @@ class VariableFactory:
 
         self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
+        self.variable_map = self.parser.map_all_variables_data()
 
     def get_var_list_elf(self) -> list[str]:
         """
@@ -41,7 +41,9 @@ class VariableFactory:
 
         try:
             # ELF parsing
-            var_result = self.parser.get_var_info(name)
+
+            var_result = self.variable_map.get(name)
+            #var_result = self.parser.get_var_info(name)
             if var_result:
                 variable = self.get_variable_raw(
                     var_result.address, var_result.type, var_result.name
