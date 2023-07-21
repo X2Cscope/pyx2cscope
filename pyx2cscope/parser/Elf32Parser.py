@@ -78,7 +78,7 @@ class Elf32Parser(ElfParser):
                     my_list.append(
                         die_variable.attributes["DW_AT_name"].value.decode("utf-8")
                     )
-        my_list.insert(0, "")
+        #my_list.insert(0, "")
         return sorted(my_list)
 
     def get_var_info(self, var_name) -> VariableInfo:
@@ -252,6 +252,13 @@ class Elf32Parser(ElfParser):
         #
         # return None
 
+    def map_all_variables_data(self) -> dict:
+        variable_info_map = {}
+        variable_list = self.get_var_list()
+        for variable_name in variable_list:
+            variable_info = self.get_var_info(variable_name)
+            variable_info_map[variable_name] = variable_info
+        return variable_info_map
 
 if __name__ == "__main__":
     elf_file = (
@@ -261,8 +268,9 @@ if __name__ == "__main__":
     )
     parser = Elf32Parser(elf_file)
     variable = "gMCRPOS_Parameters.rs"
-    variable_info = parser.get_var_info(variable)
-
+    #variable_info = parser.get_var_info(variable)
+    variable_map = parser.map_all_variables_data()
+    variable_info = variable_map.get(variable)
     var_list = parser.get_var_list()
     print(var_list)
     #

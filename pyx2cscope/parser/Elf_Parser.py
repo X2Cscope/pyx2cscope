@@ -32,3 +32,6 @@ class ElfParser(ABC):
     def get_var_list(self) -> List[str]:
         """Return all variables described at elf file as a list of variable names."""
         pass
+    @abstractmethod
+    def map_all_variables_data(self) -> dict:
+        pass

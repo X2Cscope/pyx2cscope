@@ -131,7 +131,7 @@ class Elf16Parser(ElfParser):
             output = subprocess.check_output(command, universal_newlines=True)
             self._parse_tree(output)
         except subprocess.CalledProcessError as e:
-            logging.error(f"Error executing xc16-readelf.exe: {e}")
+            logging.error(f"Error executing xc16-readelf.exe: {e.output}")
             return
 
     @staticmethod
@@ -184,21 +184,26 @@ class Elf16Parser(ElfParser):
                     and self._get_address_check(die["DW_AT_location"]) > 2
                 ):
                     end_die = self.get_end_die(die)
-                    if (
-                        end_die["tag"] == "DW_TAG_structure_type"
-                        and "DW_AT_location" in die
-                    ):
-                        members = self._get_structure_members(end_die)
-                        for member in members.keys():
-                            my_list.append(die["DW_AT_name"] + "." + member)
-
-                    # elif end_die["tag"] == "DW_TAG_pointer_type":
-                    #     my_list.append(die["DW_AT_name"])
+                    #print(end_die)
+                    if end_die is not None:
+                        if (
+                            end_die["tag"] == "DW_TAG_structure_type"
+                            and "DW_AT_location" in die
+                        ):
+                            members = self._get_structure_members(end_die)
+                            for member in members.keys():
+                                my_list.append(die["DW_AT_name"] + "." + member)
+                        # elif end_die["tag"] == "DW_TAG_pointer_type":
+                        #     my_list.append(die["DW_AT_name"])
+                        else:
+                            my_list.append(die["DW_AT_name"])
                     else:
-                        my_list.append(die["DW_AT_name"])
-        my_list.insert(0, "")
+                        continue
+        #my_list.insert(0, "")
 
         return sorted(my_list)
+
+
 
     @staticmethod
     def _get_address_check(location: str) -> int:
@@ -251,6 +256,7 @@ class Elf16Parser(ElfParser):
                     if die["DW_AT_name"] == variable_name:
                         die_var = die
                         ref_address = die["DW_AT_type"]
+
         assert die_var is not None, "Variable not found!"
         for cu_offset, cu in self.dwarf_info.items():
             if cu_offset < ref_address < (cu_offset + cu["length"]):
@@ -326,6 +332,15 @@ class Elf16Parser(ElfParser):
                     return die
         return None
 
+    def map_all_variables_data(self) -> dict:
+        variable_info_map = {}
+        variable_list = self.get_var_list()
+        for variable_name in variable_list:
+            variable_info = self.get_var_info(variable_name)
+            variable_info_map[variable_name] = variable_info
+
+        return variable_info_map
+
 
 if __name__ == "__main__":
     input_elf_file = (
@@ -334,11 +349,18 @@ if __name__ == "__main__":
     )
     elf_reader = Elf16Parser(input_elf_file)
 
+
     variable = "sccp3_timer_obj.secondaryTimer16Elapsed"
     # variable_name = 'V_pot'
     # variable_name = 'DesiredSpeed'
-    variable_list = elf_reader.get_var_list()
-    variable_data = elf_reader.get_var_info(variable)
+
+    variable_info_map = elf_reader.map_all_variables_data()
+    print("variable map list:", variable_info_map)
+
+    variable_data = variable_info_map.get(variable, "Variable Not Found!")
+
+    # variable_list = elf_reader.get_var_list()
+    # variable_data = elf_reader.get_var_info(variable)
     print(variable_data.name)
     print(variable_data.byte_size)
     print(variable_data.type)
