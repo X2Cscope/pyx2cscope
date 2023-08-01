@@ -199,9 +199,8 @@ class Elf16Parser(ElfParser):
                             my_list.append(die["DW_AT_name"])
                     else:
                         continue
-        #my_list.insert(0, "")
-
-        return sorted(my_list)
+        #my_list.insert(0, "None")
+        return sorted(my_list, key=lambda x: x.lower())
 
 
 
@@ -253,16 +252,19 @@ class Elf16Parser(ElfParser):
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
                 if "DW_TAG_variable" in die["tag"]:
-                    if die["DW_AT_name"] == variable_name:
+                    if die.get("DW_AT_name") == variable_name:  # Using get() to handle missing "DW_AT_name"
                         die_var = die
-                        ref_address = die["DW_AT_type"]
+                        ref_address = die.get("DW_AT_type")
 
         assert die_var is not None, "Variable not found!"
         for cu_offset, cu in self.dwarf_info.items():
-            if cu_offset < ref_address < (cu_offset + cu["length"]):
+            if ref_address is not None and cu_offset < ref_address < (cu_offset + cu["length"]):
                 variable_die = cu["elements"][ref_address]
         end_die = self.get_end_die(variable_die)
-        address = self._get_address_location(die_var["DW_AT_location"])
+        location = die_var.get("DW_AT_location")
+        if location is None:
+            return None
+        address = self._get_address_location(die_var.get("DW_AT_location"))
 
         # If the address already includes the "0x" prefix, you can skip the above code and directly use:
         # address = location[address_start:address_end].strip() # TODO recursive structure
@@ -347,10 +349,14 @@ if __name__ == "__main__":
         "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2"
         "\\production\\bldc_MCLV2.X.production.elf"
     )
+    #input_elf_file = "C:\\_DESKTOP\\_Projects\\Ceiling fan project\\AN1299_dsPIC33CK64MC102_LVCFRD\\pmsm.X\\dist\\default\\production\\pmsm.X.production.elf"
+    input_elf_file = r"C:\_DESKTOP\_Projects\AN1292 Scripts\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_reader = Elf16Parser(input_elf_file)
 
 
-    variable = "sccp3_timer_obj.secondaryTimer16Elapsed"
+
+    #variable = "sccp3_timer_obj.secondaryTimer16Elapsed"
+    variable = "adcDataBuffer"
     # variable_name = 'V_pot'
     # variable_name = 'DesiredSpeed'
 
