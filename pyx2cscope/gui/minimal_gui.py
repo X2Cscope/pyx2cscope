@@ -29,13 +29,14 @@ logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
 class X2Cscope_GUI(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.VariableList = None
+        self.VariableList = []
+        self.old_Variablelist = []
         self.var_factory = None
         self.ser = None
         self.timerValue = 500
         self.port_combo = QComboBox()
         self.layout = None
-        self.slider_var2 = QSlider(Qt.Horizontal)
+        self.slider_var1 = QSlider(Qt.Horizontal)
         self.Scaling_var5 = QLineEdit(self)
         self.Unit_var5 = QComboBox(self)
         self.Scaling_var4 = QLineEdit(self)
@@ -74,7 +75,7 @@ class X2Cscope_GUI(QMainWindow):
         self.Live_var1 = QCheckBox(self)
         self.mutex = QMutex()
         self.grid_layout = QGridLayout()
-        self.grid_layout1 = QHBoxLayout()
+        self.box_layout = QHBoxLayout()
         self.timer5 = QTimer()
         self.timer4 = QTimer()
         self.timer3 = QTimer()
@@ -89,6 +90,8 @@ class X2Cscope_GUI(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
+
+        self.selected_variables = []  # List to store selected variables
 
         decimal_regex = QRegExp("[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
@@ -117,6 +120,7 @@ class X2Cscope_GUI(QMainWindow):
         refresh_img = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
         refresh_button.setIcon(QIcon(refresh_img))
 
+        self.select_file_button.setEnabled(True)
         # Elf file loader button
         self.select_file_button.clicked.connect(self.select_elf_file)
 
@@ -144,81 +148,129 @@ class X2Cscope_GUI(QMainWindow):
         self.sampletime.editingFinished.connect(self.sampletime_edit)
         self.sampletime.setFixedSize(30, 20)
 
-        self.layout.addLayout(port_layout, 0, 0)
-        self.layout.addLayout(baud_layout, 1, 0)
+        self.box_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
+        self.box_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
+        self.box_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
 
-        self.layout.addWidget(self.select_file_button, 3, 0)
-
-        self.grid_layout1.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
-        self.grid_layout1.addWidget(self.sampletime, alignment=Qt.AlignLeft)
-        self.grid_layout1.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
-
-        self.grid_layout1.addStretch(1)
-        self.grid_layout1.addWidget(self.Connect_button, alignment=Qt.AlignRight)
-
-        self.layout.addLayout(self.grid_layout1, 4, 0)
-
-        # Create the grid layout for combo boxes and input boxes
+        self.box_layout.addStretch(1)
+        self.box_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
         # Add labels on top
-        labels = ["Live", "Variable", "Value", "Scaling", "Scaled Value", "Unit", "Plot"]
+        labels = [
+            "Live",
+            "Variable",
+            "Value",
+            "Scaling",
+            "Scaled Value",
+            "Unit",
+            "Plot",
+        ]
         for col, label in enumerate(labels):
             self.grid_layout.addWidget(QLabel(label), 0, col)
 
-        # Live check box
-        self.Live_var1.setEnabled(False)
+        live_checkboxes = [
+            self.Live_var1,
+            self.Live_var2,
+            self.Live_var3,
+            self.Live_var4,
+            self.Live_var5,
+        ]
+        combo_boxes = [
+            self.combo_box1,
+            self.combo_box2,
+            self.combo_box3,
+            self.combo_box4,
+            self.combo_box5,
+        ]
+        value_boxes = [
+            self.Value_var1,
+            self.Value_var2,
+            self.Value_var3,
+            self.Value_var4,
+            self.Value_var5,
+        ]
+        scaling_boxes = [
+            self.Scaling_var1,
+            self.Scaling_var2,
+            self.Scaling_var3,
+            self.Scaling_var4,
+            self.Scaling_var5,
+        ]
+        scaled_value_boxes = [
+            self.ScaledValue_var1,
+            self.ScaledValue_var2,
+            self.ScaledValue_var3,
+            self.ScaledValue_var4,
+            self.ScaledValue_var5,
+        ]
+        unit_boxes = [
+            self.Unit_var1,
+            self.Unit_var2,
+            self.Unit_var3,
+            self.Unit_var4,
+            self.Unit_var5,
+        ]
+        plot_checkboxes = [
+            self.plot_var1_checkbox,
+            self.plot_var2_checkbox,
+            self.plot_var3_checkbox,
+            self.plot_var4_checkbox,
+            self.plot_var5_checkbox,
+        ]
 
-        self.grid_layout.addWidget(self.Live_var1, 1, 0)
-        # Create Combo Box 1
-        self.combo_box1.addItems(["None"])
-        self.combo_box1.setEnabled(False)
-        self.grid_layout.addWidget(self.combo_box1, 1, 1)
+        for row, (
+            live_var,
+            combo_box,
+            value_var,
+            scaling_var,
+            scaled_value_var,
+            unit_var,
+            plot_checkbox,
+        ) in enumerate(
+            zip(
+                live_checkboxes,
+                combo_boxes,
+                value_boxes,
+                scaling_boxes,
+                scaled_value_boxes,
+                unit_boxes,
+                plot_checkboxes,
+            ),
+            1,
+        ):
+            live_var.setEnabled(False)
+            combo_box.addItems(["None"])
+            combo_box.setEnabled(False)
+            combo_box.setFixedWidth(350)
+            value_var.setText("0")
+            value_var.setValidator(self.decimal_validator)
+            scaling_var.setText("1")
+            scaled_value_var.setText("0")
+            scaled_value_var.setValidator(self.decimal_validator)
+            unit_var.addItems([" ", "V", "RPM", "Watt", "Ampere"])
+            if row > 1:
+                row += 1
+            self.grid_layout.addWidget(live_var, row, 0)
+            self.grid_layout.addWidget(combo_box, row, 1)
+            if row == 1:
+                self.grid_layout.addWidget(self.slider_var1, row + 1, 0, 1, 7)
 
-        # Create input boxes for Combo Box
-        self.Value_var1.setText("0")
-        self.Value_var1.setValidator(self.decimal_validator)
-        self.Unit_var1.addItems([" ", "V", "RPM", "Watt", "Ampere"])
-        self.ScaledValue_var1.setText("0")
-        self.ScaledValue_var1.setValidator(self.decimal_validator)
-        self.Scaling_var1.setText("1")
-
-        self.grid_layout.addWidget(self.Value_var1, 1, 2)
-        self.grid_layout.addWidget(self.Scaling_var1, 1, 3)
-        self.grid_layout.addWidget(self.ScaledValue_var1, 1, 4)
-        self.grid_layout.addWidget(self.Unit_var1, 1, 5)
-
-        self.grid_layout.addWidget(self.plot_var1_checkbox, 1, 6)
-        self.grid_layout.addWidget(self.plot_var2_checkbox, 2, 6)
-        self.grid_layout.addWidget(self.plot_var3_checkbox, 3, 6)
-        self.grid_layout.addWidget(self.plot_var4_checkbox, 4, 6)
-        self.grid_layout.addWidget(self.plot_var5_checkbox, 5, 6)
-
-        self.Live_var2.setEnabled(False)
-        self.grid_layout.addWidget(self.Live_var2, 2, 0)
-        # Create Combo Box 2
-        self.combo_box2.addItems(["None"])
-        self.combo_box2.setEnabled(False)
-        self.combo_box2.setFixedWidth(350)
-        self.grid_layout.addWidget(self.combo_box2, 2, 1)
-
-        self.Value_var2.setText("0")
-        self.Value_var2.setValidator(self.decimal_validator)
-
-        self.Scaling_var2.setText("1")
-        self.Unit_var2.addItems([" ", "V", "RPM", "Watt", "Ampere"])
-        self.ScaledValue_var2.setText("0")
-        self.ScaledValue_var2.setValidator(self.decimal_validator)
-
-        self.grid_layout.addWidget(self.Value_var2, 2, 2)
-        self.grid_layout.addWidget(self.Scaling_var2, 2, 3)
-        self.grid_layout.addWidget(self.ScaledValue_var2, 2, 4)
-        self.grid_layout.addWidget(self.Unit_var2, 2, 5)
-
-        self.layout.addLayout(self.grid_layout, 5, 0)
+            self.grid_layout.addWidget(value_var, row, 2)
+            self.grid_layout.addWidget(scaling_var, row, 3)
+            self.grid_layout.addWidget(scaled_value_var, row, 4)
+            self.grid_layout.addWidget(unit_var, row, 5)
+            self.grid_layout.addWidget(plot_checkbox, row, 6)
 
         self.plot_button.clicked.connect(self.plot_data_plot)
-        self.layout.addWidget(self.plot_button, 6, 0)
+
+        # adding everything to the main layout
+        self.layout.addLayout(port_layout, 1, 0)
+        self.layout.addLayout(baud_layout, 2, 0)
+        self.layout.addWidget(self.select_file_button, 3, 0)
+        self.layout.addLayout(self.box_layout, 4, 0)
         self.layout.addLayout(self.grid_layout, 5, 0)
+        self.layout.addWidget(self.plot_button, 6, 0)
+        # self.grid_layout.addWidget(self.slider_var2, 8, 0, 1, 6)
 
         # Set the central widget and example window properties
         self.setCentralWidget(central_widget)
@@ -229,144 +281,164 @@ class X2Cscope_GUI(QMainWindow):
         # Populate the available ports combo box
         self.refresh_ports()
 
-        self.Live_var3.setEnabled(False)
-        self.grid_layout.addWidget(self.Live_var3, 3, 0)
-        # Create Combo Box 3
-        self.combo_box3.addItems(["None"])
-        self.combo_box3.setEnabled(False)
-        self.combo_box3.setFixedWidth(350)
-        self.grid_layout.addWidget(self.combo_box3, 3, 1)
+        self.timer1.timeout.connect(
+            lambda: self.handle_var_update(
+                self.combo_box1.currentText(), self.Value_var1
+            )
+        )
 
-        self.Value_var3.setText("0")
-        self.Value_var3.setValidator(self.decimal_validator)
+        self.timer2.timeout.connect(
+            lambda: self.handle_var_update(
+                self.combo_box2.currentText(), self.Value_var2
+            )
+        )
 
-        self.Scaling_var3.setText("1")
-        self.Unit_var3.addItems([" ", "V", "RPM", "Watt", "Ampere"])
-        self.ScaledValue_var3.setText("0")
-        self.ScaledValue_var3.setValidator(self.decimal_validator)
+        self.timer3.timeout.connect(
+            lambda: self.handle_var_update(
+                self.combo_box3.currentText(), self.Value_var3
+            )
+        )
 
-        self.grid_layout.addWidget(self.Value_var3, 3, 2)
-        self.grid_layout.addWidget(self.Scaling_var3, 3, 3)
-        self.grid_layout.addWidget(self.ScaledValue_var3, 3, 4)
-        self.grid_layout.addWidget(self.Unit_var3, 3, 5)
+        self.timer4.timeout.connect(
+            lambda: self.handle_var_update(
+                self.combo_box4.currentText(), self.Value_var4
+            )
+        )
 
-        self.Live_var4.setEnabled(False)
-        self.grid_layout.addWidget(self.Live_var4, 4, 0)
-        # Create Combo Box 4
-        self.combo_box4.addItems(["None"])
-        self.combo_box4.setEnabled(False)
-        self.combo_box4.setFixedWidth(350)
-        self.grid_layout.addWidget(self.combo_box4, 4, 1)
+        self.timer5.timeout.connect(
+            lambda: self.handle_var_update(
+                self.combo_box5.currentText(), self.Value_var5
+            )
+        )
 
-        self.Value_var4.setText("0")
-        self.Value_var4.setValidator(self.decimal_validator)
+        self.combo_box1.currentIndexChanged.connect(
+            lambda: self.handle_variable_getram(
+                self.combo_box1.currentText(), self.Value_var1
+            )
+        )
+        self.combo_box2.currentIndexChanged.connect(
+            lambda: self.handle_variable_getram(
+                self.combo_box2.currentText(), self.Value_var2
+            )
+        )
+        self.combo_box3.currentIndexChanged.connect(
+            lambda: self.handle_variable_getram(
+                self.combo_box3.currentText(), self.Value_var3
+            )
+        )
+        self.combo_box4.currentIndexChanged.connect(
+            lambda: self.handle_variable_getram(
+                self.combo_box4.currentText(), self.Value_var4
+            )
+        )
+        self.combo_box5.currentIndexChanged.connect(
+            lambda: self.handle_variable_getram(
+                self.combo_box5.currentText(), self.Value_var5
+            )
+        )
+        self.Value_var1.editingFinished.connect(
+            lambda: self.handle_variable_putram(
+                self.combo_box1.currentText(), self.Value_var1
+            )
+        )
+        self.Value_var2.editingFinished.connect(
+            lambda: self.handle_variable_putram(
+                self.combo_box2.currentText(), self.Value_var2
+            )
+        )
+        self.Value_var3.editingFinished.connect(
+            lambda: self.handle_variable_putram(
+                self.combo_box3.currentText(), self.Value_var3
+            )
+        )
+        self.Value_var4.editingFinished.connect(
+            lambda: self.handle_variable_putram(
+                self.combo_box4.currentText(), self.Value_var4
+            )
+        )
+        self.Value_var5.editingFinished.connect(
+            lambda: self.handle_variable_putram(
+                self.combo_box5.currentText(), self.Value_var5
+            )
+        )
 
-        self.Scaling_var4.setText("1")
-        self.Unit_var4.addItems([" ", "V", "RPM", "Watt", "Ampere"])
-        self.ScaledValue_var4.setText("0")
-        self.ScaledValue_var4.setValidator(self.decimal_validator)
+        self.Value_var1.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
+            )
+        )
+        self.Scaling_var1.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
+            )
+        )
 
-        self.grid_layout.addWidget(self.Value_var4, 4, 2)
-        self.grid_layout.addWidget(self.Scaling_var4, 4, 3)
-        self.grid_layout.addWidget(self.ScaledValue_var4, 4, 4)
-        self.grid_layout.addWidget(self.Unit_var4, 4, 5)
+        self.Value_var2.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
+            )
+        )
+        self.Scaling_var2.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
+            )
+        )
 
-        self.Live_var5.setEnabled(False)
-        self.grid_layout.addWidget(self.Live_var5, 5, 0)
-        # Create Combo Box 5
-        self.combo_box5.addItems(["None"])
-        self.combo_box5.setEnabled(False)
-        self.combo_box5.setFixedWidth(350)
-        self.grid_layout.addWidget(self.combo_box5, 5, 1)
+        self.Value_var3.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3
+            )
+        )
+        self.Scaling_var3.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3
+            )
+        )
 
-        self.Value_var5.setText("0")
-        self.Value_var5.setValidator(self.decimal_validator)
+        self.Value_var4.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4
+            )
+        )
+        self.Scaling_var4.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4
+            )
+        )
 
-        self.Scaling_var5.setText("1")
+        self.Value_var5.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5
+            )
+        )
+        self.Scaling_var5.textChanged.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5
+            )
+        )
 
-        self.Unit_var5.addItems([" ", "V", "RPM", "Watt", "Ampere"])
-        self.ScaledValue_var5.setText("0")
-        self.ScaledValue_var5.setValidator(self.decimal_validator)
-
-        self.grid_layout.addWidget(self.Value_var5, 5, 2)
-        self.grid_layout.addWidget(self.Scaling_var5, 5, 3)
-        self.grid_layout.addWidget(self.ScaledValue_var5, 5, 4)
-        self.grid_layout.addWidget(self.ScaledValue_var5, 5, 4)
-        self.grid_layout.addWidget(self.Unit_var5, 5, 5)
-
-        self.layout.addLayout(self.grid_layout, 6, 0)
-
-        self.timer1.timeout.connect(lambda: self.handle_var_update(self.combo_box1.currentText(), self.Value_var1))
-
-        self.timer2.timeout.connect(lambda: self.handle_var_update(self.combo_box2.currentText(), self.Value_var2))
-
-        self.timer3.timeout.connect(lambda: self.handle_var_update(self.combo_box3.currentText(), self.Value_var3))
-
-        self.timer4.timeout.connect(lambda: self.handle_var_update(self.combo_box4.currentText(), self.Value_var4))
-
-        self.timer5.timeout.connect(lambda: self.handle_var_update(self.combo_box5.currentText(), self.Value_var5))
-
-        self.combo_box1.currentIndexChanged.connect(lambda: self.handle_variable_getram(
-                self.combo_box1.currentText(), self.Value_var1))
-        self.combo_box2.currentIndexChanged.connect(lambda: self.handle_variable_getram(
-                self.combo_box2.currentText(), self.Value_var2))
-        self.combo_box3.currentIndexChanged.connect(lambda: self.handle_variable_getram(
-                self.combo_box3.currentText(), self.Value_var3))
-        self.combo_box4.currentIndexChanged.connect(lambda: self.handle_variable_getram(
-                self.combo_box4.currentText(), self.Value_var4))
-        self.combo_box5.currentIndexChanged.connect(lambda: self.handle_variable_getram(
-                self.combo_box5.currentText(), self.Value_var5))
-        self.Value_var1.editingFinished.connect(lambda: self.handle_variable_putram(
-                self.combo_box1.currentText(), self.Value_var1))
-        self.Value_var2.editingFinished.connect(lambda: self.handle_variable_putram(
-                self.combo_box2.currentText(), self.Value_var2))
-        self.Value_var3.editingFinished.connect(lambda: self.handle_variable_putram(
-                self.combo_box3.currentText(), self.Value_var3))
-        self.Value_var4.editingFinished.connect(lambda: self.handle_variable_putram(
-                self.combo_box4.currentText(), self.Value_var4))
-        self.Value_var5.editingFinished.connect(lambda: self.handle_variable_putram(
-                self.combo_box5.currentText(), self.Value_var5))
-
-        self.Value_var1.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1))
-        self.Scaling_var1.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1))
-
-        self.Value_var2.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2))
-        self.Scaling_var2.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2))
-
-        self.Value_var3.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3))
-        self.Scaling_var3.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3))
-
-        self.Value_var4.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4))
-        self.Scaling_var4.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4))
-
-        self.Value_var5.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5))
-        self.Scaling_var5.textChanged.connect(lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5))
-
-        self.Live_var1.stateChanged.connect(lambda: self.var_live(self.Live_var1, self.timer1))
-        self.Live_var2.stateChanged.connect(lambda: self.var_live(self.Live_var2, self.timer2))
-        self.Live_var3.stateChanged.connect(lambda: self.var_live(self.Live_var3, self.timer3))
-        self.Live_var4.stateChanged.connect(lambda: self.var_live(self.Live_var4, self.timer4))
-        self.Live_var5.stateChanged.connect(lambda: self.var_live(self.Live_var5, self.timer5))
+        self.Live_var1.stateChanged.connect(
+            lambda: self.var_live(self.Live_var1, self.timer1)
+        )
+        self.Live_var2.stateChanged.connect(
+            lambda: self.var_live(self.Live_var2, self.timer2)
+        )
+        self.Live_var3.stateChanged.connect(
+            lambda: self.var_live(self.Live_var3, self.timer3)
+        )
+        self.Live_var4.stateChanged.connect(
+            lambda: self.var_live(self.Live_var4, self.timer4)
+        )
+        self.Live_var5.stateChanged.connect(
+            lambda: self.var_live(self.Live_var5, self.timer5)
+        )
 
         # Add slider for Variable 2
-        self.slider_var2.setMinimum(0)
-        self.slider_var2.setMaximum(10000)
-        self.slider_var2.setEnabled(False)
+        self.slider_var1.setMinimum(0)
+        self.slider_var1.setMaximum(10000)
+        self.slider_var1.setEnabled(False)
 
-        self.slider_var2.valueChanged.connect(self.slider_var2_changed)
-        self.grid_layout.addWidget(self.slider_var2, 8, 0, 1, 6)
-
-        self.layout.addLayout(self.grid_layout, 6, 0)
+        self.slider_var1.valueChanged.connect(self.slider_var1_changed)
 
         # Set the central widget and example window properties
         self.setCentralWidget(central_widget)
@@ -415,8 +487,8 @@ class X2Cscope_GUI(QMainWindow):
             if len(self.plot_data) > 0:
                 last_timestamp = self.plot_data[-1][0]
                 time_diff = (
-                                    timestamp - last_timestamp
-                            ).total_seconds() * 1000  # to convert time in ms.
+                    timestamp - last_timestamp
+                ).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
             self.plot_data.append(
@@ -441,19 +513,29 @@ class X2Cscope_GUI(QMainWindow):
             data = np.array(self.plot_data).T
             time_diffs = data[1]
             values = data[2:7]
-            combo_boxes = [self.combo_box1, self.combo_box2, self.combo_box3,
-                           self.combo_box4, self.combo_box5]
-            plot_vars = [self.plot_var1_checkbox, self.plot_var2_checkbox,
-                         self.plot_var3_checkbox, self.plot_var4_checkbox,
-                         self.plot_var5_checkbox]
+            combo_boxes = [
+                self.combo_box1,
+                self.combo_box2,
+                self.combo_box3,
+                self.combo_box4,
+                self.combo_box5,
+            ]
+            plot_vars = [
+                self.plot_var1_checkbox,
+                self.plot_var2_checkbox,
+                self.plot_var3_checkbox,
+                self.plot_var4_checkbox,
+                self.plot_var5_checkbox,
+            ]
 
             self.ax.clear()
             start = time.time()
 
             for value, combo_box, plot_var in zip(values, combo_boxes, plot_vars):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.ax.plot(np.cumsum(time_diffs), value,
-                                 label=combo_box.currentText())
+                    self.ax.plot(
+                        np.cumsum(time_diffs), value, label=combo_box.currentText()
+                    )
 
             self.ax.set_xlabel("Time (ms)")
             self.ax.set_ylabel("Value")
@@ -475,10 +557,18 @@ class X2Cscope_GUI(QMainWindow):
                 self.fig, self.ax = plt.subplots()
                 self.ani = FuncAnimation(self.fig, self.update_plot, interval=1)
                 plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
-                self.ax.axhline(0, color="black", linewidth=0.5)  # Reference line at y=0
-                self.ax.axvline(0, color="black", linewidth=0.5)  # Reference line at x=0
-                plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
-                plt.show(block=False)  # Use block=False to prevent the GUI from freezing
+                self.ax.axhline(
+                    0, color="black", linewidth=0.5
+                )  # Reference line at y=0
+                self.ax.axvline(
+                    0, color="black", linewidth=0.5
+                )  # Reference line at x=0
+                plt.subplots_adjust(
+                    bottom=0.15, left=0.15
+                )  # Adjust plot window position
+                plt.show(
+                    block=False
+                )  # Use block=False to prevent the GUI from freezing
 
             if self.plot_window_open:
                 if self.fig is not None and plt.fignum_exists(self.fig.number):
@@ -516,8 +606,13 @@ class X2Cscope_GUI(QMainWindow):
             new_sample_time = int(self.sampletime.text())
             if new_sample_time != self.timerValue:
                 self.timerValue = new_sample_time
-                timer_list = [self.timer1, self.timer2, self.timer3,
-                              self.timer4, self.timer5]
+                timer_list = [
+                    self.timer1,
+                    self.timer2,
+                    self.timer3,
+                    self.timer4,
+                    self.timer5,
+                ]
                 for timer in timer_list:
                     if timer.isActive():
                         timer.start(self.timerValue)
@@ -534,23 +629,27 @@ class X2Cscope_GUI(QMainWindow):
                 counter = self.var_factory.get_variable_elf(counter)
                 value = float(counter.get_value())
                 value_var.setText(str(value))
-                if value_var == self.Value_var2:  # Check if it's Variable 2 being updated
-                    self.slider_var2.setValue(int(value))  # Set slider to the updated value
+                if (
+                    value_var == self.Value_var1
+                ):  # Check if it's Variable 2 being updated
+                    self.slider_var1.setValue(
+                        int(value)
+                    )  # Set slider to the updated value
                 self.plot_data_update()
         except Exception as e:
             error_message = f"Error: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
 
-    def slider_var2_changed(self, value):
-        if self.combo_box2.currentIndex() == 0:
+    def slider_var1_changed(self, value):
+        if self.combo_box1.currentIndex() == 0:
             self.handle_error("Select Variable")
         else:
-            self.Value_var2.setText(str(value))
+            self.Value_var1.setText(str(value))
             self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
             )
-            self.handle_variable_putram(self.combo_box2.currentText(), self.Value_var2)
+            self.handle_variable_putram(self.combo_box1.currentText(), self.Value_var1)
 
     @pyqtSlot()
     def handle_variable_getram(self, variable, Value_var):
@@ -561,8 +660,13 @@ class X2Cscope_GUI(QMainWindow):
                 counter = self.var_factory.get_variable_elf(current_variable)
                 value = str(counter.get_value())
                 Value_var.setText(value)
-                if Value_var == self.Value_var2:  # Check if it's Variable 2 being updated
-                    self.slider_var2.setValue(int(value))  # Set slider to the updated value
+                if Value_var == self.Value_var1:
+                    self.slider_var1.setValue(int(value))
+
+                # Check if the variable is already in the selected_variables list before adding it
+                if current_variable not in self.selected_variables:
+                    self.selected_variables.append(current_variable)
+
         except Exception as e:
             error_message = f"Error: {e}"
             logging.error(error_message)
@@ -577,6 +681,7 @@ class X2Cscope_GUI(QMainWindow):
             if current_variable and current_variable != "None":
                 counter = self.var_factory.get_variable_elf(current_variable)
                 counter.set_value(value)
+
         except Exception as e:
             error_message = f"Error: {e}"
             logging.error(error_message)
@@ -597,12 +702,33 @@ class X2Cscope_GUI(QMainWindow):
             if selected_files:
                 self.file_path = selected_files[0]
                 self.settings.setValue("file_path", self.file_path)
+                self.select_file_button.setText(QFileInfo(self.file_path).fileName())
+        # self.refresh_combo_box()
 
     def refresh_combo_box(self):
-        combo_boxes = [self.combo_box1, self.combo_box2, self.combo_box3,
-                       self.combo_box4, self.combo_box5]
-        for combo_box in combo_boxes:
-            combo_box.addItems(self.VariableList)
+        if self.VariableList is not None:
+            combo_boxes = [
+                self.combo_box1,
+                self.combo_box2,
+                self.combo_box3,
+                self.combo_box4,
+                self.combo_box5,
+            ]
+            for combo_box in combo_boxes:
+                if not self.check_list_similarity(self.old_Variablelist, self.VariableList):
+                    combo_box.clear()
+                combo_box.addItems(self.VariableList)
+            self.old_Variablelist = self.VariableList.copy()
+        else:
+            logging.warning("VariableList is None. Unable to refresh combo boxes.")
+
+    @staticmethod
+    def check_list_similarity(list1, list2):
+        for item1, item2 in zip(list1, list2):
+            if item1 != item2:
+                return False
+
+        return True
 
     def refresh_ports(self):
         # Clear and repopulate the available ports combo box
@@ -636,11 +762,22 @@ class X2Cscope_GUI(QMainWindow):
             # Reset UI elements and timers
             self.Connect_button.setText("Connect")
             self.Connect_button.setEnabled(True)
+            self.select_file_button.setEnabled(True)
             widget_list = [self.port_combo, self.baud_combo]
-            combo_boxes = [self.combo_box1, self.combo_box2, self.combo_box3,
-                           self.combo_box4, self.combo_box5]
-            live_vars = [self.Live_var1, self.Live_var2, self.Live_var3,
-                         self.Live_var4, self.Live_var5]
+            combo_boxes = [
+                self.combo_box1,
+                self.combo_box2,
+                self.combo_box3,
+                self.combo_box4,
+                self.combo_box5,
+            ]
+            live_vars = [
+                self.Live_var1,
+                self.Live_var2,
+                self.Live_var3,
+                self.Live_var4,
+                self.Live_var5,
+            ]
 
             for widget in widget_list:
                 widget.setEnabled(True)
@@ -651,17 +788,19 @@ class X2Cscope_GUI(QMainWindow):
             for live_var in live_vars:
                 live_var.setEnabled(False)
 
-            self.slider_var2.setEnabled(False)
+            self.slider_var1.setEnabled(False)
 
-            timer_list = [self.timer1, self.timer2, self.timer3,
-                          self.timer4, self.timer5]
+            timer_list = [
+                self.timer1,
+                self.timer2,
+                self.timer3,
+                self.timer4,
+                self.timer5,
+            ]
 
             for timer in timer_list:
                 if timer.isActive():
                     timer.stop()
-
-            if self.file_path:
-                self.refresh_combo_box()
 
         except Exception as e:
             error_message = f"Error while disconnecting: {e}"
@@ -677,11 +816,13 @@ class X2Cscope_GUI(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.ser = InterfaceFactory.get_interface(IType.SERIAL, port=port, baudrate=baud_rate)
+            self.ser = InterfaceFactory.get_interface(
+                IType.SERIAL, port=port, baudrate=baud_rate
+            )
             l_net = LNet(self.ser)
             self.var_factory = VariableFactory(l_net, self.file_path)
             self.VariableList = self.var_factory.get_var_list_elf()
-
+            self.VariableList.insert(0, "None")
             self.refresh_combo_box()
             logging.info("Serial Port Configuration:")
             logging.info(f"Port: {port}")
@@ -690,11 +831,22 @@ class X2Cscope_GUI(QMainWindow):
             self.Connect_button.setText("Disconnect")
             self.Connect_button.setEnabled(True)
 
-            widget_list = [self.port_combo, self.baud_combo]
-            combo_boxes = [self.combo_box1, self.combo_box2, self.combo_box3,
-                           self.combo_box4, self.combo_box5]
-            live_vars = [self.Live_var1, self.Live_var2, self.Live_var3,
-                         self.Live_var4, self.Live_var5]
+            widget_list = [self.port_combo, self.baud_combo, self.select_file_button]
+            combo_boxes = [
+                self.combo_box1,
+                self.combo_box2,
+                self.combo_box3,
+                self.combo_box4,
+                self.combo_box5,
+            ]
+            live_vars = [
+                self.Live_var1,
+                self.Live_var2,
+                self.Live_var3,
+                self.Live_var4,
+                self.Live_var5,
+                self.slider_var1,
+            ]
 
             for widget in widget_list:
                 widget.setEnabled(False)
@@ -705,18 +857,17 @@ class X2Cscope_GUI(QMainWindow):
             for live_var in live_vars:
                 live_var.setEnabled(True)
 
-            self.slider_var2.setEnabled(True)
-
-            timer_list = [(self.Live_var1, self.timer1), (self.Live_var2, self.timer2),
-                          (self.Live_var3, self.timer3), (self.Live_var4, self.timer4),
-                          (self.Live_var5, self.timer5)]
+            timer_list = [
+                (self.Live_var1, self.timer1),
+                (self.Live_var2, self.timer2),
+                (self.Live_var3, self.timer3),
+                (self.Live_var4, self.timer4),
+                (self.Live_var5, self.timer5),
+            ]
 
             for live_var, timer in timer_list:
                 if live_var.isChecked():
                     timer.start(self.timerValue)
-
-            if self.file_path:
-                self.refresh_combo_box()
 
         except Exception as e:
             error_message = f"Error while connecting: {e}"
