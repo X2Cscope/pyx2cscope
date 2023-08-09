@@ -156,22 +156,27 @@ class Elf16Parser(ElfParser):
                 break
             end_die = self.get_end_die(cu_structure_member)
             try:
-                address = self._get_structure_member_offset(
-                    cu_structure_member["DW_AT_data_member_location"]
-                )
-                member = {
-                    cu_structure_member["DW_AT_name"]: {
-                        "address_offset": address,
-                        "type": end_die["DW_AT_name"],
-                        "byte_size": end_die["DW_AT_byte_size"],
+                if end_die["tag"] == "DW_TAG_structure_type":
+                    # Handle nested structures recursively
+                    nested_members = self._get_structure_members(end_die)
+                    for member_name, member_info in nested_members.items():
+                        members[cu_structure_member["DW_AT_name"] + "." + member_name] = member_info
+                else:
+                    address = self._get_structure_member_offset(
+                        cu_structure_member["DW_AT_data_member_location"]
+                    )
+                    member = {
+                        cu_structure_member["DW_AT_name"]: {
+                            "address_offset": address,
+                            "type": end_die["DW_AT_name"],
+                            "byte_size": end_die["DW_AT_byte_size"],
+                        }
                     }
-                }
+                    members.update(member)
             except Exception:
                 # there are some missing values
-                # this will be addressed on future versions
-                # print(structure_die)
+                # this will be addressed in future versions
                 continue
-            members.update(member)
         return members
 
     def get_var_list(self) -> List[str]:
@@ -179,16 +184,16 @@ class Elf16Parser(ElfParser):
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
                 if (
-                    "DW_TAG_variable" in die["tag"]
-                    and "DW_AT_location" in die
-                    and self._get_address_check(die["DW_AT_location"]) > 2
+                        "DW_TAG_variable" in die["tag"]
+                        and "DW_AT_location" in die
+                        and self._get_address_check(die["DW_AT_location"]) > 2
                 ):
                     end_die = self.get_end_die(die)
-                    #print(end_die)
+                    # print(end_die)
                     if end_die is not None:
                         if (
-                            end_die["tag"] == "DW_TAG_structure_type"
-                            and "DW_AT_location" in die
+                                end_die["tag"] == "DW_TAG_structure_type"
+                                and "DW_AT_location" in die
                         ):
                             members = self._get_structure_members(end_die)
                             for member in members.keys():
@@ -199,10 +204,8 @@ class Elf16Parser(ElfParser):
                             my_list.append(die["DW_AT_name"])
                     else:
                         continue
-        #my_list.insert(0, "None")
+        # my_list.insert(0, "None")
         return sorted(my_list, key=lambda x: x.lower())
-
-
 
     @staticmethod
     def _get_address_check(location: str) -> int:
@@ -233,7 +236,7 @@ class Elf16Parser(ElfParser):
         hex_string = "".join(bytes_list)
         return int(hex_string, 16)
 
-    def get_var_info(self, var_name) -> VariableInfo:
+    def get_var_info(self) -> VariableInfo:
         """
         Get the information of a variable by name.
 
@@ -243,56 +246,95 @@ class Elf16Parser(ElfParser):
         Returns:
             VariableInfo: An object containing the variable information.
         """
-        variable_name, member_name = (
-            var_name.split(".") if "." in var_name else (var_name, None)
-        )
-        die_var = None
-        ref_address = None
-        variable_die = None
+
+
+        variable_info_dict = {}
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
-                if "DW_TAG_variable" in die["tag"]:
-                    if die.get("DW_AT_name") == variable_name:  # Using get() to handle missing "DW_AT_name"
-                        die_var = die
-                        ref_address = die.get("DW_AT_type")
+                if (
+                        "DW_TAG_variable" in die["tag"]
+                        and "DW_AT_location" in die
+                        and self._get_address_check(die["DW_AT_location"]) > 2
+                        and self._get_address_check(die["DW_AT_location"]) < 6
+                ):
+                    address = self._get_address_location(die.get("DW_AT_location"))
+                    end_die = self.get_end_die(die)
+                    if end_die is not None:
+                        if end_die["tag"] == "DW_TAG_pointer_type":
+                            variabledata = VariableInfo(
+                                name=die["DW_AT_name"],
+                                byte_size=end_die["DW_AT_byte_size"],
+                                type="pointer",
+                                address=address,
+                            )
+                            variable_info_dict[die["DW_AT_name"]] = variabledata
+                        elif (
+                                end_die["tag"] == "DW_TAG_structure_type"
+                                and "DW_AT_location" in die
+                        ):
+                            address = self._get_address_location(die.get("DW_AT_location"))
+                            members = self._get_structure_members(end_die)
+                            if members is None:
+                                # Return the entire structure as a single variable
+                                variabledata = VariableInfo(
+                                    name=die["DW_AT_name"],
+                                    byte_size=end_die["DW_AT_byte_size"],
+                                    type=end_die["DW_AT_name"],
+                                    address=address,
+                                )
+                                variable_info_dict[die["DW_AT_name"]] = variabledata
+                            else:
+                                counter = 0
+                                for member, member_info in members.items():
+                                    member_name = die["DW_AT_name"] + "." + member
+                                    variabledata = VariableInfo(
+                                        name=member_name,
+                                        byte_size=member_info.get("byte_size"),
+                                        type=member_info.get("type"),
+                                        address=address + (member_info.get("address_offset") + counter),
+                                    )
+                                    counter += int(member_info.get("byte_size", 0))
+                                    variable_info_dict[member_name] = variabledata
+                        else:
+                            variabledata = VariableInfo(
+                                name=die["DW_AT_name"],
+                                byte_size=end_die["DW_AT_byte_size"],
+                                type=end_die["DW_AT_name"],
+                                address=address,
+                            )
+                            variable_info_dict[die["DW_AT_name"]] = variabledata
+        return variable_info_dict
 
-        assert die_var is not None, "Variable not found!"
-        for cu_offset, cu in self.dwarf_info.items():
-            if ref_address is not None and cu_offset < ref_address < (cu_offset + cu["length"]):
-                variable_die = cu["elements"][ref_address]
-        end_die = self.get_end_die(variable_die)
-        location = die_var.get("DW_AT_location")
+    def _get_member_variable_info(
+            self, variable_name, member_name, end_die, variable_die
+    ):
+        location = variable_die.get("DW_AT_location")
         if location is None:
             return None
-        address = self._get_address_location(die_var.get("DW_AT_location"))
+        address = self._get_address_location(variable_die.get("DW_AT_location"))
 
-        # If the address already includes the "0x" prefix, you can skip the above code and directly use:
-        # address = location[address_start:address_end].strip() # TODO recursive structure
-        # NO need to check for the avaibility of DW_AT_name
-        if end_die["tag"] == "DW_TAG_pointer_type":
-            variabledata = VariableInfo(
-                name=die_var["DW_AT_name"],
-                byte_size=end_die["DW_AT_byte_size"],
-                type="pointer",
-                address=address,
-            )
-        elif end_die["tag"] == "DW_TAG_structure_type":
-            members = self._get_structure_members(end_die)
-            member = members[member_name]
-            variabledata = VariableInfo(
-                name=die_var["DW_AT_name"] + "." + member_name,
-                byte_size=member["byte_size"],
-                type=member["type"],
-                address=address + (member["address_offset"]),
-            )
-        else:
-            variabledata = VariableInfo(
-                name=die_var["DW_AT_name"],
-                byte_size=end_die["DW_AT_byte_size"],
-                type=end_die["DW_AT_name"],
-                address=address,
-            )
-        return variabledata
+        member_die = None
+        for cu_offset, cu in self.dwarf_info.items():
+            for die_offset, die in cu["elements"].items():
+                if (
+                        "DW_TAG_member" in die["tag"]
+                        and die.get("DW_AT_name") == member_name
+                        and cu_offset < die_offset < (cu_offset + cu["length"])
+                ):
+                    member_die = die
+                    break
+
+        if member_die is None:
+            return None
+
+        return VariableInfo(
+            name=variable_name + "." + member_name,
+            byte_size=member_die["DW_AT_byte_size"],
+            type=end_die["DW_AT_name"],
+            address=address + self._get_structure_member_offset(
+                member_die["DW_AT_data_member_location"]
+            ),
+        )
 
     def get_end_die(self, start_die):
         """
@@ -336,11 +378,7 @@ class Elf16Parser(ElfParser):
 
     def map_all_variables_data(self) -> dict:
         variable_info_map = {}
-        variable_list = self.get_var_list()
-        for variable_name in variable_list:
-            variable_info = self.get_var_info(variable_name)
-            variable_info_map[variable_name] = variable_info
-
+        variable_info_map = self.get_var_info()
         return variable_info_map
 
 
@@ -350,7 +388,7 @@ if __name__ == "__main__":
         "\\production\\bldc_MCLV2.X.production.elf"
     )
     #input_elf_file = "C:\\_DESKTOP\\_Projects\\Ceiling fan project\\AN1299_dsPIC33CK64MC102_LVCFRD\\pmsm.X\\dist\\default\\production\\pmsm.X.production.elf"
-    input_elf_file = r"C:\_DESKTOP\_Projects\AN1292 Scripts\pmsm.X\dist\default\production\pmsm.X.production.elf"
+    input_elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\AN1292-42BLF02-mb-33ck256mp508.X\dist\default\production\AN1292-42BLF02-mb-33ck256mp508.X.production.elf"
     elf_reader = Elf16Parser(input_elf_file)
 
 
@@ -361,15 +399,6 @@ if __name__ == "__main__":
     # variable_name = 'DesiredSpeed'
 
     variable_info_map = elf_reader.map_all_variables_data()
-    print("variable map list:", variable_info_map)
-
-    variable_data = variable_info_map.get(variable, "Variable Not Found!")
-
-    # variable_list = elf_reader.get_var_list()
-    # variable_data = elf_reader.get_var_info(variable)
-    print(variable_data.name)
-    print(variable_data.byte_size)
-    print(variable_data.type)
-    print(variable_data.address)
-    # print(variabledata.members)
-    # print(variabledata.members.items())
+    variableList = elf_reader.get_var_list()
+    print(variable_info_map)
+    print(variableList)
