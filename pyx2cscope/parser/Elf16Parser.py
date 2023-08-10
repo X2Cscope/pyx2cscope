@@ -281,6 +281,52 @@ class Elf16Parser(ElfParser):
         hex_string = "".join(bytes_list)
         return int(hex_string, 16)
 
+    def _locate_end_die(self, die):
+        if (
+            "DW_TAG_variable" in die["tag"]
+            and "DW_AT_location" in die
+            and 2 < self._get_address_check(die["DW_AT_location"]) < 6
+        ):
+            return self.get_end_die(die)
+        return None
+
+    def _check_for_pointer_tag(self, die, end_die, address, variable_info_dict):
+        if end_die["tag"] != "DW_TAG_pointer_type":
+            return False
+        _variabledata = VariableInfo(
+            name=die["DW_AT_name"],
+            byte_size=end_die["DW_AT_byte_size"],
+            type="pointer",
+            address=address,
+        )
+        variable_info_dict[die["DW_AT_name"]] = _variabledata
+        return True
+
+    def _check_for_structure_tag(self, die, end_die, address, variable_info_dict):
+        if end_die["tag"] == "DW_TAG_structure_type" and "DW_AT_location" in die:
+            members = self._get_structure_members(end_die)
+            if members is None:
+                # Return the entire structure as a single variable
+                variable_data = VariableInfo(
+                    name=die["DW_AT_name"],
+                    byte_size=end_die["DW_AT_byte_size"],
+                    type=end_die["DW_AT_name"],
+                    address=address,
+                )
+                variable_info_dict[die["DW_AT_name"]] = variable_data
+            if members:
+                for member, member_info in members.items():
+                    member_name = die["DW_AT_name"] + "." + member
+                    variable_data = VariableInfo(
+                        name=member_name,
+                        byte_size=member_info.get("byte_size"),
+                        type=member_info.get("type"),
+                        address=address + (member_info.get("address_offset")),
+                    )
+                    variable_info_dict[member_name] = variable_data
+            return True
+        return False
+
     def get_var_info(self) -> dict:
         """
         Get the information of a variable by name.
@@ -295,63 +341,27 @@ class Elf16Parser(ElfParser):
         variable_info_dict = {}
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
-                if (
-                    "DW_TAG_variable" in die["tag"]
-                    and "DW_AT_location" in die
-                    and 2 < self._get_address_check(die["DW_AT_location"]) < 6
-                ):
-                    address = self._get_address_location(die.get("DW_AT_location"))
-                    end_die = self.get_end_die(die)
+                end_die = self._locate_end_die(die)
+                if end_die is None:
+                    continue
 
-                    if end_die is not None:
-                        if die["DW_AT_name"] == "motor":
-                            i = 0
-                        if end_die["tag"] == "DW_TAG_pointer_type":
-                            variabledata = VariableInfo(
-                                name=die["DW_AT_name"],
-                                byte_size=end_die["DW_AT_byte_size"],
-                                type="pointer",
-                                address=address,
-                            )
-                            variable_info_dict[die["DW_AT_name"]] = variabledata
-                        elif (
-                            end_die["tag"] == "DW_TAG_structure_type"
-                            and "DW_AT_location" in die
-                        ):
-                            address = self._get_address_location(
-                                die.get("DW_AT_location")
-                            )
-                            members = self._get_structure_members(end_die)
-                            if members is None:
-                                # Return the entire structure as a single variable
-                                variabledata = VariableInfo(
-                                    name=die["DW_AT_name"],
-                                    byte_size=end_die["DW_AT_byte_size"],
-                                    type=end_die["DW_AT_name"],
-                                    address=address,
-                                )
-                                variable_info_dict[die["DW_AT_name"]] = variabledata
-                            if members:
-                                #counter = 0
-                                for member, member_info in members.items():
-                                    member_name = die["DW_AT_name"] + "." + member
-                                    variabledata = VariableInfo(
-                                        name=member_name,
-                                        byte_size=member_info.get("byte_size"),
-                                        type=member_info.get("type"),
-                                        address=address
-                                        + (member_info.get("address_offset") ),#+ counter),
-                                    )
-                                    #counter += int(member_info.get("byte_size", 0))
-                                    variable_info_dict[member_name] = variabledata
-                        else:
-                            variabledata = VariableInfo(
-                                name=die["DW_AT_name"],
-                                byte_size=end_die["DW_AT_byte_size"],
-                                type=end_die["DW_AT_name"],
-                                address=address,
-                            )
-                            variable_info_dict[die["DW_AT_name"]] = variabledata
+                address = self._get_address_location(die.get("DW_AT_location"))
+                if self._check_for_pointer_tag(
+                    die, end_die, address, variable_info_dict
+                ):
+                    continue
+                elif self._check_for_structure_tag(
+                    die, end_die, address, variable_info_dict
+                ):
+                    continue
+                else:
+                    variable_data = VariableInfo(
+                        name=die["DW_AT_name"],
+                        byte_size=end_die["DW_AT_byte_size"],
+                        type=end_die["DW_AT_name"],
+                        address=address,
+                    )
+                    variable_info_dict[die["DW_AT_name"]] = variable_data
         return variable_info_dict
 
     def get_end_die(self, start_die):
