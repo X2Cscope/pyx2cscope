@@ -15,7 +15,9 @@ class VariableFactory:
 
         self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
+        # mapping the variable data from the elf-file provided
         self.variable_map = self.parser.map_all_variables_data()
+        print(self.variable_map)
 
     def get_var_list_elf(self) -> list[str]:
         """
@@ -43,11 +45,12 @@ class VariableFactory:
             # ELF parsing
 
             var_result = self.variable_map.get(name)
-            #var_result = self.parser.get_var_info(name)
+            # var_result = self.parser.get_var_info(name)
             if var_result:
                 variable = self.get_variable_raw(
                     var_result.address, var_result.type, var_result.name
                 )
+
             return variable
         except Exception as e:
             logging.error(
@@ -99,8 +102,9 @@ class VariableFactory:
             "char": Variable_int8,
             "double": Variable_float,
             "float": Variable_float,
-            "int": Variable_int32,
+            "int": Variable_int16,
             "long": Variable_int32,
+            "long double": Variable_float,
             "long int": Variable_int32,
             "long long": Variable_int64,
             "long long unsigned int": Variable_uint64,
