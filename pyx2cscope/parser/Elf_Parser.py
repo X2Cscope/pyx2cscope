@@ -11,7 +11,7 @@ class VariableInfo:
     address: int
 
     # Optional members for structure types
-    members: dict = None
+    # members: dict = None
 
     # def __init__(self, *args, **kwargs):
     #     if "name" in kwargs:
@@ -32,6 +32,7 @@ class ElfParser(ABC):
     def get_var_list(self) -> List[str]:
         """Return all variables described at elf file as a list of variable names."""
         pass
+
     @abstractmethod
     def map_all_variables_data(self) -> dict:
         pass
