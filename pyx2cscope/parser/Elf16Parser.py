@@ -22,6 +22,7 @@ class Elf16Parser(ElfParser):
             self.xc16_readelf_path (str): Path to the xc16-readelf executable.
             elf_path (str): Path to the input ELF file.
         """
+        self.variable_mapping = {}
         self.xc16_readelf_path = xc16_readelf_path
         self.input_elf_file = elf_path
         self.dwarf_info = {}
@@ -225,32 +226,7 @@ class Elf16Parser(ElfParser):
         return members
 
     def get_var_list(self) -> List[str]:
-        my_list = []
-        for cu_offset, cu in self.dwarf_info.items():
-            for die_offset, die in cu["elements"].items():
-                if (
-                    "DW_TAG_variable" in die["tag"]
-                    and "DW_AT_location" in die
-                    and self._get_address_check(die["DW_AT_location"]) > 2
-                ):
-                    end_die = self.get_end_die(die)
-                    # print(end_die)
-                    if end_die is not None:
-                        if (
-                            end_die["tag"] == "DW_TAG_structure_type"
-                            and "DW_AT_location" in die
-                        ):
-                            members = self._get_structure_members(end_die)
-                            for member in members.keys():
-                                my_list.append(die["DW_AT_name"] + "." + member)
-                        # elif end_die["tag"] == "DW_TAG_pointer_type":
-                        #     my_list.append(die["DW_AT_name"])
-                        else:
-                            my_list.append(die["DW_AT_name"])
-                    else:
-                        continue
-        # my_list.insert(0, "None")
-        return sorted(my_list, key=lambda x: x.lower())
+        return sorted(self.variable_mapping.keys(), key=lambda x: x.lower())
 
     @staticmethod
     def _get_address_check(location: str) -> int:
@@ -281,7 +257,7 @@ class Elf16Parser(ElfParser):
         hex_string = "".join(bytes_list)
         return int(hex_string, 16)
 
-    def _locate_end_die(self, die):
+    def _locate_tag_variable_end_die(self, die):
         if (
             "DW_TAG_variable" in die["tag"]
             and "DW_AT_location" in die
@@ -290,7 +266,7 @@ class Elf16Parser(ElfParser):
             return self.get_end_die(die)
         return None
 
-    def _check_for_pointer_tag(self, die, end_die, address, variable_info_dict):
+    def _check_for_pointer_tag(self, die, end_die, address):
         if end_die["tag"] != "DW_TAG_pointer_type":
             return False
         _variabledata = VariableInfo(
@@ -299,10 +275,10 @@ class Elf16Parser(ElfParser):
             type="pointer",
             address=address,
         )
-        variable_info_dict[die["DW_AT_name"]] = _variabledata
+        self.variable_mapping[die["DW_AT_name"]] = _variabledata
         return True
 
-    def _check_for_structure_tag(self, die, end_die, address, variable_info_dict):
+    def _check_for_structure_tag(self, die, end_die, address):
         if end_die["tag"] == "DW_TAG_structure_type" and "DW_AT_location" in die:
             members = self._get_structure_members(end_die)
             if members is None:
@@ -313,7 +289,7 @@ class Elf16Parser(ElfParser):
                     type=end_die["DW_AT_name"],
                     address=address,
                 )
-                variable_info_dict[die["DW_AT_name"]] = variable_data
+                self.variable_mapping[die["DW_AT_name"]] = variable_data
             if members:
                 for member, member_info in members.items():
                     member_name = die["DW_AT_name"] + "." + member
@@ -323,7 +299,7 @@ class Elf16Parser(ElfParser):
                         type=member_info.get("type"),
                         address=address + (member_info.get("address_offset")),
                     )
-                    variable_info_dict[member_name] = variable_data
+                    self.variable_mapping[member_name] = variable_data
             return True
         return False
 
@@ -338,31 +314,27 @@ class Elf16Parser(ElfParser):
             VariableInfo: An object containing the variable information.
         """
 
-        variable_info_dict = {}
+        self.variable_mapping.clear()
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
-                end_die = self._locate_end_die(die)
+                end_die = self._locate_tag_variable_end_die(die)
                 if end_die is None:
                     continue
 
                 address = self._get_address_location(die.get("DW_AT_location"))
-                if self._check_for_pointer_tag(
-                    die, end_die, address, variable_info_dict
+                if not self._check_for_pointer_tag(
+                    die, end_die, address
+                ) and not self._check_for_structure_tag(
+                    die, end_die, address
                 ):
-                    continue
-                elif self._check_for_structure_tag(
-                    die, end_die, address, variable_info_dict
-                ):
-                    continue
-                else:
                     variable_data = VariableInfo(
                         name=die["DW_AT_name"],
                         byte_size=end_die["DW_AT_byte_size"],
                         type=end_die["DW_AT_name"],
                         address=address,
                     )
-                    variable_info_dict[die["DW_AT_name"]] = variable_data
-        return variable_info_dict
+                    self.variable_mapping[die["DW_AT_name"]] = variable_data
+        return self.variable_mapping
 
     def get_end_die(self, start_die):
         """
@@ -428,9 +400,9 @@ if __name__ == "__main__":
 
     variable_info_map = elf_reader.map_all_variables_data()
     print(elf_reader.get_var_list())
-    print(variable_info_map)
-    print(variable_info_map.get("motor.potInput"))
-    print(variable_info_map.get("motor.estimator.pll.sincos.sin"))
+    # print(variable_info_map)
+    # print(variable_info_map.get("motor.potInput"))
+    # print(variable_info_map.get("motor.estimator.pll.sincos.sin"))
     # variableList = elf_reader.get_var_list()
     # print(variable_info_map)
     # print(variableList)
