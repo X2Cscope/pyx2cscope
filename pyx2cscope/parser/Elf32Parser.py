@@ -41,21 +41,20 @@ class Elf32Parser(ElfParser):
                         member_type = self._get_member_type(type_offset)
                         offset_value_from_member_address = int(child_die.attributes.get("DW_AT_data_member_location").value[1])
                         nested_die = self.get_end_die(child_die)
-                        print(nested_die)
                         if nested_die.tag == "DW_TAG_structure_type":
                             nested_members, nested_offset = self._get_structure_members_recursive(
                                 nested_die, member_name, prev_address_offset + offset_value_from_member_address
                             )
                             if nested_members:
                                 members.update(nested_members)
-                            prev_address_offset = nested_offset
+
                         else:
                             member["type"] = member_type["name"]
                             member["byte_size"] = member_type["byte_size"]
                             member["address_offset"] = prev_address_offset + offset_value_from_member_address
                             members[member_name] = member
                     except Exception as e:
-                        print(e)
+                        print("exception",e)
                         # Handle missing fields
                         # This will be handled in future versions
                         continue
@@ -83,31 +82,52 @@ class Elf32Parser(ElfParser):
 
         for compilation_unit in self.dwarf_info.iter_CUs():
             root_die = compilation_unit.iter_DIEs()
-            tag_variables = filter(lambda die: die.tag == "DW_TAG_variable" and die.attributes.get("DW_AT_location") is not None, root_die)
+            tag_variables = filter(lambda die: die.tag == "DW_TAG_variable", root_die)
 
-            for die_variable in tag_variables:
-                if die_variable:
-                    if die_variable.attributes.get("DW_AT_name") is not None:
-                        var_name = die_variable.attributes.get(
-                            "DW_AT_name"
-                        ).value.decode("utf-8")
-                    type_attr = die_variable.attributes.get("DW_AT_type")
-                    if type_attr is None:
-                        continue  # Skip to the next iteration if DW_AT_type is missing
-                    ref_addr = type_attr.value + die_variable.cu.cu_offset
+            for self.die_variable in tag_variables:
+                print(self.die_variable)
+                if "DW_AT_specification" in self.die_variable.attributes:
+                    spec_ref_addr = self.die_variable.attributes["DW_AT_specification"].value + self.die_variable.cu.cu_offset
+                    spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
-                    #
-                    type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-                    print("typeDIE", type_die)
-                    if type_die.tag != "DW_TAG_volatile_type":
-                        end_die = self.get_end_die(type_die)
-                        print(end_die)
-                    try:
-                        data = list(die_variable.attributes["DW_AT_location"].value)[1:]
-                        address = int.from_bytes(bytes(data), byteorder="little")
-                    except Exception as e:
-                        print(e)
-                        continue  # if there's an error, skip this variable and move to the next
+                    if self.die_variable.attributes.get("DW_AT_location"):
+                        address_set = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
+                        self.address = int.from_bytes(bytes(address_set), byteorder="little")
+
+                    if spec_die.tag == "DW_TAG_variable" and self.address is not None:
+                        self.die_variable = spec_die
+                    else:
+                        continue
+
+                if self.die_variable.attributes.get("DW_AT_location") and  self.die_variable.attributes.get("DW_AT_name") is not None:
+                    var_name = self.die_variable.attributes.get(
+                        "DW_AT_name"
+                    ).value.decode("utf-8")
+                else:
+                    continue  # Skip to the next iteration if DW_AT_name is missing
+
+                type_attr = self.die_variable.attributes.get("DW_AT_type")
+                if type_attr is None:
+                    continue  # Skip to the next iteration if DW_AT_type is missing
+
+                ref_addr = type_attr.value + self.die_variable.cu.cu_offset
+
+                #
+                type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
+                print("typeDIE", type_die)
+                if type_die.tag != "DW_TAG_volatile_type":
+                    end_die = self.get_end_die(type_die)
+                try:
+                    print("HEREEEEEEEEEE")
+                    if self.die_variable.attributes.get("DW_AT_location"):
+                        data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
+                        self.address = int.from_bytes(bytes(data), byteorder="little")
+                        print("NOTHEREEEEE")
+                    else:
+                        address = None
+                except Exception as e:
+                    print(e)
+                    continue  # if there's an error, skip this variable and move to the next
 
                 if end_die.tag == "DW_TAG_pointer_type":
                     type_name = "pointer"
@@ -115,26 +135,25 @@ class Elf32Parser(ElfParser):
                         name=var_name,
                         byte_size=end_die.attributes["DW_AT_byte_size"].value,
                         type=type_name,
-                        address=address,
+                        address=self.address,
                     )
+
                 elif end_die.tag == "DW_TAG_structure_type":
                     members = self._get_structure_members(end_die, var_name)[0]
-                    print(members)
                     for member_name, member_data in members.items():
-                        print(member_name, member_data)
 
                         self.variable_mapping[member_name] = VariableInfo(
                             name=member_name,
                             byte_size=member_data["byte_size"],
                             type=member_data["type"],
-                            address=address + member_data["address_offset"],
+                            address=self.address + member_data["address_offset"],
                         )
                 else:
                     self.variable_mapping[var_name] = VariableInfo(
                         name=var_name,
                         byte_size=end_die.attributes["DW_AT_byte_size"].value,
                         type=end_die.attributes["DW_AT_name"].value.decode("utf-8"),
-                        address=address,
+                        address=self.address,
                     )
 
         return self.variable_mapping
@@ -247,22 +266,23 @@ class Elf32Parser(ElfParser):
         variable_info = self.get_var_info()
         # print(variable_info)
         variableList = self.get_var_list()
-        print(variableList)
         return variable_info
 
 
 if __name__ == "__main__":
-    #elf_file = (
-        # "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
-        # "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
-        # "debug\\mclv2_pic32_mk_mcf_pim.X.debug.elf"
-    # )
+    elf_file = (
+        "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
+        "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
+        "debug\\mclv2_pic32_mk_mcf_pim.X.debug.elf"
+    )
     #elf_file = r"C:\Users\m67250\Downloads\structure_Test.X.debug_PIC32MK_Level3_FixedAddress.elf"
-    #elf_file = r"C:\Users\m67250\Downloads\mc_apps_sam_d5x_e5x-master\apps\pmsm_foc_pll_estimator_sam_e54\firmware\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf"
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elf32_struct.X\dist\default\production\elf32_struct.X.production.elf"
+    elf_file = r"C:\Users\m67250\Downloads\mc_apps_sam_d5x_e5x-master\apps\pmsm_foc_pll_estimator_sam_e54\firmware\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf"
+    #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elf32_struct.X\dist\default\production\elf32_struct.X.production.elf"
+
     parser = Elf32Parser(elf_file)
     # variable_info = parser.get_var_info(variable)
     variable_map = parser.map_all_variables_data()
+    print(variable_map)
     for variable in variable_map:
         print(variable_map.get(variable))
         print(hex(variable_map.get(variable).address))
