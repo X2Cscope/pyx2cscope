@@ -70,7 +70,7 @@ class Elf32Parser(ElfParser):
 
     def get_var_list(self) -> List[str]:
         # my_list.insert(0, "")
-        return sorted(self.variable_mapping.keys())
+        return sorted(self.variable_mapping.keys(), key=lambda x: x.lower())
 
     def get_var_info(self) -> dict:
         """
@@ -85,7 +85,7 @@ class Elf32Parser(ElfParser):
             tag_variables = filter(lambda die: die.tag == "DW_TAG_variable", root_die)
 
             for self.die_variable in tag_variables:
-                print(self.die_variable)
+                #  the structure which has address in specific DIE.
                 if "DW_AT_specification" in self.die_variable.attributes:
                     spec_ref_addr = self.die_variable.attributes["DW_AT_specification"].value + self.die_variable.cu.cu_offset
                     spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
@@ -264,12 +264,7 @@ class Elf32Parser(ElfParser):
         # return None
 
     def map_all_variables_data(self) -> dict:
-        variable_info_map = {}
-
-        variable_info = self.get_var_info()
-        # print(variable_info)
-        variableList = self.get_var_list()
-        return variable_info
+        return self.get_var_info()
 
 
 if __name__ == "__main__":
@@ -285,12 +280,13 @@ if __name__ == "__main__":
     parser = Elf32Parser(elf_file)
     # variable_info = parser.get_var_info(variable)
     variable_map = parser.map_all_variables_data()
+
     print(variable_map)
     for variable in variable_map:
         print(variable_map.get(variable))
         print(hex(variable_map.get(variable).address))
 
-    #
+    print(parser.get_var_list())
     # if variable_info:
     #     print(f"Variable Name: {variable_info.name}")
     #     print(f"Variable Type: {variable_info.type}")
