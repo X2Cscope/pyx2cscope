@@ -56,7 +56,7 @@ class Elf32Parser(ElfParser):
                     except Exception as e:
                         print("exception",e)
                         # Handle missing fields
-                        # This will be handled in future versions
+                        # TODO This will be handled in future versions
                         continue
 
                     # If the member type is a structure or class, recurse into it
@@ -103,9 +103,7 @@ class Elf32Parser(ElfParser):
                         continue
 
                 elif self.die_variable.attributes.get("DW_AT_location") and  self.die_variable.attributes.get("DW_AT_name") is not None:
-                    var_name = self.die_variable.attributes.get(
-                        "DW_AT_name"
-                    ).value.decode("utf-8")
+                    var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
                 else:
                     continue  # Skip to the next iteration if DW_AT_name is missing
 
@@ -131,6 +129,10 @@ class Elf32Parser(ElfParser):
                 except Exception as e:
                     print(e)
                     continue  # if there's an error, skip this variable and move to the next
+                if self.address == 0:
+                    continue  # Skip variables with address 0
+                if var_name.startswith('_') or var_name.startswith('__'):
+                    continue  # Skip variables with names starting with '_' or '__'
 
                 if end_die.tag == "DW_TAG_pointer_type":
                     type_name = "pointer"
@@ -160,21 +162,6 @@ class Elf32Parser(ElfParser):
                     )
 
         return self.variable_mapping
-
-    # def get_variable_list(self) -> List[VariableInfo]:
-    #     variable_names = []
-    #     for compilation_unit in self.dwarf_info.iter_CUs():
-    #         root_die = compilation_unit.iter_DIEs()
-    #         tag_variables = filter(lambda die: die.tag == 'DW_TAG_variable', root_die)
-    #         variable_names = [
-    #             VariableInfo(name=die.attributes.get('DW_AT_name').value.decode('utf-8'))
-    #             for die in tag_variables
-    #             if die.attributes.get('DW_AT_name') is not None
-    #         ]
-    #         for var in variable_names:
-    #             print(var.name)
-    #     return variable_names
-
     def load_elf_file(self):
         """
         Load the ELF file and extract the DWARF information.
@@ -252,16 +239,6 @@ class Elf32Parser(ElfParser):
                 if base_type_attr:
                     base_type_offset = base_type_attr.value
                     return self._get_member_type(base_type_offset)
-        #     else:
-        #         byte_size_attr = type_die.attributes.get('DW_AT_byte_size')
-        #         byte_size = byte_size_attr.value if byte_size_attr else None
-        #
-        #         return {
-        #             'name': type_die.get_full_path(),
-        #             'byte_size': byte_size
-        #         }
-        #
-        # return None
 
     def map_all_variables_data(self) -> dict:
         return self.get_var_info()
@@ -287,8 +264,3 @@ if __name__ == "__main__":
         print(hex(variable_map.get(variable).address))
 
     print(parser.get_var_list())
-    # if variable_info:
-    #     print(f"Variable Name: {variable_info.name}")
-    #     print(f"Variable Type: {variable_info.type}")
-    #     print(f"Variable Byte Size: {variable_info.byte_size}")
-    #     print(f"Variable address: {variable_info.address}")
