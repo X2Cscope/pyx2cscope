@@ -96,10 +96,13 @@ class Elf32Parser(ElfParser):
 
                     if spec_die.tag == "DW_TAG_variable" and self.address is not None:
                         self.die_variable = spec_die
+                        var_name = self.die_variable.attributes.get(
+                        "DW_AT_name"
+                    ).value.decode("utf-8")
                     else:
                         continue
 
-                if self.die_variable.attributes.get("DW_AT_location") and  self.die_variable.attributes.get("DW_AT_name") is not None:
+                elif self.die_variable.attributes.get("DW_AT_location") and  self.die_variable.attributes.get("DW_AT_name") is not None:
                     var_name = self.die_variable.attributes.get(
                         "DW_AT_name"
                     ).value.decode("utf-8")
@@ -270,11 +273,11 @@ class Elf32Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    elf_file = (
-        "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
-        "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
-        "debug\\mclv2_pic32_mk_mcf_pim.X.debug.elf"
-    )
+    # elf_file = (
+    #     "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
+    #     "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
+    #     "debug\\mclv2_pic32_mk_mcf_pim.X.debug.elf"
+    # )
     #elf_file = r"C:\Users\m67250\Downloads\structure_Test.X.debug_PIC32MK_Level3_FixedAddress.elf"
     elf_file = r"C:\Users\m67250\Downloads\mc_apps_sam_d5x_e5x-master\apps\pmsm_foc_pll_estimator_sam_e54\firmware\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf"
     #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elf32_struct.X\dist\default\production\elf32_struct.X.production.elf"
