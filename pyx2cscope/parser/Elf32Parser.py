@@ -17,152 +17,178 @@ class Elf32Parser(ElfParser):
         self.dwarf_info = None
         self.elf_file = None
         self.load_elf_file()
+        self.variable_mapping = {}
         # self.variables = self.get_variable_list()
 
-    def _get_structure_members(self, structure_die):
+    def _get_structure_members_recursive(
+        self,
+        die,
+        parent_name: str,
+        prev_address_offset=0,
+    ):
         members = {}
-        prev_address_offset = 0
-        for child_die in structure_die.iter_children():
-            if child_die.tag == "DW_TAG_member":
+
+        for child_die in die.iter_children():
+            if (
+                child_die.tag == "DW_TAG_member"
+                or child_die.tag == "DW_TAG_pointer_type"
+            ):
                 member = {}
                 name_attr = child_die.attributes.get("DW_AT_name")
                 if name_attr:
-                    member_name = name_attr.value.decode("utf-8")
+                    member_name = parent_name + "." + name_attr.value.decode("utf-8")
                 type_attr = child_die.attributes.get("DW_AT_type")
                 if type_attr:
                     type_offset = type_attr.value + child_die.cu.cu_offset
                     try:
                         member_type = self._get_member_type(type_offset)
-                    except Exception:
-                        # there are some missing fields
-                        # it will be handled on future versions
+                        offset_value_from_member_address = int(
+                            child_die.attributes.get(
+                                "DW_AT_data_member_location"
+                            ).value[1]
+                        )
+                        nested_die = self.get_end_die(child_die)
+                        if nested_die.tag == "DW_TAG_structure_type":
+                            (
+                                nested_members,
+                                nested_offset,
+                            ) = self._get_structure_members_recursive(
+                                nested_die,
+                                member_name,
+                                prev_address_offset + offset_value_from_member_address,
+                            )
+                            if nested_members:
+                                members.update(nested_members)
+
+                        else:
+                            member["type"] = member_type["name"]
+                            member["byte_size"] = member_type["byte_size"]
+                            member["address_offset"] = (
+                                prev_address_offset + offset_value_from_member_address
+                            )
+                            members[member_name] = member
+                    except Exception as e:
+                        print("exception", e)
+                        # Handle missing fields
+                        # TODO This will be handled in future versions
                         continue
-                    if member_type:
-                        member["type"] = member_type["name"]
-                        member["byte_size"] = member_type["byte_size"]
-                        member["address_offset"] = prev_address_offset
-                        prev_address_offset += int(member_type["byte_size"])
-                members[member_name] = member
-        return members
+
+                    # If the member type is a structure or class, recurse into it
+        return members, prev_address_offset
+
+    def _get_structure_members(self, structure_die, var_name):
+        prev_address_offset = 0
+        return self._get_structure_members_recursive(
+            structure_die, var_name, prev_address_offset
+        )
 
     def get_var_list(self) -> List[str]:
-        my_list = []
-        for compilation_unit in self.dwarf_info.iter_CUs():
-            root_die = compilation_unit.iter_DIEs()
-            tag_variables = list(
-                filter(
-                    lambda die: die.tag == "DW_TAG_variable"
-                    and "DW_AT_location" in die.attributes
-                    and isinstance(die.attributes["DW_AT_location"].value, List)
-                    and len(die.attributes["DW_AT_location"].value) > 2,
-                    root_die,
-                )
-            )
-            die_variables = list(
-                filter(
-                    lambda die: die.attributes.get("DW_AT_name") is not None,
-                    tag_variables,
-                )
-            )
-            for die_variable in die_variables:
-                end_die = self.get_end_die(die_variable)
-                if end_die.tag == "DW_TAG_structure_type":
-                    members = self._get_structure_members(end_die)
-                    for member in members.keys():
-                        my_list.append(
-                            die_variable.attributes["DW_AT_name"].value.decode("utf-8")
-                            + "."
-                            + member
-                        )
-                else:
-                    my_list.append(
-                        die_variable.attributes["DW_AT_name"].value.decode("utf-8")
-                    )
-        my_list.insert(0, "")
-        return sorted(my_list)
+        # my_list.insert(0, "")
+        return sorted(self.variable_mapping.keys(), key=lambda x: x.lower())
 
-    def get_var_info(self, var_name) -> VariableInfo:
+    def get_var_info(self) -> dict:
         """
-        Parse the DWARF information for a specific variable.s
-
-        Args:
-            var_name (str): Name of the variable.
+        Parse the DWARF information for all variables.
 
         Returns:
-            VariableInfo or None: Variable information if found, None otherwise.
+            dict: A dictionary containing information for each variable.
         """
-        variable_name, member_name = (
-            var_name.split(".") if "." in var_name else (var_name, None)
-        )
+
         for compilation_unit in self.dwarf_info.iter_CUs():
             root_die = compilation_unit.iter_DIEs()
             tag_variables = filter(lambda die: die.tag == "DW_TAG_variable", root_die)
-            die_variables = list(
-                filter(
-                    lambda die: die.attributes.get("DW_AT_name") is not None
-                    and die.attributes.get("DW_AT_name").value.decode("utf-8")
-                    == variable_name,
-                    tag_variables,
-                )
-            )
-            if die_variables:
-                assert len(die_variables) == 1, "Multiple variables found"
-                die_variable = die_variables[0]
-                ref_addr = (
-                    die_variable.attributes.get("DW_AT_type").value
-                    + die_variable.cu.cu_offset
-                )
+
+            for self.die_variable in tag_variables:
+                #  the structure which has address in specific DIE.
+                if "DW_AT_specification" in self.die_variable.attributes:
+                    spec_ref_addr = (
+                        self.die_variable.attributes["DW_AT_specification"].value
+                        + self.die_variable.cu.cu_offset
+                    )
+                    spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
+
+                    if self.die_variable.attributes.get("DW_AT_location"):
+                        address_set = list(
+                            self.die_variable.attributes["DW_AT_location"].value
+                        )[1:]
+                        self.address = int.from_bytes(
+                            bytes(address_set), byteorder="little"
+                        )
+
+                    if spec_die.tag == "DW_TAG_variable" and self.address is not None:
+                        self.die_variable = spec_die
+                        var_name = self.die_variable.attributes.get(
+                            "DW_AT_name"
+                        ).value.decode("utf-8")
+                    else:
+                        continue
+
+                elif (
+                    self.die_variable.attributes.get("DW_AT_location")
+                    and self.die_variable.attributes.get("DW_AT_name") is not None
+                ):
+                    var_name = self.die_variable.attributes.get(
+                        "DW_AT_name"
+                    ).value.decode("utf-8")
+                else:
+                    continue  # Skip to the next iteration if DW_AT_name is missing
+
+                type_attr = self.die_variable.attributes.get("DW_AT_type")
+                if type_attr is None:
+                    continue  # Skip to the next iteration if DW_AT_type is missing
+
+                ref_addr = type_attr.value + self.die_variable.cu.cu_offset
+
+                #
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-                end_die = self.get_end_die(type_die)
+                print("typeDIE", type_die)
+                if type_die.tag != "DW_TAG_volatile_type":
+                    end_die = self.get_end_die(type_die)
                 try:
-                    data = list(die_variable.attributes["DW_AT_location"].value)[1:]
-                    address = int.from_bytes(bytes(data), byteorder="little")
+                    print("HEREEEEEEEEEE")
+                    if self.die_variable.attributes.get("DW_AT_location"):
+                        data = list(
+                            self.die_variable.attributes["DW_AT_location"].value
+                        )[1:]
+                        self.address = int.from_bytes(bytes(data), byteorder="little")
+                        print("NOTHEREEEEE")
+                    else:
+                        address = None
                 except Exception as e:
                     print(e)
+                    continue  # if there's an error, skip this variable and move to the next
+                if self.address == 0:
+                    continue  # Skip variables with address 0
+                if var_name.startswith("_") or var_name.startswith("__"):
+                    continue  # Skip variables with names starting with '_' or '__'
 
                 if end_die.tag == "DW_TAG_pointer_type":
                     type_name = "pointer"
-                    return VariableInfo(
-                        name=die_variable.attributes["DW_AT_name"].value.decode(
-                            "utf-8"
-                        ),
+                    self.variable_mapping[var_name] = VariableInfo(
+                        name=var_name,
                         byte_size=end_die.attributes["DW_AT_byte_size"].value,
                         type=type_name,
-                        address=address,
+                        address=self.address,
                     )
+
                 elif end_die.tag == "DW_TAG_structure_type":
-                    members = self._get_structure_members(end_die)
-                    member = members[member_name]
-                    return VariableInfo(
-                        name=die_variable.attributes["DW_AT_name"].value.decode("utf-8")
-                        + "."
-                        + member_name,
-                        byte_size=member["byte_size"],
-                        type=member["type"],
-                        address=address + member["address_offset"],
+                    members = self._get_structure_members(end_die, var_name)[0]
+                    for member_name, member_data in members.items():
+                        self.variable_mapping[member_name] = VariableInfo(
+                            name=member_name,
+                            byte_size=member_data["byte_size"],
+                            type=member_data["type"],
+                            address=self.address + member_data["address_offset"],
+                        )
+                else:
+                    self.variable_mapping[var_name] = VariableInfo(
+                        name=var_name,
+                        byte_size=end_die.attributes["DW_AT_byte_size"].value,
+                        type=end_die.attributes["DW_AT_name"].value.decode("utf-8"),
+                        address=self.address,
                     )
 
-                return VariableInfo(
-                    name=die_variable.attributes["DW_AT_name"].value.decode("utf-8"),
-                    byte_size=end_die.attributes["DW_AT_byte_size"].value,
-                    type=end_die.attributes["DW_AT_name"].value.decode("utf-8"),
-                    address=address,
-                )
-        return None
-
-    # def get_variable_list(self) -> List[VariableInfo]:
-    #     variable_names = []
-    #     for compilation_unit in self.dwarf_info.iter_CUs():
-    #         root_die = compilation_unit.iter_DIEs()
-    #         tag_variables = filter(lambda die: die.tag == 'DW_TAG_variable', root_die)
-    #         variable_names = [
-    #             VariableInfo(name=die.attributes.get('DW_AT_name').value.decode('utf-8'))
-    #             for die in tag_variables
-    #             if die.attributes.get('DW_AT_name') is not None
-    #         ]
-    #         for var in variable_names:
-    #             print(var.name)
-    #     return variable_names
+        return self.variable_mapping
 
     def load_elf_file(self):
         """
@@ -241,33 +267,28 @@ class Elf32Parser(ElfParser):
                 if base_type_attr:
                     base_type_offset = base_type_attr.value
                     return self._get_member_type(base_type_offset)
-        #     else:
-        #         byte_size_attr = type_die.attributes.get('DW_AT_byte_size')
-        #         byte_size = byte_size_attr.value if byte_size_attr else None
-        #
-        #         return {
-        #             'name': type_die.get_full_path(),
-        #             'byte_size': byte_size
-        #         }
-        #
-        # return None
+
+    def map_all_variables_data(self) -> dict:
+        return self.get_var_info()
 
 
 if __name__ == "__main__":
-    elf_file = (
-        "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
-        "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
-        "production\\mclv2_pic32_mk_mcf_pim.X.production.elf"
-    )
-    parser = Elf32Parser(elf_file)
-    variable = "gMCRPOS_Parameters.rs"
-    variable_info = parser.get_var_info(variable)
+    # elf_file = (
+    #     "C:\\Users\\m67250\\Downloads\\mc_apps_pic32mk-3.1.0\\mc_apps_pic32mk-3.1.0\\apps\\"
+    #     "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
+    #     "debug\\mclv2_pic32_mk_mcf_pim.X.debug.elf"
+    # )
+    # elf_file = r"C:\Users\m67250\Downloads\structure_Test.X.debug_PIC32MK_Level3_FixedAddress.elf"
+    elf_file = r"C:\Users\m67250\Downloads\mc_apps_sam_d5x_e5x-master\apps\pmsm_foc_pll_estimator_sam_e54\firmware\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf"
+    # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elf32_struct.X\dist\default\production\elf32_struct.X.production.elf"
 
-    var_list = parser.get_var_list()
-    print(var_list)
-    #
-    if variable_info:
-        print(f"Variable Name: {variable_info.name}")
-        print(f"Variable Type: {variable_info.type}")
-        print(f"Variable Byte Size: {variable_info.byte_size}")
-        print(f"Variable address: {variable_info.address}")
+    parser = Elf32Parser(elf_file)
+    # variable_info = parser.get_var_info(variable)
+    variable_map = parser.map_all_variables_data()
+
+    print(variable_map)
+    for variable in variable_map:
+        print(variable_map.get(variable))
+        print(hex(variable_map.get(variable).address))
+
+    print(parser.get_var_list())

@@ -1,6 +1,5 @@
 import logging
 
-from mchplnet.lnet import LNet
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *
@@ -14,8 +13,11 @@ class VariableFactory:
         self.parser = None  # Initialize the parser as None
         self.device_info = self.l_net.interface_handshake()
 
-        self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
+        self.parser_obj = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
+        # mapping the variable data from the elf-file provided
+        self.variable_map = self.parser.map_all_variables_data()
+        # print(self.variable_map)
 
     def get_var_list_elf(self) -> list[str]:
         """
@@ -41,11 +43,14 @@ class VariableFactory:
 
         try:
             # ELF parsing
-            var_result = self.parser.get_var_info(name)
+
+            var_result = self.variable_map.get(name)
+            # var_result = self.parser.get_var_info(name)
             if var_result:
                 variable = self.get_variable_raw(
                     var_result.address, var_result.type, var_result.name
                 )
+
             return variable
         except Exception as e:
             logging.error(
@@ -97,8 +102,9 @@ class VariableFactory:
             "char": Variable_int8,
             "double": Variable_float,
             "float": Variable_float,
-            "int": Variable_int32,
+            "int": Variable_int16,
             "long": Variable_int32,
+            "long double": Variable_float,
             "long int": Variable_int32,
             "long long": Variable_int64,
             "long long unsigned int": Variable_uint64,
@@ -107,6 +113,7 @@ class VariableFactory:
             if self.device_info == 2
             else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
+            "short int": Variable_int16,
             "short unsigned int": Variable_uint16,
             "signed char": Variable_int8,
             "signed int": Variable_int32,
