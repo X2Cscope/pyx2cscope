@@ -13,11 +13,11 @@ class VariableFactory:
         self.parser = None  # Initialize the parser as None
         self.device_info = self.l_net.interface_handshake()
 
-        self.parser_obj = Elf16Parser if self.device_info.width == 2 else Elf32Parser
+        self.parser_obj = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
         self.parser = self.parser_obj(self.elfFile)
         # mapping the variable data from the elf-file provided
         self.variable_map = self.parser.map_all_variables_data()
-        print(self.variable_map)
+        # print(self.variable_map)
 
     def get_var_list_elf(self) -> list[str]:
         """
@@ -113,6 +113,7 @@ class VariableFactory:
             if self.device_info == 2
             else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
+            "short int": Variable_int16,
             "short unsigned int": Variable_uint16,
             "signed char": Variable_int8,
             "signed int": Variable_int32,
