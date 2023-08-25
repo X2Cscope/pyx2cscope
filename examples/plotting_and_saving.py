@@ -1,10 +1,10 @@
+import logging
 import threading
 import time
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import pandas as pd
-import logging
 
 # Configure logging
 logging.basicConfig(

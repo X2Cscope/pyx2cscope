@@ -105,14 +105,18 @@ class X2Cscope_GUI(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.selected_var_indices = [0,0,0,0,0,]  # List to store selected variable indices
+        self.selected_var_indices = [
+            0,
+            0,
+            0,
+            0,
+            0,
+        ]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
         decimal_regex = QRegExp("[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
-        self.plot_data = deque(
-            maxlen=250
-        )  # Store plot data for all variable.
+        self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
         self.fig, self.ax = None, None
         self.ani = None
         self.init_ui()
@@ -527,7 +531,9 @@ class X2Cscope_GUI(QMainWindow):
             self.ax.clear()
             start = time.time()
 
-            for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
+            for value, combo_box, plot_var in zip(
+                values, self.combo_boxes, self.plot_checkboxes
+            ):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
                     self.ax.plot(
                         np.cumsum(time_diffs), value, label=combo_box.currentText()

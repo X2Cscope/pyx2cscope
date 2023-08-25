@@ -29,7 +29,10 @@ class Elf32Parser(ElfParser):
         members = {}
 
         for child_die in die.iter_children():
-            if child_die.tag == "DW_TAG_member" or child_die.tag == "DW_TAG_pointer_type":
+            if (
+                child_die.tag == "DW_TAG_member"
+                or child_die.tag == "DW_TAG_pointer_type"
+            ):
                 member = {}
                 name_attr = child_die.attributes.get("DW_AT_name")
                 if name_attr:
@@ -39,11 +42,20 @@ class Elf32Parser(ElfParser):
                     type_offset = type_attr.value + child_die.cu.cu_offset
                     try:
                         member_type = self._get_member_type(type_offset)
-                        offset_value_from_member_address = int(child_die.attributes.get("DW_AT_data_member_location").value[1])
+                        offset_value_from_member_address = int(
+                            child_die.attributes.get(
+                                "DW_AT_data_member_location"
+                            ).value[1]
+                        )
                         nested_die = self.get_end_die(child_die)
                         if nested_die.tag == "DW_TAG_structure_type":
-                            nested_members, nested_offset = self._get_structure_members_recursive(
-                                nested_die, member_name, prev_address_offset + offset_value_from_member_address
+                            (
+                                nested_members,
+                                nested_offset,
+                            ) = self._get_structure_members_recursive(
+                                nested_die,
+                                member_name,
+                                prev_address_offset + offset_value_from_member_address,
                             )
                             if nested_members:
                                 members.update(nested_members)
@@ -51,16 +63,18 @@ class Elf32Parser(ElfParser):
                         else:
                             member["type"] = member_type["name"]
                             member["byte_size"] = member_type["byte_size"]
-                            member["address_offset"] = prev_address_offset + offset_value_from_member_address
+                            member["address_offset"] = (
+                                prev_address_offset + offset_value_from_member_address
+                            )
                             members[member_name] = member
                     except Exception as e:
-                        print("exception",e)
+                        print("exception", e)
                         # Handle missing fields
                         # TODO This will be handled in future versions
                         continue
 
                     # If the member type is a structure or class, recurse into it
-        return members , prev_address_offset
+        return members, prev_address_offset
 
     def _get_structure_members(self, structure_die, var_name):
         prev_address_offset = 0
@@ -87,23 +101,35 @@ class Elf32Parser(ElfParser):
             for self.die_variable in tag_variables:
                 #  the structure which has address in specific DIE.
                 if "DW_AT_specification" in self.die_variable.attributes:
-                    spec_ref_addr = self.die_variable.attributes["DW_AT_specification"].value + self.die_variable.cu.cu_offset
+                    spec_ref_addr = (
+                        self.die_variable.attributes["DW_AT_specification"].value
+                        + self.die_variable.cu.cu_offset
+                    )
                     spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
                     if self.die_variable.attributes.get("DW_AT_location"):
-                        address_set = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
-                        self.address = int.from_bytes(bytes(address_set), byteorder="little")
+                        address_set = list(
+                            self.die_variable.attributes["DW_AT_location"].value
+                        )[1:]
+                        self.address = int.from_bytes(
+                            bytes(address_set), byteorder="little"
+                        )
 
                     if spec_die.tag == "DW_TAG_variable" and self.address is not None:
                         self.die_variable = spec_die
                         var_name = self.die_variable.attributes.get(
-                        "DW_AT_name"
-                    ).value.decode("utf-8")
+                            "DW_AT_name"
+                        ).value.decode("utf-8")
                     else:
                         continue
 
-                elif self.die_variable.attributes.get("DW_AT_location") and  self.die_variable.attributes.get("DW_AT_name") is not None:
-                    var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+                elif (
+                    self.die_variable.attributes.get("DW_AT_location")
+                    and self.die_variable.attributes.get("DW_AT_name") is not None
+                ):
+                    var_name = self.die_variable.attributes.get(
+                        "DW_AT_name"
+                    ).value.decode("utf-8")
                 else:
                     continue  # Skip to the next iteration if DW_AT_name is missing
 
@@ -121,7 +147,9 @@ class Elf32Parser(ElfParser):
                 try:
                     print("HEREEEEEEEEEE")
                     if self.die_variable.attributes.get("DW_AT_location"):
-                        data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
+                        data = list(
+                            self.die_variable.attributes["DW_AT_location"].value
+                        )[1:]
                         self.address = int.from_bytes(bytes(data), byteorder="little")
                         print("NOTHEREEEEE")
                     else:
@@ -131,7 +159,7 @@ class Elf32Parser(ElfParser):
                     continue  # if there's an error, skip this variable and move to the next
                 if self.address == 0:
                     continue  # Skip variables with address 0
-                if var_name.startswith('_') or var_name.startswith('__'):
+                if var_name.startswith("_") or var_name.startswith("__"):
                     continue  # Skip variables with names starting with '_' or '__'
 
                 if end_die.tag == "DW_TAG_pointer_type":
@@ -146,7 +174,6 @@ class Elf32Parser(ElfParser):
                 elif end_die.tag == "DW_TAG_structure_type":
                     members = self._get_structure_members(end_die, var_name)[0]
                     for member_name, member_data in members.items():
-
                         self.variable_mapping[member_name] = VariableInfo(
                             name=member_name,
                             byte_size=member_data["byte_size"],
@@ -162,6 +189,7 @@ class Elf32Parser(ElfParser):
                     )
 
         return self.variable_mapping
+
     def load_elf_file(self):
         """
         Load the ELF file and extract the DWARF information.
@@ -250,9 +278,9 @@ if __name__ == "__main__":
     #     "pmsm_foc_pll_estimator_pic32_mk\\firmware\\mclv2_pic32_mk_mcf_pim.X\\dist\\mclv2_pic32_mk_mcf_pim\\"
     #     "debug\\mclv2_pic32_mk_mcf_pim.X.debug.elf"
     # )
-    #elf_file = r"C:\Users\m67250\Downloads\structure_Test.X.debug_PIC32MK_Level3_FixedAddress.elf"
+    # elf_file = r"C:\Users\m67250\Downloads\structure_Test.X.debug_PIC32MK_Level3_FixedAddress.elf"
     elf_file = r"C:\Users\m67250\Downloads\mc_apps_sam_d5x_e5x-master\apps\pmsm_foc_pll_estimator_sam_e54\firmware\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf"
-    #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elf32_struct.X\dist\default\production\elf32_struct.X.production.elf"
+    # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elf32_struct.X\dist\default\production\elf32_struct.X.production.elf"
 
     parser = Elf32Parser(elf_file)
     # variable_info = parser.get_var_info(variable)
