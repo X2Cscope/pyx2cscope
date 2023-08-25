@@ -1,3 +1,8 @@
+"""
+This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
+"""
+
+
 import logging
 import os
 import sys
@@ -12,13 +17,23 @@ from matplotlib.animation import FuncAnimation
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
-from PyQt5.QtCore import (QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer,
-                          pyqtSlot)
+from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
-                             QGridLayout, QHBoxLayout, QLabel, QLineEdit,
-                             QMainWindow, QMessageBox, QPushButton, QSlider,
-                             QWidget)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QSlider,
+    QWidget,
+)
 
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.variable.variable_factory import VariableFactory
@@ -90,15 +105,14 @@ class X2Cscope_GUI(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-
+        self.selected_var_indices = [0,0,0,0,0,]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
-
         decimal_regex = QRegExp("[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(
             maxlen=250
-        )  # Store plot data for Variable 1 and Variable 2
+        )  # Store plot data for all variable.
         self.fig, self.ax = None, None
         self.ani = None
         self.init_ui()
@@ -155,8 +169,15 @@ class X2Cscope_GUI(QMainWindow):
         self.box_layout.addStretch(1)
         self.box_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
-        # Add labels on top
-        labels = [
+        self.timer_list = [
+            self.timer1,
+            self.timer2,
+            self.timer3,
+            self.timer4,
+            self.timer5,
+        ]
+        # Add self.labels on top
+        self.labels = [
             "Live",
             "Variable",
             "Value",
@@ -165,38 +186,38 @@ class X2Cscope_GUI(QMainWindow):
             "Unit",
             "Plot",
         ]
-        for col, label in enumerate(labels):
+        for col, label in enumerate(self.labels):
             self.grid_layout.addWidget(QLabel(label), 0, col)
 
-        live_checkboxes = [
+        self.live_checkboxes = [
             self.Live_var1,
             self.Live_var2,
             self.Live_var3,
             self.Live_var4,
             self.Live_var5,
         ]
-        combo_boxes = [
+        self.combo_boxes = [
             self.combo_box1,
             self.combo_box2,
             self.combo_box3,
             self.combo_box4,
             self.combo_box5,
         ]
-        value_boxes = [
+        self.value_boxes = [
             self.Value_var1,
             self.Value_var2,
             self.Value_var3,
             self.Value_var4,
             self.Value_var5,
         ]
-        scaling_boxes = [
+        self.scaling_boxes = [
             self.Scaling_var1,
             self.Scaling_var2,
             self.Scaling_var3,
             self.Scaling_var4,
             self.Scaling_var5,
         ]
-        scaled_value_boxes = [
+        self.scaled_value_boxes = [
             self.ScaledValue_var1,
             self.ScaledValue_var2,
             self.ScaledValue_var3,
@@ -210,7 +231,7 @@ class X2Cscope_GUI(QMainWindow):
             self.Unit_var4,
             self.Unit_var5,
         ]
-        plot_checkboxes = [
+        self.plot_checkboxes = [
             self.plot_var1_checkbox,
             self.plot_var2_checkbox,
             self.plot_var3_checkbox,
@@ -228,13 +249,13 @@ class X2Cscope_GUI(QMainWindow):
             plot_checkbox,
         ) in enumerate(
             zip(
-                live_checkboxes,
-                combo_boxes,
-                value_boxes,
-                scaling_boxes,
-                scaled_value_boxes,
+                self.live_checkboxes,
+                self.combo_boxes,
+                self.value_boxes,
+                self.scaling_boxes,
+                self.scaled_value_boxes,
                 unit_boxes,
-                plot_checkboxes,
+                self.plot_checkboxes,
             ),
             1,
         ):
@@ -271,16 +292,6 @@ class X2Cscope_GUI(QMainWindow):
         self.layout.addLayout(self.grid_layout, 5, 0)
         self.layout.addWidget(self.plot_button, 6, 0)
         # self.grid_layout.addWidget(self.slider_var2, 8, 0, 1, 6)
-
-        # Set the central widget and example window properties
-        self.setCentralWidget(central_widget)
-        self.setWindowTitle("PyX2Cscope")
-        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "MCHP.png")
-        self.setWindowIcon(QIcon(mchp_img))
-
-        # Populate the available ports combo box
-        self.refresh_ports()
-
         self.timer1.timeout.connect(
             lambda: self.handle_var_update(
                 self.combo_box1.currentText(), self.Value_var1
@@ -442,8 +453,8 @@ class X2Cscope_GUI(QMainWindow):
 
         # Set the central widget and example window properties
         self.setCentralWidget(central_widget)
-        self.setWindowTitle("PyX2Cscope")
-        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "MCHP.png")
+        self.setWindowTitle("pyX2Cscope")
+        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
         self.setWindowIcon(QIcon(mchp_img))
 
         # Populate the available ports combo box
@@ -513,25 +524,10 @@ class X2Cscope_GUI(QMainWindow):
             data = np.array(self.plot_data).T
             time_diffs = data[1]
             values = data[2:7]
-            combo_boxes = [
-                self.combo_box1,
-                self.combo_box2,
-                self.combo_box3,
-                self.combo_box4,
-                self.combo_box5,
-            ]
-            plot_vars = [
-                self.plot_var1_checkbox,
-                self.plot_var2_checkbox,
-                self.plot_var3_checkbox,
-                self.plot_var4_checkbox,
-                self.plot_var5_checkbox,
-            ]
-
             self.ax.clear()
             start = time.time()
 
-            for value, combo_box, plot_var in zip(values, combo_boxes, plot_vars):
+            for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
                     self.ax.plot(
                         np.cumsum(time_diffs), value, label=combo_box.currentText()
@@ -556,7 +552,7 @@ class X2Cscope_GUI(QMainWindow):
             def initialize_plot():
                 self.fig, self.ax = plt.subplots()
                 self.ani = FuncAnimation(self.fig, self.update_plot, interval=1)
-                plt.xticks(rotation=45)  # Rotate x-axis labels for better visibility
+                plt.xticks(rotation=45)
                 self.ax.axhline(
                     0, color="black", linewidth=0.5
                 )  # Reference line at y=0
@@ -606,14 +602,7 @@ class X2Cscope_GUI(QMainWindow):
             new_sample_time = int(self.sampletime.text())
             if new_sample_time != self.timerValue:
                 self.timerValue = new_sample_time
-                timer_list = [
-                    self.timer1,
-                    self.timer2,
-                    self.timer3,
-                    self.timer4,
-                    self.timer5,
-                ]
-                for timer in timer_list:
+                for timer in self.timer_list:
                     if timer.isActive():
                         timer.start(self.timerValue)
         except Exception as e:
@@ -627,11 +616,11 @@ class X2Cscope_GUI(QMainWindow):
         try:
             if counter is not None:
                 counter = self.var_factory.get_variable_elf(counter)
-                value = float(counter.get_value())
+                value = counter.get_value()
                 value_var.setText(str(value))
                 if (
                     value_var == self.Value_var1
-                ):  # Check if it's Variable 2 being updated
+                ):  # Check if it's Variable 1 being updated
                     self.slider_var1.setValue(
                         int(value)
                     )  # Set slider to the updated value
@@ -656,10 +645,14 @@ class X2Cscope_GUI(QMainWindow):
         try:
             current_variable = variable
 
+            for index, combo_box in enumerate(self.combo_boxes):
+                if combo_box.currentText() == current_variable:
+                    self.selected_var_indices[index] = combo_box.currentIndex()
+
             if current_variable and current_variable != "None":
                 counter = self.var_factory.get_variable_elf(current_variable)
-                value = str(counter.get_value())
-                Value_var.setText(value)
+                value = counter.get_value()
+                Value_var.setText(str(value))
                 if Value_var == self.Value_var1:
                     self.slider_var1.setValue(int(value))
 
@@ -676,7 +669,7 @@ class X2Cscope_GUI(QMainWindow):
     def handle_variable_putram(self, variable, Value_var):
         try:
             current_variable = variable
-            value = int(Value_var.text())
+            value = float(Value_var.text())
 
             if current_variable and current_variable != "None":
                 counter = self.var_factory.get_variable_elf(current_variable)
@@ -707,32 +700,24 @@ class X2Cscope_GUI(QMainWindow):
 
     def refresh_combo_box(self):
         if self.VariableList is not None:
-            combo_boxes = [
-                self.combo_box1,
-                self.combo_box2,
-                self.combo_box3,
-                self.combo_box4,
-                self.combo_box5,
-            ]
-            for combo_box in combo_boxes:
-                if not self.check_list_similarity(self.old_Variablelist, self.VariableList):
-                    combo_box.clear()
+            for index, combo_box in enumerate(self.combo_boxes):
+                selected_index = self.selected_var_indices[index]
+                current_selected_text = combo_box.currentText()
+
+                combo_box.clear()
                 combo_box.addItems(self.VariableList)
-            self.old_Variablelist = self.VariableList.copy()
+
+                if current_selected_text in self.VariableList:
+                    combo_box.setCurrentIndex(combo_box.findText(current_selected_text))
+                else:
+                    combo_box.setCurrentIndex(selected_index)
         else:
             logging.warning("VariableList is None. Unable to refresh combo boxes.")
-
-    @staticmethod
-    def check_list_similarity(list1, list2):
-        for item1, item2 in zip(list1, list2):
-            if item1 != item2:
-                return False
-
-        return True
 
     def refresh_ports(self):
         # Clear and repopulate the available ports combo box
         available_ports = [port.device for port in serial.tools.list_ports.comports()]
+        self.port_combo.clear()
         self.port_combo.addItems(available_ports)
 
     @pyqtSlot()
@@ -742,10 +727,8 @@ class X2Cscope_GUI(QMainWindow):
             self.select_elf_file()
             return
 
-        timer_list = [self.timer1, self.timer2, self.timer3, self.timer4, self.timer5]
-
         if self.ser is None or not self.ser.is_open:
-            for timer in timer_list:
+            for timer in self.timer_list:
                 if timer.isActive():
                     timer.stop()
             self.plot_data.clear()  # Clear plot data when disconnected
@@ -764,41 +747,18 @@ class X2Cscope_GUI(QMainWindow):
             self.Connect_button.setEnabled(True)
             self.select_file_button.setEnabled(True)
             widget_list = [self.port_combo, self.baud_combo]
-            combo_boxes = [
-                self.combo_box1,
-                self.combo_box2,
-                self.combo_box3,
-                self.combo_box4,
-                self.combo_box5,
-            ]
-            live_vars = [
-                self.Live_var1,
-                self.Live_var2,
-                self.Live_var3,
-                self.Live_var4,
-                self.Live_var5,
-            ]
 
             for widget in widget_list:
                 widget.setEnabled(True)
 
-            for combo_box in combo_boxes:
+            for combo_box in self.combo_boxes:
                 combo_box.setEnabled(False)
 
-            for live_var in live_vars:
+            for live_var in self.live_checkboxes:
                 live_var.setEnabled(False)
 
             self.slider_var1.setEnabled(False)
-
-            timer_list = [
-                self.timer1,
-                self.timer2,
-                self.timer3,
-                self.timer4,
-                self.timer5,
-            ]
-
-            for timer in timer_list:
+            for timer in self.timer_list:
                 if timer.isActive():
                     timer.stop()
 
@@ -832,38 +792,20 @@ class X2Cscope_GUI(QMainWindow):
             self.Connect_button.setEnabled(True)
 
             widget_list = [self.port_combo, self.baud_combo, self.select_file_button]
-            combo_boxes = [
-                self.combo_box1,
-                self.combo_box2,
-                self.combo_box3,
-                self.combo_box4,
-                self.combo_box5,
-            ]
-            live_vars = [
-                self.Live_var1,
-                self.Live_var2,
-                self.Live_var3,
-                self.Live_var4,
-                self.Live_var5,
-                self.slider_var1,
-            ]
 
             for widget in widget_list:
                 widget.setEnabled(False)
 
-            for combo_box in combo_boxes:
+            for combo_box in self.combo_boxes:
                 combo_box.setEnabled(True)
+            self.slider_var1.setEnabled(True)
 
-            for live_var in live_vars:
+            for live_var in self.live_checkboxes:
                 live_var.setEnabled(True)
 
-            timer_list = [
-                (self.Live_var1, self.timer1),
-                (self.Live_var2, self.timer2),
-                (self.Live_var3, self.timer3),
-                (self.Live_var4, self.timer4),
-                (self.Live_var5, self.timer5),
-            ]
+            timer_list = []
+            for i in range(len(self.live_checkboxes)):
+                timer_list.append((self.live_checkboxes[i], self.timer_list[i]))
 
             for live_var, timer in timer_list:
                 if live_var.isChecked():
@@ -878,7 +820,8 @@ class X2Cscope_GUI(QMainWindow):
 
     def closeEvent(self, event):
         # Close the serial connection and clean up when the application is closed
-        self.disconnect_serial()
+        if self.ser:
+            self.disconnect_serial()
         event.accept()
 
 
