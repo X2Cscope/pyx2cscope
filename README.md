@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="docs/img/microchip-technology-logo.png" alt="PyX2CScope Logo" width="250">
+  
+  <img src="pyx2cscope/gui/img/microchip-technology-logo.png" alt="PyX2CScope Logo" width="250">
 </p>
 
 # PyX2CScope
