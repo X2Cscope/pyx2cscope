@@ -9,16 +9,19 @@ from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
 logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
 
 xc16_readelf_path = "C:/Program Files/Microchip/xc16/v2.00/bin/xc16-readelf.exe"
+
+
 # TODO set the util for self set the exe
 #  https://stackoverflow.com/questions/11210104/check-if-a-program-exists-from-a-python-script
 
 
+# noinspection PyTypeChecker
 class Elf16Parser(ElfParser):
     def __init__(self, elf_path):
         """
-        Initialize the Elf16Parser.
+        initialize the Elf16Parser.
 
-        Args:
+        args:
             self.xc16_readelf_path (str): Path to the xc16-readelf executable.
             elf_path (str): Path to the input ELF file.
         """
@@ -183,11 +186,11 @@ class Elf16Parser(ElfParser):
 
     def _get_structure_members(self, structure_die, parent_address=0):
         members = {}
-        cu_sibling = None
         # Locate the structure DIE inside the DWARFInfo regarding its offset
-        # We define here the correct CU, it's offset on the DWARF and the next sibling to be used as the stop condition.
+        # We define here the correct CU.
+        # It's offset on the DWARF and the next sibling to be used as the stop condition.
         cu, cu_sibling = self._locate_cu_in_dwarf(structure_die)
-        # List all the members of the CU, if the member is structure type, calling this function recursively.
+        # List all the members of the CU, if the member is a structure type, calling this function recursively.
         for cu_offset, cu_structure_member in cu["elements"].items():
             if cu_offset <= structure_die["offset"]:
                 continue
@@ -279,8 +282,10 @@ class Elf16Parser(ElfParser):
         return True
 
     def _check_for_structure_tag(self, die, end_die, address):
+        # the DW_AT_location confirms its global Structure and not a local one
         if end_die["tag"] == "DW_TAG_structure_type" and "DW_AT_location" in die:
             members = self._get_structure_members(end_die)
+            print(members)
             if members is None:
                 # Return the entire structure as a single variable
                 variable_data = VariableInfo(
@@ -307,11 +312,8 @@ class Elf16Parser(ElfParser):
         """
         Get the information of a variable by name.
 
-        Args:
-            var_name (str): The name of the variable.
-
         Returns:
-            VariableInfo: An object containing the variable information.
+            variable_mapping: An object containing all the variable information.
         """
 
         self.variable_mapping.clear()
@@ -324,9 +326,7 @@ class Elf16Parser(ElfParser):
                 address = self._get_address_location(die.get("DW_AT_location"))
                 if not self._check_for_pointer_tag(
                     die, end_die, address
-                ) and not self._check_for_structure_tag(
-                    die, end_die, address
-                ):
+                ) and not self._check_for_structure_tag(die, end_die, address):
                     variable_data = VariableInfo(
                         name=die["DW_AT_name"],
                         byte_size=end_die["DW_AT_byte_size"],
@@ -344,7 +344,7 @@ class Elf16Parser(ElfParser):
             start_die (dict): The starting die.
 
         Returns:
-            dict: The end die.
+            dict: The end dies.
         """
         if start_die is None:
             return None
@@ -368,7 +368,7 @@ class Elf16Parser(ElfParser):
             offset: The offset of the die.
 
         Returns:
-            dict: The DWARF die.
+            dict: The DWARF dies.
         """
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
@@ -381,10 +381,7 @@ class Elf16Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    input_elf_file = (
-        "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2"
-        "\\production\\bldc_MCLV2.X.production.elf"
-    )
+    input_elf_file = r"C:\_DESKTOP\_Projects\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\MCL2_AN1160_Script\bldc.X\dist\MCLV2\production\bldc.X.production.elf"
     # input_elf_file = "C:\\_DESKTOP\\_Projects\\Ceiling fan project\\AN1299_dsPIC33CK64MC102_LVCFRD
     # \\pmsm.X\\dist\\default\\production\\pmsm.X.production.elf"
     input_elf_file = (
@@ -393,16 +390,4 @@ if __name__ == "__main__":
     )
     elf_reader = Elf16Parser(input_elf_file)
 
-    # variable = "sccp3_timer_obj.secondaryTimer16Elapsed"
-    variable = "adcDataBuffer"
-    # variable_name = 'V_pot'
-    # variable_name = 'DesiredSpeed'
-
-    variable_info_map = elf_reader.map_all_variables_data()
-    print(elf_reader.get_var_list())
-    # print(variable_info_map)
-    # print(variable_info_map.get("motor.potInput"))
-    # print(variable_info_map.get("motor.estimator.pll.sincos.sin"))
-    # variableList = elf_reader.get_var_list()
-    # print(variable_info_map)
-    # print(variableList)
+    print(elf_reader.map_all_variables_data().get("motor.dynLimit.iLimit"))
