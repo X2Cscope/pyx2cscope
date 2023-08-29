@@ -3,7 +3,7 @@ from typing import List
 from elftools.elf.elffile import ELFFile
 
 from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
-
+import logging
 
 class Elf32Parser(ElfParser):
     def __init__(self, elf_path):
@@ -68,7 +68,7 @@ class Elf32Parser(ElfParser):
                             )
                             members[member_name] = member
                     except Exception as e:
-                        print("exception", e)
+                        logging.error("exception", e)
                         # Handle missing fields
                         # TODO This will be handled in future versions
                         continue
@@ -141,21 +141,18 @@ class Elf32Parser(ElfParser):
 
                 #
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-                print("typeDIE", type_die)
                 if type_die.tag != "DW_TAG_volatile_type":
                     end_die = self.get_end_die(type_die)
                 try:
-                    print("HEREEEEEEEEEE")
                     if self.die_variable.attributes.get("DW_AT_location"):
                         data = list(
                             self.die_variable.attributes["DW_AT_location"].value
                         )[1:]
                         self.address = int.from_bytes(bytes(data), byteorder="little")
-                        print("NOTHEREEEEE")
                     else:
                         address = None
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
                     continue  # if there's an error, skip this variable and move to the next
                 if self.address == 0:
                     continue  # Skip variables with address 0
@@ -286,9 +283,9 @@ if __name__ == "__main__":
     # variable_info = parser.get_var_info(variable)
     variable_map = parser.map_all_variables_data()
 
-    print(variable_map)
+    logging.debug(variable_map)
     for variable in variable_map:
-        print(variable_map.get(variable))
-        print(hex(variable_map.get(variable).address))
+        logging.debug(variable_map.get(variable))
+        logging.debug(hex(variable_map.get(variable).address))
 
-    print(parser.get_var_list())
+    logging.debug(parser.get_var_list())

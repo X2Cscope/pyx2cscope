@@ -1,7 +1,7 @@
 import logging
 import threading
 import time
-
+import queue
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -98,7 +98,7 @@ def data_collection():
         speed_queue.put(CurrentSpeed.get_value())
         current_queue.put(variable_current.get_value())
         start_value += step
-        print(i)
+        logging.debug(i)
         i += 1
         time.sleep(0.1)
 

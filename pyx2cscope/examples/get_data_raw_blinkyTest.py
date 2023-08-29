@@ -17,26 +17,27 @@ logging.basicConfig(
 def example():
     try:
         # Initialize serial communication
-        serial_port = "COM8"
+        serial_port = "COM13"  # select COM port
         baud_rate = 115200
         serial_connection = InterfaceFactory.get_interface(
             IType.SERIAL, port=serial_port, baudrate=baud_rate
         )
+        # select the appropriate elf file of your project.
         elf_file = (
-            "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2\\"
-            "production/bldc_MCLV2.X.production.elf"
+            r"C:\_DESKTOP\_Projects\Motorbench_Projects\zsmt--42BLF02-MCLV-48V-300W.X\dist\default\production\zsmt--42BLF02-MCLV-48V-300W.X.production.elf"
         )
 
         # Initialize LNet and VariableFactory
         l_net = LNet(serial_connection)
         variable_factory = VariableFactory(l_net, elf_file)
-        variable_elf = variable_factory.get_variable_elf("PotVal")
+        variable_elf = variable_factory.get_variable_elf("motor.ui.isrCount")
+        logging.debug(variable_elf)
 
         while True:
             value_get = variable_elf.get_value()
-            print("variable_elf", value_get)
-            value_put = variable_elf.set_value(500)
-            print(value_put)
+            logging.debug("variable_elf", value_get)
+            #value_put = variable_elf.set_value(500)
+            #logging.debug(value_put)
 
     except Exception as e:
         # Handle any other exceptions

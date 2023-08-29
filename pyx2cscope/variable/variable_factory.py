@@ -9,15 +9,18 @@ from pyx2cscope.variable.vartypes import VarTypes
 class VariableFactory:
     def __init__(self, l_net: LNet, Elf_path=None):
         self.l_net = l_net
+        self.variable_map = None
+        self.var_result = None
+        self.variable_data = None
         self.elfFile = Elf_path  # Initialize the ELF file as None
         self.parser = None  # Initialize the parser as None
         self.device_info = self.l_net.interface_handshake()
-
-        self.parser_obj = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
-        self.parser = self.parser_obj(self.elfFile)
+        if self.device_info:
+            self.parser_obj = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
+            self.parser = self.parser_obj(self.elfFile)
         # mapping the variable data from the elf-file provided
-        self.variable_map = self.parser.map_all_variables_data()
-        # print(self.variable_map)
+            self.variable_map = self.parser.map_all_variables_data()
+            logging.info(self.variable_map)
 
     def get_var_list_elf(self) -> list[str]:
         """
@@ -43,15 +46,15 @@ class VariableFactory:
 
         try:
             # ELF parsing
-
-            var_result = self.variable_map.get(name)
+            if self.variable_map:
+                self.var_result = self.variable_map.get(name)
             # var_result = self.parser.get_var_info(name)
-            if var_result:
-                variable = self.get_variable_raw(
-                    var_result.address, var_result.type, var_result.name
+            if self.var_result:
+                self.variable_data = self.get_variable_raw(
+                    self.var_result.address, self.var_result.type, self.var_result.name
                 )
 
-            return variable
+            return self.variable_data
         except Exception as e:
             logging.error(
                 f"Error while getting variable '{name}' from ELF file: {str(e)}"

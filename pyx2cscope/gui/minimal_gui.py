@@ -38,7 +38,7 @@ from PyQt5.QtWidgets import (
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.variable.variable_factory import VariableFactory
 
-logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
+#logging.basicConfig(level=logging.WARNING)  # Configure the logging module
 
 
 class X2Cscope_GUI(QMainWindow):
@@ -53,27 +53,27 @@ class X2Cscope_GUI(QMainWindow):
         self.layout = None
         self.slider_var1 = QSlider(Qt.Horizontal)
         self.Scaling_var5 = QLineEdit(self)
-        self.Unit_var5 = QComboBox(self)
+        self.Unit_var5 = QLineEdit(self)
         self.Scaling_var4 = QLineEdit(self)
         self.Value_var5 = QLineEdit(self)
         self.ScaledValue_var5 = QLineEdit(self)
         self.combo_box5 = QComboBox()
         self.Live_var5 = QCheckBox(self)
         self.ScaledValue_var4 = QLineEdit(self)
-        self.Unit_var4 = QComboBox(self)
+        self.Unit_var4 = QLineEdit(self)
         self.Value_var4 = QLineEdit(self)
         self.combo_box4 = QComboBox()
         self.Value_var3 = QLineEdit(self)
         self.Live_var3 = QCheckBox(self)
         self.Live_var4 = QCheckBox(self)
-        self.Unit_var3 = QComboBox(self)
+        self.Unit_var3 = QLineEdit(self)
         self.ScaledValue_var3 = QLineEdit(self)
         self.Scaling_var3 = QLineEdit(self)
         self.combo_box3 = QComboBox()
         self.plot_button = QPushButton("Plot")
         self.combo_box2 = QComboBox()
         self.ScaledValue_var2 = QLineEdit(self)
-        self.Unit_var2 = QComboBox(self)
+        self.Unit_var2 = QLineEdit(self)
         self.Scaling_var2 = QLineEdit(self)
         self.Value_var2 = QLineEdit(self)
         self.Live_var2 = QCheckBox(self)
@@ -84,7 +84,7 @@ class X2Cscope_GUI(QMainWindow):
         self.plot_var1_checkbox = QCheckBox()
         self.ScaledValue_var1 = QLineEdit(self)
         self.Scaling_var1 = QLineEdit(self)
-        self.Unit_var1 = QComboBox(self)
+        self.Unit_var1 = QLineEdit(self)
         self.Value_var1 = QLineEdit(self)
         self.combo_box1 = QComboBox()
         self.Live_var1 = QCheckBox(self)
@@ -272,7 +272,6 @@ class X2Cscope_GUI(QMainWindow):
             scaling_var.setText("1")
             scaled_value_var.setText("0")
             scaled_value_var.setValidator(self.decimal_validator)
-            unit_var.addItems([" ", "V", "RPM", "Watt", "Ampere"])
             if row > 1:
                 row += 1
             self.grid_layout.addWidget(live_var, row, 0)
@@ -518,7 +517,7 @@ class X2Cscope_GUI(QMainWindow):
                 )
             )
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     def update_plot(self, frame):
         try:
@@ -544,11 +543,11 @@ class X2Cscope_GUI(QMainWindow):
             self.ax.set_title("Live Plot")
             self.ax.legend(loc="upper right")
             end = time.time()
-            print(end - start)
+            logging.debug(end - start)
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     def plot_data_plot(self):
         try:
@@ -586,7 +585,7 @@ class X2Cscope_GUI(QMainWindow):
                 initialize_plot()
                 self.plot_window_open = True
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     # noinspection PyUnresolvedReferences
     def handle_error(self, error_message: str):
@@ -615,7 +614,7 @@ class X2Cscope_GUI(QMainWindow):
             error_message = f"Error: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
-            print(e)
+            logging.error(e)
 
     @pyqtSlot()
     def handle_var_update(self, counter, value_var):
@@ -821,8 +820,6 @@ class X2Cscope_GUI(QMainWindow):
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
-
-        # ... (existing code)
 
     def closeEvent(self, event):
         # Close the serial connection and clean up when the application is closed

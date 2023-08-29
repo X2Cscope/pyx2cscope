@@ -5,8 +5,7 @@ from typing import List
 
 from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
+
 
 xc16_readelf_path = "C:/Program Files/Microchip/xc16/v2.00/bin/xc16-readelf.exe"
 
@@ -285,7 +284,6 @@ class Elf16Parser(ElfParser):
         # the DW_AT_location confirms its global Structure and not a local one
         if end_die["tag"] == "DW_TAG_structure_type" and "DW_AT_location" in die:
             members = self._get_structure_members(end_die)
-            print(members)
             if members is None:
                 # Return the entire structure as a single variable
                 variable_data = VariableInfo(
@@ -384,10 +382,12 @@ if __name__ == "__main__":
     input_elf_file = r"C:\_DESKTOP\_Projects\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\MCL2_AN1160_Script\bldc.X\dist\MCLV2\production\bldc.X.production.elf"
     # input_elf_file = "C:\\_DESKTOP\\_Projects\\Ceiling fan project\\AN1299_dsPIC33CK64MC102_LVCFRD
     # \\pmsm.X\\dist\\default\\production\\pmsm.X.production.elf"
+    # Configure logging
+    logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
     input_elf_file = (
         r"C:\_DESKTOP\_Projects\Motorbench_Projects\AN1292-42BLF02-mb-33ck256mp508.X\dist"
         r"\default\production\AN1292-42BLF02-mb-33ck256mp508.X.production.elf"
     )
     elf_reader = Elf16Parser(input_elf_file)
 
-    print(elf_reader.map_all_variables_data().get("motor.dynLimit.iLimit"))
+    logging.debug(elf_reader.map_all_variables_data().get("motor.dynLimit.iLimit"))
