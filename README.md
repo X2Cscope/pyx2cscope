@@ -45,7 +45,7 @@ Variable = variable_factory.get_variable_elf('Variable_name')
 1. pyX2Cscope-GUI is based on Serial interface.
 2. The Firmware of the microcontroller should have the X2CScope library/Peripheral enabled.
 2. Select the COM Port, Baud Rate from the drop-down menus and the ELF file of the project, the microcontroller programmed with. <br>
-    ![COM-port](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/develop/pyx2cscope/gui/img/Setting.jpg?token=GHSAT0AAAAAACFHO6OEJZXZFYBOZ53EQ3MIZHIT2FQ)
+    ![COM-port](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/feat-faster-monitoring/pyx2cscope/gui/img/Setting.jpg)
 3. Sample time can be changed during run time as well, by default its set to 500ms.
 4. Press on **Connect**
 5. Once the connection between pyX2Cscope and Microcontroller takes place, the buttons will be enabled.
