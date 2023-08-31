@@ -622,7 +622,7 @@ class X2Cscope_GUI(QMainWindow):
 
             def initialize_plot():
                 self.fig, self.ax = plt.subplots()
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1)
+                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1, cache_frame_data=False)
                 plt.xticks(rotation=45)
                 self.ax.axhline(
                     0, color="black", linewidth=0.5
@@ -888,8 +888,15 @@ class X2Cscope_GUI(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
+    def close_plot_window(self):
+        if self.ani is not None:
+            self.ani.event_source.stop()
+        plt.close(self.fig)
+        self.plot_window_open = False
     def closeEvent(self, event):
         # Close the serial connection and clean up when the application is closed
+        if self.plot_window_open:
+            self.close_plot_window()
         if self.ser:
             self.disconnect_serial()
         event.accept()
