@@ -91,6 +91,11 @@ class X2Cscope_GUI(QMainWindow):
         self.mutex = QMutex()
         self.grid_layout = QGridLayout()
         self.box_layout = QHBoxLayout()
+        self.offset_var1 = QLineEdit()
+        self.offset_var2 = QLineEdit()
+        self.offset_var3 = QLineEdit()
+        self.offset_var4 = QLineEdit()
+        self.offset_var5 = QLineEdit()
         self.timer5 = QTimer()
         self.timer4 = QTimer()
         self.timer3 = QTimer()
@@ -101,7 +106,6 @@ class X2Cscope_GUI(QMainWindow):
         self.baud_combo = QComboBox()
         self.select_file_button = QPushButton("Select elf file")
         self.error_shown = False
-        self.shown_errors = set()
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
@@ -113,7 +117,7 @@ class X2Cscope_GUI(QMainWindow):
             0,
         ]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
-        decimal_regex = QRegExp("[0-9]+(\\.[0-9]+)?")
+        decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
@@ -159,6 +163,7 @@ class X2Cscope_GUI(QMainWindow):
             self.baud_combo.setCurrentIndex(index)
 
         self.Connect_button.clicked.connect(self.toggle_connection)
+        self.Connect_button.clicked.connect(self.Checker)
         self.Connect_button.setFixedSize(100, 30)
 
         self.sampletime.setText("500")
@@ -186,6 +191,7 @@ class X2Cscope_GUI(QMainWindow):
             "Variable",
             "Value",
             "Scaling",
+            "Offset",
             "Scaled Value",
             "Unit",
             "Plot",
@@ -242,12 +248,20 @@ class X2Cscope_GUI(QMainWindow):
             self.plot_var4_checkbox,
             self.plot_var5_checkbox,
         ]
+        self.offset_box = [
+            self.offset_var1,
+            self.offset_var2,
+            self.offset_var3,
+            self.offset_var4,
+            self.offset_var5,
+        ]
 
         for row, (
             live_var,
             combo_box,
             value_var,
             scaling_var,
+            offset_var,
             scaled_value_var,
             unit_var,
             plot_checkbox,
@@ -257,6 +271,7 @@ class X2Cscope_GUI(QMainWindow):
                 self.combo_boxes,
                 self.value_boxes,
                 self.scaling_boxes,
+                self.offset_box,
                 self.scaled_value_boxes,
                 unit_boxes,
                 self.plot_checkboxes,
@@ -270,6 +285,8 @@ class X2Cscope_GUI(QMainWindow):
             value_var.setText("0")
             value_var.setValidator(self.decimal_validator)
             scaling_var.setText("1")
+            offset_var.setText("0")
+            offset_var.setValidator(self.decimal_validator)
             scaled_value_var.setText("0")
             scaled_value_var.setValidator(self.decimal_validator)
             if row > 1:
@@ -281,9 +298,10 @@ class X2Cscope_GUI(QMainWindow):
 
             self.grid_layout.addWidget(value_var, row, 2)
             self.grid_layout.addWidget(scaling_var, row, 3)
-            self.grid_layout.addWidget(scaled_value_var, row, 4)
-            self.grid_layout.addWidget(unit_var, row, 5)
-            self.grid_layout.addWidget(plot_checkbox, row, 6)
+            self.grid_layout.addWidget(offset_var, row,4)
+            self.grid_layout.addWidget(scaled_value_var, row, 5)
+            self.grid_layout.addWidget(unit_var, row, 6)
+            self.grid_layout.addWidget(plot_checkbox, row, 7)
 
         self.plot_button.clicked.connect(self.plot_data_plot)
 
@@ -378,56 +396,56 @@ class X2Cscope_GUI(QMainWindow):
 
         self.Value_var1.textChanged.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
             )
         )
-        self.Scaling_var1.textChanged.connect(
+        self.Scaling_var1.editingFinished.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
             )
         )
 
         self.Value_var2.textChanged.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
+                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2, self.offset_var2
             )
         )
-        self.Scaling_var2.textChanged.connect(
+        self.Scaling_var2.editingFinished.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
+                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2, self.offset_var2
             )
         )
 
         self.Value_var3.textChanged.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3
+                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3, self.offset_var3
             )
         )
-        self.Scaling_var3.textChanged.connect(
+        self.Scaling_var3.editingFinished.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3
+                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3,  self.offset_var3
             )
         )
 
         self.Value_var4.textChanged.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4
+                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4,  self.offset_var4
             )
         )
-        self.Scaling_var4.textChanged.connect(
+        self.Scaling_var4.editingFinished.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4
+                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4,  self.offset_var4
             )
         )
 
         self.Value_var5.textChanged.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5
+                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5,  self.offset_var5
             )
         )
-        self.Scaling_var5.textChanged.connect(
+        self.Scaling_var5.editingFinished.connect(
             lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5
+                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5,  self.offset_var5
             )
         )
 
@@ -446,10 +464,37 @@ class X2Cscope_GUI(QMainWindow):
         self.Live_var5.stateChanged.connect(
             lambda: self.var_live(self.Live_var5, self.timer5)
         )
+        # OffsetSet.
+        self.offset_var1.editingFinished.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
+            )
+        )
+        self.offset_var2.editingFinished.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2, self.offset_var2
+            )
+        )
+        self.offset_var3.editingFinished.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3, self.offset_var3
+            )
+        )
+        self.offset_var4.editingFinished.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4, self.offset_var4
+            )
+        )
+        self.offset_var5.editingFinished.connect(
+            lambda: self.update_scaled_value(
+                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5, self.offset_var5
+            )
+        )
+
 
         # Add slider for Variable 2
         self.slider_var1.setMinimum(0)
-        self.slider_var1.setMaximum(10000)
+        self.slider_var1.setMaximum(32767)
         self.slider_var1.setEnabled(False)
 
         self.slider_var1.valueChanged.connect(self.slider_var1_changed)
@@ -463,6 +508,22 @@ class X2Cscope_GUI(QMainWindow):
         # Populate the available ports combo box
         self.refresh_ports()
 
+    def Checker(self):
+        """
+        Check if the serial connection is established within a certain time.
+        If not, raise an error prompt using the handle_error function.
+        """
+        timeout = 1  # Time in seconds to wait for the connection
+        start_time = time.time()
+
+        while time.time() - start_time < timeout:
+            if self.ser:
+                return  # Connection established
+
+        # If the connection is not established within the timeout, raise an error
+        error_message = "Error connecting serial, Check Serial Settings"
+        logging.error(error_message)
+        self.handle_error(error_message)
     @pyqtSlot()
     def var_live(self, live_var, timer):
         try:
@@ -478,23 +539,28 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     @pyqtSlot()
-    def update_scaled_value(self, scaling_var, value_var, scaled_value_var):
+    def update_scaled_value(self, scaling_var, value_var, scaled_value_var, offset_var):
         scaling_text = scaling_var.text()
         value_text = value_var.text()
-
-        if scaling_text and value_text:
-            try:
+        offset_text = offset_var.text()
+        try:
+            value = float(value_text)
+            if offset_text.startswith("-"):
+                float_offset = float(offset_text.lstrip("-"))
+                offset = -1 * float_offset
+            else:
+                offset = float(offset_text)
+            if scaling_text.startswith("-"):
+                float_scailing = float(scaling_text.lstrip("-"))
+                scaling = -1* float_scailing
+            else:
                 scaling = float(scaling_text)
-                value = float(value_text)
-                scaled_value = scaling * value
-                scaled_value_var.setText("{:.2f}".format(scaled_value))
-            except Exception as e:
-                error_message = f"Error: {e}"
-                logging.error(error_message)
-                self.handle_error(error_message)
-        else:
-            scaled_value_var.setText("")
-
+            scaled_value = (scaling * value) + offset
+            scaled_value_var.setText("{:.2f}".format(scaled_value))
+        except Exception as e:
+            error_message = f"Error: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
     def plot_data_update(self):
         try:
             timestamp = datetime.now()
@@ -589,14 +655,12 @@ class X2Cscope_GUI(QMainWindow):
 
     # noinspection PyUnresolvedReferences
     def handle_error(self, error_message: str):
-        if error_message not in self.shown_errors:
-            msg_box = QMessageBox(self)
-            msg_box.setWindowTitle("Error")
-            msg_box.setText(error_message)
-            msg_box.setStandardButtons(QMessageBox.Ok)
-            msg_box.buttonClicked.connect(self.error_box_closed)
-            msg_box.exec_()
-            self.shown_errors.add(error_message)
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Error")
+        msg_box.setText(error_message)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.buttonClicked.connect(self.error_box_closed)
+        msg_box.exec_()
 
     def error_box_closed(self):
         # Handle closing of the error pop-up box if needed
@@ -641,7 +705,7 @@ class X2Cscope_GUI(QMainWindow):
         else:
             self.Value_var1.setText(str(value))
             self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
+                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
             )
             self.handle_variable_putram(self.combo_box1.currentText(), self.Value_var1)
 
@@ -787,7 +851,10 @@ class X2Cscope_GUI(QMainWindow):
             l_net = LNet(self.ser)
             self.var_factory = VariableFactory(l_net, self.file_path)
             self.VariableList = self.var_factory.get_var_list_elf()
-            self.VariableList.insert(0, "None")
+            if self.VariableList:
+                self.VariableList.insert(0, "None")
+            else:
+                return
             self.refresh_combo_box()
             logging.info("Serial Port Configuration:")
             logging.info(f"Port: {port}")
