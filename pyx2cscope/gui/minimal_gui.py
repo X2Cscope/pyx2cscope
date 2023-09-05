@@ -10,7 +10,10 @@ import time
 from collections import deque
 from datetime import datetime
 
+import matplotlib
 import matplotlib.pyplot as plt
+
+matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 import numpy as np
 import serial.tools.list_ports
 from matplotlib.animation import FuncAnimation
@@ -38,7 +41,7 @@ from PyQt5.QtWidgets import (
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.variable.variable_factory import VariableFactory
 
-#logging.basicConfig(level=logging.WARNING)  # Configure the logging module
+# logging.basicConfig(level=logging.WARNING)  # Configure the logging module
 
 
 class X2Cscope_GUI(QMainWindow):
@@ -163,7 +166,7 @@ class X2Cscope_GUI(QMainWindow):
             self.baud_combo.setCurrentIndex(index)
 
         self.Connect_button.clicked.connect(self.toggle_connection)
-        self.Connect_button.clicked.connect(self.Checker)
+        # self.Connect_button.clicked.connect(self.Checker) # TODO
         self.Connect_button.setFixedSize(100, 30)
 
         self.sampletime.setText("500")
@@ -213,7 +216,7 @@ class X2Cscope_GUI(QMainWindow):
             self.combo_box4,
             self.combo_box5,
         ]
-        self.value_boxes = [
+        self.Value_var_boxes = [
             self.Value_var1,
             self.Value_var2,
             self.Value_var3,
@@ -248,7 +251,7 @@ class X2Cscope_GUI(QMainWindow):
             self.plot_var4_checkbox,
             self.plot_var5_checkbox,
         ]
-        self.offset_box = [
+        self.offset_boxes = [
             self.offset_var1,
             self.offset_var2,
             self.offset_var3,
@@ -269,9 +272,9 @@ class X2Cscope_GUI(QMainWindow):
             zip(
                 self.live_checkboxes,
                 self.combo_boxes,
-                self.value_boxes,
+                self.Value_var_boxes,
                 self.scaling_boxes,
-                self.offset_box,
+                self.offset_boxes,
                 self.scaled_value_boxes,
                 unit_boxes,
                 self.plot_checkboxes,
@@ -279,7 +282,7 @@ class X2Cscope_GUI(QMainWindow):
             1,
         ):
             live_var.setEnabled(False)
-            combo_box.addItems(["None"])
+            # combo_box.addItems(["None"])
             combo_box.setEnabled(False)
             combo_box.setFixedWidth(350)
             value_var.setText("0")
@@ -298,7 +301,7 @@ class X2Cscope_GUI(QMainWindow):
 
             self.grid_layout.addWidget(value_var, row, 2)
             self.grid_layout.addWidget(scaling_var, row, 3)
-            self.grid_layout.addWidget(offset_var, row,4)
+            self.grid_layout.addWidget(offset_var, row, 4)
             self.grid_layout.addWidget(scaled_value_var, row, 5)
             self.grid_layout.addWidget(unit_var, row, 6)
             self.grid_layout.addWidget(plot_checkbox, row, 7)
@@ -313,187 +316,115 @@ class X2Cscope_GUI(QMainWindow):
         self.layout.addLayout(self.grid_layout, 5, 0)
         self.layout.addWidget(self.plot_button, 6, 0)
         # self.grid_layout.addWidget(self.slider_var2, 8, 0, 1, 6)
-        self.timer1.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box1.currentText(), self.Value_var1
-            )
-        )
 
-        self.timer2.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box2.currentText(), self.Value_var2
+        for timer, combo_box, value_var in zip(
+            self.timer_list, self.combo_boxes, self.Value_var_boxes
+        ):
+            timer.timeout.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_var_update(
+                    cb.currentText(), v_var
+                )
             )
-        )
 
-        self.timer3.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box3.currentText(), self.Value_var3
+        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+            combo_box.currentIndexChanged.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(
+                    self.VariableList[cb], v_var
+                )
             )
-        )
 
-        self.timer4.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box4.currentText(), self.Value_var4
+        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+            value_var.editingFinished.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_putram(
+                    self.VariableList[cb], v_var
+                )
             )
-        )
 
-        self.timer5.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box5.currentText(), self.Value_var5
-            )
-        )
+        for (
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
+        ) in zip(
+            self.scaling_boxes,
+            self.Value_var_boxes,
+            self.scaled_value_boxes,
+            self.offset_boxes,
+        ):
 
-        self.combo_box1.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box1.currentText(), self.Value_var1
-            )
-        )
-        self.combo_box2.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box2.currentText(), self.Value_var2
-            )
-        )
-        self.combo_box3.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box3.currentText(), self.Value_var3
-            )
-        )
-        self.combo_box4.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box4.currentText(), self.Value_var4
-            )
-        )
-        self.combo_box5.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box5.currentText(), self.Value_var5
-            )
-        )
-        self.Value_var1.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box1.currentText(), self.Value_var1
-            )
-        )
-        self.Value_var2.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box2.currentText(), self.Value_var2
-            )
-        )
-        self.Value_var3.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box3.currentText(), self.Value_var3
-            )
-        )
-        self.Value_var4.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box4.currentText(), self.Value_var4
-            )
-        )
-        self.Value_var5.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box5.currentText(), self.Value_var5
-            )
-        )
+            def connect_text_changed(
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
+            ):
+                def on_text_changed():
+                    self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
 
-        self.Value_var1.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
-            )
-        )
-        self.Scaling_var1.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
-            )
-        )
+                return on_text_changed
 
-        self.Value_var2.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2, self.offset_var2
-            )
-        )
-        self.Scaling_var2.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2, self.offset_var2
-            )
-        )
+            value_var.textChanged.connect(connect_text_changed())
 
-        self.Value_var3.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3, self.offset_var3
-            )
-        )
-        self.Scaling_var3.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3,  self.offset_var3
-            )
-        )
+        for (
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
+        ) in zip(
+            self.scaling_boxes,
+            self.Value_var_boxes,
+            self.scaled_value_boxes,
+            self.offset_boxes,
+        ):
 
-        self.Value_var4.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4,  self.offset_var4
-            )
-        )
-        self.Scaling_var4.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4,  self.offset_var4
-            )
-        )
+            def connect_editing_finished(
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
+            ):
+                def on_editing_finished():
+                    self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
 
-        self.Value_var5.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5,  self.offset_var5
-            )
-        )
-        self.Scaling_var5.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5,  self.offset_var5
-            )
-        )
+                return on_editing_finished
 
-        self.Live_var1.stateChanged.connect(
-            lambda: self.var_live(self.Live_var1, self.timer1)
-        )
-        self.Live_var2.stateChanged.connect(
-            lambda: self.var_live(self.Live_var2, self.timer2)
-        )
-        self.Live_var3.stateChanged.connect(
-            lambda: self.var_live(self.Live_var3, self.timer3)
-        )
-        self.Live_var4.stateChanged.connect(
-            lambda: self.var_live(self.Live_var4, self.timer4)
-        )
-        self.Live_var5.stateChanged.connect(
-            lambda: self.var_live(self.Live_var5, self.timer5)
-        )
+            scaling.editingFinished.connect(connect_editing_finished())
+
+        for timer, live_var in zip(self.timer_list, self.live_checkboxes):
+            live_var.stateChanged.connect(
+                lambda state, lv=live_var, tm=timer: self.var_live(lv, tm)
+            )
+
         # OffsetSet.
-        self.offset_var1.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
-            )
-        )
-        self.offset_var2.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2, self.offset_var2
-            )
-        )
-        self.offset_var3.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3, self.offset_var3
-            )
-        )
-        self.offset_var4.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4, self.offset_var4
-            )
-        )
-        self.offset_var5.editingFinished.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5, self.offset_var5
-            )
-        )
+
+        for (
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
+        ) in zip(
+            self.scaling_boxes,
+            self.Value_var_boxes,
+            self.scaled_value_boxes,
+            self.offset_boxes,
+        ):
+
+            def connect_text_changed(
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
+            ):
+                def on_text_changed():
+                    self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
+
+                return on_text_changed
+
+            offset.editingFinished.connect(connect_text_changed())
 
 
         # Add slider for Variable 2
-        self.slider_var1.setMinimum(0)
+        self.slider_var1.setMinimum(-32768)
         self.slider_var1.setMaximum(32767)
         self.slider_var1.setEnabled(False)
 
@@ -524,6 +455,7 @@ class X2Cscope_GUI(QMainWindow):
         error_message = "Error connecting serial, Check Serial Settings"
         logging.error(error_message)
         self.handle_error(error_message)
+
     @pyqtSlot()
     def var_live(self, live_var, timer):
         try:
@@ -552,7 +484,7 @@ class X2Cscope_GUI(QMainWindow):
                 offset = float(offset_text)
             if scaling_text.startswith("-"):
                 float_scailing = float(scaling_text.lstrip("-"))
-                scaling = -1* float_scailing
+                scaling = -1 * float_scailing
             else:
                 scaling = float(scaling_text)
             scaled_value = (scaling * value) + offset
@@ -561,6 +493,7 @@ class X2Cscope_GUI(QMainWindow):
             error_message = f"Error: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
+
     def plot_data_update(self):
         try:
             timestamp = datetime.now()
@@ -622,7 +555,11 @@ class X2Cscope_GUI(QMainWindow):
 
             def initialize_plot():
                 self.fig, self.ax = plt.subplots()
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1, cache_frame_data=False)
+
+                self.ani = FuncAnimation(
+                    self.fig, self.update_plot, interval=1, cache_frame_data=False
+                )
+                logging.debug(self.ani)
                 plt.xticks(rotation=45)
                 self.ax.axhline(
                     0, color="black", linewidth=0.5
@@ -662,10 +599,6 @@ class X2Cscope_GUI(QMainWindow):
         msg_box.buttonClicked.connect(self.error_box_closed)
         msg_box.exec_()
 
-    def error_box_closed(self):
-        # Handle closing of the error pop-up box if needed
-        pass
-
     def sampletime_edit(self):
         try:
             new_sample_time = int(self.sampletime.text())
@@ -674,11 +607,9 @@ class X2Cscope_GUI(QMainWindow):
                 for timer in self.timer_list:
                     if timer.isActive():
                         timer.start(self.timerValue)
-        except Exception as e:
-            error_message = f"Error: {e}"
-            logging.error(error_message)
-            self.handle_error(error_message)
+        except ValueError as e:
             logging.error(e)
+            self.handle_error(f"Invalid sample time: {e}")
 
     @pyqtSlot()
     def handle_var_update(self, counter, value_var):
@@ -705,7 +636,10 @@ class X2Cscope_GUI(QMainWindow):
         else:
             self.Value_var1.setText(str(value))
             self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1, self.offset_var1
+                self.Scaling_var1,
+                self.Value_var1,
+                self.ScaledValue_var1,
+                self.offset_var1,
             )
             self.handle_variable_putram(self.combo_box1.currentText(), self.Value_var1)
 
@@ -893,6 +827,7 @@ class X2Cscope_GUI(QMainWindow):
             self.ani.event_source.stop()
         plt.close(self.fig)
         self.plot_window_open = False
+
     def closeEvent(self, event):
         # Close the serial connection and clean up when the application is closed
         if self.plot_window_open:
