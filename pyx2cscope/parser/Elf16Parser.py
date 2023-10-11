@@ -23,25 +23,25 @@ def find_latest_xc16_version(path):
     xc16_versions.sort(reverse=True)
 
     # Return the latest version or None if not found
-    return xc16_versions[0] if xc16_versions else None
+    return xc16_versions if xc16_versions else None
 
+def checking_xc16(xc16_base_path, latest_version):
+    xc16_readelf_path = os.path.join(xc16_base_path, latest_version, "bin", "xc16-readelf.exe")
+
+    # Check if the xc16-readelf executable exists
+    if os.path.exists(xc16_readelf_path):
+        return xc16_readelf_path
+    else:
+        return None
 
 def get_xc16_readelf_path():
     xc16_base_path = "C:/Program Files/Microchip/xc16"
-    latest_version = find_latest_xc16_version(xc16_base_path)
-
-    if latest_version:
-        xc16_readelf_path = os.path.join(xc16_base_path, latest_version, "bin", "xc16-readelf.exe")
-
-        # Check if the xc16-readelf executable exists
-        if os.path.exists(xc16_readelf_path):
-            return xc16_readelf_path
-        else:
-            print(f"xc16-readelf.exe not found in {latest_version} version.")
-    else:
-        print("No XC16 version found in the specified directory.")
-
-    return None
+    xc16_versions = find_latest_xc16_version(xc16_base_path)
+    for x in range (len(xc16_versions)):
+        path = checking_xc16(xc16_base_path, xc16_versions[x])
+        if path:
+            break
+    return path if path else None
 
 
 # Get the dynamic xc16_readelf_path
