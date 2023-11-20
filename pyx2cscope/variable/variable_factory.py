@@ -1,9 +1,6 @@
-import logging
-
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *
-from pyx2cscope.variable.vartypes import VarTypes
 
 
 class VariableFactory:
@@ -16,10 +13,13 @@ class VariableFactory:
         self.parser = None  # Initialize the parser as None
         self.device_info = self.l_net.interface_handshake()
         if self.device_info:
-            self.parser_obj = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
-            self.parser = self.parser_obj(self.elfFile)
-        # mapping the variable data from the elf-file provided
-            self.variable_map = self.parser.map_all_variables_data()
+            self.parser_obj = (
+                Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
+            )
+            if self.elfFile:
+                self.parser = self.parser_obj(self.elfFile)
+            # mapping the variable data from the elf-file provided
+                self.variable_map = self.parser.map_all_variables_data()
             logging.info(self.variable_map)
 
     def get_var_list_elf(self) -> list[str]:
@@ -29,7 +29,10 @@ class VariableFactory:
         Returns:
             list[Variable]: List of variables.
         """
-        return self.parser.get_var_list()
+        if self.parser:
+            return self.parser.get_var_list()
+        else:
+            return []
 
     def get_variable_elf(self, name: str) -> Variable:
         """
@@ -56,22 +59,19 @@ class VariableFactory:
 
             return self.variable_data
         except Exception as e:
-            logging.error(
-                f"Error while getting variable '{name}' from ELF file: {str(e)}"
-            )
-            raise
+            logging.error(f"Error while getting variable '{name}' from ELF file: {str(e)}")
 
     def get_variable_raw(
-        self, address: int, var_type: VarTypes, name: str = "unknown"
+        self, address: int, var_type: str, name: str = "unknown"
     ) -> Variable:
         """
         get a variable object based on the provided address, type, and name.
 
-        Args:
+        args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
             name (str, optional): Name of the variable.
-            defaults to "unknown".
+            defaults to "unknown."
 
         returns:
             Variable: Variable object based on the provided information.
@@ -89,7 +89,7 @@ class VariableFactory:
         """
         create a variable object based on the provided address, type, and name.
 
-        Args:
+        args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
             name (str): Name of the variable.
@@ -97,7 +97,7 @@ class VariableFactory:
         returns:
             Variable: Variable object based on the provided information.
 
-        Raises:
+        raises:
             Exception: If the variable type is not found.
         """
         type_factory = {
