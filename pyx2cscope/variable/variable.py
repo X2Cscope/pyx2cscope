@@ -4,6 +4,7 @@ from abc import abstractmethod
 from numbers import Number
 
 import mchplnet.lnet as LNet
+from services.frame_save_parameter import ScopeChannel
 
 
 class Variable:
@@ -86,6 +87,16 @@ class Variable:
     @abstractmethod
     def is_integer(self) -> bool:
         pass
+
+    def get_channel_for_scope(self) -> ScopeChannel:
+        return ScopeChannel(
+            name=self.name,
+            source_location=self.address,
+            data_type_size=self._get_width(),
+            source_type=0,
+            is_integer=self.is_integer(),
+            is_signed=self.is_signed()
+        )
 
 
 # ------------------------------INT_8------------------------------
