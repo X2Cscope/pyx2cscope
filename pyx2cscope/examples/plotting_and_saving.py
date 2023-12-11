@@ -1,7 +1,8 @@
 import logging
+import queue
 import threading
 import time
-import queue
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,6 +18,7 @@ logging.basicConfig(
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
+
 from variable.variable_factory import VariableFactory
 
 # Initialize serial communication

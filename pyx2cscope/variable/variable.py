@@ -4,7 +4,7 @@ from abc import abstractmethod
 from numbers import Number
 
 import mchplnet.lnet as LNet
-from services.frame_save_parameter import ScopeChannel
+from services.frame_save_parameter import ScopeChannel, ScopeTrigger
 
 
 class Variable:
@@ -74,7 +74,6 @@ class Variable:
             logging.error(e)
 
     def _set_value_raw(self, bytes_data: bytes) -> None:
-
         try:
             self.l_net.put_ram(self.address, self._get_width(), bytes_data)
         except Exception as e:
@@ -88,14 +87,23 @@ class Variable:
     def is_integer(self) -> bool:
         pass
 
-    def get_channel_for_scope(self) -> ScopeChannel:
+    def as_channel(self) -> ScopeChannel:
         return ScopeChannel(
             name=self.name,
             source_location=self.address,
             data_type_size=self._get_width(),
             source_type=0,
             is_integer=self.is_integer(),
-            is_signed=self.is_signed()
+            is_signed=self.is_signed(),
+        )
+
+    def as_trigger(self, trigger_level: int, trigger_delay: int, trigger_edge: int, trigger_mode: int) -> ScopeTrigger:
+        return ScopeTrigger(
+            channel=self.as_channel(),
+            trigger_level=trigger_level,
+            trigger_delay=trigger_delay,
+            trigger_edge=trigger_edge,
+            trigger_mode=trigger_mode,
         )
 
 
@@ -179,7 +187,6 @@ class Variable_uint8(Variable):
 
 
 class Variable_int16(Variable):
-
     def is_integer(self) -> bool:
         return True
 
@@ -419,7 +426,6 @@ class Variable_float(Variable):
         return 4
 
     def set_value(self, value: float):
-
         try:
             float_value = float(value)
             bytes_data = bytearray(struct.pack("f", float_value))

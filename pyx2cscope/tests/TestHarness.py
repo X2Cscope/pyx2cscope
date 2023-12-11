@@ -1,5 +1,6 @@
 import logging
 import pdb
+
 logging.basicConfig(
     level=0,
     filename="TestHarness.log",
@@ -23,14 +24,15 @@ l_net = LNet(serial_connection)
 variable_factory = VariableFactory(l_net, elf_file)
 
 
-
 # Variable Creation from ELF file.
 
 system_guardKey = variable_factory.get_variable_elf("systemData.testing.guard.key")
 Overrides = variable_factory.get_variable_elf("motor.testing.overrides")
 OperatingMode = variable_factory.get_variable_elf("motor.testing.operatingMode")
 SquareWaveValue = variable_factory.get_variable_elf("motor.testing.sqwave.value")
-SquareWaveHalfPeriod = variable_factory.get_variable_elf("motor.testing.sqwave.halfperiod")
+SquareWaveHalfPeriod = variable_factory.get_variable_elf(
+    "motor.testing.sqwave.halfperiod"
+)
 SquareWaveIDQ_D = variable_factory.get_variable_elf("motor.testing.sqwave.idq.d")
 CMDRaw_D = variable_factory.get_variable_elf("motor.idqCmdRaw.d")
 CMDRaw_Q = variable_factory.get_variable_elf("motor.idqCmdRaw.q")
@@ -43,15 +45,18 @@ IDCntrl_nKI = variable_factory.get_variable_elf("motor.idCtrl.nki")
 def apply_changes_for_current_control():
     system_guardKey.set_value(53260)
     Overrides.set_value(2)
-    OperatingMode.set_value(2) # current control
+    OperatingMode.set_value(2)  # current control
     SquareWaveValue.set_value(1)
     SquareWaveHalfPeriod.set_value(0.5)
+
+
 def apply_changes_for_velocity_control():
     system_guardKey.set_value(53260)
     Overrides.set_value(2)
-    OperatingMode.set_value(3) # Velocity control
+    OperatingMode.set_value(3)  # Velocity control
     SquareWaveValue.set_value(1)
     SquareWaveHalfPeriod.set_value(0.5)
+
 
 if __name__ == "__main__":
     pdb.set_trace()

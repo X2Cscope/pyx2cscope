@@ -5,6 +5,14 @@
 # pyX2Cscope
 - pyX2Cscope is the Python implementation of the X2Cscope plugin from MPLABX.
 - This will let the user use the functionality of X2Cscope even outside mplabx enviroment / Standalone.
+- It allows user to:
+  - Automated Unit Tests (TDD) using pytest
+  - BDD(behaviour driven development), Framework: "Cucumber"
+  - Different user interface
+  - Data collection for machine learning and training models
+  - Run-Time data analysis
+  - Use of Real Time AI model
+  - HiL(Hardware in the loop) testing and tuning
 
 ## Getting Started with Scripting
 
@@ -40,10 +48,10 @@ Variable = variable_factory.get_variable_elf('Variable_name')
 11. Once you have gone through these steps, you can use the get_value() function to retrieve the value of the variable:``Variable.get_value()``. You can also use the ``Variable.set_value(value)`` function to set the value of the variable.
 
 
-## Getting Started with pyX2Cscope-GUI
+## Getting Started with pyX2Cscope reference GUI
 
 1. pyX2Cscope-GUI is based on Serial interface.
-2. The Firmware of the microcontroller should have the X2CScope library/Peripheral enabled.
+2. The Firmware of the microcontroller should have the X2Cscope library/Peripheral enabled.
 2. Select the COM Port, Baud Rate from the drop-down menus and the ELF file of the project, the microcontroller programmed with. <br>
     ![COM-port](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/feat-faster-monitoring/pyx2cscope/gui/img/Setting.jpg)
 3. Sample time can be changed during run time as well, by default its set to 500ms.

@@ -18,7 +18,7 @@ class VariableFactory:
             )
             if self.elfFile:
                 self.parser = self.parser_obj(self.elfFile)
-            # mapping the variable data from the elf-file provided
+                # mapping the variable data from the elf-file provided
                 self.variable_map = self.parser.map_all_variables_data()
             logging.info(self.variable_map)
 
@@ -59,7 +59,9 @@ class VariableFactory:
 
             return self.variable_data
         except Exception as e:
-            logging.error(f"Error while getting variable '{name}' from ELF file: {str(e)}")
+            logging.error(
+                f"Error while getting variable '{name}' from ELF file: {str(e)}"
+            )
 
     def get_variable_raw(
         self, address: int, var_type: str, name: str = "unknown"

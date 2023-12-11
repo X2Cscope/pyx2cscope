@@ -3,6 +3,7 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from gui.watchView.minimal_gui import X2Cscope_GUI
 
+
 # Define a function to set the logging level based on a string argument
 def set_logging_level(level_str):
     numeric_level = getattr(logging, level_str.upper(), None)
@@ -15,6 +16,7 @@ def set_logging_level(level_str):
         logging.info("Info message")
         logging.warning("Warning message")
         logging.error("Error message")
+
 
 if len(sys.argv) > 1:
     log_level_arg = sys.argv[1]
