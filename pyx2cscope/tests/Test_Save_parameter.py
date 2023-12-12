@@ -36,7 +36,8 @@ def read_array_chunks(l_net, data_array_address, array_size, chunk_size=252, dat
         except Exception as e:
             logging.error(f"Error reading chunk {i}: {str(e)}")
 
-    return chunks
+    values = [int.from_bytes(chunks[i:i + 2], byteorder='little') for i in range(0, len(chunks), variable1._get_width())]
+    return values
 
 # Initialize LNet and VariableFactory
 serial_port = "COM8"
@@ -48,9 +49,9 @@ variable_factory = VariableFactory(l_net, elf_file)
 
 # Set up scope configuration
 scope_config = ScopeSetup()
-variable1 = variable_factory.get_variable_elf("motor.idq.q")
-scope_config.add_channel(variable1.as_channel(), trigger=False)
-#scope_config.set_trigger(channel=variable1.as_channel(), trigger_level=30000000, trigger_mode=1, trigger_delay=0, trigger_edge=1)
+variable1 = variable_factory.get_variable_elf("motor.estimator.qei.position.electrical")
+scope_config.add_channel(variable1.as_channel(), trigger=True)
+scope_config.set_trigger(channel=variable1.as_channel(), trigger_level=2, trigger_mode=1, trigger_delay=0, trigger_edge=1)
 
 # Save and Load Parameters
 for i in range(50000):
@@ -65,7 +66,7 @@ for i in range(50000):
 
             # Read array chunks
             data = read_array_chunks(l_net, load_parameter.data_array_address, array_size=load_parameter.data_array_size)
-            print(len(data))
+            print((data))
 
             # Uncomment the following lines if you want to plot the data
             # numeric_data = [item for sublist in data for item in sublist]
