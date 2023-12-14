@@ -29,14 +29,16 @@ def read_array_chunks(l_net, data_array_address, array_size, chunk_size=252, dat
             chunk_data = l_net.get_ram_array(address=current_address, data_type=data_type, bytes_to_read=chunk_size)
 
 
-            values = convert_data(chunk_data, variable1._get_width())
             # Append the chunk data to the list
-            chunks.extend(values)
+            chunks.extend(chunk_data)
         except Exception as e:
             logging.error(f"Error reading chunk {i}: {str(e)}")
 
+    extracted_channels = extract_channels(chunks, channel_config())
+
+    extracted_channel_data = convert_data(extracted_channels, variable1._get_width())
     #values = [int.from_bytes(chunks[i:i + 2], byteorder='little') for i in range(0, len(chunks), variable1._get_width())]
-    return chunks
+    return extracted_channel_data
 
 
 def extract_channels(data, channel_configs):
@@ -61,12 +63,24 @@ def extract_channels(data, channel_configs):
 
 def channel_config():
 
-    return [(channel_name, 1) for channel_name, channel_info in enumerate(scope_config.list_channels().values())]
+    return [(channel_info.name, channel_info.data_type_size) for index, channel_info in enumerate(scope_config.list_channels().values())]
 
 
-def convert_data(chunk_data, width):
-    # Interpret as signed integer
-    return struct.unpack("<{}h".format(len(chunk_data) // width), chunk_data)
+def convert_data(extracted_channels, width):
+    converted_data = {}
+    for key, byte_list in extracted_channels.items():
+        # Ensure the byte list length is even for pairs of bytes
+        if len(byte_list) % 2 != 0:
+            raise ValueError(f"Byte list length for {key} is not even.")
+
+        # Convert the list of bytes to a bytes object
+        bytes_data = bytes(byte_list)
+
+        # Interpret each pair of bytes as a 16-bit signed integer
+        format_string = f"<{len(bytes_data) // width}h"
+        converted_data[key] = struct.unpack(format_string, bytes_data)
+
+    return converted_data
 
 
 # Initialize LNet and VariableFactory
@@ -81,8 +95,10 @@ variable_factory = VariableFactory(l_net, elf_file)
 scope_config = ScopeSetup()
 variable1 = variable_factory.get_variable_elf("motor.idq.q")
 variable2 = variable_factory.get_variable_elf("motor.estimator.qei.position.electrical")
+variable3 = variable_factory.get_variable_elf("motor.vabc.a")
 scope_config.add_channel(variable1.as_channel(), trigger=True)
-scope_config.add_channel(variable2.as_channel())
+#scope_config.add_channel(variable2.as_channel())
+scope_config.add_channel(variable3.as_channel())
 
 
 print(len(scope_config.list_channels()))
@@ -102,21 +118,22 @@ for i in range(50000):
 
             # Read array chunks
             data = read_array_chunks(l_net, load_parameter.data_array_address, array_size=load_parameter.data_array_size)
-            print(data)
-            extracted_data = extract_channels(data, channel_config())
-            print(extracted_data)
+            print(data) # dict
+            # extracted_data = extract_channels(data, channel_config())
+            # print(extracted_data)
 
             # Uncomment the following lines if you want to plot the data
             # numeric_data = [item for sublist in data for item in sublist]
 
-            for channel, data in extracted_data.items():
+            for channel, data in data.items():
 
                 plt.plot(data, label= f"Channel {channel}" )
-            #
-            plt.plot(extracted_data[1])
+
+            #plt.plot(extracted_data[1])
             plt.xlabel('Data Index')
             plt.ylabel('Value')
             plt.title('Plot of Byte Data')
+            plt.legend()
             plt.show()
 
 
