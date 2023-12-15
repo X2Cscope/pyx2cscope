@@ -4,7 +4,7 @@ from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
 import time
 from pyx2cscope.variable.variable_factory import VariableFactory
-from mchplnet.services.frame_save_parameter import ScopeSetup, ScopeTrigger
+from mchplnet.services.frame_save_parameter import ScopeSetup
 import struct
 import matplotlib.pyplot as plt
 
@@ -13,8 +13,18 @@ logging.basicConfig(
     filename="Save_parameter_test.py.log",
 )
 
+
+
+def data_set_size():
+    return sum(channel.data_type_size for channel in scope_config.list_channels().values())
+
+def SDA_used_length():
+    # SDA(Scope Data Array) - SDA % DSS(data Set Size)
+    return load_parameter.data_array_size - load_parameter.data_array_size % data_set_size()
+
+
 # Function to read array chunks
-def read_array_chunks(l_net, data_array_address, array_size, chunk_size=252, data_type=1):
+def read_array_chunks(l_net, data_array_address, array_size, chunk_size=253, data_type=1):
     chunks = []
 
     # Calculate the number of chunks
@@ -96,13 +106,18 @@ scope_config = ScopeSetup()
 variable1 = variable_factory.get_variable_elf("motor.idq.q")
 variable2 = variable_factory.get_variable_elf("motor.estimator.qei.position.electrical")
 variable3 = variable_factory.get_variable_elf("motor.vabc.a")
+variable4 = variable_factory.get_variable_elf("motor.vabc.b")
+variable5 = variable_factory.get_variable_elf("motor.vabc.c")
+
+
 scope_config.add_channel(variable1.as_channel(), trigger=True)
 #scope_config.add_channel(variable2.as_channel())
 scope_config.add_channel(variable3.as_channel())
-
+#scope_config.add_channel(variable4.as_channel())
+#scope_config.add_channel(variable5.as_channel())
 
 print(len(scope_config.list_channels()))
-scope_config.set_trigger(channel=variable2.as_channel(), trigger_level=3000, trigger_mode=1, trigger_delay=0, trigger_edge=1)
+scope_config.set_trigger(channel=variable1.as_channel(), trigger_level=400, trigger_mode=1, trigger_delay=0, trigger_edge=1)
 l_net.scope_save_parameter(scope_config)
 
 # Save and Load Parameters
@@ -111,19 +126,14 @@ for i in range(50000):
         # Load parameters
         load_parameter = l_net.load_parameters()
         print(load_parameter)
-
         # Check if scope finished
-        if load_parameter.scope_state == 0:
+        if load_parameter.scope_state == 0 or load_parameter.data_array_pointer == load_parameter.data_array_used_length:
             print("Scope finished")
+            print("look at:",load_parameter.trigger_event_position / data_set_size())
 
             # Read array chunks
-            data = read_array_chunks(l_net, load_parameter.data_array_address, array_size=load_parameter.data_array_size)
-            print(data) # dict
-            # extracted_data = extract_channels(data, channel_config())
-            # print(extracted_data)
+            data = read_array_chunks(l_net, load_parameter.data_array_address, array_size=SDA_used_length())
 
-            # Uncomment the following lines if you want to plot the data
-            # numeric_data = [item for sublist in data for item in sublist]
 
             for channel, data in data.items():
 
