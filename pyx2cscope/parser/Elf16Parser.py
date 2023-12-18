@@ -538,10 +538,9 @@ class Elf16Parser(ElfParser):
 if __name__ == "__main__":
     input_elf_file = r"C:\_DESKTOP\_Projects\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\MCL2_AN1160_Script\bldc.X\dist\MCLV2\production\bldc.X.production.elf"
     logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
-    input_elf_file = (
-        r"C:\_DESKTOP\_Projects\Motorbench_Projects\AN1292-42BLF02-mb-33ck256mp508.X\dist"
-        r"\default\production\AN1292-42BLF02-mb-33ck256mp508.X.production.elf"
-    )
+    input_elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\motorbench_longhurst_mclv2_dsPIC33ck\motorbench_longhurst.X\dist\default\production\motorbench_longhurst.X.production.elf"
+
     elf_reader = Elf16Parser(input_elf_file)
 
-    logging.debug(elf_reader.map_all_variables_data().get("motor.dynLimit.iLimit"))
+    print(elf_reader.map_all_variables_data())
+    #logging.debug(elf_reader.map_all_variables_data().get("motor.dynLimit.iLimit"))

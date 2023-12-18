@@ -46,7 +46,7 @@ def read_array_chunks(l_net, data_array_address, array_size, chunk_size=253, dat
 
     extracted_channels = extract_channels(chunks, channel_config())
 
-    extracted_channel_data = convert_data(extracted_channels, variable1._get_width())
+    extracted_channel_data = convert_data(extracted_channels, variable1._get_width()) # TODO dynamic width
     #values = [int.from_bytes(chunks[i:i + 2], byteorder='little') for i in range(0, len(chunks), variable1._get_width())]
     return extracted_channel_data
 
@@ -112,12 +112,12 @@ variable5 = variable_factory.get_variable_elf("motor.vabc.c")
 
 scope_config.add_channel(variable1.as_channel(), trigger=True)
 #scope_config.add_channel(variable2.as_channel())
-scope_config.add_channel(variable3.as_channel())
+#scope_config.add_channel(variable3.as_channel())
 #scope_config.add_channel(variable4.as_channel())
 #scope_config.add_channel(variable5.as_channel())
 
 print(len(scope_config.list_channels()))
-scope_config.set_trigger(channel=variable1.as_channel(), trigger_level=400, trigger_mode=1, trigger_delay=0, trigger_edge=1)
+scope_config.set_trigger(channel=variable3.as_channel(), trigger_level=-500, trigger_mode=1, trigger_delay=50, trigger_edge=1)
 l_net.scope_save_parameter(scope_config)
 
 # Save and Load Parameters
@@ -130,6 +130,7 @@ for i in range(50000):
         if load_parameter.scope_state == 0 or load_parameter.data_array_pointer == load_parameter.data_array_used_length:
             print("Scope finished")
             print("look at:",load_parameter.trigger_event_position / data_set_size())
+            print("delayed trigger", load_parameter.trigger_event_position / data_set_size() - scope_config.scope_trigger.trigger_delay)
 
             # Read array chunks
             data = read_array_chunks(l_net, load_parameter.data_array_address, array_size=SDA_used_length())

@@ -24,7 +24,7 @@ serial_connection = InterfaceFactory.get_interface(
 elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\testing_x2cscope.X\dist\default\production\testing_x2cscope.X.production.elf"
 l_net = LNet(serial_connection)
 variable_factory = VariableFactory(l_net, elf_file)
-variable2 = variable_factory.get_variable_elf("b_int")
+variable2 = variable_factory.get_variable_elf("ScopeArray")
 
 variable2.get_value()
 
