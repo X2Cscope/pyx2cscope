@@ -11,7 +11,7 @@ class VariableFactory:
         self.variable_data = None
         self.elfFile = Elf_path  # Initialize the ELF file as None
         self.parser = None  # Initialize the parser as None
-        self.device_info = self.l_net.interface_handshake()
+        self.device_info = self.l_net.get_device_info()
         if self.device_info:
             self.parser_obj = (
                 Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
