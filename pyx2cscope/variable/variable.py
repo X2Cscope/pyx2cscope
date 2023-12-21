@@ -4,7 +4,7 @@ from abc import abstractmethod
 from numbers import Number
 
 import mchplnet.lnet as LNet
-from services.frame_save_parameter import ScopeChannel, ScopeTrigger
+from mchplnet.services.frame_save_parameter import ScopeChannel, ScopeTrigger
 
 
 class Variable:
@@ -97,7 +97,13 @@ class Variable:
             is_signed=self.is_signed(),
         )
 
-    def as_trigger(self, trigger_level: int, trigger_delay: int, trigger_edge: int, trigger_mode: int) -> ScopeTrigger:
+    def as_trigger(
+        self,
+        trigger_level: int,
+        trigger_delay: int,
+        trigger_edge: int,
+        trigger_mode: int,
+    ) -> ScopeTrigger:
         return ScopeTrigger(
             channel=self.as_channel(),
             trigger_level=trigger_level,

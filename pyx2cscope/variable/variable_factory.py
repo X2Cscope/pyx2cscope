@@ -4,90 +4,42 @@ from pyx2cscope.variable.variable import *
 
 
 class VariableFactory:
-    def __init__(self, l_net: LNet, Elf_path=None):
+    def __init__(self, l_net: LNet, elf_path=None):
         self.l_net = l_net
         self.variable_map = None
-        self.var_result = None
-        self.variable_data = None
-        self.elfFile = Elf_path  # Initialize the ELF file as None
-        self.parser = None  # Initialize the parser as None
         self.device_info = self.l_net.get_device_info()
-        if self.device_info:
-            self.parser_obj = (
-                Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
-            )
-            if self.elfFile:
-                self.parser = self.parser_obj(self.elfFile)
-                # mapping the variable data from the elf-file provided
-                self.variable_map = self.parser.map_all_variables_data()
-            logging.info(self.variable_map)
+        parser = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
+        self.parser = parser(elf_path)
+        self.variable_map = self.parser.map_variables()
 
-    def get_var_list_elf(self) -> list[str]:
+    def get_var_list(self) -> list[str]:
         """
-        Get the list of variables available from the ELF file.
+        Get the list of variables available.
 
         Returns:
-            list[Variable]: List of variables.
+            list[str]: List of variables.
         """
-        if self.parser:
-            return self.parser.get_var_list()
-        else:
-            return []
+        return self.parser.get_var_list()
 
-    def get_variable_elf(self, name: str) -> Variable:
+    def get_variable(self, name: str) -> Variable | None:
         """
-        Get the value of the variable directly from the ELF file parser and perform further processing.
+        Get the Variable object from the parser or None.
 
         Args:
-            name (str): Variable name from the user.
+            name (str): Variable name.
 
         Returns:
-            Variable: Variable object with the retrieved value like address, type, and size.
+            Variable: Variable object or None.
         """
-        if self.elfFile is None:
-            raise Exception("ELF file is not set. Use set_elf_file()")
-
         try:
-            # ELF parsing
-            if self.variable_map:
-                self.var_result = self.variable_map.get(name)
-            # var_result = self.parser.get_var_info(name)
-            if self.var_result:
-                self.variable_data = self.get_variable_raw(
-                    self.var_result.address, self.var_result.type, self.var_result.name
-                )
-
-            return self.variable_data
+            variable_info = self.variable_map.get(name)
+            return self._get_variable_instance(variable_info.address, variable_info.type, variable_info.name)
         except Exception as e:
             logging.error(
                 f"Error while getting variable '{name}' from ELF file: {str(e)}"
             )
 
-    def get_variable_raw(
-        self, address: int, var_type: str, name: str = "unknown"
-    ) -> Variable:
-        """
-        get a variable object based on the provided address, type, and name.
-
-        args:
-            address (int): Address of the variable in the MCU memory.
-            var_type (VarTypes): Type of the variable.
-            name (str, optional): Name of the variable.
-            defaults to "unknown."
-
-        returns:
-            Variable: Variable object based on the provided information.
-        """
-        # TODO check address range
-
-        try:
-            variable = self._create_variable(address, var_type, name)
-            return variable
-        except Exception as e:
-            logging.error(f"Error while creating variable '{name}': {str(e)}")
-            raise
-
-    def _create_variable(self, address: int, var_type: str, name: str) -> Variable:
+    def _get_variable_instance(self, address: int, var_type: str, name: str) -> Variable:
         """
         create a variable object based on the provided address, type, and name.
 
@@ -114,9 +66,7 @@ class VariableFactory:
             "long long": Variable_int64,
             "long long unsigned int": Variable_uint64,
             "long unsigned int": Variable_uint32,
-            "pointer": Variable_uint16
-            if self.device_info == 2
-            else Variable_uint32,  # TODO v 0.2.0
+            "pointer": Variable_uint16 if self.device_info.uc_width == 2 else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
             "short int": Variable_int16,
             "short unsigned int": Variable_uint16,

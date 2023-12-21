@@ -24,15 +24,45 @@ class VariableInfo:
 
 
 class ElfParser(ABC):
-    @abstractmethod
-    def get_var_info(self, var_name: str) -> VariableInfo:
-        pass
 
-    @abstractmethod
+    def __init__(self, elf_path):
+        """
+        Initialize the DwarfParser with the path to the ELF file.
+
+        Args:
+            elf_path (str): Path to the ELF file.
+        """
+        self.elf_path = elf_path
+        self.dwarf_info = {}
+        self.elf_file = None
+        self.variable_map = {}
+        self.var_name = None
+        self._load_elf_file()
+
+    def get_var_info(self, name: str) -> VariableInfo | None:
+        """Return the VariableInfo associated to the variable name or None"""
+        if name in self.variable_map:
+            return self.variable_map[name]
+        return None
+
     def get_var_list(self) -> List[str]:
-        """Return all variables described at elf file as a list of variable names."""
-        pass
+        """Return all variable name available the elf file."""
+        if not self.variable_map:
+            self._map_variables()
+        return sorted(self.variable_map.keys(), key=lambda x: x.lower())
+
+    def map_variables(self) -> dict[str, VariableInfo]:
+        """Return a dictionary of {variable names: VariableInfo}"""
+        if not self.variable_map:
+            self._map_variables()
+        return self.variable_map
 
     @abstractmethod
-    def map_all_variables_data(self) -> dict:
-        pass
+    def _load_elf_file(self):
+        """
+        Load the elf file according to the hardware architecture of the subclass
+        """
+
+    @abstractmethod
+    def _map_variables(self) -> dict[str, VariableInfo]:
+        """Return a dictionary of variable name: VariableInfo"""
