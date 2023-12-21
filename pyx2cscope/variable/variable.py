@@ -4,7 +4,7 @@ from abc import abstractmethod
 from numbers import Number
 
 import mchplnet.lnet as LNet
-from mchplnet.services.frame_save_parameter import ScopeChannel, ScopeTrigger
+from mchplnet.services.scope import ScopeChannel, ScopeTrigger
 
 
 class Variable:

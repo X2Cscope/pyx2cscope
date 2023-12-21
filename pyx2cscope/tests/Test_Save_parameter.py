@@ -120,14 +120,13 @@ l_net = LNet(serial_connection)
 variable_factory = VariableFactory(l_net, elf_file)
 
 # Set up scope configuration
-scope_config = ScopeSetup()
 variable1 = variable_factory.get_variable("motor.idq.q")
 variable2 = variable_factory.get_variable("motor.estimator.qei.position.electrical")
 variable3 = variable_factory.get_variable("motor.vabc.a")
 variable4 = variable_factory.get_variable("motor.vabc.b")
 variable5 = variable_factory.get_variable("motor.vabc.c")
 
-
+scope_config = l_net.get_scope_setup()
 scope_config.add_channel(variable1.as_channel(), trigger=True)
 # scope_config.add_channel(variable2.as_channel())
 # scope_config.add_channel(variable3.as_channel())
@@ -142,7 +141,7 @@ scope_config.set_trigger(
     trigger_delay=50,
     trigger_edge=1,
 )
-l_net.scope_save_parameter(scope_config)
+# l_net.save_parameter()
 
 # Save and Load Parameters
 for i in range(50000):
@@ -180,7 +179,7 @@ for i in range(50000):
             plt.show()
 
             # Save the data to scope using your scope_save_parameter function
-            response_save_parameter = l_net.scope_save_parameter(scope_config)
+            response_save_parameter = l_net.save_parameter()
             print(response_save_parameter)
 
     except Exception as e:
