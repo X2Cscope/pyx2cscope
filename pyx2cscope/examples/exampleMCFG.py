@@ -11,7 +11,6 @@ logging.basicConfig(
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
-
 from pyx2cscope.variable.variable_factory import VariableFactory
 
 serial_port = "COM8"  # select COM port
@@ -23,8 +22,8 @@ elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\MUForum
 l_net = LNet(serial_connection)
 variable_factory = VariableFactory(l_net, elf_file)
 
-speedReference = variable_factory.get_variable_elf("motor.apiData.velocityReference")
-speedMeasured = variable_factory.get_variable_elf("motor.apiData.velocityMeasured")
+speedReference = variable_factory.get_variable("motor.apiData.velocityReference")
+speedMeasured = variable_factory.get_variable("motor.apiData.velocityMeasured")
 
 
 try:

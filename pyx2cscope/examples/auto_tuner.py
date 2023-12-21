@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Define the reference waveform (desired setpoint)
 reference_waveform = np.sin(np.linspace(0, 10, 100))

@@ -1,7 +1,8 @@
 import logging
 import sys
-from PyQt5.QtWidgets import QApplication
+
 from gui.watchView.minimal_gui import X2Cscope_GUI
+from PyQt5.QtWidgets import QApplication
 
 
 # Define a function to set the logging level based on a string argument

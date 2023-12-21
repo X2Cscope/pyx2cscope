@@ -9,8 +9,8 @@ logging.info("Start##################")
 # from mchplnet.interfaces.factory import InterfaceFactory
 # from mchplnet.interfaces.factory import InterfaceType as IType
 import serial
-from mchplnet.lnet import LNet
 
+from mchplnet.lnet import LNet
 from pyx2cscope.variable.variable_factory import VariableFactory
 
 serial_port = "COM17"  # select COM port
@@ -26,20 +26,18 @@ variable_factory = VariableFactory(l_net, elf_file)
 
 # Variable Creation from ELF file.
 
-system_guardKey = variable_factory.get_variable_elf("systemData.testing.guard.key")
-Overrides = variable_factory.get_variable_elf("motor.testing.overrides")
-OperatingMode = variable_factory.get_variable_elf("motor.testing.operatingMode")
-SquareWaveValue = variable_factory.get_variable_elf("motor.testing.sqwave.value")
-SquareWaveHalfPeriod = variable_factory.get_variable_elf(
-    "motor.testing.sqwave.halfperiod"
-)
-SquareWaveIDQ_D = variable_factory.get_variable_elf("motor.testing.sqwave.idq.d")
-CMDRaw_D = variable_factory.get_variable_elf("motor.idqCmdRaw.d")
-CMDRaw_Q = variable_factory.get_variable_elf("motor.idqCmdRaw.q")
-IDCntrl_KP = variable_factory.get_variable_elf("motor.idCtrl.kp")
-IDCntrl_nKP = variable_factory.get_variable_elf("motor.idCtrl.nkp")
-IDCntrl_KI = variable_factory.get_variable_elf("motor.idCtrl.ki")
-IDCntrl_nKI = variable_factory.get_variable_elf("motor.idCtrl.nki")
+system_guardKey = variable_factory.get_variable("systemData.testing.guard.key")
+Overrides = variable_factory.get_variable("motor.testing.overrides")
+OperatingMode = variable_factory.get_variable("motor.testing.operatingMode")
+SquareWaveValue = variable_factory.get_variable("motor.testing.sqwave.value")
+SquareWaveHalfPeriod = variable_factory.get_variable("motor.testing.sqwave.halfperiod")
+SquareWaveIDQ_D = variable_factory.get_variable("motor.testing.sqwave.idq.d")
+CMDRaw_D = variable_factory.get_variable("motor.idqCmdRaw.d")
+CMDRaw_Q = variable_factory.get_variable("motor.idqCmdRaw.q")
+IDCntrl_KP = variable_factory.get_variable("motor.idCtrl.kp")
+IDCntrl_nKP = variable_factory.get_variable("motor.idCtrl.nkp")
+IDCntrl_KI = variable_factory.get_variable("motor.idCtrl.ki")
+IDCntrl_nKI = variable_factory.get_variable("motor.idCtrl.nki")
 
 
 def apply_changes_for_current_control():

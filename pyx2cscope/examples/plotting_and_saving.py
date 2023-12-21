@@ -14,12 +14,12 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
+from pyx2cscope.variable.variable_factory import VariableFactory
+
 # Import the required modules and classes from the mchplnet package
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
-
-from variable.variable_factory import VariableFactory
 
 # Initialize serial communication
 serial_port = "COM8"
@@ -36,11 +36,11 @@ l_net = LNet(serial_connection)
 variable_factory = VariableFactory(l_net, elf_file)
 
 # Get the required variables from the ELF file
-variable_current = variable_factory.get_variable_elf("I_b")
-variable_VM1 = variable_factory.get_variable_elf("V_M1")
-start_stop = variable_factory.get_variable_elf("buttonStartStop.debounceCount")
-pot = variable_factory.get_variable_elf("PotVal")
-CurrentSpeed = variable_factory.get_variable_elf("CurrentSpeed")
+variable_current = variable_factory.get_variable("I_b")
+variable_VM1 = variable_factory.get_variable("V_M1")
+start_stop = variable_factory.get_variable("buttonStartStop.debounceCount")
+pot = variable_factory.get_variable("PotVal")
+CurrentSpeed = variable_factory.get_variable("CurrentSpeed")
 start_stop.set_value(10)
 
 # Create thread-safe data queues
