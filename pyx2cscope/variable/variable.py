@@ -2,6 +2,7 @@ import logging
 import struct
 from abc import abstractmethod
 from numbers import Number
+from typing import List
 
 import mchplnet.lnet as LNet
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
@@ -31,8 +32,29 @@ class Variable:
         Returns:
             Number: The stored value from the MCU.
         """
+        try:
+            bytes_data = self._get_value_raw()
+            return self.bytes_to_value(bytes_data)
+        except Exception as e:
+            logging.error(e)
+
+    @abstractmethod
+    def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to the respective variable number value.
+
+        Returns:
+            Number: the variable value as a number
+        """
         pass
 
+    def bytes_to_array(self, data:bytearray) -> List[Number]:
+        array = []
+        for i in range(0, len(data), self.get_width()):
+            j = i + self.get_width()
+            array.append(self.bytes_to_value(data[i:j]))
+        return array
+
+    @abstractmethod
     def set_value(self, new_value: Number):
         """Set the value to be stored in the MCU.
 
@@ -41,7 +63,8 @@ class Variable:
         """
         pass
 
-    def _get_width(self) -> int:
+    @abstractmethod
+    def get_width(self) -> int:
         """Get the width of the variable.
 
         Returns:
@@ -62,12 +85,12 @@ class Variable:
         """
         try:
             # Ask LNet to get the value from the target
-            bytes_data = self.l_net.get_ram(self.address, self._get_width())
+            bytes_data = self.l_net.get_ram(self.address, self.get_width())
 
             data_length = len(bytes_data)
-            if data_length > self._get_width():  # double check validity
+            if data_length > self.get_width():  # double check validity
                 raise ValueError(
-                    f"Expecting only {self._get_width()} bytes from LNET, but got {data_length}"
+                    f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
                 )
             return bytes_data
         except Exception as e:
@@ -75,7 +98,7 @@ class Variable:
 
     def _set_value_raw(self, bytes_data: bytes) -> None:
         try:
-            self.l_net.put_ram(self.address, self._get_width(), bytes_data)
+            self.l_net.put_ram(self.address, self.get_width(), bytes_data)
         except Exception as e:
             logging.error(e)
 
@@ -87,34 +110,7 @@ class Variable:
     def is_integer(self) -> bool:
         pass
 
-    def as_channel(self) -> ScopeChannel:
-        return ScopeChannel(
-            name=self.name,
-            source_location=self.address,
-            data_type_size=self._get_width(),
-            source_type=0,
-            is_integer=self.is_integer(),
-            is_signed=self.is_signed(),
-        )
-
-    def as_trigger(
-        self,
-        trigger_level: int,
-        trigger_delay: int,
-        trigger_edge: int,
-        trigger_mode: int,
-    ) -> ScopeTrigger:
-        return ScopeTrigger(
-            channel=self.as_channel(),
-            trigger_level=trigger_level,
-            trigger_delay=trigger_delay,
-            trigger_edge=trigger_edge,
-            trigger_mode=trigger_mode,
-        )
-
-
 # ------------------------------INT_8------------------------------
-
 
 class Variable_int8(Variable):
     def is_integer(self) -> bool:
@@ -123,7 +119,7 @@ class Variable_int8(Variable):
     def is_signed(self) -> bool:
         return True
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """INT8_T width is 1"""
         return 1
 
@@ -131,7 +127,6 @@ class Variable_int8(Variable):
         try:
             if value > 127 or value < -128:
                 raise ValueError(f"Value = {value}: Expected in range -128 to 127")
-
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=1, byteorder="little", signed=True
@@ -140,16 +135,8 @@ class Variable_int8(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            int_value = int.from_bytes(
-                bytes_data, "little", signed=True
-            )  # reconstruct the real value
-            return int_value
-        except Exception as e:
-            logging.error(e)
-
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=True)
 
 # ------------------------------ UINT_8 ------------------------------
 
@@ -161,7 +148,7 @@ class Variable_uint8(Variable):
     def is_signed(self) -> bool:
         return False
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """UINT8_T width is 1"""
         return 1
 
@@ -178,16 +165,8 @@ class Variable_uint8(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            int_value = int.from_bytes(
-                bytes_data, "little", signed=False
-            )  # reconstruct the real value
-            return int_value
-        except Exception as e:
-            logging.error(e)
-
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=False)
 
 # ------------------------------ INT_16 ------------------------------
 
@@ -199,7 +178,7 @@ class Variable_int16(Variable):
     def is_signed(self) -> bool:
         return True
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """INT16_T width is 2"""
         return 2
 
@@ -216,16 +195,8 @@ class Variable_int16(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            int_value = int.from_bytes(
-                bytes_data, "little", signed=True
-            )  # reconstruct the real value
-            return int_value
-        except Exception as e:
-            logging.error(e)
-
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=True)
 
 # ------------------------------ UINT_16 ------------------------------
 
@@ -237,7 +208,7 @@ class Variable_uint16(Variable):
     def is_signed(self) -> bool:
         return False
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """UINT16_T width is 2"""
         return 2
 
@@ -254,16 +225,8 @@ class Variable_uint16(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            int_value = int.from_bytes(
-                bytes_data, "little", signed=False
-            )  # reconstruct the real value
-            return int_value
-        except Exception as e:
-            logging.error(e)
-
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=False)
 
 # ------------------------------ INT_32 ------------------------------
 
@@ -275,7 +238,7 @@ class Variable_int32(Variable):
     def is_signed(self) -> bool:
         return True
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """INT32_T width is 4"""
         return 4
 
@@ -294,16 +257,8 @@ class Variable_int32(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            int_value = int.from_bytes(
-                bytes_data, "little", signed=True
-            )  # reconstruct the real value
-            return int_value
-        except Exception as e:
-            logging.error(e)
-
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=True)
 
 # ------------------------------ UINT_32 ------------------------------
 
@@ -315,7 +270,7 @@ class Variable_uint32(Variable):
     def is_signed(self) -> bool:
         return False
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """UINT32_T width is 4"""
         return 4
 
@@ -334,15 +289,8 @@ class Variable_uint32(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            int_value = int.from_bytes(
-                bytes_data, "little", signed=False
-            )  # reconstruct the real value
-            return int_value
-        except Exception as e:
-            logging.error(e)
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=False)
 
 
 class Variable_uint64(Variable):
@@ -352,7 +300,7 @@ class Variable_uint64(Variable):
     def is_signed(self) -> bool:
         return False
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """UINT64 width is 8"""
         return 8
 
@@ -370,15 +318,8 @@ class Variable_uint64(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> int:
-        try:
-            bytes_data = self._get_value_raw()
-            value = int.from_bytes(
-                bytes_data, "little", signed=False
-            )  # reconstruct the real value
-            return value
-        except Exception as e:
-            logging.error(e)
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=False)
 
 
 class Variable_int64(Variable):
@@ -388,7 +329,7 @@ class Variable_int64(Variable):
     def is_signed(self) -> bool:
         return True
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """INT64 width is 8"""
         return 8
 
@@ -406,15 +347,8 @@ class Variable_int64(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> int:
-        try:
-            bytes_data = self._get_value_raw()
-            value = int.from_bytes(
-                bytes_data, "little", signed=True
-            )  # reconstruct the real value
-            return value
-        except Exception as e:
-            logging.error(e)
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return int.from_bytes(data, "little", signed=True)
 
 
 # ------------------------------ FLOAT ------------------------------
@@ -427,7 +361,7 @@ class Variable_float(Variable):
     def is_signed(self) -> bool:
         return True
 
-    def _get_width(self) -> int:
+    def get_width(self) -> int:
         """FLOAT width is 4"""
         return 4
 
@@ -439,10 +373,5 @@ class Variable_float(Variable):
         except Exception as e:
             logging.error(e)
 
-    def get_value(self) -> Number:
-        try:
-            bytes_data = self._get_value_raw()
-            float_value = struct.unpack("f", bytes_data)
-            return float_value[0]
-        except Exception as e:
-            logging.error(e)
+    def bytes_to_value(self, data: bytearray) -> Number:
+        return struct.unpack("f", data)[0]

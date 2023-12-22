@@ -41,6 +41,8 @@ class ElfParser(ABC):
 
     def get_var_info(self, name: str) -> VariableInfo | None:
         """Return the VariableInfo associated to the variable name or None"""
+        if not self.variable_map:
+            self.map_variables()
         if name in self.variable_map:
             return self.variable_map[name]
         return None

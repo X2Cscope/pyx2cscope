@@ -6,11 +6,9 @@ from pyx2cscope.variable.variable import *
 class VariableFactory:
     def __init__(self, l_net: LNet, elf_path=None):
         self.l_net = l_net
-        self.variable_map = None
         self.device_info = self.l_net.get_device_info()
         parser = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
         self.parser = parser(elf_path)
-        self.variable_map = self.parser.map_variables()
 
     def get_var_list(self) -> list[str]:
         """
@@ -32,11 +30,11 @@ class VariableFactory:
             Variable: Variable object or None.
         """
         try:
-            variable_info = self.variable_map.get(name)
+            variable_info = self.parser.get_var_info(name)
             return self._get_variable_instance(variable_info.address, variable_info.type, variable_info.name)
         except Exception as e:
             logging.error(
-                f"Error while getting variable '{name}' from ELF file: {str(e)}"
+                f"Error while getting variable '{name}' : {str(e)}"
             )
 
     def _get_variable_instance(self, address: int, var_type: str, name: str) -> Variable:
