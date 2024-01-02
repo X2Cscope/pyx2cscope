@@ -1,13 +1,8 @@
 import logging
-import struct
 import time
 
 import matplotlib.pyplot as plt
 
-from mchplnet.interfaces.factory import InterfaceFactory
-from mchplnet.interfaces.factory import InterfaceType as IType
-from mchplnet.lnet import LNet
-from pyx2cscope.variable.variable_factory import VariableFactory
 from xc2scope import X2CScope
 
 logging.basicConfig(
@@ -22,16 +17,16 @@ x2cScope = X2CScope(port="COM4", elf_file=elf_file)
 
 # Set up scope configuration
 variable1 = x2cScope.get_variable("motor.idq.q")
-variable2 = x2cScope.get_variable("motor.estimator.qei.position.electrical")
+# variable2 = x2cScope.get_variable("motor.estimator.qei.position.electrical")
 variable3 = x2cScope.get_variable("motor.vabc.a")
 variable4 = x2cScope.get_variable("motor.vabc.b")
 variable5 = x2cScope.get_variable("motor.vabc.c")
 
-x2cScope.add_scope_channel(variable1, trigger=False)
+x2cScope.add_scope_channel(variable1)
 # x2cScope.add_scope_channel(variable2)
-# x2cScope.add_scope_channel(variable3)
-# x2cScope.add_scope_channel(variable4)
-# x2cScope.add_scope_channel(variable5)
+x2cScope.add_scope_channel(variable3)
+x2cScope.add_scope_channel(variable4)
+x2cScope.add_scope_channel(variable5)
 
 x2cScope.set_scope_trigger(
     variable3,
@@ -52,8 +47,9 @@ for i in range(50000):
             print("delayed trigger", x2cScope.get_delay_trigger_position())
 
             # Read array chunks
-            for channel, data in x2cScope.get_scope_channel_data():
-                plt.plot(data.array, label=f"Channel {channel}")
+            plt.clf()
+            for channel, data in x2cScope.get_scope_channel_data().items():
+                plt.plot(data, label=f"Channel {channel}")
 
             # plt.plot(extracted_data[1])
             plt.xlabel("Data Index")

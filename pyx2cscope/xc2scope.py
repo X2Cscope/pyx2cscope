@@ -1,3 +1,5 @@
+import logging
+import struct
 from numbers import Number
 from typing import List, Dict
 
@@ -8,6 +10,11 @@ from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
 from variable.variable import Variable
 from variable.variable_factory import VariableFactory
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename=__name__ + ".log",
+)
 
 
 def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
@@ -29,6 +36,7 @@ class X2CScope:
         self.elf_file = elf_file
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
+        self.convert_list = {}
 
     def set_interface(self, interface: InterfaceABC):
         self.lnet = LNet(interface)
@@ -52,9 +60,12 @@ class X2CScope:
 
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
         scope_channel = get_variable_as_scope_channel(variable)
+        self.convert_list[variable.name] = variable.bytes_to_value
         return self.scope_setup.add_channel(scope_channel, trigger)
 
     def remove_scope_channel(self, variable: Variable):
+        if variable.name in self.convert_list:
+            self.convert_list.pop(variable.name)
         return self.scope_setup.remove_channel(variable.name)
 
     def get_scope_channel_list(self) -> dict[str, ScopeChannel]:
@@ -82,74 +93,55 @@ class X2CScope:
         self.lnet.save_parameter()
 
     def is_scope_data_ready(self) -> bool:
-        load_parameter = self.lnet.load_parameters()
+        scope_data = self.lnet.load_parameters()
         return (
-            load_parameter.scope_state == 0
-            or load_parameter.data_array_pointer
-            == load_parameter.data_array_used_length
+            scope_data.scope_state == 0
+            or scope_data.data_array_pointer == scope_data.data_array_used_length
         )
 
-    def _calc_sda_used_length(self):
-        # SDA(Scope Data Array) - SDA % DSS(data Set Size)
-        scope_data: LoadScopeData = self.lnet.load_parameter
-        nr_of_data_sets = scope_data.data_array_size % self.scope_setup.get_dataset_size()
-        return scope_data.data_array_size - nr_of_data_sets
-
     def get_trigger_position(self):
-        scope_data: LoadScopeData = self.lnet.load_parameter
+        scope_data: LoadScopeData = self.lnet.scope_data
         return scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
 
     def get_delay_trigger_position(self):
-        scope_data: LoadScopeData = self.lnet.load_parameter
+        scope_data: LoadScopeData = self.lnet.scope_data
         return (
             scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
             - self.scope_setup.scope_trigger.trigger_delay,
         )
 
+    def _calc_sda_used_length(self):
+        # SDA(Scope Data Array) - SDA % DSS(data Set Size)
+        bytes_not_used = (
+            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+        )
+        return self.lnet.scope_data.data_array_size - bytes_not_used
+
+    def _read_array_chunks(self, chunk_size=253, data_type=1):
+        chunk_data = []
+        # Calculate the number of chunks
+        num_chunks = self._calc_sda_used_length() // chunk_size
+        for i in range(num_chunks):
+            # Calculate the starting address for the current chunk
+            current_address = self.lnet.scope_data.data_array_address + i * chunk_size
+            try:
+                # Read the chunk of data
+                data = self.lnet.get_ram_array(current_address, chunk_size, data_type)
+                chunk_data.extend(data)
+            except Exception as e:
+                logging.error(f"Error reading chunk {i}: {str(e)}")
+        return chunk_data
+
     def get_scope_channel_data(self) -> Dict[str, List[Number]]:
-        return {"e": [1]}
-
-
-# Refactor these functions to adapt on class x2cscope
-# Function to read array chunks
-def extract_channels(data, channel_configs):
-    """
-    Extracts channel data from a given array.
-
-    :param data: The input data array.
-    :param channel_configs: A list of tuples, where each tuple contains the channel number and its byte size.
-    :return: A dictionary containing the extracted data for each channel.
-    """
-    channel_data = {channel: [] for channel, _ in channel_configs}
-    i = 0
-
-    while i < len(data):
-        for channel, size in channel_configs:
-            if i + size < len(data):
-                channel_data[channel].extend(data[i : i + size])
-            i += size
-    return channel_data
-
-
-def channel_config():
-    return [
-        (channel_info.name, channel_info.data_type_size)
-        for index, channel_info in enumerate(scope_config.list_channels().values())
-    ]
-
-
-def convert_data(extracted_channels, width):
-    converted_data = {}
-    for key, byte_list in extracted_channels.items():
-        # Ensure the byte list length is even for pairs of bytes
-        if len(byte_list) % 2 != 0:
-            raise ValueError(f"Byte list length for {key} is not even.")
-
-        # Convert the list of bytes to a bytes object
-        bytes_data = bytes(byte_list)
-
-        # Interpret each pair of bytes as a 16-bit signed integer
-        format_string = f"<{len(bytes_data) // width}h"
-        converted_data[key] = struct.unpack(format_string, bytes_data)
-
-    return converted_data
+        data = self._read_array_chunks()
+        channels = {channel: [] for channel in self.scope_setup.list_channels()}
+        dataset_size = self.scope_setup.get_dataset_size()
+        for i in range(0, len(data), dataset_size):
+            dataset = data[i : i + dataset_size]
+            j = 0
+            for name, channel in self.scope_setup.list_channels().items():
+                k = channel.data_type_size + j
+                value = self.convert_list[name](dataset[j:k])
+                channels[name].append(value)
+                j += k
+        return channels
