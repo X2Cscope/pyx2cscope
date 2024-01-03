@@ -1,7 +1,6 @@
 import logging
-import struct
 from numbers import Number
-from typing import List, Dict
+from typing import Dict, List
 
 from mchplnet.interfaces.abstract_interface import InterfaceABC
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
@@ -101,7 +100,9 @@ class X2CScope:
 
     def get_trigger_position(self) -> int:
         scope_data: LoadScopeData = self.lnet.scope_data
-        return int(scope_data.trigger_event_position / self.scope_setup.get_dataset_size())
+        return int(
+            scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
+        )
 
     def get_delay_trigger_position(self) -> int:
         trigger_position = self.get_trigger_position()
@@ -116,13 +117,12 @@ class X2CScope:
 
     def _read_array_chunks(self):
         chunk_data = []
-        data_type = 1
-        chunk_size = 253
+        data_type = 1  # it will allways be 1 for array data
+        chunk_size = (
+            253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
+        )
         # Calculate the number of chunks
-        sda_size = self._calc_sda_used_length()
-        print(sda_size)
-        print(self.scope_setup.get_dataset_size())
-        num_chunks = sda_size // chunk_size
+        num_chunks = self._calc_sda_used_length() // chunk_size
         for i in range(num_chunks):
             # Calculate the starting address for the current chunk
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
@@ -135,10 +135,14 @@ class X2CScope:
         return chunk_data
 
     def _sort_channel_data(self, data) -> Dict[str, List[Number]]:
+        """Sorts the dataset byte order into channel byte order.
+        Additionally, convert the channel bytearray into the respective variable value.
+        The function to convert the bytearray to a variable value is stored on the convert_list dictionary
+        when adding the variable to scope_channel."""
         channels = {channel: [] for channel in self.scope_setup.list_channels()}
         dataset_size = self.scope_setup.get_dataset_size()
         for i in range(0, len(data), dataset_size):
-            dataset = data[i: i + dataset_size]
+            dataset = data[i : i + dataset_size]
             j = 0
             for name, channel in self.scope_setup.list_channels().items():
                 k = channel.data_type_size + j
@@ -148,14 +152,19 @@ class X2CScope:
         return channels
 
     def _filter_channels(self, channels):
+        """The data channel is a circular buffer. Valid data are stored between delay_trigger_position
+        (could be equal to trigger position accordingly) and the last valid dataset position
+        """
         start = self.get_delay_trigger_position()
-        total_sdas = int(self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size())
-        end = total_sdas - start
+        nr_of_sda = int(
+            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+        )
+        end = nr_of_sda - start
         for channel in channels:
-            channels[channel] = channels[channel][start: end]
+            channels[channel] = channels[channel][start:end]
         return channels
 
-    def get_scope_channel_data(self, filter=True) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(self, valid_data=True) -> Dict[str, List[Number]]:
         data = self._read_array_chunks()
         channels = self._sort_channel_data(data)
-        return self._filter_channels(channels) if filter else channels
+        return self._filter_channels(channels) if valid_data else channels

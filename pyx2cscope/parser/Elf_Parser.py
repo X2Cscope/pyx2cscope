@@ -24,7 +24,6 @@ class VariableInfo:
 
 
 class ElfParser(ABC):
-
     def __init__(self, elf_path):
         """
         Initialize the DwarfParser with the path to the ELF file.

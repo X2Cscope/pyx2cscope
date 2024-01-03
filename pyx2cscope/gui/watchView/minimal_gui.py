@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import serial.tools.list_ports
 from matplotlib.animation import FuncAnimation
+from mchplnet.interfaces.factory import InterfaceFactory
+from mchplnet.interfaces.factory import InterfaceType as IType
+from mchplnet.lnet import LNet
 from PyQt5 import QtGui
 from PyQt5.QtCore import (QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer,
                           pyqtSlot)
@@ -25,9 +28,6 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QFileDialog,
                              QMainWindow, QMessageBox, QPushButton, QSlider,
                              QWidget)
 
-from mchplnet.interfaces.factory import InterfaceFactory
-from mchplnet.interfaces.factory import InterfaceType as IType
-from mchplnet.lnet import LNet
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.variable.variable_factory import VariableFactory
 

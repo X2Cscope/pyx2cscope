@@ -47,7 +47,7 @@ class Variable:
         """
         pass
 
-    def bytes_to_array(self, data:bytearray) -> List[Number]:
+    def bytes_to_array(self, data: bytearray) -> List[Number]:
         array = []
         for i in range(0, len(data), self.get_width()):
             j = i + self.get_width()
@@ -110,7 +110,9 @@ class Variable:
     def is_integer(self) -> bool:
         pass
 
+
 # ------------------------------INT_8------------------------------
+
 
 class Variable_int8(Variable):
     def is_integer(self) -> bool:
@@ -137,6 +139,7 @@ class Variable_int8(Variable):
 
     def bytes_to_value(self, data: bytearray) -> Number:
         return int.from_bytes(data, "little", signed=True)
+
 
 # ------------------------------ UINT_8 ------------------------------
 
@@ -168,6 +171,7 @@ class Variable_uint8(Variable):
     def bytes_to_value(self, data: bytearray) -> Number:
         return int.from_bytes(data, "little", signed=False)
 
+
 # ------------------------------ INT_16 ------------------------------
 
 
@@ -198,6 +202,7 @@ class Variable_int16(Variable):
     def bytes_to_value(self, data: bytearray) -> Number:
         return int.from_bytes(data, "little", signed=True)
 
+
 # ------------------------------ UINT_16 ------------------------------
 
 
@@ -227,6 +232,7 @@ class Variable_uint16(Variable):
 
     def bytes_to_value(self, data: bytearray) -> Number:
         return int.from_bytes(data, "little", signed=False)
+
 
 # ------------------------------ INT_32 ------------------------------
 
@@ -259,6 +265,7 @@ class Variable_int32(Variable):
 
     def bytes_to_value(self, data: bytearray) -> Number:
         return int.from_bytes(data, "little", signed=True)
+
 
 # ------------------------------ UINT_32 ------------------------------
 

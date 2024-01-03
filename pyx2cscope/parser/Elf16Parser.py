@@ -430,7 +430,7 @@ class Elf16Parser(ElfParser):
                     continue
                 address = self._get_address_location(die.get("DW_AT_location"))
                 if not self._check_for_pointer_tag(
-                        die, end_die, address
+                    die, end_die, address
                 ) and not self._check_for_structure_tag(die, end_die, address):
                     variable_data = VariableInfo(
                         name=die["DW_AT_name"],

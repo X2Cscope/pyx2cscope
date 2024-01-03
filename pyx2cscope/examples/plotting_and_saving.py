@@ -14,12 +14,12 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
-from pyx2cscope.variable.variable_factory import VariableFactory
-
 # Import the required modules and classes from the mchplnet package
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
+
+from pyx2cscope.variable.variable_factory import VariableFactory
 
 # Initialize serial communication
 serial_port = "COM8"

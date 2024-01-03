@@ -31,13 +31,15 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
-            return self._get_variable_instance(variable_info.address, variable_info.type, variable_info.name)
-        except Exception as e:
-            logging.error(
-                f"Error while getting variable '{name}' : {str(e)}"
+            return self._get_variable_instance(
+                variable_info.address, variable_info.type, variable_info.name
             )
+        except Exception as e:
+            logging.error(f"Error while getting variable '{name}' : {str(e)}")
 
-    def _get_variable_instance(self, address: int, var_type: str, name: str) -> Variable:
+    def _get_variable_instance(
+        self, address: int, var_type: str, name: str
+    ) -> Variable:
         """
         create a variable object based on the provided address, type, and name.
 
@@ -64,7 +66,9 @@ class VariableFactory:
             "long long": Variable_int64,
             "long long unsigned int": Variable_uint64,
             "long unsigned int": Variable_uint32,
-            "pointer": Variable_uint16 if self.device_info.uc_width == 2 else Variable_uint32,  # TODO v 0.2.0
+            "pointer": Variable_uint16
+            if self.device_info.uc_width == 2
+            else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
             "short int": Variable_int16,
             "short unsigned int": Variable_uint16,

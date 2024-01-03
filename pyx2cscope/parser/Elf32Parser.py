@@ -6,7 +6,6 @@ from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
 
 
 class Elf32Parser(ElfParser):
-
     def _get_structure_members_recursive(
         self,
         die,
@@ -15,7 +14,10 @@ class Elf32Parser(ElfParser):
     ):
         members = {}
         for child_die in die.iter_children():
-            if child_die.tag == "DW_TAG_member" or child_die.tag == "DW_TAG_pointer_type":
+            if (
+                child_die.tag == "DW_TAG_member"
+                or child_die.tag == "DW_TAG_pointer_type"
+            ):
                 member = {}
                 member_name = ""
                 name_attr = child_die.attributes.get("DW_AT_name")
@@ -33,7 +35,10 @@ class Elf32Parser(ElfParser):
                         )
                         nested_die = self._get_end_die(child_die)
                         if nested_die.tag == "DW_TAG_structure_type":
-                            nested_members, nested_offset = self._get_structure_members_recursive(
+                            (
+                                nested_members,
+                                nested_offset,
+                            ) = self._get_structure_members_recursive(
                                 nested_die,
                                 member_name,
                                 prev_address_offset + offset_value_from_member_address,
@@ -43,7 +48,9 @@ class Elf32Parser(ElfParser):
                         else:
                             member["type"] = member_type["name"]
                             member["byte_size"] = member_type["byte_size"]
-                            member["address_offset"] = prev_address_offset + offset_value_from_member_address
+                            member["address_offset"] = (
+                                prev_address_offset + offset_value_from_member_address
+                            )
                             members[member_name] = member
                     except Exception as e:
                         logging.error("exception", e)
@@ -189,8 +196,8 @@ class Elf32Parser(ElfParser):
                 #  the structure which has address in specific DIE.
                 if "DW_AT_specification" in self.die_variable.attributes:
                     spec_ref_addr = (
-                            self.die_variable.attributes["DW_AT_specification"].value
-                            + self.die_variable.cu.cu_offset
+                        self.die_variable.attributes["DW_AT_specification"].value
+                        + self.die_variable.cu.cu_offset
                     )
                     spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
@@ -211,8 +218,8 @@ class Elf32Parser(ElfParser):
                         continue
 
                 elif (
-                        self.die_variable.attributes.get("DW_AT_location")
-                        and self.die_variable.attributes.get("DW_AT_name") is not None
+                    self.die_variable.attributes.get("DW_AT_location")
+                    and self.die_variable.attributes.get("DW_AT_name") is not None
                 ):
                     self.var_name = self.die_variable.attributes.get(
                         "DW_AT_name"
