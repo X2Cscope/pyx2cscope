@@ -144,7 +144,7 @@ class X2CScope:
                 k = channel.data_type_size + j
                 value = self.convert_list[name](dataset[j:k])
                 channels[name].append(value)
-                j += k
+                j = k
         return channels
 
     def _filter_channels(self, channels):
