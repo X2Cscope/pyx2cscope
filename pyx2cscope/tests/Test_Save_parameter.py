@@ -10,10 +10,11 @@ logging.basicConfig(
     filename="Save_parameter_test.py.log",
 )
 
-# elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\motorbench_longhurst_mclv2_dsPIC33ck\motorbench_longhurst.X\dist\default\production\motorbench_longhurst.X.production.elf"
-elf_file = r"C:\Users\M71906\MPLABXProjects\MotorControl\dsPIC33-LVMC-MB-FOC-Sensorless.X\dist\default\production\dsPIC33-LVMC-MB-FOC-Sensorless.X.production.elf"
+#elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\motorbench_longhurst_mclv2_dsPIC33ck\motorbench_longhurst.X\dist\default\production\motorbench_longhurst.X.production.elf"
+elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ACT57BLF02_MCLV2.X\dist\default\production\ACT57BLF02_MCLV2.X.production.elf"
+#elf_file = r"C:\Users\M71906\MPLABXProjects\MotorControl\dsPIC33-LVMC-MB-FOC-Sensorless.X\dist\default\production\dsPIC33-LVMC-MB-FOC-Sensorless.X.production.elf"
 
-x2cScope = X2CScope(port="COM4", elf_file=elf_file)
+x2cScope = X2CScope(port="COM9", elf_file=elf_file)
 
 # Set up scope configuration
 variable1 = x2cScope.get_variable("motor.idq.q")
@@ -21,18 +22,20 @@ variable1 = x2cScope.get_variable("motor.idq.q")
 variable3 = x2cScope.get_variable("motor.vabc.a")
 variable4 = x2cScope.get_variable("motor.vabc.b")
 variable5 = x2cScope.get_variable("motor.vabc.c")
+variable6 = x2cScope.get_variable("motor.apiData.velocityMeasured")
 
 x2cScope.add_scope_channel(variable1)
 # x2cScope.add_scope_channel(variable2)
 x2cScope.add_scope_channel(variable3)
-x2cScope.add_scope_channel(variable4)
+#x2cScope.add_scope_channel(variable4)
 x2cScope.add_scope_channel(variable5)
+x2cScope.add_scope_channel(variable6)
 
 x2cScope.set_scope_trigger(
     variable3,
-    trigger_level=-500,
+    trigger_level=500,
     trigger_mode=1,
-    trigger_delay=50,
+    trigger_delay=0,
     trigger_edge=1,
 )
 
@@ -48,8 +51,11 @@ for i in range(50000):
 
             # Read array chunks
             plt.clf()
-            for channel, data in x2cScope.get_scope_channel_data().items():
+            for channel, data in x2cScope.get_scope_channel_data(filter=False).items():
                 plt.plot(data, label=f"Channel {channel}")
+                print((data))
+
+
 
             # plt.plot(extracted_data[1])
             plt.xlabel("Data Index")
