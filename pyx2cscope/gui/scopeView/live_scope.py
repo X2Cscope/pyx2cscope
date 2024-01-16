@@ -1,3 +1,8 @@
+"""
+This example can be used to visualize live scope data, for the predefined variables.
+"""
+
+
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -13,6 +18,7 @@ logging.basicConfig(
 elf_file = "C:\\_DESKTOP\\_Projects\\Motorbench_Projects\\ACT57BLF02_MCLV2.X\\dist\\default\\production\\ACT57BLF02_MCLV2.X.production.elf"
 x2cScope = X2CScope(port="COM9", elf_file=elf_file)
 
+scopeArray = x2cScope.get_variable("Scope_Array")
 # Set up scope configuration and channels
 variables = [
     x2cScope.get_variable("motor.idq.q"),
@@ -21,16 +27,17 @@ variables = [
     x2cScope.get_variable("motor.vabc.c"),
     x2cScope.get_variable("motor.apiData.velocityMeasured"),
 ]
+x2cScope.set_scope_state(2)
 for variable in variables:
     x2cScope.add_scope_channel(variable)
 
-x2cScope.set_scope_trigger(
-    variables[1],
-    trigger_level=500,
-    trigger_mode=1,
-    trigger_delay=50,
-    trigger_edge=1,
-)
+# x2cScope.set_scope_trigger(
+#     variables[1],
+#     trigger_level=500,
+#     trigger_mode=1,
+#     trigger_delay=-50,
+#     trigger_edge=1,
+# )
 
 # Initialize data storage
 data_storage = {var: [] for var in variables}
@@ -45,7 +52,7 @@ def update_plot(frame):
             print("Scope finished")
 
             # Read array chunks and store data
-            scope_data = x2cScope.get_scope_channel_data(valid_data=True)
+            scope_data = x2cScope.get_scope_channel_data(valid_data=False)
             for variable, data in scope_data.items():
                 variable_name = str(variable)  # Or another way to get a unique identifier for the variable
                 if variable_name not in data_storage:

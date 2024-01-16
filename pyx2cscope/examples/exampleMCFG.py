@@ -11,7 +11,6 @@ logging.basicConfig(
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
-
 from pyx2cscope.variable.variable_factory import VariableFactory
 
 serial_port = "COM8"  # select COM port

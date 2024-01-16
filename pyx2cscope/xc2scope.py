@@ -2,13 +2,14 @@ import logging
 from numbers import Number
 from typing import Dict, List
 
+from variable.variable import Variable
+from variable.variable_factory import VariableFactory
+
 from mchplnet.interfaces.abstract_interface import InterfaceABC
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
-from variable.variable import Variable
-from variable.variable_factory import VariableFactory
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -87,7 +88,15 @@ class X2CScope:
         )
         self.scope_setup.set_trigger(scope_trigger)
 
+    def set_sample_time(self, sample_time: int):
+        """ This function helps to set sample time-factor."""
+        self.scope_setup.set_sample_time_factor(sample_time)
+
+    def set_scope_state(self, scope_state: int):
+        """To set the scope state from normal = 1 to Auto = 2. """
+        self.scope_setup.set_scope_state(scope_state)
     def request_scope_data(self):
+        """This function should be called once all the required settings are made."""
         self.lnet.save_parameter()
 
     def is_scope_data_ready(self) -> bool:
@@ -168,3 +177,4 @@ class X2CScope:
         data = self._read_array_chunks()
         channels = self._sort_channel_data(data)
         return self._filter_channels(channels) if valid_data else channels
+

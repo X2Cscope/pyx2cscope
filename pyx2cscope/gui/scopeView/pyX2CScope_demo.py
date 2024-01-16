@@ -1,3 +1,9 @@
+"""
+This example can be used as a reference
+to get variable data using the scope functionality of X2Cscope and store it in CSV file.
+
+"""
+
 import csv
 import logging
 import time
@@ -24,12 +30,12 @@ variable5 = x2cScope.get_variable("motor.vabc.c")
 variable6 = x2cScope.get_variable("motor.apiData.velocityMeasured")
 
 x2cScope.add_scope_channel(variable1)
-# x2cScope.add_scope_channel(variable2)
+#x2cScope.add_scope_channel(variable2)
 x2cScope.add_scope_channel(variable3)
 x2cScope.add_scope_channel(variable4)
 x2cScope.add_scope_channel(variable5)
 x2cScope.add_scope_channel(variable6)
-
+#
 x2cScope.set_scope_trigger(
     variable3,
     trigger_level=500,
@@ -37,28 +43,36 @@ x2cScope.set_scope_trigger(
     trigger_delay=50,
     trigger_edge=1,
 )
+x2cScope.set_sample_time(1)
+x2cScope.set_scope_state(2)
+
 
 x2cScope.request_scope_data()
 
 # Initialize data storage
 data_storage = {}
 
+sample_count = 0
+max_sample = 10
 # Save and Load Parameters
-for i in range(10):
+while sample_count < max_sample:
     try:
         if x2cScope.is_scope_data_ready():
+            sample_count +=1
             print("Scope finished")
             print("look at:", x2cScope.get_trigger_position())
             print("delayed trigger", x2cScope.get_delay_trigger_position())
 
             # Read array chunks and store data
             for channel, data in x2cScope.get_scope_channel_data(
-                valid_data=True
+                valid_data=False
             ).items():
                 if channel not in data_storage:
                     data_storage[channel] = []
                 data_storage[channel].extend(data)
 
+            if sample_count >= max_sample:
+                break
             # Request new scope data
             x2cScope.request_scope_data()
 
@@ -66,6 +80,7 @@ for i in range(10):
         logging.error(f"Error in main loop: {str(e)}")
 
     time.sleep(0.1)
+
 
 # Plot all the data at once
 plt.clf()
@@ -78,7 +93,7 @@ plt.legend()
 plt.show()
 
 # Save data in CSV file
-csv_file_path = "scope_data.csv"
+csv_file_path = "../../examples/scope_data.csv"
 max_length = max(len(data) for data in data_storage.values())
 with open(csv_file_path, mode="w", newline="") as file:
     writer = csv.DictWriter(file, fieldnames=data_storage.keys())

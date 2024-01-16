@@ -68,6 +68,7 @@ class Elf32Parser(ElfParser):
         )
 
     def _processing_end_die(self, end_die):
+        print(end_die)
         try:
             if self.die_variable.attributes.get("DW_AT_location"):
                 data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
@@ -103,6 +104,8 @@ class Elf32Parser(ElfParser):
                     type=member_data["type"],
                     address=self.address + member_data["address_offset"],
                 )
+
+
         else:
             self.variable_map[self.var_name] = VariableInfo(
                 name=self.var_name,
@@ -111,6 +114,15 @@ class Elf32Parser(ElfParser):
                 address=self.address,
             )
 
+    def _get_array_length(self, type_die):
+        type_DIE = type_die
+        if type_DIE.tag == 'DW_TAG_array_type':
+            for child in type_DIE.iter_children():
+                if child.tag == 'DW_TAG_subrange_type':
+                    array_length_attr = child.attributes.get('DW_AT_upper_bound')
+                    if array_length_attr:
+                        array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
+                        return array_length
     def _load_elf_file(self):
         try:
             with open(self.elf_path, "rb") as stream:
@@ -235,7 +247,12 @@ class Elf32Parser(ElfParser):
 
                 #
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-                if type_die.tag != "DW_TAG_volatile_type":
+                print(type_die)
+                if type_die.tag == "DW_TAG_array_type":
+                    array_length = self._get_array_length(compilation_unit, type_attr, type_die)
+                    print(self.die_variable.attributes.get("DW_AT_name"))
+                    print(array_length)
+                elif type_die.tag != "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
                     self._processing_end_die(end_die)
 
@@ -251,8 +268,9 @@ class Elf32Parser(ElfParser):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    # elf_file = r"C:\Users\m67250\Downloads\mclv2_sam_e54_pim.X.production.elf"
-    elf_file = r"C:\Users\M71906\MPLABXProjects\sa_edras\apps\predictive_maintenance_mclv48v300w_same54\predictive_maintenance_mclv48V300W_same54.X\dist\default\production\predictive_maintenance_mclv48V300W_same54.X.production.elf"
+    elf_file = r"C:\Users\m67250\Downloads\mclv2_sam_e54_pim.X.production.elf"
+    #elf_file = r'C:\Users\m67250\Downloads\E54_github_packsupdated\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf'
+
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader.map_variables()
     print(variable_map)
