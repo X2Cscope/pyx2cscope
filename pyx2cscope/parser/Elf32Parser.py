@@ -115,14 +115,12 @@ class Elf32Parser(ElfParser):
             )
 
     def _get_array_length(self, type_die):
-        type_DIE = type_die
-        if type_DIE.tag == 'DW_TAG_array_type':
-            for child in type_DIE.iter_children():
-                if child.tag == 'DW_TAG_subrange_type':
-                    array_length_attr = child.attributes.get('DW_AT_upper_bound')
-                    if array_length_attr:
-                        array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
-                        return array_length
+        for child in type_die.iter_children():
+            if child.tag == 'DW_TAG_subrange_type':
+                array_length_attr = child.attributes.get('DW_AT_upper_bound')
+                if array_length_attr:
+                    array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
+                    return array_length
     def _load_elf_file(self):
         try:
             with open(self.elf_path, "rb") as stream:
@@ -249,7 +247,7 @@ class Elf32Parser(ElfParser):
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
                 print(type_die)
                 if type_die.tag == "DW_TAG_array_type":
-                    array_length = self._get_array_length(compilation_unit, type_attr, type_die)
+                    array_length = self._get_array_length(type_die)
                     print(self.die_variable.attributes.get("DW_AT_name"))
                     print(array_length)
                 elif type_die.tag != "DW_TAG_volatile_type":
