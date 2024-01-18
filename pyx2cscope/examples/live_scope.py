@@ -15,8 +15,8 @@ logging.basicConfig(
 )
 
 # Set up X2C Scope
-elf_file = "C:\\_DESKTOP\\_Projects\\Motorbench_Projects\\ACT57BLF02_MCLV2.X\\dist\\default\\production\\ACT57BLF02_MCLV2.X.production.elf"
-x2cScope = X2CScope(port="COM9", elf_file=elf_file)
+elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300_Future.X.production.elf"
+x2cScope = X2CScope(port="COM16", elf_file=elf_file)
 
 scopeArray = x2cScope.get_variable("Scope_Array")
 # Set up scope configuration and channels
@@ -27,7 +27,6 @@ variables = [
     x2cScope.get_variable("motor.vabc.c"),
     x2cScope.get_variable("motor.apiData.velocityMeasured"),
 ]
-x2cScope.set_scope_state(2)
 for variable in variables:
     x2cScope.add_scope_channel(variable)
 

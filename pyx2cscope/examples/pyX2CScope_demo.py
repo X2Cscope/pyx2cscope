@@ -18,8 +18,8 @@ logging.basicConfig(
 )
 
 # Set up X2C Scope
-elf_file = "C:\\_DESKTOP\\_Projects\\Motorbench_Projects\\ACT57BLF02_MCLV2.X\\dist\\default\\production\\ACT57BLF02_MCLV2.X.production.elf"
-x2cScope = X2CScope(port="COM9", elf_file=elf_file)
+elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\motorbench_FOC_PLL_dsPIC33CK_MCLV2_FH.X\dist\default\production\motorbench_FOC_PLL_dsPIC33CK_MCLV2.X.production.elf"
+x2cScope = X2CScope(port="COM16", elf_file=elf_file)
 
 # Set up scope configuration
 variable1 = x2cScope.get_variable("motor.idq.q")
@@ -36,13 +36,13 @@ x2cScope.add_scope_channel(variable4)
 x2cScope.add_scope_channel(variable5)
 x2cScope.add_scope_channel(variable6)
 #
-x2cScope.set_scope_trigger(
-    variable3,
-    trigger_level=500,
-    trigger_mode=1,
-    trigger_delay=50,
-    trigger_edge=1,
-)
+# x2cScope.set_scope_trigger(
+#     variable3,
+#     trigger_level=500,
+#     trigger_mode=1,
+#     trigger_delay=50,
+#     trigger_edge=1,
+# )
 x2cScope.set_sample_time(1)
 x2cScope.set_scope_state(2)
 
@@ -93,7 +93,7 @@ plt.legend()
 plt.show()
 
 # Save data in CSV file
-csv_file_path = "../../examples/scope_data.csv"
+csv_file_path = "scope_data.csv"
 max_length = max(len(data) for data in data_storage.values())
 with open(csv_file_path, mode="w", newline="") as file:
     writer = csv.DictWriter(file, fieldnames=data_storage.keys())
