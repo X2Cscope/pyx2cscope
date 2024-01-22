@@ -3,9 +3,6 @@ import logging
 from mchplnet.interfaces.factory import InterfaceFactory
 from mchplnet.interfaces.factory import InterfaceType as IType
 from mchplnet.lnet import LNet
-from mchplnet.services.frame_save_parameter import (FrameSaveParameter,
-                                                    ScopeSetup, ScopeTrigger)
-
 from pyx2cscope.variable.variable_factory import VariableFactory
 
 logging.basicConfig(

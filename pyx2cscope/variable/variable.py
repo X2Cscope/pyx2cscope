@@ -97,18 +97,46 @@ class Variable:
             logging.error(e)
 
     def _set_value_raw(self, bytes_data: bytes) -> None:
+        """
+        Set the value of a variable in the microcontroller's RAM using raw bytes.
+
+        This method sends the raw byte data to the specified memory address in the microcontroller's RAM.
+        It handles the low-level communication with the microcontroller using the LNet interface.
+
+        Args:
+            bytes_data (bytes): The raw byte data to be written to the variable's memory location.
+
+        Raises:
+            Exception: If there is an error in writing the data to the microcontroller's RAM.
+        """
         try:
             self.l_net.put_ram(self.address, self.get_width(), bytes_data)
         except Exception as e:
-            logging.error(e)
+            logging.error(f"Error setting value: {e}")
 
     @abstractmethod
     def is_signed(self) -> bool:
-        pass
+        """
+        Abstract method to determine if the variable's data type is signed.
+
+        Implementations of this method should return True if the variable's data type
+        is a signed type (like signed integers), otherwise False.
+
+        Returns:
+            bool: True if the variable is of a signed data type, False otherwise.
+        """
 
     @abstractmethod
     def is_integer(self) -> bool:
-        pass
+        """
+        Abstract method to determine if the variable's data type is an integer.
+
+        Implementations of this method should return True if the variable's data type
+        is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+        Returns:
+            bool: True if the variable is of an integer data type, False otherwise.
+        """
 
 
 # ------------------------------INT_8------------------------------
