@@ -1,92 +1,72 @@
-import logging
-
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import *
-from pyx2cscope.variable.vartypes import VarTypes
 
 
 class VariableFactory:
-    def __init__(self, l_net: LNet, Elf_path=None):
-        self.l_net = l_net
-        self.elfFile = Elf_path  # Initialize the ELF file as None
-        self.parser = None  # Initialize the parser as None
-        self.device_info = self.l_net.interface_handshake()
+    """
+        A factory class for creating variable objects based on ELF file parsing.
 
-        self.parser_obj = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
-        self.parser = self.parser_obj(self.elfFile)
-        # mapping the variable data from the elf-file provided
-        self.variable_map = self.parser.map_all_variables_data()
-        # print(self.variable_map)
+        This class uses either `Elf16Parser` or `Elf32Parser` depending on the microcontroller's architecture
+        to parse the ELF file and create variable objects that can interact with the microcontroller's memory.
 
-    def get_var_list_elf(self) -> list[str]:
+        Attributes:
+            l_net (LNet): An instance of the LNet class for communication with the microcontroller.
+            device_info: Information about the connected device.
+            parser (ElfParser): An instance of the appropriate ELF parser based on the device's architecture.
+
+        Methods:
+            get_var_list: Retrieves a list of variable names from the ELF file.
+            get_variable: Gets a Variable object based on the variable name.
+            _get_variable_instance: Creates a Variable instance from provided information.
         """
-        Get the list of variables available from the ELF file.
+    def __init__(self, l_net: LNet, elf_path=None):
+        """
+           Initialize the VariableFactory with LNet instance and path to the ELF file.
+
+           Args:
+               l_net (LNet): Instance of LNet for communication with the microcontroller.
+               elf_path (str, optional): Path to the ELF file.
+        """
+        self.l_net = l_net
+        self.device_info = self.l_net.get_device_info()
+        parser = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
+        self.parser = parser(elf_path)
+
+    def get_var_list(self) -> list[str]:
+        """
+        Get a list of variable names available in the ELF file.
 
         Returns:
-            list[Variable]: List of variables.
+            list[str]: A list of variable names.
         """
         return self.parser.get_var_list()
 
-    def get_variable_elf(self, name: str) -> Variable:
+    def get_variable(self, name: str) -> Variable | None:
         """
-        Get the value of the variable directly from the ELF file parser and perform further processing.
+        Retrieve a Variable object based on its name.
 
         Args:
-            name (str): Variable name from the user.
+            name (str): Name of the variable to retrieve.
 
         Returns:
-            Variable: Variable object with the retrieved value like address, type, and size.
+            Variable: The Variable object, if found. None otherwise.
         """
-        if self.elfFile is None:
-            raise Exception("ELF file is not set. Use set_elf_file()")
-
         try:
-            # ELF parsing
-
-            var_result = self.variable_map.get(name)
-            # var_result = self.parser.get_var_info(name)
-            if var_result:
-                variable = self.get_variable_raw(
-                    var_result.address, var_result.type, var_result.name
-                )
-
-            return variable
-        except Exception as e:
-            logging.error(
-                f"Error while getting variable '{name}' from ELF file: {str(e)}"
+            variable_info = self.parser.get_var_info(name)
+            return self._get_variable_instance(
+                variable_info.address, variable_info.type, variable_info.name
             )
-            raise
-
-    def get_variable_raw(
-        self, address: int, var_type: VarTypes, name: str = "unknown"
-    ) -> Variable:
-        """
-        get a variable object based on the provided address, type, and name.
-
-        Args:
-            address (int): Address of the variable in the MCU memory.
-            var_type (VarTypes): Type of the variable.
-            name (str, optional): Name of the variable.
-            defaults to "unknown".
-
-        returns:
-            Variable: Variable object based on the provided information.
-        """
-        # TODO check address range
-
-        try:
-            variable = self._create_variable(address, var_type, name)
-            return variable
         except Exception as e:
-            logging.error(f"Error while creating variable '{name}': {str(e)}")
-            raise
+            logging.error(f"Error while getting variable '{name}' : {str(e)}")
 
-    def _create_variable(self, address: int, var_type: str, name: str) -> Variable:
+    def _get_variable_instance(
+        self, address: int, var_type: str, name: str
+    ) -> Variable:
         """
         create a variable object based on the provided address, type, and name.
 
-        Args:
+        args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
             name (str): Name of the variable.
@@ -94,7 +74,7 @@ class VariableFactory:
         returns:
             Variable: Variable object based on the provided information.
 
-        Raises:
+        raises:
             Exception: If the variable type is not found.
         """
         type_factory = {
@@ -110,7 +90,7 @@ class VariableFactory:
             "long long unsigned int": Variable_uint64,
             "long unsigned int": Variable_uint32,
             "pointer": Variable_uint16
-            if self.device_info == 2
+            if self.device_info.uc_width == 2
             else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
             "short int": Variable_int16,

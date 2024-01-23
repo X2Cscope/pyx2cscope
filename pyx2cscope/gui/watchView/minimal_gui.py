@@ -1,22 +1,21 @@
 """
 This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
 """
-
-
 import logging
+
+logging.basicConfig(level=logging.DEBUG)
 import os
 import sys
 import time
 from collections import deque
 from datetime import datetime
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import serial.tools.list_ports
 from matplotlib.animation import FuncAnimation
-from mchplnet.interfaces.factory import InterfaceFactory
-from mchplnet.interfaces.factory import InterfaceType as IType
-from mchplnet.lnet import LNet
+from PyQt5 import QtGui
 from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (
@@ -34,16 +33,31 @@ from PyQt5.QtWidgets import (
     QSlider,
     QWidget,
 )
+from xc2scope import X2CScope
 
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.variable.variable_factory import VariableFactory
 
-logging.basicConfig(level=logging.DEBUG)  # Configure the logging module
+matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
 
 class X2Cscope_GUI(QMainWindow):
+    """
+    Main GUI class for the pyX2Cscope application.
+
+    This class creates and manages the GUI for pyX2Cscope, providing an interface
+    to connect to a microcontroller, select variables for monitoring, and plot their values.
+    """
+
     def __init__(self):
         super().__init__()
+        self.offset_boxes = None
+        self.plot_checkboxes = None
+        self.scaled_value_boxes = None
+        self.scaling_boxes = None
+        self.Value_var_boxes = None
+        self.combo_boxes = None
+        self.live_checkboxes = None
+        self.timer_list = None
         self.VariableList = []
         self.old_Variablelist = []
         self.var_factory = None
@@ -53,27 +67,27 @@ class X2Cscope_GUI(QMainWindow):
         self.layout = None
         self.slider_var1 = QSlider(Qt.Horizontal)
         self.Scaling_var5 = QLineEdit(self)
-        self.Unit_var5 = QComboBox(self)
+        self.Unit_var5 = QLineEdit(self)
         self.Scaling_var4 = QLineEdit(self)
         self.Value_var5 = QLineEdit(self)
         self.ScaledValue_var5 = QLineEdit(self)
         self.combo_box5 = QComboBox()
         self.Live_var5 = QCheckBox(self)
         self.ScaledValue_var4 = QLineEdit(self)
-        self.Unit_var4 = QComboBox(self)
+        self.Unit_var4 = QLineEdit(self)
         self.Value_var4 = QLineEdit(self)
         self.combo_box4 = QComboBox()
         self.Value_var3 = QLineEdit(self)
         self.Live_var3 = QCheckBox(self)
         self.Live_var4 = QCheckBox(self)
-        self.Unit_var3 = QComboBox(self)
+        self.Unit_var3 = QLineEdit(self)
         self.ScaledValue_var3 = QLineEdit(self)
         self.Scaling_var3 = QLineEdit(self)
         self.combo_box3 = QComboBox()
         self.plot_button = QPushButton("Plot")
         self.combo_box2 = QComboBox()
         self.ScaledValue_var2 = QLineEdit(self)
-        self.Unit_var2 = QComboBox(self)
+        self.Unit_var2 = QLineEdit(self)
         self.Scaling_var2 = QLineEdit(self)
         self.Value_var2 = QLineEdit(self)
         self.Live_var2 = QCheckBox(self)
@@ -84,13 +98,18 @@ class X2Cscope_GUI(QMainWindow):
         self.plot_var1_checkbox = QCheckBox()
         self.ScaledValue_var1 = QLineEdit(self)
         self.Scaling_var1 = QLineEdit(self)
-        self.Unit_var1 = QComboBox(self)
+        self.Unit_var1 = QLineEdit(self)
         self.Value_var1 = QLineEdit(self)
         self.combo_box1 = QComboBox()
         self.Live_var1 = QCheckBox(self)
         self.mutex = QMutex()
         self.grid_layout = QGridLayout()
         self.box_layout = QHBoxLayout()
+        self.offset_var1 = QLineEdit()
+        self.offset_var2 = QLineEdit()
+        self.offset_var3 = QLineEdit()
+        self.offset_var4 = QLineEdit()
+        self.offset_var5 = QLineEdit()
         self.timer5 = QTimer()
         self.timer4 = QTimer()
         self.timer3 = QTimer()
@@ -101,7 +120,6 @@ class X2Cscope_GUI(QMainWindow):
         self.baud_combo = QComboBox()
         self.select_file_button = QPushButton("Select elf file")
         self.error_shown = False
-        self.shown_errors = set()
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
@@ -113,12 +131,23 @@ class X2Cscope_GUI(QMainWindow):
             0,
         ]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
-        decimal_regex = QRegExp("[0-9]+(\\.[0-9]+)?")
+        decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
         self.fig, self.ax = None, None
         self.ani = None
+        # Add self.labels on top
+        self.labels = [
+            "Live",
+            "Variable",
+            "Value",
+            "Scaling",
+            "Offset",
+            "Scaled Value",
+            "Unit",
+            "Plot",
+        ]
         self.init_ui()
 
     # noinspection PyUnresolvedReferences
@@ -180,16 +209,7 @@ class X2Cscope_GUI(QMainWindow):
             self.timer4,
             self.timer5,
         ]
-        # Add self.labels on top
-        self.labels = [
-            "Live",
-            "Variable",
-            "Value",
-            "Scaling",
-            "Scaled Value",
-            "Unit",
-            "Plot",
-        ]
+
         for col, label in enumerate(self.labels):
             self.grid_layout.addWidget(QLabel(label), 0, col)
 
@@ -207,7 +227,7 @@ class X2Cscope_GUI(QMainWindow):
             self.combo_box4,
             self.combo_box5,
         ]
-        self.value_boxes = [
+        self.Value_var_boxes = [
             self.Value_var1,
             self.Value_var2,
             self.Value_var3,
@@ -242,12 +262,20 @@ class X2Cscope_GUI(QMainWindow):
             self.plot_var4_checkbox,
             self.plot_var5_checkbox,
         ]
+        self.offset_boxes = [
+            self.offset_var1,
+            self.offset_var2,
+            self.offset_var3,
+            self.offset_var4,
+            self.offset_var5,
+        ]
 
         for row, (
             live_var,
             combo_box,
             value_var,
             scaling_var,
+            offset_var,
             scaled_value_var,
             unit_var,
             plot_checkbox,
@@ -255,8 +283,9 @@ class X2Cscope_GUI(QMainWindow):
             zip(
                 self.live_checkboxes,
                 self.combo_boxes,
-                self.value_boxes,
+                self.Value_var_boxes,
                 self.scaling_boxes,
+                self.offset_boxes,
                 self.scaled_value_boxes,
                 unit_boxes,
                 self.plot_checkboxes,
@@ -264,15 +293,16 @@ class X2Cscope_GUI(QMainWindow):
             1,
         ):
             live_var.setEnabled(False)
-            combo_box.addItems(["None"])
+            # combo_box.addItems(["None"])
             combo_box.setEnabled(False)
             combo_box.setFixedWidth(350)
             value_var.setText("0")
             value_var.setValidator(self.decimal_validator)
             scaling_var.setText("1")
+            offset_var.setText("0")
+            offset_var.setValidator(self.decimal_validator)
             scaled_value_var.setText("0")
             scaled_value_var.setValidator(self.decimal_validator)
-            unit_var.addItems([" ", "V", "RPM", "Watt", "Ampere"])
             if row > 1:
                 row += 1
             self.grid_layout.addWidget(live_var, row, 0)
@@ -282,9 +312,10 @@ class X2Cscope_GUI(QMainWindow):
 
             self.grid_layout.addWidget(value_var, row, 2)
             self.grid_layout.addWidget(scaling_var, row, 3)
-            self.grid_layout.addWidget(scaled_value_var, row, 4)
-            self.grid_layout.addWidget(unit_var, row, 5)
-            self.grid_layout.addWidget(plot_checkbox, row, 6)
+            self.grid_layout.addWidget(offset_var, row, 4)
+            self.grid_layout.addWidget(scaled_value_var, row, 5)
+            self.grid_layout.addWidget(unit_var, row, 6)
+            self.grid_layout.addWidget(plot_checkbox, row, 7)
 
         self.plot_button.clicked.connect(self.plot_data_plot)
 
@@ -296,161 +327,130 @@ class X2Cscope_GUI(QMainWindow):
         self.layout.addLayout(self.grid_layout, 5, 0)
         self.layout.addWidget(self.plot_button, 6, 0)
         # self.grid_layout.addWidget(self.slider_var2, 8, 0, 1, 6)
-        self.timer1.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box1.currentText(), self.Value_var1
-            )
-        )
 
-        self.timer2.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box2.currentText(), self.Value_var2
+        for timer, combo_box, value_var in zip(
+            self.timer_list, self.combo_boxes, self.Value_var_boxes
+        ):
+            timer.timeout.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_var_update(
+                    cb.currentText(), v_var
+                )
             )
-        )
 
-        self.timer3.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box3.currentText(), self.Value_var3
+        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+            combo_box.currentIndexChanged.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(
+                    self.VariableList[cb], v_var
+                )
             )
-        )
 
-        self.timer4.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box4.currentText(), self.Value_var4
-            )
-        )
+        for (
+            combo_box,
+            value_var,
+        ) in zip(
+            self.combo_boxes,
+            self.Value_var_boxes,
+        ):
 
-        self.timer5.timeout.connect(
-            lambda: self.handle_var_update(
-                self.combo_box5.currentText(), self.Value_var5
-            )
-        )
+            def connect_editing_finished(
+                cb=combo_box,
+                v_var=value_var,
+            ):
+                def on_editing_finished():
+                    try:
+                        self.handle_variable_putram(cb, v_var)
+                    except Exception as e:
+                        self.handle_error(f"On_editing_finished: {e}")
 
-        self.combo_box1.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box1.currentText(), self.Value_var1
-            )
-        )
-        self.combo_box2.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box2.currentText(), self.Value_var2
-            )
-        )
-        self.combo_box3.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box3.currentText(), self.Value_var3
-            )
-        )
-        self.combo_box4.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box4.currentText(), self.Value_var4
-            )
-        )
-        self.combo_box5.currentIndexChanged.connect(
-            lambda: self.handle_variable_getram(
-                self.combo_box5.currentText(), self.Value_var5
-            )
-        )
-        self.Value_var1.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box1.currentText(), self.Value_var1
-            )
-        )
-        self.Value_var2.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box2.currentText(), self.Value_var2
-            )
-        )
-        self.Value_var3.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box3.currentText(), self.Value_var3
-            )
-        )
-        self.Value_var4.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box4.currentText(), self.Value_var4
-            )
-        )
-        self.Value_var5.editingFinished.connect(
-            lambda: self.handle_variable_putram(
-                self.combo_box5.currentText(), self.Value_var5
-            )
-        )
+                return on_editing_finished
 
-        self.Value_var1.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
-            )
-        )
-        self.Scaling_var1.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
-            )
-        )
+            value_var.editingFinished.connect(connect_editing_finished())
 
-        self.Value_var2.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
-            )
-        )
-        self.Scaling_var2.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var2, self.Value_var2, self.ScaledValue_var2
-            )
-        )
+        for (
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
+        ) in zip(
+            self.scaling_boxes,
+            self.Value_var_boxes,
+            self.scaled_value_boxes,
+            self.offset_boxes,
+        ):
 
-        self.Value_var3.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3
-            )
-        )
-        self.Scaling_var3.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var3, self.Value_var3, self.ScaledValue_var3
-            )
-        )
+            def connect_text_changed(
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
+            ):
+                def on_text_changed():
+                    self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
 
-        self.Value_var4.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4
-            )
-        )
-        self.Scaling_var4.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var4, self.Value_var4, self.ScaledValue_var4
-            )
-        )
+                return on_text_changed
 
-        self.Value_var5.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5
-            )
-        )
-        self.Scaling_var5.textChanged.connect(
-            lambda: self.update_scaled_value(
-                self.Scaling_var5, self.Value_var5, self.ScaledValue_var5
-            )
-        )
+            value_var.textChanged.connect(connect_text_changed())
 
-        self.Live_var1.stateChanged.connect(
-            lambda: self.var_live(self.Live_var1, self.timer1)
-        )
-        self.Live_var2.stateChanged.connect(
-            lambda: self.var_live(self.Live_var2, self.timer2)
-        )
-        self.Live_var3.stateChanged.connect(
-            lambda: self.var_live(self.Live_var3, self.timer3)
-        )
-        self.Live_var4.stateChanged.connect(
-            lambda: self.var_live(self.Live_var4, self.timer4)
-        )
-        self.Live_var5.stateChanged.connect(
-            lambda: self.var_live(self.Live_var5, self.timer5)
-        )
+        for (
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
+        ) in zip(
+            self.scaling_boxes,
+            self.Value_var_boxes,
+            self.scaled_value_boxes,
+            self.offset_boxes,
+        ):
+
+            def connect_editing_finished(
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
+            ):
+                def on_editing_finished():
+                    self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
+
+                return on_editing_finished
+
+            scaling.editingFinished.connect(connect_editing_finished())
+
+        for timer, live_var in zip(self.timer_list, self.live_checkboxes):
+            live_var.stateChanged.connect(
+                lambda state, lv=live_var, tm=timer: self.var_live(lv, tm)
+            )
+
+        # OffsetSet.
+
+        for (
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
+        ) in zip(
+            self.scaling_boxes,
+            self.Value_var_boxes,
+            self.scaled_value_boxes,
+            self.offset_boxes,
+        ):
+
+            def connect_text_changed(
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
+            ):
+                def on_text_changed():
+                    self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
+
+                return on_text_changed
+
+            offset.editingFinished.connect(connect_text_changed())
 
         # Add slider for Variable 2
-        self.slider_var1.setMinimum(0)
-        self.slider_var1.setMaximum(10000)
+        self.slider_var1.setMinimum(-32768)
+        self.slider_var1.setMaximum(32767)
         self.slider_var1.setEnabled(False)
 
         self.slider_var1.valueChanged.connect(self.slider_var1_changed)
@@ -459,13 +459,20 @@ class X2Cscope_GUI(QMainWindow):
         self.setCentralWidget(central_widget)
         self.setWindowTitle("pyX2Cscope")
         mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
-        self.setWindowIcon(QIcon(mchp_img))
+        self.setWindowIcon(QtGui.QIcon(mchp_img))
 
         # Populate the available ports combo box
         self.refresh_ports()
 
     @pyqtSlot()
     def var_live(self, live_var, timer):
+        """
+        Handles the state change of live variable checkboxes.
+
+        Args:
+            live_var (QCheckBox): The checkbox representing a live variable.
+            timer (QTimer): The timer associated with the live variable.
+        """
         try:
             if live_var.isChecked():
                 if not timer.isActive():
@@ -474,29 +481,45 @@ class X2Cscope_GUI(QMainWindow):
                 if timer.isActive():
                     timer.stop()
         except Exception as e:
-            error_message = f"Error: {e}"
-            logging.error(error_message)
-            self.handle_error(error_message)
+            logging.error(e)
+            self.handle_error(f"Live Variable: {e}")
 
     @pyqtSlot()
-    def update_scaled_value(self, scaling_var, value_var, scaled_value_var):
+    def update_scaled_value(self, scaling_var, value_var, scaled_value_var, offset_var):
+        """
+        Updates the scaled value based on the provided scaling factor and offset.
+
+        Args:
+            scaling_var : Input field for the scaling factor.
+            value_var : Input field for the raw value.
+            scaled_value_var : Input field for the scaled value.
+            offset_var : Input field for the offset.
+        """
         scaling_text = scaling_var.text()
         value_text = value_var.text()
-
-        if scaling_text and value_text:
-            try:
+        offset_text = offset_var.text()
+        try:
+            value = float(value_text)
+            if offset_text.startswith("-"):
+                float_offset = float(offset_text.lstrip("-"))
+                offset = -1 * float_offset
+            else:
+                offset = float(offset_text)
+            if scaling_text.startswith("-"):
+                float_scaling = float(scaling_text.lstrip("-"))
+                scaling = -1 * float_scaling
+            else:
                 scaling = float(scaling_text)
-                value = float(value_text)
-                scaled_value = scaling * value
-                scaled_value_var.setText("{:.2f}".format(scaled_value))
-            except Exception as e:
-                error_message = f"Error: {e}"
-                logging.error(error_message)
-                self.handle_error(error_message)
-        else:
-            scaled_value_var.setText("")
+            scaled_value = (scaling * value) + offset
+            scaled_value_var.setText("{:.2f}".format(scaled_value))
+        except Exception as e:
+            logging.error(e)
+            self.handle_error(f"Error update Scaled Value: {e}")
 
     def plot_data_update(self):
+        """
+        Updates the data for plotting.
+        """
         try:
             timestamp = datetime.now()
             if len(self.plot_data) > 0:
@@ -510,17 +533,23 @@ class X2Cscope_GUI(QMainWindow):
                 (
                     timestamp,
                     time_diff,
-                    float(self.Value_var1.text()),
-                    float(self.Value_var2.text()),
-                    float(self.Value_var3.text()),
-                    float(self.Value_var4.text()),
-                    float(self.Value_var5.text()),
+                    float(self.ScaledValue_var1.text()),
+                    float(self.ScaledValue_var2.text()),
+                    float(self.ScaledValue_var3.text()),
+                    float(self.ScaledValue_var4.text()),
+                    float(self.ScaledValue_var5.text()),
                 )
             )
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     def update_plot(self, frame):
+        """
+        Updates the plot with new data.
+
+        Args:
+            frame: The current frame for the FuncAnimation.
+        """
         try:
             if not self.plot_data:
                 return
@@ -544,20 +573,27 @@ class X2Cscope_GUI(QMainWindow):
             self.ax.set_title("Live Plot")
             self.ax.legend(loc="upper right")
             end = time.time()
-            print(end - start)
+            logging.debug(end - start)
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     def plot_data_plot(self):
+        """
+        Initializes and starts data plotting.
+        """
         try:
             if not self.plot_data:
                 return
 
             def initialize_plot():
                 self.fig, self.ax = plt.subplots()
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1)
+
+                self.ani = FuncAnimation(
+                    self.fig, self.update_plot, interval=1, cache_frame_data=False
+                )
+                logging.debug(self.ani)
                 plt.xticks(rotation=45)
                 self.ax.axhline(
                     0, color="black", linewidth=0.5
@@ -586,24 +622,27 @@ class X2Cscope_GUI(QMainWindow):
                 initialize_plot()
                 self.plot_window_open = True
         except Exception as e:
-            print(e)
+            logging.error(e)
 
     # noinspection PyUnresolvedReferences
     def handle_error(self, error_message: str):
-        if error_message not in self.shown_errors:
-            msg_box = QMessageBox(self)
-            msg_box.setWindowTitle("Error")
-            msg_box.setText(error_message)
-            msg_box.setStandardButtons(QMessageBox.Ok)
-            msg_box.buttonClicked.connect(self.error_box_closed)
-            msg_box.exec_()
-            self.shown_errors.add(error_message)
+        """
+        Displays an error message in a message box.
 
-    def error_box_closed(self):
-        # Handle closing of the error pop-up box if needed
-        pass
+        Args:
+            error_message (str): The error message to display.
+        """
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Error")
+        msg_box.setText(error_message)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        # msg_box.buttonClicked.connect(self.error_box_closed)
+        msg_box.exec_()
 
     def sampletime_edit(self):
+        """
+        Handles the editing of the sample time value.
+        """
         try:
             new_sample_time = int(self.sampletime.text())
             if new_sample_time != self.timerValue:
@@ -611,17 +650,22 @@ class X2Cscope_GUI(QMainWindow):
                 for timer in self.timer_list:
                     if timer.isActive():
                         timer.start(self.timerValue)
-        except Exception as e:
-            error_message = f"Error: {e}"
-            logging.error(error_message)
-            self.handle_error(error_message)
-            print(e)
+        except ValueError as e:
+            logging.error(e)
+            self.handle_error(f"Invalid sample time: {e}")
 
     @pyqtSlot()
     def handle_var_update(self, counter, value_var):
+        """
+        Handles the update of variable values from the microcontroller.
+
+        Args:
+            counter: The variable to update.
+            value_var (QLineEdit): The input field to display the updated value.
+        """
         try:
             if counter is not None:
-                counter = self.var_factory.get_variable_elf(counter)
+                counter = self.x2cscope.get_variable(counter)
                 value = counter.get_value()
                 value_var.setText(str(value))
                 if (
@@ -637,17 +681,36 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     def slider_var1_changed(self, value):
+        """
+        Handles the change in slider value for Variable 1.
+
+        Args:
+            value (int): The new value of the slider.
+        """
         if self.combo_box1.currentIndex() == 0:
             self.handle_error("Select Variable")
         else:
             self.Value_var1.setText(str(value))
             self.update_scaled_value(
-                self.Scaling_var1, self.Value_var1, self.ScaledValue_var1
+                self.Scaling_var1,
+                self.Value_var1,
+                self.ScaledValue_var1,
+                self.offset_var1,
             )
             self.handle_variable_putram(self.combo_box1.currentText(), self.Value_var1)
 
     @pyqtSlot()
     def handle_variable_getram(self, variable, Value_var):
+        """
+        Handle the retrieval of values from RAM for the specified variable.
+
+        Args:
+            variable: The variable to retrieve the value for.
+            Value_var: The QLineEdit widget to display the retrieved value.
+
+        This method retrieves the value of the specified variable from the microcontroller's RAM
+        and updates respective variable with the retrieved value.
+        """
         try:
             current_variable = variable
 
@@ -656,7 +719,7 @@ class X2Cscope_GUI(QMainWindow):
                     self.selected_var_indices[index] = combo_box.currentIndex()
 
             if current_variable and current_variable != "None":
-                counter = self.var_factory.get_variable_elf(current_variable)
+                counter = self.x2cscope.get_variable(current_variable)
                 value = counter.get_value()
                 Value_var.setText(str(value))
                 if Value_var == self.Value_var1:
@@ -673,12 +736,21 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def handle_variable_putram(self, variable, Value_var):
+        """
+        Handle the writing of values to RAM for the specified variable.
+
+        Args:
+            variable: The variable to write the value to.
+            Value_var: The QLineEdit widget to get the value from.
+
+        This method writes the value to the microcontroller's RAM for the specified variable.
+        """
         try:
             current_variable = variable
             value = float(Value_var.text())
 
             if current_variable and current_variable != "None":
-                counter = self.var_factory.get_variable_elf(current_variable)
+                counter = self.x2cscope.get_variable(current_variable)
                 counter.set_value(value)
 
         except Exception as e:
@@ -688,6 +760,12 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def select_elf_file(self):
+        """
+        Open a file dialog to select an ELF file.
+
+        This method opens a file dialog for the user to select an ELF file.
+        The selected file path is then stored in settings for later use.
+        """
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("ELF Files (*.elf)")
         file_dialog.setFileMode(QFileDialog.ExistingFile)
@@ -705,6 +783,12 @@ class X2Cscope_GUI(QMainWindow):
         # self.refresh_combo_box()
 
     def refresh_combo_box(self):
+        """
+        Refresh the contents of the variable selection combo boxes.
+
+        This method repopulates the combo boxes used for variable selection
+        with the updated list of variables.
+        """
         if self.VariableList is not None:
             for index, combo_box in enumerate(self.combo_boxes):
                 selected_index = self.selected_var_indices[index]
@@ -721,6 +805,12 @@ class X2Cscope_GUI(QMainWindow):
             logging.warning("VariableList is None. Unable to refresh combo boxes.")
 
     def refresh_ports(self):
+        """
+        Refresh the list of available serial ports.
+
+        This method updates the combo box containing the list of available
+        serial ports to reflect the current state of the system.
+        """
         # Clear and repopulate the available ports combo box
         available_ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combo.clear()
@@ -728,6 +818,12 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def toggle_connection(self):
+        """
+        Handle the connection or disconnection of the serial port.
+
+        This method establishes or terminates the serial connection based on
+        the current state of the connection.
+        """
         if self.file_path == "":
             QMessageBox.warning(self, "Error", "Please select an ELF file.")
             self.select_elf_file()
@@ -743,6 +839,12 @@ class X2Cscope_GUI(QMainWindow):
             self.disconnect_serial()
 
     def disconnect_serial(self):
+        """
+        Disconnect the current serial connection.
+
+        This method safely terminates the existing serial connection, if any,
+        and updates the UI to reflect the disconnection.
+        """
         try:
             if self.ser is not None and self.ser.is_open:
                 self.ser.stop()
@@ -774,6 +876,13 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     def connect_serial(self):
+        """
+        Establish a serial connection based on the current UI settings.
+
+        This method sets up a serial connection using the selected port and
+        baud rate. It also initializes the variable factory and updates the
+        UI to reflect the connection state.
+        """
         try:
             # Disconnect first if already connected
             if self.ser is not None and self.ser.is_open:
@@ -782,13 +891,15 @@ class X2Cscope_GUI(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.ser = InterfaceFactory.get_interface(
-                IType.SERIAL, port=port, baudrate=baud_rate
+            self.x2cscope = X2CScope(
+                port=port, elf_file=self.file_path, baud_rate=baud_rate
             )
-            l_net = LNet(self.ser)
-            self.var_factory = VariableFactory(l_net, self.file_path)
-            self.VariableList = self.var_factory.get_var_list_elf()
-            self.VariableList.insert(0, "None")
+            self.ser = self.x2cscope.interface
+            self.VariableList = self.x2cscope.list_variables()
+            if self.VariableList:
+                self.VariableList.insert(0, "None")
+            else:
+                return
             self.refresh_combo_box()
             logging.info("Serial Port Configuration:")
             logging.info(f"Port: {port}")
@@ -822,10 +933,29 @@ class X2Cscope_GUI(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
-        # ... (existing code)
+    def close_plot_window(self):
+        """
+        Close the plot window if it is open.
+
+        This method stops the animation and closes the plot window, if it is open.
+        """
+        if self.ani is not None:
+            self.ani.event_source.stop()
+        plt.close(self.fig)
+        self.plot_window_open = False
 
     def closeEvent(self, event):
-        # Close the serial connection and clean up when the application is closed
+        """
+        Handle the event when the main window is closed.
+
+        Args:
+            event: The close event.
+
+        This method ensures that all resources are properly released and the
+        application is closed cleanly.
+        """
+        if self.plot_window_open:
+            self.close_plot_window()
         if self.ser:
             self.disconnect_serial()
         event.accept()
