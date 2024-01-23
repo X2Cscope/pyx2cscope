@@ -32,11 +32,9 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from mchplnet.interfaces.factory import InterfaceFactory
-from mchplnet.interfaces.factory import InterfaceType as IType
-from mchplnet.lnet import LNet
+from xc2scope import X2CScope
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.variable.variable_factory import VariableFactory
+
 
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
@@ -664,9 +662,8 @@ class X2Cscope_GUI(QMainWindow):
         """
         try:
             if counter is not None:
-                counter = self.var_factory.get_variable(counter)
+                counter = self.x2cscope.get_variable(counter)
                 value = counter.get_value()
-                print(value)
                 value_var.setText(str(value))
                 if (
                     value_var == self.Value_var1
@@ -719,7 +716,7 @@ class X2Cscope_GUI(QMainWindow):
                     self.selected_var_indices[index] = combo_box.currentIndex()
 
             if current_variable and current_variable != "None":
-                counter = self.var_factory.get_variable(current_variable)
+                counter = self.x2cscope.get_variable(current_variable)
                 value = counter.get_value()
                 Value_var.setText(str(value))
                 if Value_var == self.Value_var1:
@@ -750,7 +747,7 @@ class X2Cscope_GUI(QMainWindow):
             value = float(Value_var.text())
 
             if current_variable and current_variable != "None":
-                counter = self.var_factory.get_variable(current_variable)
+                counter = self.x2cscope.get_variable(current_variable)
                 counter.set_value(value)
 
         except Exception as e:
@@ -891,12 +888,9 @@ class X2Cscope_GUI(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.ser = InterfaceFactory.get_interface(
-                IType.SERIAL, port=port, baudrate=baud_rate
-            )
-            l_net = LNet(self.ser)
-            self.var_factory = VariableFactory(l_net, self.file_path)
-            self.VariableList = self.var_factory.get_var_list()
+            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate= baud_rate)
+            self.ser = self.x2cscope.interface
+            self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:
                 self.VariableList.insert(0, "None")
             else:

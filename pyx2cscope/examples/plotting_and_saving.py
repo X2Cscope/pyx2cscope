@@ -14,32 +14,22 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
-# Import the required modules and classes from the mchplnet package
-from mchplnet.interfaces.factory import InterfaceFactory
-from mchplnet.interfaces.factory import InterfaceType as IType
-from mchplnet.lnet import LNet
-from pyx2cscope.variable.variable_factory import VariableFactory
+from xc2scope import X2CScope
 
 # Initialize serial communication
 serial_port = "COM8"
 baud_rate = 115200
-serial_connection = InterfaceFactory.get_interface(
-    IType.SERIAL, port=serial_port, baudrate=baud_rate
-)
-
 # Specify the path to your ELF file
 elf_file = "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2\\production/bldc_MCLV2.X.production.elf"
 
 # Initialize LNet and VariableFactory
-l_net = LNet(serial_connection)
-variable_factory = VariableFactory(l_net, elf_file)
-
+x2cscope = X2CScope(port=serial_port, baud_rate= baud_rate, elf_file=elf_file)
 # Get the required variables from the ELF file
-variable_current = variable_factory.get_variable("I_b")
-variable_VM1 = variable_factory.get_variable("V_M1")
-start_stop = variable_factory.get_variable("buttonStartStop.debounceCount")
-pot = variable_factory.get_variable("PotVal")
-CurrentSpeed = variable_factory.get_variable("CurrentSpeed")
+variable_current = x2cscope.get_variable("I_b")
+variable_VM1 = x2cscope.get_variable("V_M1")
+start_stop = x2cscope.get_variable("buttonStartStop.debounceCount")
+pot = x2cscope.get_variable("PotVal")
+CurrentSpeed = x2cscope.get_variable("CurrentSpeed")
 start_stop.set_value(10)
 
 # Create thread-safe data queues

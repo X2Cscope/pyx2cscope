@@ -182,10 +182,15 @@ class X2CScope:
             trigger_mode=trigger_mode,
         )
         self.scope_setup.set_trigger(scope_trigger)
-
+    def clear_trigger(self):
+        """
+        Reset Trigger configuration.
+        """
+        self.scope_setup.reset_trigger()
     def set_sample_time(self, sample_time: int):
         """
-        Set the sample time factor for scope data acquisition.
+        This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution.
+        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
 
         Args:
             sample_time (int): The sample time factor.
@@ -324,7 +329,7 @@ class X2CScope:
             channels[channel] = channels[channel][start:end]
         return channels
 
-    def get_scope_channel_data(self, valid_data=True) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(self, valid_data=False) -> Dict[str, List[Number]]:
         """
         Get the sorted and optionally filtered scope channel data.
 
