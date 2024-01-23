@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/X2Cscope/pyx2cscope/develop/pyx2cscope/gui/img/microchip-technology-logo.png?token=GHSAT0AAAAAACGXT7TPLZREQNFPHPTGHAVEZHIPUNQ" alt="pyX2Cscope Logo" width="250">
+  <img src="https://raw.githubusercontent.com/X2Cscope/pyx2cscope/develop/pyx2cscope/gui/img/pyx2cscope.jpg?token=GHSAT0AAAAAACGXT7TPLZREQNFPHPTGHAVEZHIPUNQ" alt="pyX2Cscope Logo" width="250">
 </p>
 
 # pyX2Cscope
