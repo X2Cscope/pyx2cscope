@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 
 @dataclass
 class VariableInfo:
@@ -13,6 +14,7 @@ class VariableInfo:
         byte_size (int): The size of the variable in bytes.
         address (int): The memory address of the variable.
     """
+
     name: str
     type: str
     byte_size: int

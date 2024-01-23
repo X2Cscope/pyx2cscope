@@ -13,8 +13,10 @@ logging.basicConfig(
 
 # X2C Scope Setup Initialize the X2C Scope for real-time data acquisition from a microcontroller. Specify the COM
 # port and path to the ELF file.
-elf_file = (r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2"
-            r"\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300_Future.X.production.elf")
+elf_file = (
+    r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2"
+    r"\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300_Future.X.production.elf"
+)
 x2cScope = X2CScope(port="COM16", elf_file=elf_file)
 
 # Initialize Variables for Monitoring

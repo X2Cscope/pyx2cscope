@@ -2,12 +2,14 @@
 This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
 """
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 import os
 import sys
 import time
 from collections import deque
 from datetime import datetime
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,20 +33,21 @@ from PyQt5.QtWidgets import (
     QSlider,
     QWidget,
 )
-
 from xc2scope import X2CScope
-from pyx2cscope.gui import img as img_src
 
+from pyx2cscope.gui import img as img_src
 
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
+
 class X2Cscope_GUI(QMainWindow):
     """
-        Main GUI class for the pyX2Cscope application.
+    Main GUI class for the pyX2Cscope application.
 
-        This class creates and manages the GUI for pyX2Cscope, providing an interface
-        to connect to a microcontroller, select variables for monitoring, and plot their values.
+    This class creates and manages the GUI for pyX2Cscope, providing an interface
+    to connect to a microcontroller, select variables for monitoring, and plot their values.
     """
+
     def __init__(self):
         super().__init__()
         self.offset_boxes = None
@@ -515,8 +518,8 @@ class X2Cscope_GUI(QMainWindow):
 
     def plot_data_update(self):
         """
-       Updates the data for plotting.
-       """
+        Updates the data for plotting.
+        """
         try:
             timestamp = datetime.now()
             if len(self.plot_data) > 0:
@@ -638,8 +641,8 @@ class X2Cscope_GUI(QMainWindow):
 
     def sampletime_edit(self):
         """
-       Handles the editing of the sample time value.
-       """
+        Handles the editing of the sample time value.
+        """
         try:
             new_sample_time = int(self.sampletime.text())
             if new_sample_time != self.timerValue:
@@ -758,11 +761,11 @@ class X2Cscope_GUI(QMainWindow):
     @pyqtSlot()
     def select_elf_file(self):
         """
-       Open a file dialog to select an ELF file.
+        Open a file dialog to select an ELF file.
 
-       This method opens a file dialog for the user to select an ELF file.
-       The selected file path is then stored in settings for later use.
-       """
+        This method opens a file dialog for the user to select an ELF file.
+        The selected file path is then stored in settings for later use.
+        """
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("ELF Files (*.elf)")
         file_dialog.setFileMode(QFileDialog.ExistingFile)
@@ -888,7 +891,9 @@ class X2Cscope_GUI(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate= baud_rate)
+            self.x2cscope = X2CScope(
+                port=port, elf_file=self.file_path, baud_rate=baud_rate
+            )
             self.ser = self.x2cscope.interface
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:

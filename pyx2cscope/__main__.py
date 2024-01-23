@@ -4,6 +4,7 @@ import sys
 from gui.watchView.minimal_gui import X2Cscope_GUI
 from PyQt5.QtWidgets import QApplication
 
+
 # Define a function to set the logging level based on a string argument
 def set_logging_level(level_str):
     """
@@ -30,6 +31,7 @@ def set_logging_level(level_str):
         logging.info("Info message")
         logging.warning("Warning message")
         logging.error("Error message")
+
 
 # Check if a command-line argument was provided for the logging level
 if len(sys.argv) > 1:

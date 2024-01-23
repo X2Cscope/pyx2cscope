@@ -157,12 +157,12 @@ class X2CScope:
         return self.scope_setup.list_channels()
 
     def set_scope_trigger(
-            self,
-            variable: Variable,
-            trigger_level: int,
-            trigger_mode: int,
-            trigger_delay: int,
-            trigger_edge: int,
+        self,
+        variable: Variable,
+        trigger_level: int,
+        trigger_mode: int,
+        trigger_delay: int,
+        trigger_edge: int,
     ):
         """
         Set the scope trigger configuration.
@@ -182,11 +182,13 @@ class X2CScope:
             trigger_mode=trigger_mode,
         )
         self.scope_setup.set_trigger(scope_trigger)
+
     def clear_trigger(self):
         """
         Reset Trigger configuration.
         """
         self.scope_setup.reset_trigger()
+
     def set_sample_time(self, sample_time: int):
         """
         This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution.
@@ -224,8 +226,8 @@ class X2CScope:
         scope_data = self.lnet.load_parameters()
         logging.debug(scope_data)
         return (
-                scope_data.scope_state == 0
-                or scope_data.data_array_pointer == scope_data.data_array_used_length
+            scope_data.scope_state == 0
+            or scope_data.data_array_pointer == scope_data.data_array_used_length
         )
 
     def get_trigger_position(self) -> int:
@@ -259,7 +261,7 @@ class X2CScope:
         """
         # SDA(Scope Data Array) - SDA % DSS(Data Set Size)
         bytes_not_used = (
-                self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
         )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
@@ -301,7 +303,7 @@ class X2CScope:
         channels = {channel: [] for channel in self.scope_setup.list_channels()}
         dataset_size = self.scope_setup.get_dataset_size()
         for i in range(0, len(data), dataset_size):
-            dataset = data[i: i + dataset_size]
+            dataset = data[i : i + dataset_size]
             j = 0
             for name, channel in self.scope_setup.list_channels().items():
                 k = channel.data_type_size + j

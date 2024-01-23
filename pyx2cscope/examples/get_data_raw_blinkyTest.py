@@ -11,12 +11,11 @@ logging.basicConfig(
 
 from xc2scope import X2CScope
 
-
 serial_port = "COM15"  # select COM port
 baud_rate = 115200
 elf_file = r"C:\_DESKTOP\MC FG F2F Vienna\pyx2cscope_dspic33ck_48-300W.X\dist\default\production\pyx2cscope_dspic33ck_48-300W.X.production.elf"
 
-x2cscope = X2CScope(port= serial_port, baud_rate= baud_rate, elf_file=elf_file )
+x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 # Constants for LED bit positions
 LED1_BIT = 12  # LATE12
 LED2_BIT = 13  # LATE13

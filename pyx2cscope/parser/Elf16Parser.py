@@ -64,11 +64,11 @@ class Elf16Parser(ElfParser):
 
     def _parse_cu_members(self):
         """
-       Parse the members of a compilation unit.
+        Parse the members of a compilation unit.
 
-       Returns:
-           dict: A dictionary containing parsed members of the compilation unit.
-       """
+        Returns:
+            dict: A dictionary containing parsed members of the compilation unit.
+        """
         members = {}
         self.next_line = next(self.tree_string)
         while "DW_AT" in self.next_line:
@@ -126,7 +126,6 @@ class Elf16Parser(ElfParser):
             self._parse_cu()
 
     def _load_elf_file(self):
-
         # Construct the command
         command = [self.xc16_read_elf_path, "-w", self.elf_path]
 
@@ -454,8 +453,10 @@ class Elf16Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    elf_file = (r"C:\Users\M71906\MPLABXProjects\MotorControl\dsPIC33-LVMC-MB-FOC-Sensorless.X\dist\default\production"
-                r"\dsPIC33-LVMC-MB-FOC-Sensorless.X.production.elf")
+    elf_file = (
+        r"C:\Users\M71906\MPLABXProjects\MotorControl\dsPIC33-LVMC-MB-FOC-Sensorless.X\dist\default\production"
+        r"\dsPIC33-LVMC-MB-FOC-Sensorless.X.production.elf"
+    )
     logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
