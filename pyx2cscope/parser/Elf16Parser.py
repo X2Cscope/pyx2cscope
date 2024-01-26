@@ -260,7 +260,7 @@ class Elf16Parser(ElfParser):
                         }
                     }
                     members.update(member)
-            except Exception:
+            except Exception as e:
                 # there are some missing values
                 # this will be addressed in future versions
                 continue
@@ -412,8 +412,32 @@ class Elf16Parser(ElfParser):
         if "DW_AT_type" in start_die:
             type_offset = start_die["DW_AT_type"]
             type_die = self._get_dwarf_die_by_offset(type_offset)
+            if type_die["tag"] == "DW_TAG_array_type":
+                print(start_die)
+                array_size = self.calculate_array_size(type_die)
+                print(array_size)
             return self._get_end_die(type_die)
         return None
+
+    def _get_next_die_by_offset(self, offset):
+        take_next = False
+        for cu_offset, cu in self.dwarf_info.items():
+            for die_offset, die in cu["elements"].items():
+                if take_next:
+                    return die
+                if die_offset == offset:
+                    take_next = True
+
+    def calculate_array_size(self, array_die):
+        # Retrieve the array type DIE
+        die = self._get_next_die_by_offset(array_die["offset"])
+        try:
+            upper_bound = int(die.get('DW_AT_upper_bound'))
+            print("upper_bound", upper_bound)
+            num_elements = upper_bound + 1  # Assuming 0-based indexing
+            return num_elements
+        except Exception as e:
+            print(array_die)
 
     def _get_dwarf_die_by_offset(self, offset):
         """
@@ -453,10 +477,8 @@ class Elf16Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    elf_file = (
-        r"C:\Users\M71906\MPLABXProjects\MotorControl\dsPIC33-LVMC-MB-FOC-Sensorless.X\dist\default\production"
-        r"\dsPIC33-LVMC-MB-FOC-Sensorless.X.production.elf"
-    )
+    #elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ZSMT-42BLF02-MCLV2-33ck256mp508.X\dist\default\production\ZSMT-42BLF02-MCLV2-33ck256mp508.X.production.elf"
+    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\motorbench_ZSMT_dsPIC33CK_MCLV_48_300_Future.X\dist\default\production\motorbench_FOC_PLL_dsPIC33CK_MCLV_48_300_delongi.X.production.elf"
     logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
