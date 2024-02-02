@@ -2,8 +2,8 @@ import logging
 from numbers import Number
 from typing import Dict, List
 
-from variable.variable import Variable
-from variable.variable_factory import VariableFactory
+from pyx2cscope.variable.variable import Variable
+from pyx2cscope.variable.variable_factory import VariableFactory
 
 from mchplnet.interfaces.abstract_interface import InterfaceABC
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType

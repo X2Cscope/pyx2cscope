@@ -5,7 +5,6 @@ from numbers import Number
 from typing import List
 
 import mchplnet.lnet as LNet
-from mchplnet.services.scope import ScopeChannel, ScopeTrigger
 
 
 class Variable:
