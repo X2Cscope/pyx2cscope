@@ -33,8 +33,7 @@ from PyQt5.QtWidgets import (
     QSlider,
     QWidget,
 )
-from xc2scope import X2CScope
-
+from pyx2cscope.xc2scope import X2CScope
 from pyx2cscope.gui import img as img_src
 
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
