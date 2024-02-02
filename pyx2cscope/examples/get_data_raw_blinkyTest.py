@@ -9,7 +9,7 @@ logging.basicConfig(
     filename="BlinkySFR.log",
 )
 
-from xc2scope import X2CScope
+from pyx2cscope.xc2scope import X2CScope
 
 serial_port = "COM15"  # select COM port
 baud_rate = 115200

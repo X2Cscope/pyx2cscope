@@ -3,7 +3,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 import time
 
-from xc2scope import X2CScope
+from pyx2cscope.xc2scope import X2CScope
 
 serial_port = "COM16"  # select COM port
 baud_rate = 115200

@@ -14,7 +14,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
 
-from xc2scope import X2CScope
+from pyx2cscope.xc2scope import X2CScope
 
 # Initialize serial communication
 serial_port = "COM8"

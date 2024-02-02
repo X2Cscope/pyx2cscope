@@ -1,6 +1,6 @@
 import time
 
-from xc2scope import X2CScope
+from pyx2cscope.xc2scope import X2CScope
 
 elf_file = (
     r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2"

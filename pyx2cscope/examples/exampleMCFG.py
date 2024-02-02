@@ -6,7 +6,7 @@ logging.basicConfig(
     filename="BlinkyMCFG.log",  # Log file name
 )
 
-from xc2scope import X2CScope
+from pyx2cscope.xc2scope import X2CScope
 
 # Configuration for serial port communication
 serial_port = "COM8"  # Define the COM port to use
