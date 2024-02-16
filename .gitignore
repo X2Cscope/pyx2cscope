@@ -133,3 +133,4 @@ dmypy.json
 
 # pycharm
 .idea
+/pyx2cscope/examples/scope_data.csv
