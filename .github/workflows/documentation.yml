@@ -20,7 +20,7 @@ jobs:
     - name: Code Format Check with Black
       run: |
         black --check --verbose .
-    - name: Code Format Check with Black
+    - name: Code Format Check with isort
       run: |
         isort . -c -v
 

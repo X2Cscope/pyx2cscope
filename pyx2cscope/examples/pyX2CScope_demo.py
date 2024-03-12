@@ -7,6 +7,7 @@ import logging
 import time
 
 import matplotlib.pyplot as plt
+
 from pyx2cscope.xc2scope import X2CScope
 
 # Set up logging

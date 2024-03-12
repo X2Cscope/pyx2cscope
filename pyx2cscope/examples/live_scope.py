@@ -2,6 +2,7 @@ import logging
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+
 from pyx2cscope.xc2scope import X2CScope
 
 # Set up logging This sets up the logging system to capture information and errors, storing them in a log file with

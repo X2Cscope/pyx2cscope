@@ -2,17 +2,17 @@
 Example to change LED by changing the bit value on dspic33ck256mp508 Microchip Using SFR(Special function Register)
 """
 import logging
-import time
+
+from mchplnet.interfaces.factory import InterfaceFactory
+from mchplnet.interfaces.factory import InterfaceType as IType
+from mchplnet.lnet import LNet
+
+from pyx2cscope.variable.variable_factory import VariableFactory
 
 logging.basicConfig(
     level=0,
     filename="BlinkySFR.log",
 )
-
-from mchplnet.interfaces.factory import InterfaceFactory
-from mchplnet.interfaces.factory import InterfaceType as IType
-from mchplnet.lnet import LNet
-from pyx2cscope.variable.variable_factory import VariableFactory
 
 serial_port = "COM15"  # select COM port
 baud_rate = 115200

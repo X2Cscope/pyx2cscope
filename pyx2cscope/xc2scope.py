@@ -2,14 +2,14 @@ import logging
 from numbers import Number
 from typing import Dict, List
 
-from pyx2cscope.variable.variable import Variable
-from pyx2cscope.variable.variable_factory import VariableFactory
-
 from mchplnet.interfaces.abstract_interface import InterfaceABC
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
+
+from pyx2cscope.variable.variable import Variable
+from pyx2cscope.variable.variable_factory import VariableFactory
 
 # Configure logging for debugging and tracking
 logging.basicConfig(

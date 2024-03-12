@@ -2,8 +2,6 @@
 This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
 """
 import logging
-
-logging.basicConfig(level=logging.DEBUG)
 import os
 import sys
 import time
@@ -33,8 +31,11 @@ from PyQt5.QtWidgets import (
     QSlider,
     QWidget,
 )
-from pyx2cscope.xc2scope import X2CScope
+
 from pyx2cscope.gui import img as img_src
+from pyx2cscope.xc2scope import X2CScope
+
+logging.basicConfig(level=logging.DEBUG)
 
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 

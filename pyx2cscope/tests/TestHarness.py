@@ -1,17 +1,16 @@
 import logging
 import pdb
 
+import serial
+from mchplnet.lnet import LNet
+
+from pyx2cscope.variable.variable_factory import VariableFactory
+
 logging.basicConfig(
     level=0,
     filename="TestHarness.log",
 )
 logging.info("Start##################")
-# from mchplnet.interfaces.factory import InterfaceFactory
-# from mchplnet.interfaces.factory import InterfaceType as IType
-import serial
-
-from mchplnet.lnet import LNet
-from pyx2cscope.variable.variable_factory import VariableFactory
 
 serial_port = "COM17"  # select COM port
 baud_rate = 115200
