@@ -20,8 +20,28 @@ jobs:
     - name: Code Format Check with Black
       run: |
         black --check --verbose .
+    - name: Code Format Check with Black
+      run: |
+        isort . -c -v
 
-
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r quality.txt
+    - name: Check code with ruff
+      run: |
+        ruff ./pyx2cscope
+    - name: Check code with pylint
+      run: |
+        pylint ./pyx2cscope
 
   docs:
     runs-on: ubuntu-latest
