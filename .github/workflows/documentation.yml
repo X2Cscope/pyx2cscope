@@ -43,6 +43,6 @@ jobs:
 
       - name: Build documentation
         run: |
-          sphinx-build -M -Wan html doc build
+          sphinx-build -M html doc build -Wan --keep-going 
 
 
