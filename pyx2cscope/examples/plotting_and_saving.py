@@ -23,7 +23,7 @@ baud_rate = 115200
 elf_file = "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2\\production/bldc_MCLV2.X.production.elf"
 
 # Initialize LNet and VariableFactory
-x2cscope = X2CScope(port=serial_port, baud_rate= baud_rate, elf_file=elf_file)
+x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 # Get the required variables from the ELF file
 variable_current = x2cscope.get_variable("I_b")
 variable_VM1 = x2cscope.get_variable("V_M1")

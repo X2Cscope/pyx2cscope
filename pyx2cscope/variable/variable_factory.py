@@ -5,28 +5,29 @@ from pyx2cscope.variable.variable import *
 
 class VariableFactory:
     """
-        A factory class for creating variable objects based on ELF file parsing.
+    A factory class for creating variable objects based on ELF file parsing.
 
-        This class uses either `Elf16Parser` or `Elf32Parser` depending on the microcontroller's architecture
-        to parse the ELF file and create variable objects that can interact with the microcontroller's memory.
+    This class uses either `Elf16Parser` or `Elf32Parser` depending on the microcontroller's architecture
+    to parse the ELF file and create variable objects that can interact with the microcontroller's memory.
 
-        Attributes:
-            l_net (LNet): An instance of the LNet class for communication with the microcontroller.
-            device_info: Information about the connected device.
-            parser (ElfParser): An instance of the appropriate ELF parser based on the device's architecture.
+    Attributes:
+        l_net (LNet): An instance of the LNet class for communication with the microcontroller.
+        device_info: Information about the connected device.
+        parser (ElfParser): An instance of the appropriate ELF parser based on the device's architecture.
 
-        Methods:
-            get_var_list: Retrieves a list of variable names from the ELF file.
-            get_variable: Gets a Variable object based on the variable name.
-            _get_variable_instance: Creates a Variable instance from provided information.
-        """
+    Methods:
+        get_var_list: Retrieves a list of variable names from the ELF file.
+        get_variable: Gets a Variable object based on the variable name.
+        _get_variable_instance: Creates a Variable instance from provided information.
+    """
+
     def __init__(self, l_net: LNet, elf_path=None):
         """
-           Initialize the VariableFactory with LNet instance and path to the ELF file.
+        Initialize the VariableFactory with LNet instance and path to the ELF file.
 
-           Args:
-               l_net (LNet): Instance of LNet for communication with the microcontroller.
-               elf_path (str, optional): Path to the ELF file.
+        Args:
+            l_net (LNet): Instance of LNet for communication with the microcontroller.
+            elf_path (str, optional): Path to the ELF file.
         """
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
