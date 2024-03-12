@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  format:
+  format-static-analysis:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -20,7 +20,12 @@ jobs:
     - name: Code Format Check with Black
       run: |
         black --check --verbose .
-
+    - name: Code Format Check with Black
+      run: |
+        isort . -c -v
+    - name: Static Analysis with pylint
+      run: |
+        pylint ./pyx2cscope
 
 
   docs:
