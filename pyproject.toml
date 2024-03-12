@@ -31,3 +31,6 @@ mchplnet = "0.1.0"
 
 [tool.setuptools.packages.find]
 exclude = ["test", "doc"]  # empty by default
+
+[tool.isort]
+profile = "black"
