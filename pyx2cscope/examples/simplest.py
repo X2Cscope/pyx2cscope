@@ -11,4 +11,3 @@ speedMeasured = x2cScope.get_variable("motor.apiData.velocityMeasured")
 print(speedMeasured.get_value())
 # Write a new value to the "motor.apiData.velocityReference" variable on the target
 speedReference.set_value(1000)
-
