@@ -31,3 +31,6 @@ mchplnet = "0.1.0"
 
 [tool.isort]
 profile = "black"
+
+[tool.pylint]
+max-line-length=240

@@ -1,6 +1,7 @@
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
-from pyx2cscope.variable.variable import *
+from pyx2cscope.variable.variable import * # pylint: disable=import-error
+# disabled due to vriable strucuture contains many subclasses with inheritance
 
 
 class VariableFactory:
