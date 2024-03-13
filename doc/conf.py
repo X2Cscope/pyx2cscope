@@ -24,12 +24,14 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../pyx2cscope"))
 
-extensions = [  "myst_parser", 
-                "sphinx.ext.autodoc",
-                "sphinx.ext.extlinks",
-                "sphinx.ext.coverage",
-                "sphinx.ext.viewcode",
-                "sphinx.ext.graphviz",]
+extensions = [
+    "myst_parser",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.coverage",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.graphviz",
+]
 
 graphviz_output_format = "png"  # 'svg' is also possible
 

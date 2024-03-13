@@ -2,8 +2,8 @@ import logging
 import pdb
 
 import serial
-from mchplnet.lnet import LNet
 
+from mchplnet.lnet import LNet
 from pyx2cscope.variable.variable_factory import VariableFactory
 
 logging.basicConfig(
