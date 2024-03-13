@@ -1,17 +1,28 @@
 
-.. |ico1| image:: images/pyx2cscope_logo.png
-   :width: 200
-   :alt: pyx2cscope
 
-|ico1|
-======================================
+.. image:: images/pyx2cscope_logo.png
+   :width: 180
+   :alt: pyx2cscope
+   :align: left
 
 The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers.
 This comprehensive package offers developers a powerful toolkit for embedded software development, 
 combining real-time debugging capabilities with advanced data visualization features directly within the Python environment.
-
 pyx2cscope is using lnet protocol to communicate with the embedded hardware via different communication interfaces like UART, CAN, LIN, USB, TCP/IP, etc.
 
+Installation
+--------------------------------------
+
+Create a virtual environment and install pyx2cscope using the following commands:
+
+.. code-block:: python
+
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install pyx2cscope
+
+Simplest example
+--------------------------------------
 
 .. literalinclude:: ../pyx2cscope/examples/simplest.py
     :language: python
@@ -26,7 +37,7 @@ pyx2cscope is using lnet protocol to communicate with the embedded hardware via 
 
    introduction
    how_to
-   documentation
+   api
 
 Indices and tables
 ==================
