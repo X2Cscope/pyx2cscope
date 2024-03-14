@@ -9,6 +9,7 @@
 project = "pyX2Cscope"
 copyright = "2024, Yash Agarwal, Edras Pacola, Mark Wendler, Christof Baumgartner"
 author = "Yash Agarwal, Edras Pacola, Mark Wendler, Christof Baumgartner"
+html_favicon = "images/pyx2cscope.ico"
 
 import pyx2cscope  # pylint: disable=wrong-import-position
 

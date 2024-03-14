@@ -1,4 +1,3 @@
-
 """
 This module contains the pyx2cscope package.
 
