@@ -21,7 +21,14 @@ Create a virtual environment and install pyx2cscope using the following commands
    source .venv/bin/activate
    pip install pyx2cscope
 
-Simplest example
+Start GUI example
+--------------------------------------
+
+.. code-block:: bash
+   
+   python -m pyx2cscope
+
+Simplest scripting example
 --------------------------------------
 
 .. literalinclude:: ../pyx2cscope/examples/simplest.py
@@ -34,10 +41,8 @@ Simplest example
    :caption: Contents:
 
 
-
    introduction
    how_to
-   api
 
 Indices and tables
 ==================
