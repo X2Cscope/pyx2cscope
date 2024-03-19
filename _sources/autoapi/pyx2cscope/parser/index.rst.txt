@@ -1,0 +1,18 @@
+:py:mod:`pyx2cscope.parser`
+===========================
+
+.. py:module:: pyx2cscope.parser
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   Elf16Parser/index.rst
+   Elf32Parser/index.rst
+   Elf_Parser/index.rst
+   arraySupport/index.rst
+
+

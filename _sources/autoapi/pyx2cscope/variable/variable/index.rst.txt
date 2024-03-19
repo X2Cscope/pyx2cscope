@@ -1,0 +1,582 @@
+:py:mod:`pyx2cscope.variable.variable`
+======================================
+
+.. py:module:: pyx2cscope.variable.variable
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.variable.variable.Variable
+   pyx2cscope.variable.variable.Variable_int8
+   pyx2cscope.variable.variable.Variable_uint8
+   pyx2cscope.variable.variable.Variable_int16
+   pyx2cscope.variable.variable.Variable_uint16
+   pyx2cscope.variable.variable.Variable_int32
+   pyx2cscope.variable.variable.Variable_uint32
+   pyx2cscope.variable.variable.Variable_uint64
+   pyx2cscope.variable.variable.Variable_int64
+   pyx2cscope.variable.variable.Variable_float
+
+
+
+
+.. py:class:: Variable(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: get_value() -> numbers.Number
+
+      Get the stored value from the MCU.
+
+      Returns:
+          Number: The stored value from the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+      :abstractmethod:
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+   .. py:method:: bytes_to_array(data: bytearray) -> List[numbers.Number]
+
+
+   .. py:method:: set_value(new_value: numbers.Number)
+      :abstractmethod:
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: get_width() -> int
+      :abstractmethod:
+
+      Get the width of the variable.
+
+      Returns:
+          int: Width of the variable.
+
+
+   .. py:method:: _get_value_raw() -> bytearray
+
+      Ask LNet and get the raw "bytearray" value from the hardware.
+
+      Subclasses will handle the conversion to the real value.
+
+      Raises:
+          ValueError: If the returned data length is not the expected length.
+
+      Returns:
+          bytearray: Raw data returned from LNet, must be reconstructed to the right value.
+
+
+   .. py:method:: _set_value_raw(bytes_data: bytes) -> None
+
+      Set the value of a variable in the microcontroller's RAM using raw bytes.
+
+      This method sends the raw byte data to the specified memory address in the microcontroller's RAM.
+      It handles the low-level communication with the microcontroller using the LNet interface.
+
+      Args:
+          bytes_data (bytes): The raw byte data to be written to the variable's memory location.
+
+      Raises:
+          Exception: If there is an error in writing the data to the microcontroller's RAM.
+
+
+   .. py:method:: is_signed() -> bool
+      :abstractmethod:
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: is_integer() -> bool
+      :abstractmethod:
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+
+.. py:class:: Variable_int8(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      INT8_T width is 1
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_uint8(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      UINT8_T width is 1
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_int16(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      INT16_T width is 2
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_uint16(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      UINT16_T width is 2
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_int32(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      INT32_T width is 4
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_uint32(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      UINT32_T width is 4
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_uint64(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      UINT64 width is 8
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_int64(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      INT64 width is 8
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+
+.. py:class:: Variable_float(l_net: mchplnet.lnet, address: int, name: str = None)
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents a variable in the MCU data memory
+
+   .. py:method:: is_integer() -> bool
+
+      Abstract method to determine if the variable's data type is an integer.
+
+      Implementations of this method should return True if the variable's data type
+      is an integer (signed or unsigned), otherwise False for non-integer data types.
+
+      Returns:
+          bool: True if the variable is of an integer data type, False otherwise.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Abstract method to determine if the variable's data type is signed.
+
+      Implementations of this method should return True if the variable's data type
+      is a signed type (like signed integers), otherwise False.
+
+      Returns:
+          bool: True if the variable is of a signed data type, False otherwise.
+
+
+   .. py:method:: get_width() -> int
+
+      FLOAT width is 4
+
+
+   .. py:method:: set_value(value: float)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to the respective variable number value.
+
+      Returns:
+          Number: the variable value as a number
+
+
+

@@ -1,0 +1,16 @@
+:py:mod:`pyx2cscope.variable`
+=============================
+
+.. py:module:: pyx2cscope.variable
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   variable/index.rst
+   variable_factory/index.rst
+
+
