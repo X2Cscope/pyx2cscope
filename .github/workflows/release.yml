@@ -31,5 +31,10 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/html
-          
+
+      - name: Release to pypi with poetry
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.PYX2CSCOPE_PYPI }}
+          poetry publish --build
+
 
