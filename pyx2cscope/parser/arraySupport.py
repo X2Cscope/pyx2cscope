@@ -40,7 +40,7 @@ def get_named_array_length(elf_file_path, array_name):
                         break
 
 
-get_named_array_length(
-    r"C:\Users\m67250\Downloads\E54_github_packsupdated\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf",
-    "ScopeArray",
-)
+# get_named_array_length(
+#     r"C:\Users\m67250\Downloads\E54_github_packsupdated\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim\production\mclv2_sam_e54_pim.X.production.elf",
+#     "ScopeArray",
+# )

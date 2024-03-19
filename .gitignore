@@ -133,3 +133,7 @@ dmypy.json
 
 # pycharm
 .idea
+!.idea/runConfigurations/*.xml
+/pyx2cscope/examples/scope_data.csv
+/doc/_build/
+/doc/source/

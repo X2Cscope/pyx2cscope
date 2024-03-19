@@ -7,7 +7,8 @@ import logging
 import time
 
 import matplotlib.pyplot as plt
-from xc2scope import X2CScope
+
+from pyx2cscope.xc2scope import X2CScope
 
 # Set up logging
 # This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.

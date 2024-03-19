@@ -9,11 +9,12 @@ class Elf32Parser(ElfParser):
     """
     Class for parsing ELF files compatible with 32-bit architectures.
     """
+
     def _get_structure_members_recursive(
-            self,
-            die,
-            parent_name: str,
-            prev_address_offset=0,
+        self,
+        die,
+        parent_name: str,
+        prev_address_offset=0,
     ):
         """
         Recursively gets structure members from a DWARF DIE.
@@ -29,8 +30,8 @@ class Elf32Parser(ElfParser):
         members = {}
         for child_die in die.iter_children():
             if (
-                    child_die.tag == "DW_TAG_member"
-                    or child_die.tag == "DW_TAG_pointer_type"
+                child_die.tag == "DW_TAG_member"
+                or child_die.tag == "DW_TAG_pointer_type"
             ):
                 member = {}
                 member_name = ""
@@ -63,7 +64,7 @@ class Elf32Parser(ElfParser):
                             member["type"] = member_type["name"]
                             member["byte_size"] = member_type["byte_size"]
                             member["address_offset"] = (
-                                    prev_address_offset + offset_value_from_member_address
+                                prev_address_offset + offset_value_from_member_address
                             )
                             members[member_name] = member
                     except Exception as e:
@@ -154,10 +155,12 @@ class Elf32Parser(ElfParser):
             int: Length of the array.
         """
         for child in type_die.iter_children():
-            if child.tag == 'DW_TAG_subrange_type':
-                array_length_attr = child.attributes.get('DW_AT_upper_bound')
+            if child.tag == "DW_TAG_subrange_type":
+                array_length_attr = child.attributes.get("DW_AT_upper_bound")
                 if array_length_attr:
-                    array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
+                    array_length = (
+                        array_length_attr.value + 1
+                    )  # upper_bound is 0-indexed
                     return array_length
 
     def _load_elf_file(self):
@@ -202,13 +205,12 @@ class Elf32Parser(ElfParser):
         ]
         while not any(current_die.tag == word for word in valid_words):
             ref_addr = (
-                    current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
+                current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
             )
             current_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         return current_die
 
     def _get_member_type(self, type_offset):
-
         """
         Retrieve the type information from DWARF given a type offset.
 
@@ -237,7 +239,6 @@ class Elf32Parser(ElfParser):
                     return self._get_member_type(base_type_offset)
 
     def _map_variables(self) -> dict[str, VariableInfo]:
-
         self.variable_map.clear()
         for compilation_unit in self.dwarf_info.iter_CUs():
             root_die = compilation_unit.iter_DIEs()
@@ -247,8 +248,8 @@ class Elf32Parser(ElfParser):
                 #  the structure which has address in specific DIE.
                 if "DW_AT_specification" in self.die_variable.attributes:
                     spec_ref_addr = (
-                            self.die_variable.attributes["DW_AT_specification"].value
-                            + self.die_variable.cu.cu_offset
+                        self.die_variable.attributes["DW_AT_specification"].value
+                        + self.die_variable.cu.cu_offset
                     )
                     spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
@@ -269,8 +270,8 @@ class Elf32Parser(ElfParser):
                         continue
 
                 elif (
-                        self.die_variable.attributes.get("DW_AT_location")
-                        and self.die_variable.attributes.get("DW_AT_name") is not None
+                    self.die_variable.attributes.get("DW_AT_location")
+                    and self.die_variable.attributes.get("DW_AT_name") is not None
                 ):
                     self.var_name = self.die_variable.attributes.get(
                         "DW_AT_name"
