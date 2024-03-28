@@ -35,6 +35,6 @@ jobs:
       - name: Release to pypi with poetry
         run: |
           poetry config pypi-token.pypi ${{ secrets.PYX2CSCOPE_PYPI }}
-          poetry publish --build
+          poetry publish -vvv --build
 
 
