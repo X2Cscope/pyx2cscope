@@ -134,7 +134,11 @@ class Elf32Parser(ElfParser):
                     byte_size=member_data["byte_size"],
                     type=member_data["type"],
                     address=self.address + member_data["address_offset"],
+                    array_size=self.array_size,
+                    is_array=self.array_type,
                 )
+                self.array_type = False
+                self.array_size = 0
 
         else:
             self.variable_map[self.var_name] = VariableInfo(
@@ -154,13 +158,12 @@ class Elf32Parser(ElfParser):
         Returns:
             int: Length of the array.
         """
+        self.array_type = True
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")
                 if array_length_attr:
-                    array_length = (
-                        array_length_attr.value + 1
-                    )  # upper_bound is 0-indexed
+                    array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
                     return array_length
 
     def _load_elf_file(self):
@@ -289,9 +292,9 @@ class Elf32Parser(ElfParser):
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
                 print(type_die)
                 if type_die.tag == "DW_TAG_array_type":
-                    array_length = self._get_array_length(type_die)
+                    self.array_size = self._get_array_length(type_die)
                     print(self.die_variable.attributes.get("DW_AT_name"))
-                    print(array_length)
+                    print("array_length", self.array_size)
                 elif type_die.tag != "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
                     self._processing_end_die(end_die)
@@ -309,6 +312,8 @@ class Elf32Parser(ElfParser):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     elf_file = r"C:\Users\m67250\Downloads\mclv2_sam_e54_pim.X.production.elf"
+    # elf_file = r"C:\Users\m67250\Downloads\dsPIC33A_compiled_example\xc-dsc_dsPIC33AK128MC106_examples.X\dist\default\production\xc-dsc_dsPIC33AK128MC106_examples.X.production.elf"
+
     # elf_file = r'C:\Users\m67250\Downloads\E54_github_packsupdated\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim
     # \production\mclv2_sam_e54_pim.X.production.elf'
 
