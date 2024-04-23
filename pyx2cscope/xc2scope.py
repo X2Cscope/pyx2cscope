@@ -290,6 +290,23 @@ class X2CScope:
                 logging.error(f"Error reading chunk {i}: {str(e)}")
         return chunk_data
 
+    def read_array(self, address, data_type):
+        # TODO
+        chunk_data = []
+        chunk_size = (
+            253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
+        )
+        for i in range(5):
+            # Calculate the starting address for the current chunk
+            current_address = self.lnet.scope_data.data_array_address + i * chunk_size
+            try:
+                # Read the chunk of data
+                data = self.lnet.get_ram_array(current_address, chunk_size, data_type)
+                chunk_data.extend(data)
+            except Exception as e:
+                logging.error(f"Error reading chunk {i}: {str(e)}")
+        return chunk_data
+
     def _sort_channel_data(self, data) -> Dict[str, List[Number]]:
         """
         Sort and convert the dataset byte order into channel byte order.
