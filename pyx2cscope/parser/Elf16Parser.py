@@ -209,6 +209,7 @@ class Elf16Parser(ElfParser):
                 "address_offset": member_address_offset,
                 "type": member_info["type"],
                 "byte_size": member_info["byte_size"],
+                "array_size":member_info["array_size"]
             }
         }
         return member
@@ -253,11 +254,14 @@ class Elf16Parser(ElfParser):
                     address = parent_address + self._get_structure_member_offset(
                         cu_structure_member["DW_AT_data_member_location"]
                     )
+                    if cu_structure_member["DW_AT_name"] == "iqHistory":
+                        print(end_die)
                     member = {
                         cu_structure_member["DW_AT_name"]: {
                             "address_offset": address,
                             "type": end_die["DW_AT_name"],
                             "byte_size": end_die["DW_AT_byte_size"],
+                            "array_size": self.calculate_array_size(array_die=cu_structure_member)
                         }
                     }
                     members.update(member)
@@ -382,18 +386,20 @@ class Elf16Parser(ElfParser):
             if members:
                 for member, member_info in members.items():
                     member_name = die["DW_AT_name"] + "." + member
+                    if member == "idHistory":
+                        print(member)
                     variable_data = VariableInfo(
                         name=member_name,
                         byte_size=member_info.get("byte_size"),
                         type=member_info.get("type"),
                         address=address + (member_info.get("address_offset")),
-                        is_array=self.array_type,
-                        array_size=self.array_size
+                        array_size=member_info.get("array_size")
                     )
+                    if member_name == "motor.estimator.zsmt.iqHistory":
+                        print(member_name)
                     self.variable_map[member_name] = variable_data
                     # Reset array attributes for each variable
                     self.array_size = 0
-                    self.array_type = False
             return True
         return False
 
@@ -418,9 +424,9 @@ class Elf16Parser(ElfParser):
         if "DW_AT_type" in start_die:
             type_offset = start_die["DW_AT_type"]
             type_die = self._get_dwarf_die_by_offset(type_offset)
-            if type_die["tag"] == "DW_TAG_array_type":
-                print(start_die)
-                self.array_size = self.calculate_array_size(type_die)
+        #     if type_die["tag"] == "DW_TAG_array_type":
+        #         print(start_die)
+        #         self.array_size = self.calculate_array_size(type_die)
             return self._get_end_die(type_die)
         return None
 
@@ -434,17 +440,20 @@ class Elf16Parser(ElfParser):
                     take_next = True
 
     def calculate_array_size(self, array_die):
-        # Retrieve the array type DIE
-        self.array_type = True
-        print(array_die)
-        die = self._get_next_die_by_offset(array_die["offset"])
-        print(die)
-        try:
-            upper_bound = int(die.get('DW_AT_upper_bound'))
+        type_offset = array_die["DW_AT_type"]
+        type_die = self._get_dwarf_die_by_offset(type_offset)
+        if type_die["tag"] == "DW_TAG_array_type":
+            # Retrieve the array type DIE
+            print(type_die)
+            die = self._get_next_die_by_offset(type_die["offset"])
+            print(die)
+            try:
+                upper_bound = int(die.get('DW_AT_upper_bound'))
 
-            return upper_bound + 1  # Assuming 0-based indexing
-        except Exception as e:
-            print(array_die)
+                return upper_bound + 1  # Assuming 0-based indexing
+            except Exception as e:
+                print(array_die)
+        else: return 0
 
     def _get_dwarf_die_by_offset(self, offset):
         """
@@ -478,12 +487,9 @@ class Elf16Parser(ElfParser):
                         byte_size=end_die["DW_AT_byte_size"],
                         type=end_die["DW_AT_name"],
                         address=address,
-                        array_size=self.array_size,
-                        is_array=self.array_type
+                        array_size=self.calculate_array_size(die),
                     )
                     self.variable_map[die["DW_AT_name"]] = variable_data
-                    self.array_type = False
-                    self.array_size = 0
         return self.variable_map
 
 

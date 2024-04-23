@@ -135,9 +135,7 @@ class Elf32Parser(ElfParser):
                     type=member_data["type"],
                     address=self.address + member_data["address_offset"],
                     array_size=self.array_size,
-                    is_array=self.array_type,
-                )
-                self.array_type = False
+                   )
                 self.array_size = 0
 
         else:
@@ -158,7 +156,6 @@ class Elf32Parser(ElfParser):
         Returns:
             int: Length of the array.
         """
-        self.array_type = True
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")

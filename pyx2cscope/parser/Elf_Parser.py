@@ -20,7 +20,6 @@ class VariableInfo:
     byte_size: int
     address: int
     array_size: int = 0
-    is_array: bool = False  # Default to False for non-arrays
 
 
 class ElfParser(ABC):
@@ -56,7 +55,6 @@ class ElfParser(ABC):
         self.elf_file = None
         self.variable_map = {}
         self.var_name = None
-        self.array_type = False
         self.array_size = 0
         self._load_elf_file()
 
