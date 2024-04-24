@@ -3,14 +3,13 @@ import struct
 from abc import abstractmethod
 from numbers import Number
 from typing import List
-
 import mchplnet.lnet as LNet
 
 
 class Variable:
     """Represents a variable in the MCU data memory"""
 
-    def __init__(self, l_net: LNet, address: int, name: str = None) -> None:
+    def __init__(self, l_net: LNet, address: int, name: str = None, array_size: int = 0) -> None:
         """Initialize the Variable object.
 
         Args:
@@ -24,6 +23,7 @@ class Variable:
         self.l_net = l_net
         self.address = address
         self.name = name
+        self.array_size = array_size
 
     def get_value(self) -> Number:
         """Get the stored value from the MCU.
@@ -31,6 +31,7 @@ class Variable:
         Returns:
             Number: The stored value from the MCU.
         """
+
         try:
             bytes_data = self._get_value_raw()
             return self.bytes_to_value(bytes_data)
@@ -71,6 +72,10 @@ class Variable:
         """
         pass
 
+    def is_array(self):
+
+        return True if self.array_size > 0 else False
+    @abstractmethod
     def _get_value_raw(self) -> bytearray:
         """Ask LNet and get the raw "bytearray" value from the hardware.
 
@@ -82,18 +87,37 @@ class Variable:
         Returns:
             bytearray: Raw data returned from LNet, must be reconstructed to the right value.
         """
-        try:
-            # Ask LNet to get the value from the target
-            bytes_data = self.l_net.get_ram(self.address, self.get_width())
+        if self.is_array():
+            chunk_data = []
+            data_type = 1  # it will always be 1 for array data
+            chunk_size = (
+                253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
+            )
+            # Calculate the number of chunks
+            num_chunks = self.array_size// chunk_size
+            for i in range(num_chunks):
+                # Calculate the starting address for the current chunk
+                current_address = self.l_net.scope_data.data_array_address + i * chunk_size
+                try:
+                    # Read the chunk of data
+                    data = self.l_net.get_ram_array(current_address, chunk_size, data_type)
+                    chunk_data.extend(data)
+                except Exception as e:
+                    logging.error(f"Error reading chunk {i}: {str(e)}")
+            return chunk_data
+        else:
+            try:
+                # Ask LNet to get the value from the target
+                bytes_data = self.l_net.get_ram(self.address, self.get_width())
 
-            data_length = len(bytes_data)
-            if data_length > self.get_width():  # double check validity
-                raise ValueError(
-                    f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
-                )
-            return bytes_data
-        except Exception as e:
-            logging.error(e)
+                data_length = len(bytes_data)
+                if data_length > self.get_width():  # double check validity
+                    raise ValueError(
+                        f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
+                    )
+                return bytes_data
+            except Exception as e:
+                logging.error(e)
 
     def _set_value_raw(self, bytes_data: bytes) -> None:
         """
@@ -136,8 +160,6 @@ class Variable:
         Returns:
             bool: True if the variable is of an integer data type, False otherwise.
         """
-
-
 # ------------------------------INT_8------------------------------
 
 
