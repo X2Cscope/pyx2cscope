@@ -254,8 +254,6 @@ class Elf16Parser(ElfParser):
                     address = parent_address + self._get_structure_member_offset(
                         cu_structure_member["DW_AT_data_member_location"]
                     )
-                    if cu_structure_member["DW_AT_name"] == "iqHistory":
-                        print(end_die)
                     member = {
                         cu_structure_member["DW_AT_name"]: {
                             "address_offset": address,
@@ -386,8 +384,6 @@ class Elf16Parser(ElfParser):
             if members:
                 for member, member_info in members.items():
                     member_name = die["DW_AT_name"] + "." + member
-                    if member == "idHistory":
-                        print(member)
                     variable_data = VariableInfo(
                         name=member_name,
                         byte_size=member_info.get("byte_size"),
@@ -395,8 +391,6 @@ class Elf16Parser(ElfParser):
                         address=address + (member_info.get("address_offset")),
                         array_size=member_info.get("array_size")
                     )
-                    if member_name == "motor.estimator.zsmt.iqHistory":
-                        print(member_name)
                     self.variable_map[member_name] = variable_data
                     # Reset array attributes for each variable
                     self.array_size = 0
@@ -444,9 +438,7 @@ class Elf16Parser(ElfParser):
         type_die = self._get_dwarf_die_by_offset(type_offset)
         if type_die["tag"] == "DW_TAG_array_type":
             # Retrieve the array type DIE
-            print(type_die)
             die = self._get_next_die_by_offset(type_die["offset"])
-            print(die)
             try:
                 upper_bound = int(die.get('DW_AT_upper_bound'))
 

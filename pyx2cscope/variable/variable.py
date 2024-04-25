@@ -4,12 +4,12 @@ from abc import abstractmethod
 from numbers import Number
 from typing import List
 import mchplnet.lnet as LNet
-
+import math
 
 class Variable:
     """Represents a variable in the MCU data memory"""
 
-    def __init__(self, l_net: LNet, address: int, name: str = None, array_size: int = 0) -> None:
+    def __init__(self, l_net: LNet, address: int, array_size: int, name: str = None) -> None:
         """Initialize the Variable object.
 
         Args:
@@ -34,7 +34,10 @@ class Variable:
 
         try:
             bytes_data = self._get_value_raw()
-            return self.bytes_to_value(bytes_data)
+            if self.is_array():
+                return bytes_data
+            else:
+                return self.bytes_to_value(bytes_data)
         except Exception as e:
             logging.error(e)
 
@@ -75,7 +78,7 @@ class Variable:
     def is_array(self):
 
         return True if self.array_size > 0 else False
-    @abstractmethod
+
     def _get_value_raw(self) -> bytearray:
         """Ask LNet and get the raw "bytearray" value from the hardware.
 
@@ -88,20 +91,37 @@ class Variable:
             bytearray: Raw data returned from LNet, must be reconstructed to the right value.
         """
         if self.is_array():
-            chunk_data = []
-            data_type = 1  # it will always be 1 for array data
+            chunk_data = {}
+            data_type = self.get_width()  # width of the array elements.
             chunk_size = (
-                253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
+              self.array_size * data_type # array_size
             )
+
             # Calculate the number of chunks
-            num_chunks = self.array_size// chunk_size
+            num_chunks = math.ceil(self.array_size / 253)  # Use math.ceil to round up
+            if num_chunks <= 0:
+                num_chunks = 1
+            total_index = 0  # A counter to keep track of the overall index across all chunks
             for i in range(num_chunks):
+                if chunk_size >=253: # to handle big arrays, this is required.
+                    size_to_read = 253
+                elif chunk_size<253:
+                    size_to_read = chunk_size
+
                 # Calculate the starting address for the current chunk
-                current_address = self.l_net.scope_data.data_array_address + i * chunk_size
+                current_address = self.address
                 try:
                     # Read the chunk of data
-                    data = self.l_net.get_ram_array(current_address, chunk_size, data_type)
-                    chunk_data.extend(data)
+                    data = self.l_net.get_ram_array(current_address, size_to_read, data_type)
+                    # Append the index to self.name to create a unique key for each chunk
+                    for j in range(0, len(data), data_type):
+                        segment = data[j:j + data_type]
+                        segment = self.bytes_to_value(segment)
+                        key = f"{self.name}{[total_index]}"
+                        chunk_data[key] = segment
+                        total_index += 1  # Increment the index for each piece processed
+                    self.address += self.get_width()
+                    chunk_size -=253
                 except Exception as e:
                     logging.error(f"Error reading chunk {i}: {str(e)}")
             return chunk_data
@@ -160,6 +180,8 @@ class Variable:
         Returns:
             bool: True if the variable is of an integer data type, False otherwise.
         """
+
+
 # ------------------------------INT_8------------------------------
 
 

@@ -12,6 +12,7 @@ class Elf32Parser(ElfParser):
 
     def _get_structure_members_recursive(
         self,
+        type_die,
         die,
         parent_name: str,
         prev_address_offset=0,
@@ -66,6 +67,7 @@ class Elf32Parser(ElfParser):
                             member["address_offset"] = (
                                 prev_address_offset + offset_value_from_member_address
                             )
+                            member["array_size"] = self._get_array_length(type_die)
                             members[member_name] = member
                     except Exception as e:
                         logging.error("exception", e)
@@ -76,7 +78,7 @@ class Elf32Parser(ElfParser):
                     # If the member type is a structure or class, recurse into it
         return members, prev_address_offset
 
-    def _get_structure_members(self, structure_die, var_name):
+    def _get_structure_members(self, type_die, structure_die, var_name):
         """
         Retrieves structure members from a DWARF DIE.
 
@@ -89,17 +91,16 @@ class Elf32Parser(ElfParser):
         """
         prev_address_offset = 0
         return self._get_structure_members_recursive(
-            structure_die, var_name, prev_address_offset
+           type_die, structure_die, var_name, prev_address_offset
         )
 
-    def _processing_end_die(self, end_die):
+    def _processing_end_die(self, type_die, end_die):
         """
         Processes the end DIE of a tag to extract variable information.
 
         Args:
             end_die: The end DIE of the tag.
         """
-        print(end_die)
         try:
             if self.die_variable.attributes.get("DW_AT_location"):
                 data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
@@ -127,14 +128,14 @@ class Elf32Parser(ElfParser):
             )
 
         elif end_die.tag == "DW_TAG_structure_type":
-            members = self._get_structure_members(end_die, self.var_name)[0]
+            members = self._get_structure_members(type_die, end_die, self.var_name)[0]
             for member_name, member_data in members.items():
                 self.variable_map[member_name] = VariableInfo(
                     name=member_name,
                     byte_size=member_data["byte_size"],
                     type=member_data["type"],
                     address=self.address + member_data["address_offset"],
-                    array_size=self.array_size,
+                    array_size=member_data["array_size"],
                    )
                 self.array_size = 0
 
@@ -156,6 +157,8 @@ class Elf32Parser(ElfParser):
         Returns:
             int: Length of the array.
         """
+        #print(type_die)
+
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")
@@ -287,20 +290,19 @@ class Elf32Parser(ElfParser):
 
                 #
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-                print(type_die)
-                if type_die.tag == "DW_TAG_array_type":
-                    self.array_size = self._get_array_length(type_die)
-                    print(self.die_variable.attributes.get("DW_AT_name"))
-                    print("array_length", self.array_size)
-                elif type_die.tag != "DW_TAG_volatile_type":
+                # if type_die.tag == "DW_TAG_array_type":
+                #     self.array_size = self._get_array_length(type_die)
+                #     print(self.die_variable.attributes.get("DW_AT_name"))
+                #     print("array_length", self.array_size)
+                if type_die.tag != "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
-                    self._processing_end_die(end_die)
+                    self._processing_end_die(type_die, end_die)
 
                 elif type_die.tag == "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
                     if end_die is None:
                         continue
-                    self._processing_end_die(end_die)
+                    self._processing_end_die(type_die, end_die)
                     continue
 
         return self.variable_map
@@ -309,11 +311,6 @@ class Elf32Parser(ElfParser):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     elf_file = r"C:\Users\m67250\Downloads\mclv2_sam_e54_pim.X.production.elf"
-    # elf_file = r"C:\Users\m67250\Downloads\dsPIC33A_compiled_example\xc-dsc_dsPIC33AK128MC106_examples.X\dist\default\production\xc-dsc_dsPIC33AK128MC106_examples.X.production.elf"
-
-    # elf_file = r'C:\Users\m67250\Downloads\E54_github_packsupdated\mclv2_sam_e54_pim.X\dist\mclv2_sam_e54_pim
-    # \production\mclv2_sam_e54_pim.X.production.elf'
-
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader.map_variables()
-    print(variable_map)
+    #print(variable_map)
