@@ -25,7 +25,30 @@ class Variable:
         self.name = name
         self.array_size = array_size
 
-    def get_value(self) -> Number:
+    def _get_array_values(self):
+        chunk_data = []
+        data_type = self.get_width()  # width of the array elements.
+        chunk_size = self.array_size * data_type
+        max_chunk = 253
+        num_chunks = math.ceil(self.array_size / max_chunk)  # Use math.ceil to round up
+        if num_chunks <= 0:
+            num_chunks = 1
+        for i in range(num_chunks):
+            size_to_read = chunk_size if chunk_size < max_chunk else max_chunk
+            current_address = self.address
+            try:
+                # Read the chunk of data
+                data = self.l_net.get_ram_array(current_address, size_to_read, data_type)
+                for j in range(0, len(data), data_type):
+                    value = self.bytes_to_value(data[j:j + data_type])
+                    chunk_data.append(value)
+                self.address += self.get_width()
+                chunk_size -= max_chunk
+            except Exception as e:
+                logging.error(f"Error reading chunk {i}: {str(e)}")
+        return chunk_data
+
+    def get_value(self):
         """Get the stored value from the MCU.
 
         Returns:
@@ -33,10 +56,10 @@ class Variable:
         """
 
         try:
-            bytes_data = self._get_value_raw()
             if self.is_array():
-                return bytes_data
+                return self._get_array_values()
             else:
+                bytes_data = self._get_value_raw()
                 return self.bytes_to_value(bytes_data)
         except Exception as e:
             logging.error(e)
@@ -90,58 +113,17 @@ class Variable:
         Returns:
             bytearray: Raw data returned from LNet, must be reconstructed to the right value.
         """
-        if self.is_array():
-            chunk_data = {}
-            data_type = self.get_width()  # width of the array elements.
-            chunk_size = (
-              self.array_size * data_type # array_size
-            )
-
-            # Calculate the number of chunks
-            num_chunks = math.ceil(self.array_size / 253)  # Use math.ceil to round up
-            if num_chunks <= 0:
-                num_chunks = 1
-            total_index = 0  # A counter to keep track of the overall index across all chunks
-            key_index = 0
-            for i in range(num_chunks):
-                if chunk_size >=253: # to handle big arrays, this is required.
-                    size_to_read = 253
-                elif chunk_size<253:
-                    size_to_read = chunk_size
-
-                # Calculate the starting address for the current chunk
-                current_address = self.address
-                try:
-                    # Read the chunk of data
-                    data = self.l_net.get_ram_array(current_address, size_to_read, data_type)
-                    # Append the index to self.name to create a unique key for each chunk
-
-                    for j in range(0, len(data), data_type):
-                        segment = data[j:j + data_type]
-                        segment = self.bytes_to_value(segment)
-                        key = key_index
-                        chunk_data[key] = segment
-                        total_index += 1  # Increment the index for each piece processed
-                        key_index += 1
-                    self.address += self.get_width()
-                    chunk_size -=253
-
-                except Exception as e:
-                    logging.error(f"Error reading chunk {i}: {str(e)}")
-            return chunk_data
-        else:
-            try:
-                # Ask LNet to get the value from the target
-                bytes_data = self.l_net.get_ram(self.address, self.get_width())
-
-                data_length = len(bytes_data)
-                if data_length > self.get_width():  # double check validity
-                    raise ValueError(
-                        f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
-                    )
-                return bytes_data
-            except Exception as e:
-                logging.error(e)
+        try:
+            # Ask LNet to get the value from the target
+            bytes_data = self.l_net.get_ram(self.address, self.get_width())
+            data_length = len(bytes_data)
+            if data_length > self.get_width():  # double check validity
+                raise ValueError(
+                    f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
+                )
+            return bytes_data
+        except Exception as e:
+            logging.error(e)
 
     def _set_value_raw(self, bytes_data: bytes) -> None:
         """
