@@ -102,6 +102,7 @@ class Variable:
             if num_chunks <= 0:
                 num_chunks = 1
             total_index = 0  # A counter to keep track of the overall index across all chunks
+            key_index = 0
             for i in range(num_chunks):
                 if chunk_size >=253: # to handle big arrays, this is required.
                     size_to_read = 253
@@ -114,14 +115,17 @@ class Variable:
                     # Read the chunk of data
                     data = self.l_net.get_ram_array(current_address, size_to_read, data_type)
                     # Append the index to self.name to create a unique key for each chunk
+
                     for j in range(0, len(data), data_type):
                         segment = data[j:j + data_type]
                         segment = self.bytes_to_value(segment)
-                        key = f"{self.name}{[total_index]}"
+                        key = key_index
                         chunk_data[key] = segment
                         total_index += 1  # Increment the index for each piece processed
+                        key_index += 1
                     self.address += self.get_width()
                     chunk_size -=253
+
                 except Exception as e:
                     logging.error(f"Error reading chunk {i}: {str(e)}")
             return chunk_data
