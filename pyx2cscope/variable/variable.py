@@ -4,7 +4,6 @@ from abc import abstractmethod
 from numbers import Number
 from typing import List
 import mchplnet.lnet as LNet
-import math
 
 
 class Variable:
@@ -28,6 +27,22 @@ class Variable:
         self.name = name
         self.array_size = array_size
 
+    def __getitem__(self, item):
+        if abs(item) > self.array_size:
+            raise IndexError("Index outside scope")
+        try:
+            idx = self.array_size + item if item < 0 else item
+            bytes_data = self._get_value_raw(index=idx)
+            return self.bytes_to_value(bytes_data)
+        except Exception as e:
+            logging.error(e)
+
+    def __len__(self):
+        return self.array_size
+
+    def __repr__(self):
+        return str(self.get_value())
+
     def _get_index_address(self, index):
         return self.address + index * self.get_width()
 
@@ -45,7 +60,9 @@ class Variable:
             chunk_size -= max_chunk
             i += size_to_read
         # split chunk_data into data_type sized groups
-        chunk_data = [chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)]
+        chunk_data = [
+            chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)
+        ]
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
 
@@ -102,7 +119,7 @@ class Variable:
     def is_array(self):
         return True if self.array_size > 0 else False
 
-    def _get_value_raw(self) -> bytearray:
+    def _get_value_raw(self, index=0) -> bytearray:
         """Ask LNet and get the raw "bytearray" value from the hardware.
 
         Subclasses will handle the conversion to the real value.
@@ -114,8 +131,10 @@ class Variable:
             bytearray: Raw data returned from LNet, must be reconstructed to the right value.
         """
         try:
+            # Calculate relative address in case of array element
+            address = self.address + index * self.get_width()
             # Ask LNet to get the value from the target
-            bytes_data = self.l_net.get_ram(self.address, self.get_width())
+            bytes_data = self.l_net.get_ram(address, self.get_width())
             data_length = len(bytes_data)
             if data_length > self.get_width():  # double check validity
                 raise ValueError(
