@@ -6,10 +6,13 @@ from typing import List
 import mchplnet.lnet as LNet
 import math
 
+
 class Variable:
     """Represents a variable in the MCU data memory"""
 
-    def __init__(self, l_net: LNet, address: int, array_size: int, name: str = None) -> None:
+    def __init__(
+        self, l_net: LNet, address: int, array_size: int, name: str = None
+    ) -> None:
         """Initialize the Variable object.
 
         Args:
@@ -25,28 +28,26 @@ class Variable:
         self.name = name
         self.array_size = array_size
 
+    def _get_index_address(self, index):
+        return self.address + index * self.get_width()
+
     def _get_array_values(self):
-        chunk_data = []
+        chunk_data = bytearray()
         data_type = self.get_width()  # width of the array elements.
         chunk_size = self.array_size * data_type
+        array_byte_size = chunk_size
         max_chunk = 253
-        num_chunks = math.ceil(self.array_size / max_chunk)  # Use math.ceil to round up
-        if num_chunks <= 0:
-            num_chunks = 1
-        for i in range(num_chunks):
+        i = 0
+        while i < array_byte_size:
             size_to_read = chunk_size if chunk_size < max_chunk else max_chunk
-            current_address = self.address
-            try:
-                # Read the chunk of data
-                data = self.l_net.get_ram_array(current_address, size_to_read, data_type)
-                for j in range(0, len(data), data_type):
-                    value = self.bytes_to_value(data[j:j + data_type])
-                    chunk_data.append(value)
-                self.address += self.get_width()
-                chunk_size -= max_chunk
-            except Exception as e:
-                logging.error(f"Error reading chunk {i}: {str(e)}")
-        return chunk_data
+            data = self.l_net.get_ram_array(self.address + i, size_to_read, 1)
+            chunk_data.extend(data)
+            chunk_size -= max_chunk
+            i += size_to_read
+        # split chunk_data into data_type sized groups
+        chunk_data = [chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)]
+        # convert bytearray to number on every element of chunk_data
+        return [self.bytes_to_value(k) for k in chunk_data]
 
     def get_value(self):
         """Get the stored value from the MCU.
@@ -99,7 +100,6 @@ class Variable:
         pass
 
     def is_array(self):
-
         return True if self.array_size > 0 else False
 
     def _get_value_raw(self) -> bytearray:
