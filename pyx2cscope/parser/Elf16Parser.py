@@ -30,7 +30,7 @@ class Elf16Parser(ElfParser):
         ValueError: If the XC16 compiler is not found on the system path.
         """
         self.xc16_read_elf_path = which("xc16-readelf")
-        if not os.path.exists(self.xc16_read_elf_path):
+        if self.xc16_read_elf_path is None or not os.path.exists(self.xc16_read_elf_path):
             raise ValueError("XC16 compiler not found. Is it listed on PATH?")
         super().__init__(elf_path)
         self.tree_string = None
