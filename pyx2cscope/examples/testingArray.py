@@ -1,9 +1,6 @@
 import logging
-
-import matplotlib.pyplot as plt
-
 from xc2scope import X2CScope
-
+import matplotlib.pyplot as plt
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -17,23 +14,9 @@ x2cScope = X2CScope(port="COM14", elf_file=elf_file)
 variable = x2cScope.get_variable("ScopeArray")
 variable1 = x2cScope.get_variable("motor.estimator.zsmt.iqHistory")
 variable2 = x2cScope.get_variable("motor.estimator.zsmt.idHistory")
-variable1 = x2cScope.get_variable("personal")
-values = []
-i = 0
-value =  variable1.get_value()
+variable3 = x2cScope.get_variable("personal")
+value = variable3.get_value()
 print(value)
-# first_element = value['motor.estimator.zsmt.iqHistory[0]']
-# print(first_element)
-
-
-# while i < 4:
-#     i += 1
-#     values.append(variable.get_value())
-#     print(variable)
-#     variable.address += variable.get_width()
-#
-# print(values)
-
-# Plotting the values
-# plt.plot(values)
-# plt.show()
+print(value[50])
+plt.plot(value)
+plt.show()

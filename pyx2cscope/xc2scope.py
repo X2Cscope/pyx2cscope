@@ -1,6 +1,7 @@
 import logging
 from numbers import Number
 from typing import Dict, List
+import math
 
 from mchplnet.interfaces.abstract_interface import InterfaceABC
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
@@ -278,7 +279,7 @@ class X2CScope:
             253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
         )
         # Calculate the number of chunks
-        num_chunks = self._calc_sda_used_length() // chunk_size
+        num_chunks = (self._calc_sda_used_length() // chunk_size)
         for i in range(num_chunks):
             # Calculate the starting address for the current chunk
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size

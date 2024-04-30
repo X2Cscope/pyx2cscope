@@ -1,6 +1,6 @@
 import os
 
-import data
+from tests import data
 
 from pyx2cscope.xc2scope import X2CScope
 from tests.utils.SerialStub import SerialStub
@@ -18,4 +18,5 @@ def test_x2cscope_install_serial(mocker):
     pyx2cscope = X2CScope(elf_file=elf_file, port="COM11")
     # TODO: check if device_info and scope data are correct
     device_info = pyx2cscope.lnet.device_info
+
     scope_data = pyx2cscope.lnet.scope_data
