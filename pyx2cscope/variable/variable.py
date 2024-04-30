@@ -28,6 +28,20 @@ class Variable:
         self.array_size = array_size
 
     def __getitem__(self, item):
+        """Retrieve value regarding an indexed address from the variable's base address
+
+        Subclasses will handle the conversion to the real value.
+
+        Args:
+            item (int): The variable index (in case of an array). Default to zero.
+
+        Raises:
+            IndexError: If the index is outside the variable scope.
+
+        Returns:
+            the value of the variable's index position.
+        """
+
         if abs(item) > self.array_size:
             raise IndexError("Index outside scope")
         try:
@@ -37,14 +51,26 @@ class Variable:
         except Exception as e:
             logging.error(e)
 
+    def __setitem__(self, key, value):
+        """Set the value regarding an indexed address from the variable's base address
+
+        Args:
+            key (int): the index of the variable.
+            value (Number): The value to be stored in the MCU.
+        """
+        if abs(key) > self.array_size:
+            raise IndexError("Index outside scope")
+        try:
+            tmp_address = self.address
+            idx = self.array_size + key if key < 0 else key
+            self.address = self.address + idx * self.get_width()
+            self.set_value(value)
+            self.address = tmp_address
+        except Exception as e:
+            logging.error(e)
+
     def __len__(self):
         return self.array_size
-
-    def __repr__(self):
-        return str(self.get_value())
-
-    def _get_index_address(self, index):
-        return self.address + index * self.get_width()
 
     def _get_array_values(self):
         chunk_data = bytearray()
@@ -124,6 +150,9 @@ class Variable:
 
         Subclasses will handle the conversion to the real value.
 
+        Args:
+            index (int): The variable index (in case of an array). Default to zero.
+
         Raises:
             ValueError: If the returned data length is not the expected length.
 
@@ -144,7 +173,7 @@ class Variable:
         except Exception as e:
             logging.error(e)
 
-    def _set_value_raw(self, bytes_data: bytes) -> None:
+    def _set_value_raw(self, bytes_data: bytes, index: int = 0) -> None:
         """
         Set the value of a variable in the microcontroller's RAM using raw bytes.
 
@@ -153,12 +182,15 @@ class Variable:
 
         Args:
             bytes_data (bytes): The raw byte data to be written to the variable's memory location.
+            index (int): The variable index (in case of an array). Default to zero.
 
         Raises:
             Exception: If there is an error in writing the data to the microcontroller's RAM.
         """
         try:
-            self.l_net.put_ram(self.address, self.get_width(), bytes_data)
+            # Calculate relative address in case of array element
+            address = self.address + index * self.get_width()
+            self.l_net.put_ram(address, self.get_width(), bytes_data)
         except Exception as e:
             logging.error(f"Error setting value: {e}")
 
