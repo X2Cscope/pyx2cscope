@@ -62,6 +62,7 @@ jobs:
         wget -nv -O /tmp/xc16 https://ww1.microchip.com/downloads/aemDocuments/documents/DEV/ProductDocuments/SoftwareTools/xc16-v2.10-full-install-linux64-installer.run && \
         chmod +x /tmp/xc16 && \
         sudo /tmp/xc16 --mode unattended --unattendedmodeui none --netservername localhost --LicenseType FreeMode --prefix /opt/microchip/xc16/v2.10 && \
+        PATH=$PATH:/opt/microchip/xc16/v2.10/bin && \
         rm /tmp/xc16
 
     - name: Install dependencies
