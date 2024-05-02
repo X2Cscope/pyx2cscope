@@ -10,9 +10,7 @@ import mchplnet.lnet as LNet
 class Variable:
     """Represents a variable in the MCU data memory"""
 
-    def __init__(
-        self, l_net: LNet, address: int, array_size: int, name: str = None
-    ) -> None:
+    def __init__(self, l_net: LNet, address: int, array_size: int, name: str = None) -> None:
         """Initialize the Variable object.
 
         Args:
@@ -87,9 +85,7 @@ class Variable:
             chunk_size -= max_chunk
             i += size_to_read
         # split chunk_data into data_type sized groups
-        chunk_data = [
-            chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)
-        ]
+        chunk_data = [chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)]
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
 
@@ -167,9 +163,7 @@ class Variable:
             bytes_data = self.l_net.get_ram(address, self.get_width())
             data_length = len(bytes_data)
             if data_length > self.get_width():  # double check validity
-                raise ValueError(
-                    f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
-                )
+                raise ValueError(f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}")
             return bytes_data
         except Exception as e:
             logging.error(e)
@@ -360,9 +354,7 @@ class Variable_int32(Variable):
     def set_value(self, value: int):
         try:
             if value > 0x7FFFFFFF or value < -0x80000000:
-                raise ValueError(
-                    f"Value = {value}: Expected in range -2,147,483,648 to 2,147,483,647"
-                )
+                raise ValueError(f"Value = {value}: Expected in range -2,147,483,648 to 2,147,483,647")
 
             int_value = int(value)
             bytes_data = int_value.to_bytes(
@@ -393,9 +385,7 @@ class Variable_uint32(Variable):
     def set_value(self, value: int):
         try:
             if value > 0xFFFFFFFF or value < 0:
-                raise ValueError(
-                    f"Value = {value}: Expected in range 0 to 4,294,967,295"
-                )
+                raise ValueError(f"Value = {value}: Expected in range 0 to 4,294,967,295")
 
             int_value = int(value)
             bytes_data = int_value.to_bytes(
@@ -423,9 +413,7 @@ class Variable_uint64(Variable):
     def set_value(self, value: int):
         try:
             if value < 0 or value > 0xFFFFFFFFFFFFFFFF:
-                raise ValueError(
-                    f"Value = {value}: Expected in range 0 to 18,446,744,073,709,551,615"
-                )
+                raise ValueError(f"Value = {value}: Expected in range 0 to 18,446,744,073,709,551,615")
 
             bytes_data = value.to_bytes(
                 length=8, byteorder="little", signed=False

@@ -99,9 +99,7 @@ class VariableFactory:
             "long long": Variable_int64,
             "long long unsigned int": Variable_uint64,
             "long unsigned int": Variable_uint32,
-            "pointer": Variable_uint16
-            if self.device_info.uc_width == 2
-            else Variable_uint32,  # TODO v 0.2.0
+            "pointer": Variable_uint16 if self.device_info.uc_width == 2 else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
             "short int": Variable_int16,
             "short unsigned int": Variable_uint16,
@@ -119,6 +117,4 @@ class VariableFactory:
             var_type = var_type.lower().replace("_", "")
             return type_factory[var_type](self.l_net, address, array_size, name)
         except IndexError:
-            raise Exception(
-                f"Type {var_type} not found. Cannot select the right variable representation."
-            )
+            raise Exception(f"Type {var_type} not found. Cannot select the right variable representation.")

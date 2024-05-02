@@ -30,9 +30,7 @@ class Elf16Parser(ElfParser):
         ValueError: If the XC16 compiler is not found on the system path.
         """
         self.xc16_read_elf_path = which("xc16-readelf")
-        if self.xc16_read_elf_path is None or not os.path.exists(
-            self.xc16_read_elf_path
-        ):
+        if self.xc16_read_elf_path is None or not os.path.exists(self.xc16_read_elf_path):
             raise ValueError("XC16 compiler not found. Is it listed on PATH?")
         super().__init__(elf_path)
         self.tree_string = None
@@ -80,9 +78,7 @@ class Elf16Parser(ElfParser):
             value = ":".join(values[1:]).strip()
             if key == "DW_AT_name":
                 # Remove the indirect string part and leading space
-                value = re.sub(
-                    r"\(indirect string, offset: 0x[0-9a-fA-F]+\):", "", value
-                ).strip()
+                value = re.sub(r"\(indirect string, offset: 0x[0-9a-fA-F]+\):", "", value).strip()
             value = int(value[1:-1], 16) if key == "DW_AT_type" else value
 
             members.update({key: value})
@@ -175,15 +171,11 @@ class Elf16Parser(ElfParser):
         for cu_offset, cu in self.dwarf_info.items():
             if not (cu_offset < structure_die["offset"] < (cu_offset + cu["length"])):
                 continue
-            cu_sibling = int(
-                cu["elements"][structure_die["offset"]]["DW_AT_sibling"][1:-1], 16
-            )
+            cu_sibling = int(cu["elements"][structure_die["offset"]]["DW_AT_sibling"][1:-1], 16)
             break
         return cu, cu_sibling
 
-    def _get_member_from_nested_members(
-        self, parent_address, nested_member, cu_structure
-    ):
+    def _get_member_from_nested_members(self, parent_address, nested_member, cu_structure):
         """
         Extract information about a structure member from nested members.
 
@@ -198,9 +190,7 @@ class Elf16Parser(ElfParser):
         member_info = nested_member[1]
         member_address = cu_structure["DW_AT_data_member_location"]
         member_address_offset = (
-            parent_address
-            + self._get_structure_member_offset(member_address)
-            + member_info["address_offset"]
+            parent_address + self._get_structure_member_offset(member_address) + member_info["address_offset"]
         )
         member = {
             cu_structure["DW_AT_name"]
@@ -241,14 +231,10 @@ class Elf16Parser(ElfParser):
             try:
                 if end_die["tag"] == "DW_TAG_structure_type":
                     # Handle nested structures recursively
-                    nested_members = self._get_structure_members(
-                        end_die, parent_address
-                    )
+                    nested_members = self._get_structure_members(end_die, parent_address)
                     for nested_member in nested_members.items():
                         members.update(
-                            self._get_member_from_nested_members(
-                                parent_address, nested_member, cu_structure_member
-                            )
+                            self._get_member_from_nested_members(parent_address, nested_member, cu_structure_member)
                         )
                 else:
                     address = parent_address + self._get_structure_member_offset(
@@ -259,9 +245,7 @@ class Elf16Parser(ElfParser):
                             "address_offset": address,
                             "type": end_die["DW_AT_name"],
                             "byte_size": end_die["DW_AT_byte_size"],
-                            "array_size": self.calculate_array_size(
-                                array_die=cu_structure_member
-                            ),
+                            "array_size": self.calculate_array_size(array_die=cu_structure_member),
                         }
                     }
                     members.update(member)
@@ -474,9 +458,9 @@ class Elf16Parser(ElfParser):
                 if end_die is None:
                     continue
                 address = self._get_address_location(die.get("DW_AT_location"))
-                if not self._check_for_pointer_tag(
+                if not self._check_for_pointer_tag(die, end_die, address) and not self._check_for_structure_tag(
                     die, end_die, address
-                ) and not self._check_for_structure_tag(die, end_die, address):
+                ):
                     variable_data = VariableInfo(
                         name=die["DW_AT_name"],
                         byte_size=end_die["DW_AT_byte_size"],

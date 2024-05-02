@@ -1,17 +1,14 @@
 import os
 
-from tests import data
 import pytest
 
 from pyx2cscope.xc2scope import X2CScope
+from tests import data
 from tests.utils.SerialStub import fake_serial
 
 
 class TestPyX2CScope:
-
-    elf_file = os.path.join(
-        os.path.abspath(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
-    )
+    elf_file = os.path.join(os.path.abspath(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf")
 
     def test_missing_elf_file_16(self, mocker):
         # with pytest.raises(ValueError, match=r"elf_file"):
@@ -30,7 +27,5 @@ class TestPyX2CScope:
             X2CScope(elf_file=self.elf_file)
 
     def test_wrong_com_port(self):
-        with pytest.raises(
-            RuntimeError, match=r"Failed to retrieve device information"
-        ):
+        with pytest.raises(RuntimeError, match=r"Failed to retrieve device information"):
             X2CScope(elf_file=self.elf_file, port="COM0")

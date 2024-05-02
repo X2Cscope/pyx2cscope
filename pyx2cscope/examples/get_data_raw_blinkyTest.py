@@ -44,9 +44,7 @@ def example():
     try:
         # Initialize serial communication and other setup code...
 
-        SFR_LED = x2cscope.get_variable_raw(
-            3702, "int", "sfr"
-        )  # LATE address from data sheet 3702
+        SFR_LED = x2cscope.get_variable_raw(3702, "int", "sfr")  # LATE address from data sheet 3702
 
         # Get the initial LED state from SFR_LED or any other source
         initial_led_state = SFR_LED.get_value()

@@ -45,9 +45,7 @@ while sample_count < max_sample:
             logging.info("Scope data is ready.")
 
             data_storage = {}
-            for channel, data in x2cScope.get_scope_channel_data(
-                valid_data=False
-            ).items():
+            for channel, data in x2cScope.get_scope_channel_data(valid_data=False).items():
                 data_storage[channel] = data
 
             ax.clear()
@@ -88,10 +86,7 @@ with open(csv_file_path, mode="w", newline="") as file:
     writer.writeheader()
     for i in range(max_length):
         row = {
-            channel: (
-                data_storage[channel][i] if i < len(data_storage[channel]) else None
-            )
-            for channel in data_storage
+            channel: (data_storage[channel][i] if i < len(data_storage[channel]) else None) for channel in data_storage
         }
         writer.writerow(row)
 

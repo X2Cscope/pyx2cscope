@@ -34,9 +34,7 @@ class MotorControlGUI(QMainWindow):
 
         # ComboBox for variable selection
         self.variableComboBox = QComboBox()
-        self.variableComboBox.addItems(
-            ["motor.idq.q", "motor.vabc.a", "other variables..."]
-        )  # Add all your variables
+        self.variableComboBox.addItems(["motor.idq.q", "motor.vabc.a", "other variables..."])  # Add all your variables
         layout.addWidget(self.variableComboBox)
 
         # Button for starting/stopping the plot

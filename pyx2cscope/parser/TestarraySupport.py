@@ -33,37 +33,25 @@ def get_named_array_length(elf_file_path, array_name):
                                 # Look for upper bound in subrange type child
                                 for child in type_DIE.iter_children():
                                     if child.tag == "DW_TAG_subrange_type":
-                                        array_length_attr = child.attributes.get(
-                                            "DW_AT_upper_bound"
-                                        )
+                                        array_length_attr = child.attributes.get("DW_AT_upper_bound")
                                         if array_length_attr:
                                             array_length = array_length_attr.value + 1
-                                            print(
-                                                f"Array length of '{array_name}': {array_length}"
-                                            )
+                                            print(f"Array length of '{array_name}': {array_length}")
                                             return VariableInfo(
-                                                name=DIE.attributes.get(
-                                                    "DW_AT_name"
-                                                ).value,
+                                                name=DIE.attributes.get("DW_AT_name").value,
                                                 byte_size=DIE.size,
                                                 type="int32",  # Adjust type based on actual type
-                                                address=DIE.attributes.get(
-                                                    "DW_AT_location"
-                                                ).value,
+                                                address=DIE.attributes.get("DW_AT_location").value,
                                                 is_array=True,
                                                 array_size=array_length,
                                             )
                             # Handle other array representations (pointers, etc.) here
                             # You might need to analyze the type DIE further
                             else:
-                                print(
-                                    f"Variable '{array_name}' is an array but with unknown representation."
-                                )
+                                print(f"Variable '{array_name}' is an array but with unknown representation.")
 
                         else:
-                            print(
-                                f"Failed to find type information for '{array_name}'."
-                            )
+                            print(f"Failed to find type information for '{array_name}'.")
 
                         break  # Stop searching after finding the named variable
 

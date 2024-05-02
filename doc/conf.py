@@ -42,9 +42,7 @@ autoapi_ignore = [
     "*/gui/*",  # For now, we ignore this, TODO: fix this
 ]
 
-suppress_warnings = [
-    "autoapi.python_import_resolution"
-]  # Suppress warnings about unresolved imports TODO: fix this
+suppress_warnings = ["autoapi.python_import_resolution"]  # Suppress warnings about unresolved imports TODO: fix this
 
 nitpick_ignore = [
     ("py:class", "numbers.Number"),

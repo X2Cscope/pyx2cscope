@@ -26,16 +26,10 @@ def get_named_array_length(elf_file_path, array_name):
                         if type_DIE.tag == "DW_TAG_array_type":
                             for child in type_DIE.iter_children():
                                 if child.tag == "DW_TAG_subrange_type":
-                                    array_length_attr = child.attributes.get(
-                                        "DW_AT_upper_bound"
-                                    )
+                                    array_length_attr = child.attributes.get("DW_AT_upper_bound")
                                     if array_length_attr:
-                                        array_length = (
-                                            array_length_attr.value + 1
-                                        )  # upper_bound is 0-indexed
-                                        print(
-                                            f"Array length of '{array_name}': {array_length}"
-                                        )
+                                        array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
+                                        print(f"Array length of '{array_name}': {array_length}")
                                         return array_length
                         break
 
