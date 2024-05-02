@@ -136,8 +136,7 @@ class Elf16Parser(ElfParser):
             output = subprocess.check_output(command, universal_newlines=True)
             self._parse_tree(output)
         except subprocess.CalledProcessError as e:
-            logging.error(f"Error executing xc16-readelf.exe: {e.output}")
-            return
+            raise Exception("Error loading ELF file: {}".format(self.elf_path))
 
     @staticmethod
     def _get_structure_member_offset(location: str):

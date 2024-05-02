@@ -13,10 +13,17 @@ class TestPyX2CScope:
         os.path.abspath(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
     )
 
-    def test_missing_elf_file(self, mocker):
+    def test_missing_elf_file_16(self, mocker):
         # with pytest.raises(ValueError, match=r"elf_file"):
-        fake_serial(mocker)
-        X2CScope(elf_file="wrong_elf_file.elf", port="COM0")
+        fake_serial(mocker, 16)
+        with pytest.raises(Exception, match=r"Error loading ELF file"):
+            X2CScope(elf_file="wrong_elf_file.elf", port="COM0")
+
+    def test_missing_elf_file_32(self, mocker):
+        # with pytest.raises(ValueError, match=r"elf_file"):
+        fake_serial(mocker, 32)
+        with pytest.raises(Exception, match=r"Error loading ELF file"):
+            X2CScope(elf_file="wrong_elf_file.elf", port="COM0")
 
     def test_missing_com_port(self):
         with pytest.raises(ValueError, match=r"SERIAL: port"):
