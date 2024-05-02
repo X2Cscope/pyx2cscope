@@ -1,5 +1,4 @@
 import logging
-import math
 from numbers import Number
 from typing import Dict, List
 
@@ -8,6 +7,7 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
+
 from pyx2cscope.variable.variable import Variable
 from pyx2cscope.variable.variable_factory import VariableFactory
 
