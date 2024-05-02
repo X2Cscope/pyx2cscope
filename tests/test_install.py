@@ -1,14 +1,14 @@
 import os
 
-from tests import data
-
-from pyx2cscope.xc2scope import X2CScope
-from tests.utils.SerialStub import SerialStub
 from mchplnet.interfaces.uart import LNetSerial
+from pyx2cscope.xc2scope import X2CScope
+from tests import data
+from tests.utils.SerialStub import SerialStub
 
 elf_file = os.path.join(
     os.path.dirname(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
 )
+
 
 def test_x2cscope_install_serial(mocker):
     serial_stub = SerialStub()

@@ -91,7 +91,7 @@ class Elf32Parser(ElfParser):
         """
         prev_address_offset = 0
         return self._get_structure_members_recursive(
-           type_die, structure_die, var_name, prev_address_offset
+            type_die, structure_die, var_name, prev_address_offset
         )
 
     def _processing_end_die(self, type_die, end_die):
@@ -136,7 +136,7 @@ class Elf32Parser(ElfParser):
                     type=member_data["type"],
                     address=self.address + member_data["address_offset"],
                     array_size=member_data["array_size"],
-                   )
+                )
                 self.array_size = 0
 
         else:
@@ -157,13 +157,15 @@ class Elf32Parser(ElfParser):
         Returns:
             int: Length of the array.
         """
-        #print(type_die)
+        # print(type_die)
 
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")
                 if array_length_attr:
-                    array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
+                    array_length = (
+                        array_length_attr.value + 1
+                    )  # upper_bound is 0-indexed
                     return array_length
 
     def _load_elf_file(self):
@@ -313,4 +315,4 @@ if __name__ == "__main__":
     elf_file = r"C:\Users\m67250\Downloads\mclv2_sam_e54_pim.X.production.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader.map_variables()
-    #print(variable_map)
+    # print(variable_map)

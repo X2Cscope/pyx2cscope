@@ -3,8 +3,8 @@ import os
 import data
 import pytest
 
-
 from pyx2cscope.xc2scope import X2CScope
+
 
 class TestParser:
     elf_file_16 = os.path.join(

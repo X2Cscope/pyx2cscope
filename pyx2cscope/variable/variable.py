@@ -3,6 +3,7 @@ import struct
 from abc import abstractmethod
 from numbers import Number
 from typing import List
+
 import mchplnet.lnet as LNet
 
 

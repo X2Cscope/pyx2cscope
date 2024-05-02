@@ -1,8 +1,18 @@
-import sys
 import logging
+import sys
+
 import serial
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QComboBox, QPushButton, QFileDialog, QLabel
 from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QFileDialog,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 from pyqtgraph import PlotWidget
 
 
@@ -12,7 +22,7 @@ class MotorControlGUI(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Motor Control Oscilloscope')
+        self.setWindowTitle("Motor Control Oscilloscope")
         self.setGeometry(100, 100, 800, 600)
 
         # Main layout
@@ -24,11 +34,13 @@ class MotorControlGUI(QMainWindow):
 
         # ComboBox for variable selection
         self.variableComboBox = QComboBox()
-        self.variableComboBox.addItems(["motor.idq.q", "motor.vabc.a", "other variables..."])  # Add all your variables
+        self.variableComboBox.addItems(
+            ["motor.idq.q", "motor.vabc.a", "other variables..."]
+        )  # Add all your variables
         layout.addWidget(self.variableComboBox)
 
         # Button for starting/stopping the plot
-        self.plotButton = QPushButton('Start Plotting')
+        self.plotButton = QPushButton("Start Plotting")
         self.plotButton.clicked.connect(self.togglePlotting)
         layout.addWidget(self.plotButton)
 
@@ -45,10 +57,10 @@ class MotorControlGUI(QMainWindow):
     def togglePlotting(self):
         if self.isPlotting:
             self.timer.stop()
-            self.plotButton.setText('Start Plotting')
+            self.plotButton.setText("Start Plotting")
         else:
             self.timer.start(100)  # Update interval in ms
-            self.plotButton.setText('Stop Plotting')
+            self.plotButton.setText("Stop Plotting")
         self.isPlotting = not self.isPlotting
 
     def updatePlot(self):
@@ -57,7 +69,7 @@ class MotorControlGUI(QMainWindow):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     ex = MotorControlGUI()
     ex.show()

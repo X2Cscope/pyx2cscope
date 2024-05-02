@@ -24,7 +24,5 @@ class SerialStub:
                 b"\x00\x00\x00\x96"
             )
         elif self.data == self.load_param:
-            return bytearray(
-                b"\x55\x05\x01\x07\x00\x00\x60\x0F\xD1"
-            )
+            return bytearray(b"\x55\x05\x01\x07\x00\x00\x60\x0F\xD1")
         assert False, "Unexpected message received"

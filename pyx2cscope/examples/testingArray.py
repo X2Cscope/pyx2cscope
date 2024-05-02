@@ -1,6 +1,8 @@
 import logging
-from xc2scope import X2CScope
+
 import matplotlib.pyplot as plt
+from xc2scope import X2CScope
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,

@@ -58,13 +58,20 @@ class VariableFactory:
         try:
             variable_info = self.parser.get_var_info(name)
             return self._get_variable_instance(
-                variable_info.address, variable_info.type, variable_info.array_size, variable_info.name
+                variable_info.address,
+                variable_info.type,
+                variable_info.array_size,
+                variable_info.name,
             )
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
 
     def _get_variable_instance(
-        self, address: int, var_type: str, array_size:int, name: str,
+        self,
+        address: int,
+        var_type: str,
+        array_size: int,
+        name: str,
     ) -> Variable:
         """
         create a variable object based on the provided address, type, and name.
