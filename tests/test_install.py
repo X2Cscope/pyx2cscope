@@ -1,6 +1,7 @@
 import os
 
 from mchplnet.interfaces.uart import LNetSerial
+
 from pyx2cscope.xc2scope import X2CScope
 from tests import data
 from tests.utils.SerialStub import SerialStub
