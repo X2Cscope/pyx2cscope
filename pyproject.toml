@@ -2,9 +2,12 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.black]
+line-length = 120
+
 [tool.poetry]
 name = "pyx2cscope"
-version = "0.1.3"
+version = "0.1.4"
 description = "python implementation of X2Cscope"
 authors = [
   "Yash Agarwal <yash.agarwal@microchip.com>",

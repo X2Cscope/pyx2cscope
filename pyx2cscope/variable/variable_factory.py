@@ -58,13 +58,20 @@ class VariableFactory:
         try:
             variable_info = self.parser.get_var_info(name)
             return self._get_variable_instance(
-                variable_info.address, variable_info.type, variable_info.name
+                variable_info.address,
+                variable_info.type,
+                variable_info.array_size,
+                variable_info.name,
             )
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
 
     def _get_variable_instance(
-        self, address: int, var_type: str, name: str
+        self,
+        address: int,
+        var_type: str,
+        array_size: int,
+        name: str,
     ) -> Variable:
         """
         create a variable object based on the provided address, type, and name.
@@ -92,9 +99,7 @@ class VariableFactory:
             "long long": Variable_int64,
             "long long unsigned int": Variable_uint64,
             "long unsigned int": Variable_uint32,
-            "pointer": Variable_uint16
-            if self.device_info.uc_width == 2
-            else Variable_uint32,  # TODO v 0.2.0
+            "pointer": Variable_uint16 if self.device_info.uc_width == 2 else Variable_uint32,  # TODO v 0.2.0
             "short": Variable_int16,
             "short int": Variable_int16,
             "short unsigned int": Variable_uint16,
@@ -110,8 +115,6 @@ class VariableFactory:
 
         try:
             var_type = var_type.lower().replace("_", "")
-            return type_factory[var_type](self.l_net, address, name)
+            return type_factory[var_type](self.l_net, address, array_size, name)
         except IndexError:
-            raise Exception(
-                f"Type {var_type} not found. Cannot select the right variable representation."
-            )
+            raise Exception(f"Type {var_type} not found. Cannot select the right variable representation.")

@@ -225,10 +225,7 @@ class X2CScope:
         """
         scope_data = self.lnet.load_parameters()
         logging.debug(scope_data)
-        return (
-            scope_data.scope_state == 0
-            or scope_data.data_array_pointer == scope_data.data_array_used_length
-        )
+        return scope_data.scope_state == 0 or scope_data.data_array_pointer == scope_data.data_array_used_length
 
     def get_trigger_position(self) -> int:
         """
@@ -238,9 +235,7 @@ class X2CScope:
             int: The index position of the trigger event.
         """
         scope_data: LoadScopeData = self.lnet.scope_data
-        return int(
-            scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
-        )
+        return int(scope_data.trigger_event_position / self.scope_setup.get_dataset_size())
 
     def get_delay_trigger_position(self) -> int:
         """
@@ -260,9 +255,7 @@ class X2CScope:
             The length of the used portion of the SDA.
         """
         # SDA(Scope Data Array) - SDA % DSS(Data Set Size)
-        bytes_not_used = (
-            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
-        )
+        bytes_not_used = self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
     def _read_array_chunks(self):
@@ -274,12 +267,25 @@ class X2CScope:
         """
         chunk_data = []
         data_type = 1  # it will always be 1 for array data
-        chunk_size = (
-            253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
-        )
+        chunk_size = 253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
         # Calculate the number of chunks
         num_chunks = self._calc_sda_used_length() // chunk_size
         for i in range(num_chunks):
+            # Calculate the starting address for the current chunk
+            current_address = self.lnet.scope_data.data_array_address + i * chunk_size
+            try:
+                # Read the chunk of data
+                data = self.lnet.get_ram_array(current_address, chunk_size, data_type)
+                chunk_data.extend(data)
+            except Exception as e:
+                logging.error(f"Error reading chunk {i}: {str(e)}")
+        return chunk_data
+
+    def read_array(self, address, data_type):
+        # TODO
+        chunk_data = []
+        chunk_size = 253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
+        for i in range(5):
             # Calculate the starting address for the current chunk
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
@@ -323,9 +329,7 @@ class X2CScope:
             The filtered dictionary of channels with valid data only.
         """
         start = self.get_delay_trigger_position()
-        nr_of_sda = int(
-            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
-        )
+        nr_of_sda = int(self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size())
         end = nr_of_sda - start
         for channel in channels:
             channels[channel] = channels[channel][start:end]

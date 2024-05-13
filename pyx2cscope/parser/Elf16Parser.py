@@ -30,7 +30,7 @@ class Elf16Parser(ElfParser):
         ValueError: If the XC16 compiler is not found on the system path.
         """
         self.xc16_read_elf_path = which("xc16-readelf")
-        if not os.path.exists(self.xc16_read_elf_path):
+        if self.xc16_read_elf_path is None or not os.path.exists(self.xc16_read_elf_path):
             raise ValueError("XC16 compiler not found. Is it listed on PATH?")
         super().__init__(elf_path)
         self.tree_string = None
@@ -78,9 +78,7 @@ class Elf16Parser(ElfParser):
             value = ":".join(values[1:]).strip()
             if key == "DW_AT_name":
                 # Remove the indirect string part and leading space
-                value = re.sub(
-                    r"\(indirect string, offset: 0x[0-9a-fA-F]+\):", "", value
-                ).strip()
+                value = re.sub(r"\(indirect string, offset: 0x[0-9a-fA-F]+\):", "", value).strip()
             value = int(value[1:-1], 16) if key == "DW_AT_type" else value
 
             members.update({key: value})
@@ -134,8 +132,7 @@ class Elf16Parser(ElfParser):
             output = subprocess.check_output(command, universal_newlines=True)
             self._parse_tree(output)
         except subprocess.CalledProcessError as e:
-            logging.error(f"Error executing xc16-readelf.exe: {e.output}")
-            return
+            raise Exception("Error loading ELF file: {}".format(self.elf_path))
 
     @staticmethod
     def _get_structure_member_offset(location: str):
@@ -174,15 +171,11 @@ class Elf16Parser(ElfParser):
         for cu_offset, cu in self.dwarf_info.items():
             if not (cu_offset < structure_die["offset"] < (cu_offset + cu["length"])):
                 continue
-            cu_sibling = int(
-                cu["elements"][structure_die["offset"]]["DW_AT_sibling"][1:-1], 16
-            )
+            cu_sibling = int(cu["elements"][structure_die["offset"]]["DW_AT_sibling"][1:-1], 16)
             break
         return cu, cu_sibling
 
-    def _get_member_from_nested_members(
-        self, parent_address, nested_member, cu_structure
-    ):
+    def _get_member_from_nested_members(self, parent_address, nested_member, cu_structure):
         """
         Extract information about a structure member from nested members.
 
@@ -197,9 +190,7 @@ class Elf16Parser(ElfParser):
         member_info = nested_member[1]
         member_address = cu_structure["DW_AT_data_member_location"]
         member_address_offset = (
-            parent_address
-            + self._get_structure_member_offset(member_address)
-            + member_info["address_offset"]
+            parent_address + self._get_structure_member_offset(member_address) + member_info["address_offset"]
         )
         member = {
             cu_structure["DW_AT_name"]
@@ -208,6 +199,7 @@ class Elf16Parser(ElfParser):
                 "address_offset": member_address_offset,
                 "type": member_info["type"],
                 "byte_size": member_info["byte_size"],
+                "array_size": member_info["array_size"],
             }
         }
         return member
@@ -239,14 +231,10 @@ class Elf16Parser(ElfParser):
             try:
                 if end_die["tag"] == "DW_TAG_structure_type":
                     # Handle nested structures recursively
-                    nested_members = self._get_structure_members(
-                        end_die, parent_address
-                    )
+                    nested_members = self._get_structure_members(end_die, parent_address)
                     for nested_member in nested_members.items():
                         members.update(
-                            self._get_member_from_nested_members(
-                                parent_address, nested_member, cu_structure_member
-                            )
+                            self._get_member_from_nested_members(parent_address, nested_member, cu_structure_member)
                         )
                 else:
                     address = parent_address + self._get_structure_member_offset(
@@ -257,10 +245,11 @@ class Elf16Parser(ElfParser):
                             "address_offset": address,
                             "type": end_die["DW_AT_name"],
                             "byte_size": end_die["DW_AT_byte_size"],
+                            "array_size": self.calculate_array_size(array_die=cu_structure_member),
                         }
                     }
                     members.update(member)
-            except Exception:
+            except Exception as e:
                 # there are some missing values
                 # this will be addressed in future versions
                 continue
@@ -386,8 +375,11 @@ class Elf16Parser(ElfParser):
                         byte_size=member_info.get("byte_size"),
                         type=member_info.get("type"),
                         address=address + (member_info.get("address_offset")),
+                        array_size=member_info.get("array_size"),
                     )
                     self.variable_map[member_name] = variable_data
+                    # Reset array attributes for each variable
+                    self.array_size = 0
             return True
         return False
 
@@ -412,8 +404,35 @@ class Elf16Parser(ElfParser):
         if "DW_AT_type" in start_die:
             type_offset = start_die["DW_AT_type"]
             type_die = self._get_dwarf_die_by_offset(type_offset)
+            #     if type_die["tag"] == "DW_TAG_array_type":
+            #         print(start_die)
+            #         self.array_size = self.calculate_array_size(type_die)
             return self._get_end_die(type_die)
         return None
+
+    def _get_next_die_by_offset(self, offset):
+        take_next = False
+        for cu_offset, cu in self.dwarf_info.items():
+            for die_offset, die in cu["elements"].items():
+                if take_next:
+                    return die
+                if die_offset == offset:
+                    take_next = True
+
+    def calculate_array_size(self, array_die):
+        type_offset = array_die["DW_AT_type"]
+        type_die = self._get_dwarf_die_by_offset(type_offset)
+        if type_die["tag"] == "DW_TAG_array_type":
+            # Retrieve the array type DIE
+            die = self._get_next_die_by_offset(type_die["offset"])
+            try:
+                upper_bound = int(die.get("DW_AT_upper_bound"))
+
+                return upper_bound + 1  # Assuming 0-based indexing
+            except Exception as e:
+                print(array_die)
+        else:
+            return 0
 
     def _get_dwarf_die_by_offset(self, offset):
         """
@@ -439,24 +458,24 @@ class Elf16Parser(ElfParser):
                 if end_die is None:
                     continue
                 address = self._get_address_location(die.get("DW_AT_location"))
-                if not self._check_for_pointer_tag(
+                if not self._check_for_pointer_tag(die, end_die, address) and not self._check_for_structure_tag(
                     die, end_die, address
-                ) and not self._check_for_structure_tag(die, end_die, address):
+                ):
                     variable_data = VariableInfo(
                         name=die["DW_AT_name"],
                         byte_size=end_die["DW_AT_byte_size"],
                         type=end_die["DW_AT_name"],
                         address=address,
+                        array_size=self.calculate_array_size(die),
                     )
                     self.variable_map[die["DW_AT_name"]] = variable_data
         return self.variable_map
 
 
 if __name__ == "__main__":
-    elf_file = (
-        r"C:\Users\M71906\MPLABXProjects\MotorControl\dsPIC33-LVMC-MB-FOC-Sensorless.X\dist\default\production"
-        r"\dsPIC33-LVMC-MB-FOC-Sensorless.X.production.elf"
-    )
+    # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ZSMT-42BLF02-MCLV2-33ck256mp508.X\dist\default\production\ZSMT-42BLF02-MCLV2-33ck256mp508.X.production.elf"
+    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
     logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
+    print(variable_map)
