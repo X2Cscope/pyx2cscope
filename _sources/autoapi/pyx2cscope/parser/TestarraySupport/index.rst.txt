@@ -1,0 +1,34 @@
+:py:mod:`pyx2cscope.parser.TestarraySupport`
+============================================
+
+.. py:module:: pyx2cscope.parser.TestarraySupport
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.TestarraySupport.get_named_array_length
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.TestarraySupport.values
+
+
+.. py:function:: get_named_array_length(elf_file_path, array_name)
+
+
+.. py:data:: values
+
+   
+

@@ -32,7 +32,7 @@ Attributes
 
    Class for parsing ELF files compatible with 32-bit architectures.
 
-   .. py:method:: _get_structure_members_recursive(die, parent_name: str, prev_address_offset=0)
+   .. py:method:: _get_structure_members_recursive(type_die, die, parent_name: str, prev_address_offset=0)
 
       Recursively gets structure members from a DWARF DIE.
 
@@ -45,7 +45,7 @@ Attributes
           Tuple[dict, int]: Dictionary of members and their offset.
 
 
-   .. py:method:: _get_structure_members(structure_die, var_name)
+   .. py:method:: _get_structure_members(type_die, structure_die, var_name)
 
       Retrieves structure members from a DWARF DIE.
 
@@ -57,7 +57,7 @@ Attributes
           dict: Dictionary of structure members.
 
 
-   .. py:method:: _processing_end_die(end_die)
+   .. py:method:: _processing_end_die(type_die, end_die)
 
       Processes the end DIE of a tag to extract variable information.
 

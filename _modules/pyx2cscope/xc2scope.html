@@ -164,6 +164,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/pyx2cscope/parser/Elf16Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf16Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/pyx2cscope/parser/Elf32Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf32Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/pyx2cscope/parser/Elf_Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf_Parser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../autoapi/pyx2cscope/parser/TestarraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.TestarraySupport</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/pyx2cscope/parser/arraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.arraySupport</span></code></a></li>
 </ul>
 </li>
@@ -488,10 +489,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scope_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">load_parameters</span><span class="p">()</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">scope_data</span><span class="o">.</span><span class="n">scope_state</span> <span class="o">==</span> <span class="mi">0</span>
-            <span class="ow">or</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_pointer</span> <span class="o">==</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_used_length</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">scope_state</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_pointer</span> <span class="o">==</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_used_length</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_trigger_position">
@@ -504,9 +502,7 @@
 <span class="sd">            int: The index position of the trigger event.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scope_data</span><span class="p">:</span> <span class="n">LoadScopeData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span>
-            <span class="n">scope_data</span><span class="o">.</span><span class="n">trigger_event_position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">scope_data</span><span class="o">.</span><span class="n">trigger_event_position</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_delay_trigger_position">
@@ -532,9 +528,7 @@
 <span class="sd">            The length of the used portion of the SDA.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># SDA(Scope Data Array) - SDA % DSS(Data Set Size)</span>
-        <span class="n">bytes_not_used</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span>
-        <span class="p">)</span>
+        <span class="n">bytes_not_used</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">-</span> <span class="n">bytes_not_used</span></div>
 
 
@@ -549,12 +543,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">chunk_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">data_type</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># it will always be 1 for array data</span>
-        <span class="n">chunk_size</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="mi">253</span>  <span class="c1"># full chunk excluding crc and Service-ID in total bytes 255 0xFF</span>
-        <span class="p">)</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">253</span>  <span class="c1"># full chunk excluding crc and Service-ID in total bytes 255 0xFF</span>
         <span class="c1"># Calculate the number of chunks</span>
         <span class="n">num_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_sda_used_length</span><span class="p">()</span> <span class="o">//</span> <span class="n">chunk_size</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">):</span>
+            <span class="c1"># Calculate the starting address for the current chunk</span>
+            <span class="n">current_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_address</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Read the chunk of data</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
+                <span class="n">chunk_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chunk_data</span></div>
+
+
+<div class="viewcode-block" id="X2CScope.read_array">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.read_array">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">data_type</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="n">chunk_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">253</span>  <span class="c1"># full chunk excluding crc and Service-ID in total bytes 255 0xFF</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
             <span class="c1"># Calculate the starting address for the current chunk</span>
             <span class="n">current_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_address</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span>
             <span class="k">try</span><span class="p">:</span>
@@ -604,9 +614,7 @@
 <span class="sd">            The filtered dictionary of channels with valid data only.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_delay_trigger_position</span><span class="p">()</span>
-        <span class="n">nr_of_sda</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span>
-        <span class="p">)</span>
+        <span class="n">nr_of_sda</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">())</span>
         <span class="n">end</span> <span class="o">=</span> <span class="n">nr_of_sda</span> <span class="o">-</span> <span class="n">start</span>
         <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
             <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>

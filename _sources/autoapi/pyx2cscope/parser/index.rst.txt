@@ -13,6 +13,7 @@ Submodules
    Elf16Parser/index.rst
    Elf32Parser/index.rst
    Elf_Parser/index.rst
+   TestarraySupport/index.rst
    arraySupport/index.rst
 
 

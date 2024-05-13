@@ -209,6 +209,9 @@ Functions
           A list containing the chunk data.
 
 
+   .. py:method:: read_array(address, data_type)
+
+
    .. py:method:: _sort_channel_data(data) -> Dict[str, List[numbers.Number]]
 
       Sort and convert the dataset byte order into channel byte order.

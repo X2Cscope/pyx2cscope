@@ -164,6 +164,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/Elf16Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf16Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/Elf32Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf32Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/Elf_Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf_Parser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/TestarraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.TestarraySupport</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/arraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.arraySupport</span></code></a></li>
 </ul>
 </li>
@@ -279,7 +280,10 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_variable_instance</span><span class="p">(</span>
-                <span class="n">variable_info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">variable_info</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">variable_info</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">variable_info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                <span class="n">variable_info</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                <span class="n">variable_info</span><span class="o">.</span><span class="n">array_size</span><span class="p">,</span>
+                <span class="n">variable_info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error while getting variable &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; : </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -288,7 +292,11 @@
 <div class="viewcode-block" id="VariableFactory._get_variable_instance">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._get_variable_instance">[docs]</a>
     <span class="k">def</span> <span class="nf">_get_variable_instance</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">var_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">address</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">var_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">array_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        create a variable object based on the provided address, type, and name.</span>
@@ -316,9 +324,7 @@
             <span class="s2">&quot;long long&quot;</span><span class="p">:</span> <span class="n">Variable_int64</span><span class="p">,</span>
             <span class="s2">&quot;long long unsigned int&quot;</span><span class="p">:</span> <span class="n">Variable_uint64</span><span class="p">,</span>
             <span class="s2">&quot;long unsigned int&quot;</span><span class="p">:</span> <span class="n">Variable_uint32</span><span class="p">,</span>
-            <span class="s2">&quot;pointer&quot;</span><span class="p">:</span> <span class="n">Variable_uint16</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">==</span> <span class="mi">2</span>
-            <span class="k">else</span> <span class="n">Variable_uint32</span><span class="p">,</span>  <span class="c1"># TODO v 0.2.0</span>
+            <span class="s2">&quot;pointer&quot;</span><span class="p">:</span> <span class="n">Variable_uint16</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">Variable_uint32</span><span class="p">,</span>  <span class="c1"># TODO v 0.2.0</span>
             <span class="s2">&quot;short&quot;</span><span class="p">:</span> <span class="n">Variable_int16</span><span class="p">,</span>
             <span class="s2">&quot;short int&quot;</span><span class="p">:</span> <span class="n">Variable_int16</span><span class="p">,</span>
             <span class="s2">&quot;short unsigned int&quot;</span><span class="p">:</span> <span class="n">Variable_uint16</span><span class="p">,</span>
@@ -334,11 +340,9 @@
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">var_type</span> <span class="o">=</span> <span class="n">var_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">type_factory</span><span class="p">[</span><span class="n">var_type</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">type_factory</span><span class="p">[</span><span class="n">var_type</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">array_size</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Type </span><span class="si">{</span><span class="n">var_type</span><span class="si">}</span><span class="s2"> not found. Cannot select the right variable representation.&quot;</span>
-            <span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type </span><span class="si">{</span><span class="n">var_type</span><span class="si">}</span><span class="s2"> not found. Cannot select the right variable representation.&quot;</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

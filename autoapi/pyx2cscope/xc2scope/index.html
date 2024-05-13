@@ -165,6 +165,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../parser/Elf16Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf16Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../parser/Elf32Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf32Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../parser/Elf_Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf_Parser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../parser/TestarraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.TestarraySupport</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../parser/arraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.arraySupport</span></code></a></li>
 </ul>
 </li>
@@ -455,6 +456,11 @@ trigger_edge (int): The trigger edge setting.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.read_array">
+<span class="sig-name descname"><span class="pre">read_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.read_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.read_array" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope._sort_channel_data">
 <span class="sig-name descname"><span class="pre">_sort_channel_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numbers.Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope._sort_channel_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope._sort_channel_data" title="Link to this definition">#</a></dt>
 <dd><p>Sort and convert the dataset byte order into channel byte order.</p>
@@ -568,6 +574,7 @@ trigger_edge (int): The trigger edge setting.</p>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.get_delay_trigger_position"><code class="docutils literal notranslate"><span class="pre">X2CScope.get_delay_trigger_position()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope._calc_sda_used_length"><code class="docutils literal notranslate"><span class="pre">X2CScope._calc_sda_used_length()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope._read_array_chunks"><code class="docutils literal notranslate"><span class="pre">X2CScope._read_array_chunks()</span></code></a></li>
+<li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.read_array"><code class="docutils literal notranslate"><span class="pre">X2CScope.read_array()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope._sort_channel_data"><code class="docutils literal notranslate"><span class="pre">X2CScope._sort_channel_data()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope._filter_channels"><code class="docutils literal notranslate"><span class="pre">X2CScope._filter_channels()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.get_scope_channel_data"><code class="docutils literal notranslate"><span class="pre">X2CScope.get_scope_channel_data()</span></code></a></li>

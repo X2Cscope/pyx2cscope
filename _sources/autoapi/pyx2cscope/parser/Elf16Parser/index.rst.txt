@@ -211,6 +211,12 @@ Attributes
           dict: The end dies.
 
 
+   .. py:method:: _get_next_die_by_offset(offset)
+
+
+   .. py:method:: calculate_array_size(array_die)
+
+
    .. py:method:: _get_dwarf_die_by_offset(offset)
 
       Get a DWARF die by offset.
@@ -234,7 +240,7 @@ Attributes
 
 
 .. py:data:: elf_file
-   :value: 'C:\\Users\\M71906\\MPLABXProjects\\MotorControl\\dsPIC33-LVMC-MB-FOC-Sensorless.X\\dist\\default\\product...'
+   :value: 'C:\\_DESKTOP\\_Projects\\Motorbench_Projects\\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\\ZSMT_dsPIC33CK...'
 
    
 

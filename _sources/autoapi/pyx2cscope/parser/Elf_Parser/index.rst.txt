@@ -49,6 +49,12 @@ Classes
 
       
 
+   .. py:attribute:: array_size
+      :type: int
+      :value: 0
+
+      
+
 
 .. py:class:: ElfParser(elf_path: str)
 

@@ -164,6 +164,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/Elf16Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf16Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/Elf32Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf32Parser</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/Elf_Parser/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.Elf_Parser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/TestarraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.TestarraySupport</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../../autoapi/pyx2cscope/parser/arraySupport/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.arraySupport</span></code></a></li>
 </ul>
 </li>
@@ -246,6 +247,10 @@
 <div class="viewcode-block" id="VariableInfo.address">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/Elf_Parser/index.html#pyx2cscope.parser.Elf_Parser.VariableInfo.address">[docs]</a>
     <span class="n">address</span><span class="p">:</span> <span class="nb">int</span></div>
+
+<div class="viewcode-block" id="VariableInfo.array_size">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/Elf_Parser/index.html#pyx2cscope.parser.Elf_Parser.VariableInfo.array_size">[docs]</a>
+    <span class="n">array_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
 </div>
 
 
@@ -285,6 +290,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">array_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_elf_file</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ElfParser.get_var_info">

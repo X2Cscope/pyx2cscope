@@ -54,7 +54,7 @@ Classes
           Variable: The Variable object, if found. None otherwise.
 
 
-   .. py:method:: _get_variable_instance(address: int, var_type: str, name: str) -> pyx2cscope.variable.variable.Variable
+   .. py:method:: _get_variable_instance(address: int, var_type: str, array_size: int, name: str) -> pyx2cscope.variable.variable.Variable
 
       create a variable object based on the provided address, type, and name.
 
