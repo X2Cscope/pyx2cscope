@@ -40,7 +40,6 @@ class Variable:
         Returns:
             the value of the variable's index position.
         """
-
         if abs(item) > self.array_size:
             raise IndexError("Index outside scope")
         try:
@@ -98,7 +97,6 @@ class Variable:
         Returns:
             Number: The stored value from the MCU.
         """
-
         try:
             if self.is_array():
                 return self._get_array_values()
@@ -172,8 +170,7 @@ class Variable:
             logging.error(e)
 
     def _set_value_raw(self, bytes_data: bytes, index: int = 0) -> None:
-        """
-        Set the value of a variable in the microcontroller's RAM using raw bytes.
+        """Set the value of a variable in the microcontroller's RAM using raw bytes.
 
         This method sends the raw byte data to the specified memory address in the microcontroller's RAM.
         It handles the low-level communication with the microcontroller using the LNet interface.
@@ -194,8 +191,7 @@ class Variable:
 
     @abstractmethod
     def is_signed(self) -> bool:
-        """
-        Abstract method to determine if the variable's data type is signed.
+        """Abstract method to determine if the variable's data type is signed.
 
         Implementations of this method should return True if the variable's data type
         is a signed type (like signed integers), otherwise False.
@@ -206,8 +202,7 @@ class Variable:
 
     @abstractmethod
     def is_integer(self) -> bool:
-        """
-        Abstract method to determine if the variable's data type is an integer.
+        """Abstract method to determine if the variable's data type is an integer.
 
         Implementations of this method should return True if the variable's data type
         is an integer (signed or unsigned), otherwise False for non-integer data types.

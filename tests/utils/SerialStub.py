@@ -1,12 +1,11 @@
 from mchplnet.interfaces.uart import LNetSerial
-from mchplnet.services.frame_device_info import FrameDeviceInfo
 
 
 class SerialStub:
     def __init__(self):
         self.data = bytearray()
         self.get_device_info = bytearray(b"\x55\x01\x01\x00\x57")
-        self.load_param = bytearray(b"\x55\x03\x01\x11\x01\x00\x6B")
+        self.load_param = bytearray(b"\x55\x03\x01\x11\x01\x00\x6b")
 
     def lnet_serial_start(self):
         return

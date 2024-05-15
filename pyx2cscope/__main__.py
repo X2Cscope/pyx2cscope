@@ -11,8 +11,7 @@ import pyx2cscope
 
 # Define a function to set the logging level based on a string argument
 def set_logging_level(args):
-    """
-    Sets the logging level based on the provided argument 'level'.
+    """Sets the logging level based on the provided argument 'level'.
 
     Args:
         the parsed arguments. (ArgumentParser): args contain property level (e.g., 'DEBUG', 'INFO').

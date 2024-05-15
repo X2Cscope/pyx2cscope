@@ -1,7 +1,7 @@
-"""
-This example can be used as a reference
+"""This example can be used as a reference
 to get variable data using the scope functionality of X2Cscope and store it in CSV file as well as to visualise.
 """
+
 import csv
 import logging
 import time

@@ -1,13 +1,24 @@
+import logging
+
+from mchplnet.lnet import LNet
 from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
-from pyx2cscope.variable.variable import *  # pylint: disable=import-error
-
-# disabled due to vriable strucuture contains many subclasses with inheritance
+from pyx2cscope.variable.variable import (
+    Variable,
+    Variable_float,
+    Variable_int8,
+    Variable_int16,
+    Variable_int32,
+    Variable_int64,
+    Variable_uint8,
+    Variable_uint16,
+    Variable_uint32,
+    Variable_uint64,
+)
 
 
 class VariableFactory:
-    """
-    A factory class for creating variable objects based on ELF file parsing.
+    """A factory class for creating variable objects based on ELF file parsing.
 
     This class uses either `Elf16Parser` or `Elf32Parser` depending on the microcontroller's architecture
     to parse the ELF file and create variable objects that can interact with the microcontroller's memory.
@@ -24,8 +35,7 @@ class VariableFactory:
     """
 
     def __init__(self, l_net: LNet, elf_path=None):
-        """
-        Initialize the VariableFactory with LNet instance and path to the ELF file.
+        """Initialize the VariableFactory with LNet instance and path to the ELF file.
 
         Args:
             l_net (LNet): Instance of LNet for communication with the microcontroller.
@@ -37,8 +47,7 @@ class VariableFactory:
         self.parser = parser(elf_path)
 
     def get_var_list(self) -> list[str]:
-        """
-        Get a list of variable names available in the ELF file.
+        """Get a list of variable names available in the ELF file.
 
         Returns:
             list[str]: A list of variable names.
@@ -46,8 +55,7 @@ class VariableFactory:
         return self.parser.get_var_list()
 
     def get_variable(self, name: str) -> Variable | None:
-        """
-        Retrieve a Variable object based on its name.
+        """Retrieve a Variable object based on its name.
 
         Args:
             name (str): Name of the variable to retrieve.
@@ -73,10 +81,9 @@ class VariableFactory:
         array_size: int,
         name: str,
     ) -> Variable:
-        """
-        create a variable object based on the provided address, type, and name.
+        """Create a variable object based on the provided address, type, and name.
 
-        args:
+        Args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
             name (str): Name of the variable.

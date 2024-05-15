@@ -1,17 +1,20 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+"""Configuration file for the Sphinx documentation builder.
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+For the full list of built-in configuration values, see the documentation:
+https://www.sphinx-doc.org/en/master/usage/configuration.html
+
+-- Project information -----------------------------------------------------
+https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+"""
+import os
+import sys
+
+import pyx2cscope
 
 project = "pyX2Cscope"
 copyright = "2024, Yash Agarwal, Edras Pacola, Mark Wendler, Christof Baumgartner"
 author = "Yash Agarwal, Edras Pacola, Mark Wendler, Christof Baumgartner"
 html_favicon = "images/pyx2cscope.ico"
-
-import pyx2cscope  # pylint: disable=wrong-import-position
 
 # The short X.Y version.
 version = pyx2cscope.__version__.split("-", maxsplit=1)[0]
@@ -19,9 +22,6 @@ release = pyx2cscope.__version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-
-import os
-import sys
 
 sys.path.insert(0, os.path.abspath("../pyx2cscope"))
 

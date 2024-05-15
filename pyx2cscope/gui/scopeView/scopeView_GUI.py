@@ -1,13 +1,9 @@
-import logging
 import sys
 
-import serial
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
-    QFileDialog,
-    QLabel,
     QMainWindow,
     QPushButton,
     QVBoxLayout,

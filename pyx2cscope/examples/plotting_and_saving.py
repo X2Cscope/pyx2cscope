@@ -7,14 +7,14 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from pyx2cscope.xc2scope import X2CScope
+
 # Configure logging
 logging.basicConfig(
     level=logging.ERROR,
     filename="BlinkyTest.log",
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
 )
-
-from pyx2cscope.xc2scope import X2CScope
 
 # Initialize serial communication
 serial_port = "COM8"

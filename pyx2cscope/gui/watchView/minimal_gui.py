@@ -1,6 +1,6 @@
+"""This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
 """
-This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
-"""
+
 import logging
 import os
 import sys
@@ -15,7 +15,6 @@ import serial.tools.list_ports
 from matplotlib.animation import FuncAnimation
 from PyQt5 import QtGui
 from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -41,8 +40,7 @@ matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
 
 class X2Cscope_GUI(QMainWindow):
-    """
-    Main GUI class for the pyX2Cscope application.
+    """Main GUI class for the pyX2Cscope application.
 
     This class creates and manages the GUI for pyX2Cscope, providing an interface
     to connect to a microcontroller, select variables for monitoring, and plot their values.
@@ -132,7 +130,7 @@ class X2Cscope_GUI(QMainWindow):
         ]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
         decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
-        self.decimal_validator = QRegExpValidator(decimal_regex)
+        self.decimal_validator = QtGui.QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
         self.fig, self.ax = None, None
@@ -165,7 +163,7 @@ class X2Cscope_GUI(QMainWindow):
         refresh_button.setFixedSize(25, 25)
         refresh_button.clicked.connect(self.refresh_ports)
         refresh_img = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
-        refresh_button.setIcon(QIcon(refresh_img))
+        refresh_button.setIcon(QtGui.QIcon(refresh_img))
 
         self.select_file_button.setEnabled(True)
         # Elf file loader button
@@ -456,8 +454,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def var_live(self, live_var, timer):
-        """
-        Handles the state change of live variable checkboxes.
+        """Handles the state change of live variable checkboxes.
 
         Args:
             live_var (QCheckBox): The checkbox representing a live variable.
@@ -476,8 +473,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def update_scaled_value(self, scaling_var, value_var, scaled_value_var, offset_var):
-        """
-        Updates the scaled value based on the provided scaling factor and offset.
+        """Updates the scaled value based on the provided scaling factor and offset.
 
         Args:
             scaling_var : Input field for the scaling factor.
@@ -507,8 +503,7 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(f"Error update Scaled Value: {e}")
 
     def plot_data_update(self):
-        """
-        Updates the data for plotting.
+        """Updates the data for plotting.
         """
         try:
             timestamp = datetime.now()
@@ -532,8 +527,7 @@ class X2Cscope_GUI(QMainWindow):
             logging.error(e)
 
     def update_plot(self, frame):
-        """
-        Updates the plot with new data.
+        """Updates the plot with new data.
 
         Args:
             frame: The current frame for the FuncAnimation.
@@ -564,8 +558,7 @@ class X2Cscope_GUI(QMainWindow):
             logging.error(e)
 
     def plot_data_plot(self):
-        """
-        Initializes and starts data plotting.
+        """Initializes and starts data plotting.
         """
         try:
             if not self.plot_data:
@@ -600,8 +593,7 @@ class X2Cscope_GUI(QMainWindow):
 
     # noinspection PyUnresolvedReferences
     def handle_error(self, error_message: str):
-        """
-        Displays an error message in a message box.
+        """Displays an error message in a message box.
 
         Args:
             error_message (str): The error message to display.
@@ -614,8 +606,7 @@ class X2Cscope_GUI(QMainWindow):
         msg_box.exec_()
 
     def sampletime_edit(self):
-        """
-        Handles the editing of the sample time value.
+        """Handles the editing of the sample time value.
         """
         try:
             new_sample_time = int(self.sampletime.text())
@@ -630,8 +621,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def handle_var_update(self, counter, value_var):
-        """
-        Handles the update of variable values from the microcontroller.
+        """Handles the update of variable values from the microcontroller.
 
         Args:
             counter: The variable to update.
@@ -651,8 +641,7 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     def slider_var1_changed(self, value):
-        """
-        Handles the change in slider value for Variable 1.
+        """Handles the change in slider value for Variable 1.
 
         Args:
             value (int): The new value of the slider.
@@ -671,8 +660,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def handle_variable_getram(self, variable, Value_var):
-        """
-        Handle the retrieval of values from RAM for the specified variable.
+        """Handle the retrieval of values from RAM for the specified variable.
 
         Args:
             variable: The variable to retrieve the value for.
@@ -706,8 +694,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def handle_variable_putram(self, variable, Value_var):
-        """
-        Handle the writing of values to RAM for the specified variable.
+        """Handle the writing of values to RAM for the specified variable.
 
         Args:
             variable: The variable to write the value to.
@@ -730,8 +717,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def select_elf_file(self):
-        """
-        Open a file dialog to select an ELF file.
+        """Open a file dialog to select an ELF file.
 
         This method opens a file dialog for the user to select an ELF file.
         The selected file path is then stored in settings for later use.
@@ -753,8 +739,7 @@ class X2Cscope_GUI(QMainWindow):
         # self.refresh_combo_box()
 
     def refresh_combo_box(self):
-        """
-        Refresh the contents of the variable selection combo boxes.
+        """Refresh the contents of the variable selection combo boxes.
 
         This method repopulates the combo boxes used for variable selection
         with the updated list of variables.
@@ -775,8 +760,7 @@ class X2Cscope_GUI(QMainWindow):
             logging.warning("VariableList is None. Unable to refresh combo boxes.")
 
     def refresh_ports(self):
-        """
-        Refresh the list of available serial ports.
+        """Refresh the list of available serial ports.
 
         This method updates the combo box containing the list of available
         serial ports to reflect the current state of the system.
@@ -788,8 +772,7 @@ class X2Cscope_GUI(QMainWindow):
 
     @pyqtSlot()
     def toggle_connection(self):
-        """
-        Handle the connection or disconnection of the serial port.
+        """Handle the connection or disconnection of the serial port.
 
         This method establishes or terminates the serial connection based on
         the current state of the connection.
@@ -809,8 +792,7 @@ class X2Cscope_GUI(QMainWindow):
             self.disconnect_serial()
 
     def disconnect_serial(self):
-        """
-        Disconnect the current serial connection.
+        """Disconnect the current serial connection.
 
         This method safely terminates the existing serial connection, if any,
         and updates the UI to reflect the disconnection.
@@ -846,8 +828,7 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     def connect_serial(self):
-        """
-        Establish a serial connection based on the current UI settings.
+        """Establish a serial connection based on the current UI settings.
 
         This method sets up a serial connection using the selected port and
         baud rate. It also initializes the variable factory and updates the
@@ -902,8 +883,7 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     def close_plot_window(self):
-        """
-        Close the plot window if it is open.
+        """Close the plot window if it is open.
 
         This method stops the animation and closes the plot window, if it is open.
         """
@@ -913,8 +893,7 @@ class X2Cscope_GUI(QMainWindow):
         self.plot_window_open = False
 
     def closeEvent(self, event):
-        """
-        Handle the event when the main window is closed.
+        """Handle the event when the main window is closed.
 
         Args:
             event: The close event.

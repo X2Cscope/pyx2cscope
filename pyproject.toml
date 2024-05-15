@@ -2,9 +2,6 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 120
-
 [tool.poetry]
 name = "pyx2cscope"
 version = "0.1.5"
@@ -32,8 +29,14 @@ matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
 mchplnet = "0.1.2"
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+line-length = 120
+# only allow the specified pydocstyle convention
+lint.pydocstyle.convention = "google"
+lint.select = ["D"]
+# I - isort style for inports
+# D414 - does not allow unfinished docstrings
+lint.extend-select = ["I", "D414"]
 
-[tool.pylint]
-max-line-length=240
+
+

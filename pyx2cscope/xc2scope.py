@@ -7,7 +7,6 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
-
 from pyx2cscope.variable.variable import Variable
 from pyx2cscope.variable.variable_factory import VariableFactory
 
@@ -19,8 +18,7 @@ logging.basicConfig(
 
 
 def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
-    """
-    Converts a Variable object to a ScopeChannel object.
+    """Converts a Variable object to a ScopeChannel object.
 
     Args:
         variable (Variable): The variable to be converted to a ScopeChannel.
@@ -39,8 +37,7 @@ def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
 
 
 class X2CScope:
-    """
-    X2CScope class for interfacing with the X2C Scope tool.
+    """X2CScope class for interfacing with the X2C Scope tool.
 
     This class provides methods for connecting to the scope, setting up scope channels,
     requesting data, and processing received data.
@@ -55,8 +52,7 @@ class X2CScope:
     """
 
     def __init__(self, elf_file: str, interface: InterfaceABC = None, *args, **kwargs):
-        """
-        Initialize the X2CScope instance.
+        """Initialize the X2CScope instance.
 
         Args:
             elf_file (str): Path to the ELF file.
@@ -70,8 +66,7 @@ class X2CScope:
         self.convert_list = {}
 
     def set_interface(self, interface: InterfaceABC):
-        """
-        Set the communication interface for the scope.
+        """Set the communication interface for the scope.
 
         Args:
             interface (InterfaceABC): The interface to be set for communication.
@@ -81,8 +76,7 @@ class X2CScope:
         self.variable_factory = VariableFactory(self.lnet, self.elf_file)
 
     def set_elf_file(self, elf_file: str):
-        """
-        Set the ELF file for the scope.
+        """Set the ELF file for the scope.
 
         Args:
             elf_file (str): Path to the ELF file.
@@ -98,8 +92,7 @@ class X2CScope:
         self.interface.stop()
 
     def list_variables(self) -> List[str]:
-        """
-        List all available variables.
+        """List all available variables.
 
         Returns:
             List[str]: A list of available variable names.
@@ -107,8 +100,7 @@ class X2CScope:
         return self.variable_factory.get_var_list()
 
     def get_variable(self, name: str) -> Variable:
-        """
-        Retrieve a variable by its name.
+        """Retrieve a variable by its name.
 
         Args:
             name (str): The name of the variable to retrieve.
@@ -119,8 +111,7 @@ class X2CScope:
         return self.variable_factory.get_variable(name)
 
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
-        """
-        Add a variable as a scope channel.
+        """Add a variable as a scope channel.
 
         Args:
             variable (Variable): The variable to be added as a scope channel.
@@ -146,8 +137,7 @@ class X2CScope:
             self.scope_setup.remove_channel(variable)
 
     def remove_scope_channel(self, variable: Variable):
-        """
-        Remove a variable from the scope channel.
+        """Remove a variable from the scope channel.
 
         Args:
             variable (Variable): The variable to be removed from the scope channel.
@@ -160,8 +150,7 @@ class X2CScope:
         return self.scope_setup.remove_channel(variable.name)
 
     def get_scope_channel_list(self) -> Dict[str, ScopeChannel]:
-        """
-        Get a list of all scope channels.
+        """Get a list of all scope channels.
 
         Returns:
             Dict[str, ScopeChannel]: A dictionary of scope channels with their names as keys.
@@ -182,8 +171,7 @@ class X2CScope:
         trigger_delay: int,
         trigger_edge: int,
     ):
-        """
-        Set the scope trigger configuration.
+        """Set the scope trigger configuration.
 
         Args:
             variable (Variable): The variable to use as the trigger source.
@@ -202,14 +190,12 @@ class X2CScope:
         self.scope_setup.set_trigger(scope_trigger)
 
     def clear_trigger(self):
-        """
-        Reset Trigger configuration.
+        """Reset Trigger configuration.
         """
         self.scope_setup.reset_trigger()
 
     def set_sample_time(self, sample_time: int):
-        """
-        This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution.
+        """This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution.
         0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
 
         Args:
@@ -218,8 +204,7 @@ class X2CScope:
         self.scope_setup.set_sample_time_factor(sample_time)
 
     def set_scope_state(self, scope_state: int):
-        """
-        Set the state of the scope.
+        """Set the state of the scope.
 
         Args:
             scope_state (int): The desired scope state.
@@ -227,8 +212,7 @@ class X2CScope:
         self.scope_setup.set_scope_state(scope_state)
 
     def request_scope_data(self):
-        """
-        Request scope data from the LNet layer.
+        """Request scope data from the LNet layer.
 
         Calling this method will start the scope sampling at the microcontroller side.
         This function should be called once all the required settings are made for data acquisition.
@@ -236,8 +220,7 @@ class X2CScope:
         self.lnet.save_parameter()
 
     def is_scope_data_ready(self) -> bool:
-        """
-        Check if the sampling of scope data is ready. Before calling this method, call
+        """Check if the sampling of scope data is ready. Before calling this method, call
         request_scope_data() first. Please insert a delay between is_scope_data_ready().
 
         Returns:
@@ -248,8 +231,7 @@ class X2CScope:
         return scope_data.scope_state == 0 or scope_data.data_array_pointer == scope_data.data_array_used_length
 
     def get_trigger_position(self) -> int:
-        """
-        Get the position of the trigger event.
+        """Get the position of the trigger event.
 
         Returns:
             int: The index position of the trigger event.
@@ -258,8 +240,7 @@ class X2CScope:
         return int(scope_data.trigger_event_position / self.scope_setup.get_dataset_size())
 
     def get_delay_trigger_position(self) -> int:
-        """
-        Get the position of the delay trigger.
+        """Get the position of the delay trigger.
 
         Returns:
             int: The index position of the delay trigger.
@@ -268,8 +249,7 @@ class X2CScope:
         return int(trigger_position - self.scope_setup.scope_trigger.trigger_delay)
 
     def _calc_sda_used_length(self):
-        """
-        Calculate the used length of the Scope Data Array (SDA).
+        """Calculate the used length of the Scope Data Array (SDA).
 
         Returns:
             The length of the used portion of the SDA.
@@ -279,8 +259,7 @@ class X2CScope:
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
     def _read_array_chunks(self):
-        """
-        Read array chunks from the LNet layer.
+        """Read array chunks from the LNet layer.
 
         Returns:
             A list containing the chunk data.
@@ -320,8 +299,7 @@ class X2CScope:
         return chunk_data
 
     def _sort_channel_data(self, data) -> Dict[str, List[Number]]:
-        """
-        Sort and convert the dataset byte order into channel byte order.
+        """Sort and convert the dataset byte order into channel byte order.
 
         Args:
             data: The raw data read from the scope.
@@ -342,8 +320,7 @@ class X2CScope:
         return channels
 
     def _filter_channels(self, channels):
-        """
-        Filter the channels to include only valid data.
+        """Filter the channels to include only valid data.
 
         Args:
             channels: The dictionary of channels with raw data.
@@ -363,8 +340,7 @@ class X2CScope:
         return channels
 
     def get_scope_channel_data(self, valid_data=True) -> Dict[str, List[Number]]:
-        """
-        Get the sorted and optionally filtered scope channel data.
+        """Get the sorted and optionally filtered scope channel data.
 
         Args:
             valid_data (bool, optional): If True, return only valid data. Defaults to True.

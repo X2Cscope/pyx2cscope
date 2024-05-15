@@ -20,7 +20,7 @@ class TestParser:
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
         variable = x2c_scope.get_variable("motor.estimator.zsmt.iqHistory")
         assert variable is not None, "variable name not found"
-        assert variable.is_array() == True, "variable should be an array"
+        assert variable.is_array() is True, "variable should be an array"
         assert len(variable) == 4, "array has wrong length"
 
     # def test_array_variable_32(self, mocker):

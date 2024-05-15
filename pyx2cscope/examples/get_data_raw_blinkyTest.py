@@ -1,15 +1,15 @@
+"""Example to change LED by changing the bit value on dspic33ck256mp508 Microchip Using SFR(Special function Register)
 """
-Example to change LED by changing the bit value on dspic33ck256mp508 Microchip Using SFR(Special function Register)
-"""
+
 import logging
 import time
+
+from pyx2cscope.xc2scope import X2CScope
 
 logging.basicConfig(
     level=0,
     filename="BlinkySFR.log",
 )
-
-from pyx2cscope.xc2scope import X2CScope
 
 serial_port = "COM15"  # select COM port
 baud_rate = 115200

@@ -6,8 +6,7 @@ from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
 
 
 class Elf32Parser(ElfParser):
-    """
-    Class for parsing ELF files compatible with 32-bit architectures.
+    """Class for parsing ELF files compatible with 32-bit architectures.
     """
 
     def _get_structure_members_recursive(
@@ -17,8 +16,7 @@ class Elf32Parser(ElfParser):
         parent_name: str,
         prev_address_offset=0,
     ):
-        """
-        Recursively gets structure members from a DWARF DIE.
+        """Recursively gets structure members from a DWARF DIE.
 
         Args:
             die: The DIE representing the structure.
@@ -72,8 +70,7 @@ class Elf32Parser(ElfParser):
         return members, prev_address_offset
 
     def _get_structure_members(self, type_die, structure_die, var_name):
-        """
-        Retrieves structure members from a DWARF DIE.
+        """Retrieves structure members from a DWARF DIE.
 
         Args:
             structure_die: The DIE representing the structure.
@@ -86,8 +83,7 @@ class Elf32Parser(ElfParser):
         return self._get_structure_members_recursive(type_die, structure_die, var_name, prev_address_offset)
 
     def _processing_end_die(self, type_die, end_die):
-        """
-        Processes the end DIE of a tag to extract variable information.
+        """Processes the end DIE of a tag to extract variable information.
 
         Args:
             end_die: The end DIE of the tag.
@@ -97,7 +93,7 @@ class Elf32Parser(ElfParser):
                 data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
                 self.address = int.from_bytes(bytes(data), byteorder="little")
             else:
-                address = None
+                self.address = None
         except Exception as e:
             logging.error(e)
             pass
@@ -139,8 +135,7 @@ class Elf32Parser(ElfParser):
             )
 
     def _get_array_length(self, type_die):
-        """
-        Gets the length of an array type.
+        """Gets the length of an array type.
 
         Args:
             type_die: The DIE representing the array type.
@@ -166,8 +161,7 @@ class Elf32Parser(ElfParser):
             raise Exception("Error loading ELF file: {}".format(self.elf_path))
 
     def _get_dwarf_die_by_offset(self, offset):
-        """
-        Retrieve a DWARF DIE given its offset.
+        """Retrieve a DWARF DIE given its offset.
 
         Args:
             offset (int): Offset of the DIE.
@@ -183,8 +177,7 @@ class Elf32Parser(ElfParser):
         return None
 
     def _get_end_die(self, current_die):
-        """
-        Find the end DIE of a type.
+        """Find the end DIE of a type.
 
         Args:
             current_die (elftools.dwarf.die.DIE): The starting DIE.
@@ -203,8 +196,7 @@ class Elf32Parser(ElfParser):
         return current_die
 
     def _get_member_type(self, type_offset):
-        """
-        Retrieve the type information from DWARF given a type offset.
+        """Retrieve the type information from DWARF given a type offset.
 
         Args:
             type_offset (int): Offset of the type DIE.
