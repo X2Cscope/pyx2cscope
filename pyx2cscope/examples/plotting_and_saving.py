@@ -8,6 +8,7 @@ import pandas as pd
 from matplotlib import animation
 
 from pyx2cscope.xc2scope import X2CScope
+from utils import get_com_port, get_elf_file_path
 
 # Configure logging
 logging.basicConfig(
@@ -17,10 +18,10 @@ logging.basicConfig(
 )
 
 # Initialize serial communication
-serial_port = "COM8"
+serial_port = get_com_port()
 baud_rate = 115200
 # Specify the path to your ELF file
-elf_file = "C:\\_DESKTOP\\_Projects\\AN1160_dsPIC33CK256MP508_MCLV2_MCHV\\bldc_MCLV2.X\\dist\\MCLV2\\production/bldc_MCLV2.X.production.elf"
+elf_file = get_elf_file_path()
 
 # Initialize LNet and VariableFactory
 x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)

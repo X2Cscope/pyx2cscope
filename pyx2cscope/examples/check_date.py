@@ -2,14 +2,14 @@ import logging
 import time
 
 from pyx2cscope.xc2scope import X2CScope
+from utils import get_elf_file_path, get_com_port
 
 logging.basicConfig(level=logging.DEBUG)
 
-serial_port = "COM16"  # select COM port
-baud_rate = 115200
-elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\testing_x2cscope.X\dist\default\production\testing_x2cscope.X.production.elf"
+elf_file = get_elf_file_path()
+serial_port = get_com_port()
 
-x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
+x2cscope = X2CScope(port=serial_port, elf_file=elf_file)
 serial_connection = x2cscope.interface
 
 variable2 = x2cscope.get_variable("ScopeArray")

@@ -5,6 +5,7 @@ import time
 import matplotlib.pyplot as plt
 
 from pyx2cscope.xc2scope import X2CScope
+from utils import get_com_port, get_elf_file_path
 
 # Set up logging
 logging.basicConfig(
@@ -13,8 +14,8 @@ logging.basicConfig(
 )
 
 # X2C Scope Set up
-elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-x2cScope = X2CScope(port="COM14", elf_file=elf_file)
+elf_file = get_elf_file_path()
+x2cScope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
 # Define variables
 variables = [

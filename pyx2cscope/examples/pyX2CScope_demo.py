@@ -9,6 +9,7 @@ import time
 import matplotlib.pyplot as plt
 
 from pyx2cscope.xc2scope import X2CScope
+from utils import get_com_port, get_elf_file_path
 
 # Set up logging
 # This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
@@ -20,12 +21,8 @@ logging.basicConfig(
 # X2C Scope Set up
 # The X2C Scope is a tool for real-time data acquisition from a microcontroller.
 # Here, we specify the COM port and the path to the ELF file of the microcontroller project.
-elf_file = (
-    r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2"
-    r"\motorbench_FOC_PLL_dsPIC33CK_MCLV2_FH.X\dist\default\production\motorbench_FOC_PLL_dsPIC33CK_MCLV2.X"
-    r".production.elf"
-)
-x2cScope = X2CScope(port="COM16", elf_file=elf_file)
+elf_file = get_elf_file_path()
+x2cScope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
 # Scope Configuration Here, we set up the variables we want to monitor using the X2C Scope. Each variable corresponds
 # to a specific data point in the microcontroller.

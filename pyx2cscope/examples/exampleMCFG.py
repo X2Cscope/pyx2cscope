@@ -1,6 +1,7 @@
 import logging
 
 from pyx2cscope.xc2scope import X2CScope
+from utils import get_elf_file_path, get_com_port
 
 # Configure logging settings
 logging.basicConfig(
@@ -9,14 +10,10 @@ logging.basicConfig(
 )
 
 # Configuration for serial port communication
-serial_port = "COM8"  # Define the COM port to use
+serial_port = get_com_port()  # Define the COM port to use
 baud_rate = 115200  # Set baud rate for serial communication
 # Specify the path to the ELF file
-elf_file = (
-    r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\MUForum "
-    r"material\Firmware\AN1292_LongHurst_MCLV-48V-300W_script.X/dist/default/production/AN1292_LongHurst_MCLV"
-    r"-48V-300W_script.X.production.elf"
-)
+elf_file = get_elf_file_path()
 # initialize the x2cscope with serial port, by default baud rate is 115200,
 x2cScope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 

@@ -5,15 +5,16 @@ import logging
 import time
 
 from pyx2cscope.xc2scope import X2CScope
+from utils import get_com_port, get_elf_file_path
 
 logging.basicConfig(
     level=0,
     filename="BlinkySFR.log",
 )
 
-serial_port = "COM15"  # select COM port
+serial_port = get_com_port()  # select COM port
 baud_rate = 115200
-elf_file = r"C:\_DESKTOP\MC FG F2F Vienna\pyx2cscope_dspic33ck_48-300W.X\dist\default\production\pyx2cscope_dspic33ck_48-300W.X.production.elf"
+elf_file = get_elf_file_path()
 
 x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 # Constants for LED bit positions
