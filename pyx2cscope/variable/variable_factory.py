@@ -6,15 +6,15 @@ from pyx2cscope.parser.Elf16Parser import Elf16Parser
 from pyx2cscope.parser.Elf32Parser import Elf32Parser
 from pyx2cscope.variable.variable import (
     Variable,
-    Variable_float,
-    Variable_int8,
-    Variable_int16,
-    Variable_int32,
-    Variable_int64,
-    Variable_uint8,
-    Variable_uint16,
-    Variable_uint32,
-    Variable_uint64,
+    VariableFloat,
+    VariableInt16,
+    VariableInt32,
+    VariableInt64,
+    VariableUint16,
+    VariableUint32,
+    VariableUint64,
+    VariableInt8,
+    VariableUint8,
 )
 
 
@@ -97,29 +97,29 @@ class VariableFactory:
             Exception: If the variable type is not found.
         """
         type_factory = {
-            "bool": Variable_uint8,
-            "char": Variable_int8,
-            "double": Variable_float,
-            "float": Variable_float,
-            "int": Variable_int16,
-            "long": Variable_int32,
-            "long double": Variable_float,
-            "long int": Variable_int32,
-            "long long": Variable_int64,
-            "long long unsigned int": Variable_uint64,
-            "long unsigned int": Variable_uint32,
-            "pointer": Variable_uint16 if self.device_info.uc_width == 2 else Variable_uint32,  # TODO v 0.2.0
-            "short": Variable_int16,
-            "short int": Variable_int16,
-            "short unsigned int": Variable_uint16,
-            "signed char": Variable_int8,
-            "signed int": Variable_int32,
-            "signed long": Variable_int32,
-            "signed long long": Variable_int64,
-            "unsigned char": Variable_uint8,
-            "unsigned int": Variable_uint16,
-            "unsigned long": Variable_uint32,
-            "unsigned long long": Variable_uint64,
+            "bool": VariableUint8,
+            "char": VariableInt8,
+            "double": VariableFloat,
+            "float": VariableFloat,
+            "int": VariableInt16,
+            "long": VariableInt32,
+            "long double": VariableFloat,
+            "long int": VariableInt32,
+            "long long": VariableInt64,
+            "long long unsigned int": VariableUint64,
+            "long unsigned int": VariableUint32,
+            "pointer": VariableUint16 if self.device_info.uc_width == 2 else VariableUint32,  # TODO v 0.2.0
+            "short": VariableInt16,
+            "short int": VariableInt16,
+            "short unsigned int": VariableUint16,
+            "signed char": VariableInt8,
+            "signed int": VariableInt32,
+            "signed long": VariableInt32,
+            "signed long long": VariableInt64,
+            "unsigned char": VariableUint8,
+            "unsigned int": VariableUint16,
+            "unsigned long": VariableUint32,
+            "unsigned long long": VariableUint64,
         }
 
         try:

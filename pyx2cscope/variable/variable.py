@@ -106,6 +106,23 @@ class Variable:
         except Exception as e:
             logging.error(e)
 
+    def _check_value_range(self, value: Number):
+        """Check if the given value is in range of min and max variable values.
+
+        Args:
+            value: the variable value
+
+        Raises:
+            ValueError: if value is outside min-max range.
+        """
+        min_value, max_value = self._get_min_max_values()
+        if value > max_value or value < min_value:
+            raise ValueError(f"Value = {value}: Expected in range {min_value} to {max_value}")
+
+    @abstractmethod
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Return a tuple with allowed [min, max] values."""
+
     @abstractmethod
     def bytes_to_value(self, data: bytearray) -> Number:
         """Convert the byte array to the respective variable number value.
@@ -215,7 +232,11 @@ class Variable:
 # ------------------------------INT_8------------------------------
 
 
-class Variable_int8(Variable):
+class VariableInt8(Variable):
+
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return -128, 127
+
     def is_integer(self) -> bool:
         return True
 
@@ -228,8 +249,7 @@ class Variable_int8(Variable):
 
     def set_value(self, value: int):
         try:
-            if value > 127 or value < -128:
-                raise ValueError(f"Value = {value}: Expected in range -128 to 127")
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=1, byteorder="little", signed=True
@@ -245,7 +265,11 @@ class Variable_int8(Variable):
 # ------------------------------ UINT_8 ------------------------------
 
 
-class Variable_uint8(Variable):
+class VariableUint8(Variable):
+
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return 0, 255
+
     def is_integer(self) -> bool:
         return True
 
@@ -253,14 +277,12 @@ class Variable_uint8(Variable):
         return False
 
     def get_width(self) -> int:
-        """UINT8_T width is 1"""
+        """UINT8 width is 1."""
         return 1
 
     def set_value(self, value: int):
         try:
-            if value > 255 or value < 0:
-                raise ValueError(f"Value = {value}: Expected in range 0 to 255")
-
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=1, byteorder="little", signed=False
@@ -276,10 +298,10 @@ class Variable_uint8(Variable):
 # ------------------------------ INT_16 ------------------------------
 
 
-class Variable_int16(Variable):
+class VariableInt16(Variable):
 
-    MAX_INT_16 = 32767
-    MIN_INT_16 = -32768
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return -32768, 32767
 
     def is_integer(self) -> bool:
         return True
@@ -293,9 +315,7 @@ class Variable_int16(Variable):
 
     def set_value(self, value: int):
         try:
-            if value > self.MAX_INT_16 or value < self.MIN_INT_16:
-                raise ValueError(f"Value = {value}: Expected in range {self.MIN_INT_16} to {self.MAX_INT_16}")
-
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=2, byteorder="little", signed=True
@@ -311,7 +331,10 @@ class Variable_int16(Variable):
 # ------------------------------ UINT_16 ------------------------------
 
 
-class Variable_uint16(Variable):
+class VariableUint16(Variable):
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return 0, 65535
+
     def is_integer(self) -> bool:
         return True
 
@@ -324,9 +347,7 @@ class Variable_uint16(Variable):
 
     def set_value(self, value: int):
         try:
-            if value > 65535 or value < 0:
-                raise ValueError(f"Value = {value}: Expected in range 0 to 65535")
-
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=2, byteorder="little", signed=False
@@ -342,7 +363,10 @@ class Variable_uint16(Variable):
 # ------------------------------ INT_32 ------------------------------
 
 
-class Variable_int32(Variable):
+class VariableInt32(Variable):
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return -0x80000000, 0x7FFFFFFF
+
     def is_integer(self) -> bool:
         return True
 
@@ -350,14 +374,12 @@ class Variable_int32(Variable):
         return True
 
     def get_width(self) -> int:
-        """INT32_T width is 4"""
+        """INT32_T width is 4."""
         return 4
 
     def set_value(self, value: int):
         try:
-            if value > 0x7FFFFFFF or value < -0x80000000:
-                raise ValueError(f"Value = {value}: Expected in range -2,147,483,648 to 2,147,483,647")
-
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=4, byteorder="little", signed=True
@@ -373,7 +395,10 @@ class Variable_int32(Variable):
 # ------------------------------ UINT_32 ------------------------------
 
 
-class Variable_uint32(Variable):
+class VariableUint32(Variable):
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return 0, 0xFFFFFFFF
+
     def is_integer(self) -> bool:
         return True
 
@@ -386,9 +411,7 @@ class Variable_uint32(Variable):
 
     def set_value(self, value: int):
         try:
-            if value > 0xFFFFFFFF or value < 0:
-                raise ValueError(f"Value = {value}: Expected in range 0 to 4,294,967,295")
-
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=4, byteorder="little", signed=False
@@ -401,7 +424,10 @@ class Variable_uint32(Variable):
         return int.from_bytes(data, "little", signed=False)
 
 
-class Variable_uint64(Variable):
+class VariableUint64(Variable):
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return 0, 0xFFFFFFFFFFFFFFFF
+
     def is_integer(self) -> bool:
         return True
 
@@ -414,9 +440,7 @@ class Variable_uint64(Variable):
 
     def set_value(self, value: int):
         try:
-            if value < 0 or value > 0xFFFFFFFFFFFFFFFF:
-                raise ValueError(f"Value = {value}: Expected in range 0 to 18,446,744,073,709,551,615")
-
+            self._check_value_range(value)
             bytes_data = value.to_bytes(
                 length=8, byteorder="little", signed=False
             )  # construct the bytes representation of the value
@@ -428,7 +452,10 @@ class Variable_uint64(Variable):
         return int.from_bytes(data, "little", signed=False)
 
 
-class Variable_int64(Variable):
+class VariableInt64(Variable):
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return -0x8000000000000000, 0x7FFFFFFFFFFFFFFF
+
     def is_integer(self) -> bool:
         return True
 
@@ -441,11 +468,7 @@ class Variable_int64(Variable):
 
     def set_value(self, value: int):
         try:
-            if value < -0x8000000000000000 or value > 0x7FFFFFFFFFFFFFFF:
-                raise ValueError(
-                    f"Value = {value}: Expected in range -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807"
-                )
-
+            self._check_value_range(value)
             bytes_data = value.to_bytes(
                 length=8, byteorder="little", signed=True
             )  # construct the bytes representation of the value
@@ -460,7 +483,10 @@ class Variable_int64(Variable):
 # ------------------------------ FLOAT ------------------------------
 
 
-class Variable_float(Variable):
+class VariableFloat(Variable):
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        return -0x80000000, 0x7FFFFFFF
+
     def is_integer(self) -> bool:
         return False
 
@@ -468,7 +494,7 @@ class Variable_float(Variable):
         return True
 
     def get_width(self) -> int:
-        """FLOAT width is 4"""
+        """FLOAT width is 4."""
         return 4
 
     def set_value(self, value: float):
