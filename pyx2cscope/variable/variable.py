@@ -8,7 +8,7 @@ import mchplnet.lnet as LNet
 
 
 class Variable:
-    """Represents a variable in the MCU data memory"""
+    """Represents a variable in the MCU data memory."""
 
     def __init__(self, l_net: LNet, address: int, array_size: int, name: str = None) -> None:
         """Initialize the Variable object.
@@ -277,6 +277,10 @@ class Variable_uint8(Variable):
 
 
 class Variable_int16(Variable):
+
+    MAX_INT_16 = 32767
+    MIN_INT_16 = -32768
+
     def is_integer(self) -> bool:
         return True
 
@@ -284,13 +288,13 @@ class Variable_int16(Variable):
         return True
 
     def get_width(self) -> int:
-        """INT16_T width is 2"""
+        """INT16_T width is 2."""
         return 2
 
     def set_value(self, value: int):
         try:
-            if value > 32767 or value < -32768:
-                raise ValueError(f"Value = {value}: Expected in range -32768 to 32767")
+            if value > self.MAX_INT_16 or value < self.MIN_INT_16:
+                raise ValueError(f"Value = {value}: Expected in range {self.MIN_INT_16} to {self.MAX_INT_16}")
 
             int_value = int(value)
             bytes_data = int_value.to_bytes(
@@ -377,7 +381,7 @@ class Variable_uint32(Variable):
         return False
 
     def get_width(self) -> int:
-        """UINT32_T width is 4"""
+        """UINT32_T width is 4."""
         return 4
 
     def set_value(self, value: int):
@@ -432,7 +436,7 @@ class Variable_int64(Variable):
         return True
 
     def get_width(self) -> int:
-        """INT64 width is 8"""
+        """INT64 width is 8."""
         return 8
 
     def set_value(self, value: int):

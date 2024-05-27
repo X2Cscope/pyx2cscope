@@ -54,8 +54,13 @@ class X2CScope:
     def __init__(self, elf_file: str, interface: InterfaceABC = None, *args, **kwargs):
         """Initialize the X2CScope instance.
 
+        No extra arguments are needed, but the interface accept it for future development.
+
         Args:
             elf_file (str): Path to the ELF file.
+            interface (InterfaceABC): communication interface to be used, defaults to None.
+            *args: arguments without key passed during the initialization.
+            **kwargs: key defined arguments.
         """
         i_type = interface if interface is not None else InterfaceType.SERIAL
         self.interface = InterfaceFactory.get_interface(interface_type=i_type, **kwargs)
@@ -190,12 +195,13 @@ class X2CScope:
         self.scope_setup.set_trigger(scope_trigger)
 
     def clear_trigger(self):
-        """Reset Trigger configuration.
-        """
+        """Reset Trigger configuration."""
         self.scope_setup.reset_trigger()
 
     def set_sample_time(self, sample_time: int):
-        """This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution.
+        """Defines a pre-scaler when the scope is in the sampling mode.
+
+        This can be used to extend total sampling time at cost of resolution.
         0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
 
         Args:

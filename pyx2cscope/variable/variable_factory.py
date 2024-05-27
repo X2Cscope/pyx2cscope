@@ -1,3 +1,4 @@
+"""Variable Factory returns the respective variable type according to the variable type found at the elf file."""
 import logging
 
 from mchplnet.lnet import LNet
@@ -86,6 +87,7 @@ class VariableFactory:
         Args:
             address (int): Address of the variable in the MCU memory.
             var_type (VarTypes): Type of the variable.
+            array_size (int): the size of the array, in case of an array, 0 otherwise.
             name (str): Name of the variable.
 
         returns:

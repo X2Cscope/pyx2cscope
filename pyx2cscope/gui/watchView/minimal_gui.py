@@ -464,9 +464,8 @@ class X2Cscope_GUI(QMainWindow):
             if live_var.isChecked():
                 if not timer.isActive():
                     timer.start(self.timerValue)
-            else:
-                if timer.isActive():
-                    timer.stop()
+            elif timer.isActive():
+                timer.stop()
         except Exception as e:
             logging.error(e)
             self.handle_error(f"Live Variable: {e}")

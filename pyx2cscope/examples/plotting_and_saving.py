@@ -3,9 +3,9 @@ import queue
 import threading
 import time
 
-import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib import animation
 
 from pyx2cscope.xc2scope import X2CScope
 

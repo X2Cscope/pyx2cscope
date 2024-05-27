@@ -34,9 +34,12 @@ line-length = 120
 # only allow the specified pydocstyle convention
 lint.pydocstyle.convention = "google"
 lint.select = ["D"]
-# I - isort style for inports
-# D414 - does not allow unfinished docstrings
-lint.extend-select = ["I", "D414"]
+# I - isort style for imports
+# N - pep8-naming
+# F - pyflakes
+# D - pydocstyle
+# PL - pylint
+lint.extend-select = ["I", "N", "F", "PL", "D"]
 
 
 
