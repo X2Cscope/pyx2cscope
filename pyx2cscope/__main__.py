@@ -4,7 +4,7 @@ import argparse
 
 from PyQt5.QtWidgets import QApplication
 
-from pyx2cscope.gui.watchView.minimal_gui import X2Cscope_GUI
+from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
 from pyx2cscope.gui.web import app
 import pyx2cscope
 
@@ -57,7 +57,7 @@ def execute_qt(args):
     # Initialize a PyQt5 application
     app = QApplication(qt_args)
     # Create an instance of the X2Cscope_GUI
-    ex = X2Cscope_GUI()
+    ex = X2cscopeGui()
     # Display the GUI
     ex.show()
     # Start the PyQt5 application event loop

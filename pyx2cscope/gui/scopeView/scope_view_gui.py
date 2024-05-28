@@ -15,9 +15,9 @@ from pyqtgraph import PlotWidget
 class MotorControlGUI(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle("Motor Control Oscilloscope")
         self.setGeometry(100, 100, 800, 600)
 
@@ -35,20 +35,20 @@ class MotorControlGUI(QMainWindow):
 
         # Button for starting/stopping the plot
         self.plotButton = QPushButton("Start Plotting")
-        self.plotButton.clicked.connect(self.togglePlotting)
+        self.plotButton.clicked.connect(self.toggle_plotting)
         layout.addWidget(self.plotButton)
 
         # Central widget
-        centralWidget = QWidget()
-        centralWidget.setLayout(layout)
-        self.setCentralWidget(centralWidget)
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
         # Timer setup for updating the plot
         self.timer = QTimer()
-        self.timer.timeout.connect(self.updatePlot)
+        self.timer.timeout.connect(self.update_plot)
         self.isPlotting = False
 
-    def togglePlotting(self):
+    def toggle_plotting(self):
         if self.isPlotting:
             self.timer.stop()
             self.plotButton.setText("Start Plotting")
@@ -57,7 +57,7 @@ class MotorControlGUI(QMainWindow):
             self.plotButton.setText("Stop Plotting")
         self.isPlotting = not self.isPlotting
 
-    def updatePlot(self):
+    def update_plot(self):
         # This function should handle the data acquisition and update the plot
         # For now, it's a placeholder that does nothing
         pass

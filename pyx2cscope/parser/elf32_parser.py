@@ -2,12 +2,11 @@ import logging
 
 from elftools.elf.elffile import ELFFile
 
-from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
+from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
 
 
 class Elf32Parser(ElfParser):
-    """Class for parsing ELF files compatible with 32-bit architectures.
-    """
+    """Class for parsing ELF files compatible with 32-bit architectures."""
 
     def _get_structure_members_recursive(
         self,

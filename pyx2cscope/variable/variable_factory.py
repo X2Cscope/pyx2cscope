@@ -2,19 +2,19 @@
 import logging
 
 from mchplnet.lnet import LNet
-from pyx2cscope.parser.Elf16Parser import Elf16Parser
-from pyx2cscope.parser.Elf32Parser import Elf32Parser
+from pyx2cscope.parser.elf16_parser import Elf16Parser
+from pyx2cscope.parser.elf32_parser import Elf32Parser
 from pyx2cscope.variable.variable import (
     Variable,
     VariableFloat,
+    VariableInt8,
     VariableInt16,
     VariableInt32,
     VariableInt64,
+    VariableUint8,
     VariableUint16,
     VariableUint32,
     VariableUint64,
-    VariableInt8,
-    VariableUint8,
 )
 
 
@@ -44,7 +44,7 @@ class VariableFactory:
         """
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
-        parser = Elf16Parser if self.device_info.uc_width == 2 else Elf32Parser
+        parser = Elf16Parser if self.device_info.uc_width == self.device_info.MACHINE_16 else Elf32Parser
         self.parser = parser(elf_path)
 
     def get_var_list(self) -> list[str]:
@@ -108,7 +108,7 @@ class VariableFactory:
             "long long": VariableInt64,
             "long long unsigned int": VariableUint64,
             "long unsigned int": VariableUint32,
-            "pointer": VariableUint16 if self.device_info.uc_width == 2 else VariableUint32,  # TODO v 0.2.0
+            "pointer": VariableUint16 if self.device_info.uc_width == self.device_info.MACHINE_16 else VariableUint32,  # TODO v 0.2.0
             "short": VariableInt16,
             "short int": VariableInt16,
             "short unsigned int": VariableUint16,

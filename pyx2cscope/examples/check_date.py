@@ -1,8 +1,9 @@
 import logging
 import time
 
+from utils import get_com_port, get_elf_file_path
+
 from pyx2cscope.xc2scope import X2CScope
-from utils import get_elf_file_path, get_com_port
 
 logging.basicConfig(level=logging.DEBUG)
 

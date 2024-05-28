@@ -6,9 +6,9 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib import animation
+from utils import get_com_port, get_elf_file_path
 
 from pyx2cscope.xc2scope import X2CScope
-from utils import get_com_port, get_elf_file_path
 
 # Configure logging
 logging.basicConfig(
@@ -27,7 +27,7 @@ elf_file = get_elf_file_path()
 x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 # Get the required variables from the ELF file
 variable_current = x2cscope.get_variable("I_b")
-variable_VM1 = x2cscope.get_variable("V_M1")
+variable_vm1 = x2cscope.get_variable("V_M1")
 start_stop = x2cscope.get_variable("buttonStartStop.debounceCount")
 pot = x2cscope.get_variable("PotVal")
 CurrentSpeed = x2cscope.get_variable("CurrentSpeed")

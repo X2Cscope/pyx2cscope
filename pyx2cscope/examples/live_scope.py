@@ -3,9 +3,9 @@ import logging
 import time
 
 import matplotlib.pyplot as plt
+from utils import get_com_port, get_elf_file_path
 
 from pyx2cscope.xc2scope import X2CScope
-from utils import get_com_port, get_elf_file_path
 
 # Set up logging
 logging.basicConfig(
@@ -15,7 +15,7 @@ logging.basicConfig(
 
 # X2C Scope Set up
 elf_file = get_elf_file_path()
-x2cScope = X2CScope(port=get_com_port(), elf_file=elf_file)
+x2c_scope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
 # Define variables
 variables = [
@@ -27,9 +27,9 @@ variables = [
 ]
 
 for var in variables:
-    x2cScope.add_scope_channel(x2cScope.get_variable(var))
+    x2c_scope.add_scope_channel(x2c_scope.get_variable(var))
 
-x2cScope.set_sample_time(1)
+x2c_scope.set_sample_time(1)
 
 # Create the plot
 plt.ion()  # Turn on interactive mode
@@ -43,12 +43,12 @@ x2cScope.request_scope_data()
 
 while sample_count < max_sample:
     try:
-        if x2cScope.is_scope_data_ready():
+        if x2c_scope.is_scope_data_ready():
             sample_count += 1
             logging.info("Scope data is ready.")
 
             data_storage = {}
-            for channel, data in x2cScope.get_scope_channel_data(valid_data=False).items():
+            for channel, data in x2c_scope.get_scope_channel_data(valid_data=False).items():
                 data_storage[channel] = data
 
             ax.clear()
@@ -67,7 +67,7 @@ while sample_count < max_sample:
 
             if sample_count >= max_sample:
                 break
-            x2cScope.request_scope_data()
+            x2c_scope.request_scope_data()
 
     except Exception as e:
         logging.error(f"Error in main loop: {str(e)}")

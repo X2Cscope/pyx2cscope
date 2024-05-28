@@ -1,5 +1,4 @@
-"""This is the minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used.
-"""
+"""Minimal gui for the pyX2Cscope library, which is an example of how the library could be possibly used."""
 
 import logging
 import os
@@ -39,7 +38,7 @@ logging.basicConfig(level=logging.DEBUG)
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
 
-class X2Cscope_GUI(QMainWindow):
+class X2cscopeGui(QMainWindow):
     """Main GUI class for the pyX2Cscope application.
 
     This class creates and manages the GUI for pyX2Cscope, providing an interface
@@ -502,8 +501,7 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(f"Error update Scaled Value: {e}")
 
     def plot_data_update(self):
-        """Updates the data for plotting.
-        """
+        """Updates the data for plotting."""
         try:
             timestamp = datetime.now()
             if len(self.plot_data) > 0:
@@ -557,8 +555,7 @@ class X2Cscope_GUI(QMainWindow):
             logging.error(e)
 
     def plot_data_plot(self):
-        """Initializes and starts data plotting.
-        """
+        """Initializes and starts data plotting."""
         try:
             if not self.plot_data:
                 return
@@ -605,8 +602,7 @@ class X2Cscope_GUI(QMainWindow):
         msg_box.exec_()
 
     def sampletime_edit(self):
-        """Handles the editing of the sample time value.
-        """
+        """Handles the editing of the sample time value."""
         try:
             new_sample_time = int(self.sampletime.text())
             if new_sample_time != self.timerValue:
@@ -658,12 +654,12 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_variable_putram(self.combo_box1.currentText(), self.Value_var1)
 
     @pyqtSlot()
-    def handle_variable_getram(self, variable, Value_var):
+    def handle_variable_getram(self, variable, value_var):
         """Handle the retrieval of values from RAM for the specified variable.
 
         Args:
             variable: The variable to retrieve the value for.
-            Value_var: The QLineEdit widget to display the retrieved value.
+            value_var: The QLineEdit widget to display the retrieved value.
 
         This method retrieves the value of the specified variable from the microcontroller's RAM
         and updates respective variable with the retrieved value.
@@ -678,8 +674,8 @@ class X2Cscope_GUI(QMainWindow):
             if current_variable and current_variable != "None":
                 counter = self.x2cscope.get_variable(current_variable)
                 value = counter.get_value()
-                Value_var.setText(str(value))
-                if Value_var == self.Value_var1:
+                value_var.setText(str(value))
+                if value_var == self.Value_var1:
                     self.slider_var1.setValue(int(value))
 
                 # Check if the variable is already in the selected_variables list before adding it
@@ -692,18 +688,18 @@ class X2Cscope_GUI(QMainWindow):
             self.handle_error(error_message)
 
     @pyqtSlot()
-    def handle_variable_putram(self, variable, Value_var):
+    def handle_variable_putram(self, variable, value_var):
         """Handle the writing of values to RAM for the specified variable.
 
         Args:
             variable: The variable to write the value to.
-            Value_var: The QLineEdit widget to get the value from.
+            value_var: The QLineEdit widget to get the value from.
 
         This method writes the value to the microcontroller's RAM for the specified variable.
         """
         try:
             current_variable = variable
-            value = float(Value_var.text())
+            value = float(value_var.text())
 
             if current_variable and current_variable != "None":
                 counter = self.x2cscope.get_variable(current_variable)
@@ -909,6 +905,6 @@ class X2Cscope_GUI(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ex = X2Cscope_GUI()
+    ex = X2cscopeGui()
     ex.show()
     sys.exit(app.exec_())

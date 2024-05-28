@@ -1,11 +1,11 @@
-"""Example to change LED by changing the bit value on dspic33ck256mp508 Microchip Using SFR(Special function Register)
-"""
+"""Example to change LED by changing the bit value on dspic33ck256mp508 using SFR(Special function Register)."""
 
 import logging
 import time
 
-from pyx2cscope.xc2scope import X2CScope
 from utils import get_com_port, get_elf_file_path
+
+from pyx2cscope.xc2scope import X2CScope
 
 logging.basicConfig(
     level=0,
@@ -45,33 +45,33 @@ def example():
     try:
         # Initialize serial communication and other setup code...
 
-        SFR_LED = x2cscope.get_variable_raw(3702, "int", "sfr")  # LATE address from data sheet 3702
+        sfr_led = x2cscope.get_variable_raw(3702, "int", "sfr")  # LATE address from data sheet 3702
 
         # Get the initial LED state from SFR_LED or any other source
-        initial_led_state = SFR_LED.get_value()
+        initial_led_state = sfr_led.get_value()
         logging.debug("initial value: %s", initial_led_state)
         while 1:
             #########################
             # SET LED1 and LED2 High
             ##########################
             led1_high_value = sethigh(initial_led_state, LED1_BIT)
-            SFR_LED.set_value(led1_high_value)
+            sfr_led.set_value(led1_high_value)
 
-            initial_led_state = SFR_LED.get_value()
+            initial_led_state = sfr_led.get_value()
             led2_high_value = sethigh(initial_led_state, LED2_BIT)
-            SFR_LED.set_value(led2_high_value)
+            sfr_led.set_value(led2_high_value)
 
             #########################
             # SET LED1 and LED2 LOW
             ##########################
             time.sleep(1)
-            initial_led_state = SFR_LED.get_value()
+            initial_led_state = sfr_led.get_value()
             led1_low_value = setlow(initial_led_state, LED1_BIT)
-            SFR_LED.set_value(led1_low_value)
+            sfr_led.set_value(led1_low_value)
 
-            initial_led_state = SFR_LED.get_value()
+            initial_led_state = sfr_led.get_value()
             led2_low_value = setlow(initial_led_state, LED2_BIT)
-            SFR_LED.set_value(led2_low_value)
+            sfr_led.set_value(led2_low_value)
             time.sleep(1)
 
     except Exception as e:

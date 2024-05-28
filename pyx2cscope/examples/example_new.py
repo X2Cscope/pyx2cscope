@@ -1,14 +1,15 @@
 import time
 
+from utils import get_com_port, get_elf_file_path
+
 from pyx2cscope.xc2scope import X2CScope
-from utils import get_elf_file_path, get_com_port
 
 elf_file = get_elf_file_path()
 com_port = get_com_port()
-x2cScope = X2CScope(port=com_port, elf_file=elf_file)
-ser = x2cScope.interface
+x2c_scope = X2CScope(port=com_port, elf_file=elf_file)
+ser = x2c_scope.interface
 
-torque_current = x2cScope.get_variable("motor.idq.q")
+torque_current = x2c_scope.get_variable("motor.idq.q")
 
 while 1:
     start_time = time.time()

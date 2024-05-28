@@ -4,7 +4,7 @@ import re
 import subprocess
 from shutil import which
 
-from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
+from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
 
 
 class Elf16Parser(ElfParser):
@@ -95,8 +95,7 @@ class Elf16Parser(ElfParser):
         return cu_elements
 
     def _parse_cu(self):
-        """Parse a compilation unit.
-        """
+        """Parse a compilation unit."""
         while "compilation unit" in self.next_line.lower():
             offset = int(self.next_line.split("@")[1].strip()[:-1], 16)
             attributes = self._parse_cu_attributes()

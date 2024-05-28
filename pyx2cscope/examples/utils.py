@@ -1,5 +1,6 @@
-from configparser import ConfigParser
 import os
+from configparser import ConfigParser
+
 
 def get_config_file() -> ConfigParser:
     config_file = "config.ini"

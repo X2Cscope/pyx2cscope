@@ -4,18 +4,19 @@ from abc import abstractmethod
 from numbers import Number
 from typing import List
 
-import mchplnet.lnet as LNet
+from mchplnet import lnet
 
 
 class Variable:
     """Represents a variable in the MCU data memory."""
 
-    def __init__(self, l_net: LNet, address: int, array_size: int, name: str = None) -> None:
+    def __init__(self, l_net: lnet, address: int, array_size: int, name: str = None) -> None:
         """Initialize the Variable object.
 
         Args:
             l_net (LNet): LNet protocol that handles the communication with the target device.
             address (int): Address of the variable in the MCU memory.
+            array_size (int): The number of elements in the array, 0 in case of a plain variable.
             name (str, optional): Name of the variable. Defaults to None.
         """
         if type(self) == Variable:  # protect super class to be initiated directly
@@ -27,7 +28,7 @@ class Variable:
         self.array_size = array_size
 
     def __getitem__(self, item):
-        """Retrieve value regarding an indexed address from the variable's base address
+        """Retrieve value regarding an indexed address from the variable's base address.
 
         Subclasses will handle the conversion to the real value.
 
@@ -50,7 +51,7 @@ class Variable:
             logging.error(e)
 
     def __setitem__(self, key, value):
-        """Set the value regarding an indexed address from the variable's base address
+        """Set the value regarding an indexed address from the variable's base address.
 
         Args:
             key (int): the index of the variable.
@@ -68,6 +69,11 @@ class Variable:
             logging.error(e)
 
     def __len__(self):
+        """Get the number of elements on this variable.
+
+        In case the variable is an array, we will get the array size.
+        In case of a single object, we will get the value 0.
+        """
         return self.array_size
 
     def __repr__(self):
@@ -244,7 +250,7 @@ class VariableInt8(Variable):
         return True
 
     def get_width(self) -> int:
-        """INT8_T width is 1"""
+        """INT8_T width is 1."""
         return 1
 
     def set_value(self, value: int):
@@ -342,7 +348,7 @@ class VariableUint16(Variable):
         return False
 
     def get_width(self) -> int:
-        """UINT16_T width is 2"""
+        """UINT16_T width is 2."""
         return 2
 
     def set_value(self, value: int):
@@ -435,7 +441,7 @@ class VariableUint64(Variable):
         return False
 
     def get_width(self) -> int:
-        """UINT64 width is 8"""
+        """UINT64 width is 8."""
         return 8
 
     def set_value(self, value: int):
