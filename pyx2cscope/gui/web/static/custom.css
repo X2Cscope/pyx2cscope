@@ -1,0 +1,8 @@
+.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+#update_com_port {
+    margin-top: 2em;
+}
