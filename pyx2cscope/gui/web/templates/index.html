@@ -6,7 +6,7 @@
     <title>PyX2CScope</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="static/custom.css" rel="stylesheet" />
+    <link href="static/style.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container mt-5">
@@ -80,6 +80,13 @@
             </div>
             <div class="card-body">
                 <canvas id="scopeChart" width="400" height="200"></canvas>
+                <br>
+                <hr>
+                <div class="row justify-content-between">
+                    <div class="col-md-6">
+                        <select id="scopeSearch" style="width: 200px;"></select>
+                    </div>
+                </div>
                 <table class="table" id="scopeTable">
                     <thead>
                         <tr>
@@ -87,6 +94,7 @@
                             <th>Variable</th>
                             <th>Offset</th>
                             <th>Gain</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>

@@ -1,18 +1,49 @@
 let parameterCardEnabled = false;
 let scopeCardEnabled = false;
+let parameterRefreshInterval;
+
+function connect(){
+    let formData = new FormData();
+    formData.append('uart', $('#uart').val());
+    formData.append('elfFile', $('#elfFile')[0].files[0]);
+
+    $.ajax({
+        url: '/connect',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.status === 'success') {
+                parameterCardEnabled = true;
+                scopeCardEnabled = true;
+                $('#parameterCard').removeClass('disabled');
+                $('#scopeCard').removeClass('disabled');
+                $('#connect').html('Disconnect');
+            } else {
+                alert(response.status);
+            }
+        },
+        error: function() {
+            alert('Please select the UART and upload a .elf file.');
+        }
+    });
+}
+
+function disconnect(){
+    $.getJSON('/disconnect', function(data) {
+        parameterCardEnabled = false;
+        scopeCardEnabled = false;
+        $('#parameterCard').addClass('disabled');
+        $('#scopeCard').addClass('disabled');
+        $('#connect').html('Connect');
+    });
+}
 
 function update_scope_data() {
-
-    if (scopeCardEnabled) {
-        $.getJSON('/scope', function(data) {
-            let tableRows = '';
-            data.forEach(function(item) {
-                tableRows += `<tr><td>${item.time}</td><td>${item.value}</td><td><input type="checkbox" class="scope-checkbox" data-time="${item.time}" data-value="${item.value}"></td></tr>`;
-            });
-            $('#scopeTable tbody').html(tableRows);
-            updateChart();
-        });
-    }
+    $.getJSON('/scope', function(data) {
+        updateChart();
+    });
 }
 
 function update_parameter_data()
@@ -36,9 +67,6 @@ function update_parameter_data()
 }
 
 function setParameterRefreshInterval(){
-
-    let parameterRefreshInterval;
-
     // Handle the Refresh button click
     $('#paramRefresh').click(function() {
         update_parameter_data();
@@ -113,16 +141,36 @@ function load_uart() {
     });
 }
 
-function load_actions() {
+function initSetupCard(){
     $('#update_com_port').on('click', load_uart);
     $('#connect').on('click', function() {
         if($('#connect').html() === "Connect") connect();
         else disconnect();
     });
-    parameterSearch();
-    setParameterTableListeners();
-    setParameterRefreshInterval();
-     $('#parameterTable').on('blur', 'td[contenteditable="true"]', function() {
+}
+
+function init_cards() {
+    initSetupCard();
+    initParameterCard();
+    initScopeCard();
+}
+
+function setParameterTableListeners(){
+    // delete Row on button click
+    $('#parameterTableBody').on('click', '.remove', function () {
+
+        parameter = $(this).parent().siblings()[0].textContent;
+        $.getJSON('/delete-parameter-search',
+        {
+            param: parameter
+        },
+        function(data) {
+            update_parameter_data();
+        });
+    });
+
+    // update variable after focus
+    $('#parameterTable').on('blur', 'td[contenteditable="true"]', function() {
         // Call your getJSON function here
         parameter = $(this).siblings()[0].textContent;
         parameter_value = $(this).html();
@@ -132,6 +180,7 @@ function load_actions() {
             value: parameter_value
         });
     });
+
     // edit the number when on focus
     $('#parameterTable').on('keypress', 'td[contenteditable="true"]', function(e) {
         // Replace non-digit characters with an empty string
@@ -145,67 +194,7 @@ function load_actions() {
     });
 }
 
-function setParameterTableListeners(){
-
-    // edit cell
-    $('table td').change(function () {
-        alert("blur new value : "+$(this).text());
-    });
-
-    // delete Row
-    $('#parameterTableBody').on('click', '.remove', function () {
-
-        parameter = $(this).parent().siblings()[0].textContent;
-        $.getJSON('/delete-parameter-search',
-        {
-            param: parameter
-        },
-        function(data) {
-            update_parameter_data();
-        });
-        //$(this).parent('td.text-center').parent('tr.rowClass').remove();
-    });
-}
-
-function connect(){
-    let formData = new FormData();
-    formData.append('uart', $('#uart').val());
-    formData.append('elfFile', $('#elfFile')[0].files[0]);
-
-    $.ajax({
-        url: '/connect',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            if (response.status === 'success') {
-                parameterCardEnabled = true;
-                scopeCardEnabled = true;
-                $('#parameterCard').removeClass('disabled');
-                $('#scopeCard').removeClass('disabled');
-                $('#connect').html('Disconnect');
-            } else {
-                alert(response.status);
-            }
-        },
-        error: function() {
-            alert('Please select Local UART and upload a .hex file.');
-        }
-    });
-}
-
-function disconnect(){
-    $.getJSON('/disconnect', function(data) {
-        parameterCardEnabled = false;
-        scopeCardEnabled = false;
-        $('#parameterCard').addClass('disabled');
-        $('#scopeCard').addClass('disabled');
-        $('#connect').html('Connect');
-    });
-}
-
-function parameterSearch(){
+function initParameterSelect(){
     $('#parameterSearch').select2({
         placeholder: "Select a variable",
         allowClear: true,
@@ -236,7 +225,13 @@ function parameterSearch(){
     });
 }
 
-function parameterSearch(){
+function initParameterCard(){
+    initParameterSelect();
+    setParameterTableListeners();
+    setParameterRefreshInterval();
+}
+
+function initScopeSelect(){
     $('#scopeSearch').select2({
         placeholder: "Select a variable",
         allowClear: true,
@@ -256,21 +251,82 @@ function parameterSearch(){
 
     $('#scopeSearch').on('select2:select', function(e){
         parameter = $('#scopeSearch').select2('data')[0]['text'];
-        $.getJSON('/add-scope-search',
+        $.getJSON('/add-scope-variable',
         {
             param: parameter
         },
         function(data) {
             $('#scopeSearch').val(null).trigger('change');
-            update_scope_data();
+            addScopeTableParameter(parameter);
         });
     });
 }
 
-$(document).ready(function() {
+function addScopeTableParameter(parameter){
+    $("#scopeTable").find('tbody')
+        .append($('<tr>')
+            .attr('id', 'id_'+parameter)
+            .append($('<td>')
+                .html('<label class="switch"><input type="checkbox"><span class="slider round"></span></label>')
+            )
+            .append($('<td>').text(parameter))
+            .append($('<td>').attr('contenteditable', 'true').text('0'))
+            .append($('<td>').attr('contenteditable', 'true').text('1'))
+            .append($('<td>')
+                .attr('class', 'text-center')
+                .html('<button class="btn btn-danger remove" type="button">Remove</button>')
+            )
+        );
+}
 
-    load_actions();
+function setScopeTableListeners() {
+    // delete Row on button click
+    $('#scopeTableBody').on('click', '.remove', function () {
+
+        parameter = $(this).parent().siblings()[0].textContent;
+        $.getJSON('/delete-scope-variable',
+        {
+            param: parameter
+        },
+        function(data) {
+            update_parameter_data();
+        });
+        //$(this).parent('td.text-center').parent('tr.rowClass').remove();
+    });
+
+    // update variable after focus
+    $('#scopeTable').on('blur', 'td[contenteditable="true"]', function() {
+        // Call your getJSON function here
+        parameter = $(this).siblings()[0].textContent;
+        parameter_value = $(this).html();
+        //$.getJSON('/update-parameter-value',
+        //{
+        //    param: parameter,
+        //    value: parameter_value
+        //});
+    });
+
+    // edit the number when on focus
+    $('#scopeTable').on('keypress', 'td[contenteditable="true"]', function(e) {
+        // Replace non-digit characters with an empty string
+        if (e.which === 13) {
+            $(this).blur(); // Remove focus from the current contenteditable element
+            return false;
+        }
+        if ((e.which != 46 || $(this).val().indexOf('.') != -1) && (e.which < 48 || e.which > 57)) {
+            return false;
+        }
+    });
+}
+
+function initScopeCard(){
+    initScopeSelect();
+    setScopeTableListeners();
+    //setScopeRefreshInterval();
+}
+
+$(document).ready(function() {
+    init_cards();
     load_uart();
     update_scope_data();
-
 });

@@ -80,6 +80,10 @@ def update_parameter():
     print("Parameter:" + param + ", value:" + value)
     return jsonify({"status": "success"})
 
+@app.route('/add-scope-variable')
+def add_scope_variable():
+    return jsonify({"status": "success"})
+
 @app.route('/data')
 def get_data():
     global selected_data
