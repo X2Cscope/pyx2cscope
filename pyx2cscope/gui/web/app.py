@@ -13,6 +13,7 @@ data = [
 ]
 
 selected_data = []
+selected_scope_data = []
 
 scope_data = [
     {"time": i, "value": random.randint(0, 100)} for i in range(100)
@@ -48,7 +49,15 @@ def variables_autocomplete():
     filtered_options = [{"id":option['id'], "text":option['id']} for option in data if query.lower() in option['id'].lower()]
     return jsonify({"items": filtered_options})
 
-@app.route('/update-parameter-search')
+@app.route('/add-scope-search')
+def add_variable_on_scope():
+    global selected_scope_data
+    parameter = request.args.get('param', '')
+    if parameter not in selected_data:
+        selected_scope_data.append(parameter)
+    return jsonify({"status": "success"})
+
+@app.route('/add-parameter-search')
 def add_variable_on_parameter():
     global selected_data
     parameter = request.args.get('param', '')
@@ -63,6 +72,14 @@ def delete_variable_on_parameter():
     if parameter in selected_data:
         selected_data.remove(parameter)
     return jsonify({"status": "success"})
+
+@app.route('/update-parameter-value')
+def update_parameter():
+    param = request.args.get('param', '')
+    value = request.args.get('value', '')
+    print("Parameter:" + param + ", value:" + value)
+    return jsonify({"status": "success"})
+
 @app.route('/data')
 def get_data():
     global selected_data

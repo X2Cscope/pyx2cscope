@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PyX2CScope</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="static/custom.css" rel="stylesheet" />
 </head>
@@ -44,21 +44,23 @@
                     </div>
                     <div class="col-md-2">
                         <div class="btn-group">
-                          <button type="button" class="btn btn-primary">Refresh</button>
-                          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false">
+                          <button type="button" class="btn btn-primary" id="paramRefresh">Refresh</button>
+                          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                                  data-toggle="dropdown" aria-expanded="false">
                             <span class="sr-only">Toggle Dropdown</span>
                           </button>
                           <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#">Refresh</a>
-                            <a class="dropdown-item" href="#">Refresh @1s</a>
-                            <a class="dropdown-item" href="#">Refresh @3s</a>
-                            <a class="dropdown-item" href="#">Refresh @5s</a>
+                            <a class="dropdown-item" href="#" id="refreshNow">Refresh</a>
+                            <a class="dropdown-item" href="#" id="refresh1s">Refresh @1s</a>
+                            <a class="dropdown-item" href="#" id="refresh3s">Refresh @3s</a>
+                            <a class="dropdown-item" href="#" id="refresh5s">Refresh @5s</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Stop</a>
+                            <a class="dropdown-item" href="#" id="stopRefresh">Stop</a>
                           </div>
                         </div>
                     </div>
                 </div>
+                <br>
                 <table class="table" id="parameterTable">
                     <thead>
                         <tr>
@@ -77,22 +79,24 @@
                 Scope
             </div>
             <div class="card-body">
+                <canvas id="scopeChart" width="400" height="200"></canvas>
                 <table class="table" id="scopeTable">
                     <thead>
                         <tr>
-                            <th>Time</th>
-                            <th>Value</th>
-                            <th>Select</th>
+                            <th>Trigger</th>
+                            <th>Variable</th>
+                            <th>Offset</th>
+                            <th>Gain</th>
                         </tr>
                     </thead>
                     <tbody>
                     </tbody>
                 </table>
-                <canvas id="scopeChart" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="static/script.js"></script>
