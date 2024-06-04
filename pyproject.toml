@@ -40,6 +40,6 @@ lint.select = ["D"]
 # D - pydocstyle
 # PL - pylint
 lint.extend-select = ["I", "N", "F", "PL", "D"]
-
+exclude = ["mchplnet/*"]
 
 
