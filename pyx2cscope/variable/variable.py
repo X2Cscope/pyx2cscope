@@ -1,9 +1,23 @@
-"""variable.py!
+"""This module contains the Variable class and its subclasses.
 
-This module defines classes representing various types of variables in the MCU (Microcontroller Unit) data memory.
-Each variable type handles specific data representations and provides methods for reading, writing, and manipulating
-data stored in the MCU's memory using the LNet protocol.
+The Variable class represents a variable in the MCU data memory. It provides methods for retrieving and setting the value of the variable, as well as handling arrays of variables.
+
+Subclasses of the Variable class define specific types of variables, such as integers or floating-point numbers, and implement the necessary methods for converting between the byte representation of the variable and its actual value.
+
+Classes:
+    - Variable: Represents a variable in the MCU data memory.
+    - VariableInt8: Represents an 8-bit signed integer variable.
+    - VariableUint8: Represents an 8-bit unsigned integer variable.
+    - VariableInt16: Represents a 16-bit signed integer variable.
+    - VariableUint16: Represents a 16-bit unsigned integer variable.
+    - VariableInt32: Represents a 32-bit signed integer variable.
+    - VariableUint32: Represents a 32-bit unsigned integer variable.
+    - VariableInt64: Represents a 64-bit signed integer variable.
+    - VariableUint64: Represents a 64-bit unsigned integer variable.
+    - VariableFloat: Represents a floating-point number variable.
+
 """
+
 import logging
 import struct
 from abc import abstractmethod
@@ -193,7 +207,7 @@ class Variable:
         pass
 
     def is_array(self):
-        """Check if the variable is an array.
+        """Check if the variable is an array in the MCU.
 
         Returns:
             bool: True if the variable is an array, False otherwise.
@@ -273,8 +287,7 @@ class Variable:
 
 
 class VariableInt8(Variable):
-    """Represents an 8-bit signed integer variable in the MCU data memory."""
-
+    """Represents an 8-bit signed integer variable."""
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 8-bit signed integer.
 
@@ -284,19 +297,11 @@ class VariableInt8(Variable):
         return -128, 127
 
     def is_integer(self) -> bool:
-        """Check if the variable is an integer.
-
-        Returns:
-            bool: True, because this variable is an integer.
-        """
+        """Override: INT8 is an integer type."""
         return True
 
     def is_signed(self) -> bool:
-        """Check if the variable is signed.
-
-        Returns:
-            bool: True, because this variable is signed.
-        """
+        """Override: INT8 is a signed type."""
         return True
 
     def get_width(self) -> int:
@@ -339,7 +344,7 @@ class VariableInt8(Variable):
 
 
 class VariableUint8(Variable):
-    """Represents an 8-bit unsigned integer variable in the MCU data memory."""
+    """Represents an 8-bit unsigned integer variable."""
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 8-bit unsigned integer.
@@ -374,10 +379,9 @@ class VariableUint8(Variable):
         return 1
 
     def set_value(self, value: int):
-        """Set the value of the 8-bit unsigned integer.
+        """Override: Set the value of the variable in the MCU memory.
 
-        Args:
-            value (int): The value to set.
+        Checks if the value is within the allowed range and converts it to bytes representation.
         """
         try:
             self._check_value_range(value)
