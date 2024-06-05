@@ -1,3 +1,16 @@
+"""xc2scope.py
+
+This module defines the X2CScope class and related functions for interfacing with the X2C Scope tool.
+It provides methods to connect, configure, and retrieve data from the X2C Scope.
+
+Classes:
+    X2CScope: Class for interfacing with the X2C Scope tool.
+    TriggerConfig: Class to encapsulate trigger configuration settings.
+
+Functions:
+    get_variable_as_scope_channel(variable: Variable) -> ScopeChannel: Converts a Variable object to a ScopeChannel object.
+"""
+
 import logging
 from numbers import Number
 from typing import Dict, List
@@ -36,6 +49,25 @@ def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
     )
 
 
+class TriggerConfig:
+    """Configuration class for scope trigger settings.
+
+    Attributes:
+        variable (Variable): The variable to use as the trigger source.
+        trigger_level (int): The trigger level value.
+        trigger_mode (int): The trigger mode.
+        trigger_delay (int): The trigger delay.
+        trigger_edge (int): The trigger edge setting.
+    """
+
+    def __init__(self, variable: Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int):
+        self.variable = variable
+        self.trigger_level = trigger_level
+        self.trigger_mode = trigger_mode
+        self.trigger_delay = trigger_delay
+        self.trigger_edge = trigger_edge
+
+
 class X2CScope:
     """X2CScope class for interfacing with the X2C Scope tool.
 
@@ -54,13 +86,11 @@ class X2CScope:
     def __init__(self, elf_file: str, interface: InterfaceABC = None, *args, **kwargs):
         """Initialize the X2CScope instance.
 
-        No extra arguments are needed, but the interface accept it for future development.
-
         Args:
             elf_file (str): Path to the ELF file.
-            interface (InterfaceABC): communication interface to be used, defaults to None.
-            *args: arguments without key passed during the initialization.
-            **kwargs: key defined arguments.
+            interface (InterfaceABC): Communication interface to be used, defaults to None.
+            *args: Arguments without key passed during the initialization.
+            **kwargs: Key defined arguments.
         """
         i_type = interface if interface is not None else InterfaceType.SERIAL
         self.interface = InterfaceFactory.get_interface(interface_type=i_type, **kwargs)
@@ -168,40 +198,29 @@ class X2CScope:
         """
         self.scope_setup.reset_trigger()
 
-    def set_scope_trigger(
-        self,
-        variable: Variable,
-        trigger_level: int,
-        trigger_mode: int,
-        trigger_delay: int,
-        trigger_edge: int,
-    ):
+    def set_scope_trigger(self, config: TriggerConfig):
         """Set the scope trigger configuration.
 
         Args:
-            variable (Variable): The variable to use as the trigger source.
-            trigger_level (int): The trigger level value.
-            trigger_mode (int): The trigger mode.
-            trigger_delay (int): The trigger delay.
-            trigger_edge (int): The trigger edge setting.
+            config (TriggerConfig): Configuration object for trigger settings.
         """
         scope_trigger = ScopeTrigger(
-            channel=get_variable_as_scope_channel(variable),
-            trigger_level=trigger_level,
-            trigger_delay=trigger_delay,
-            trigger_edge=trigger_edge,
-            trigger_mode=trigger_mode,
+            channel=get_variable_as_scope_channel(config.variable),
+            trigger_level=config.trigger_level,
+            trigger_delay=config.trigger_delay,
+            trigger_edge=config.trigger_edge,
+            trigger_mode=config.trigger_mode,
         )
         self.scope_setup.set_trigger(scope_trigger)
 
     def clear_trigger(self):
-        """Reset Trigger configuration."""
+        """Reset the trigger configuration."""
         self.scope_setup.reset_trigger()
 
     def set_sample_time(self, sample_time: int):
-        """Defines a pre-scaler when the scope is in the sampling mode.
+        """Define a pre-scaler for sampling mode.
 
-        This can be used to extend total sampling time at cost of resolution.
+        This can be used to extend total sampling time at the cost of resolution.
         0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
 
         Args:
@@ -254,31 +273,28 @@ class X2CScope:
         trigger_position = self.get_trigger_position()
         return int(trigger_position - self.scope_setup.scope_trigger.trigger_delay)
 
-    def _calc_sda_used_length(self):
+    def _calc_sda_used_length(self) -> int:
         """Calculate the used length of the Scope Data Array (SDA).
 
         Returns:
-            The length of the used portion of the SDA.
+            int: The length of the used portion of the SDA.
         """
-        # SDA(Scope Data Array) - SDA % DSS(Data Set Size)
         bytes_not_used = self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
-    def _read_array_chunks(self):
+    def _read_array_chunks(self) -> List[bytearray]:
         """Read array chunks from the LNet layer.
 
         Returns:
-            A list containing the chunk data.
+            List[bytearray]: A list containing the chunk data.
         """
         chunk_data = []
-        data_type = 1  # it will always be 1 for array data
-        chunk_size = 253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
-        # Calculate the number of chunks
+        data_type = 1  # It will always be 1 for array data
+        chunk_size = 253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
         num_chunks = self._calc_sda_used_length() // chunk_size
         chunk_rest = self._calc_sda_used_length() % chunk_size
         loop = num_chunks if chunk_rest == 0 else num_chunks + 1
         for i in range(loop):
-            # Calculate the starting address for the current chunk
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
                 # Read the chunk of data
@@ -289,26 +305,32 @@ class X2CScope:
                 logging.error(f"Error reading chunk {i}: {str(e)}")
         return chunk_data
 
-    def read_array(self, address, data_type):
-        # TODO
+    def read_array(self, address: int, data_type: int) -> List[bytearray]:
+        """Read an array from the specified address in the MCU memory.
+
+        Args:
+            address (int): The address to read from.
+            data_type (int): The type of data to read.
+
+        Returns:
+            List[bytearray]: The read data.
+        """
         chunk_data = []
-        chunk_size = 253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
+        chunk_size = 253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
         for i in range(5):
-            # Calculate the starting address for the current chunk
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
-                # Read the chunk of data
                 data = self.lnet.get_ram_array(current_address, chunk_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
                 logging.error(f"Error reading chunk {i}: {str(e)}")
         return chunk_data
 
-    def _sort_channel_data(self, data) -> Dict[str, List[Number]]:
+    def _sort_channel_data(self, data: bytearray) -> Dict[str, List[Number]]:
         """Sort and convert the dataset byte order into channel byte order.
 
         Args:
-            data: The raw data read from the scope.
+            data (bytearray): The raw data read from the scope.
 
         Returns:
             Dict[str, List[Number]]: A dictionary with channel names as keys and lists of sorted data as values.
@@ -316,7 +338,7 @@ class X2CScope:
         channels = {channel: [] for channel in self.scope_setup.list_channels()}
         dataset_size = self.scope_setup.get_dataset_size()
         for i in range(0, len(data), dataset_size):
-            dataset = data[i : i + dataset_size]
+            dataset = data[i: i + dataset_size]
             j = 0
             for name, channel in self.scope_setup.list_channels().items():
                 k = channel.data_type_size + j
@@ -325,14 +347,14 @@ class X2CScope:
                 j = k
         return channels
 
-    def _filter_channels(self, channels):
+    def _filter_channels(self, channels: Dict[str, List[Number]]) -> Dict[str, List[Number]]:
         """Filter the channels to include only valid data.
 
         Args:
-            channels: The dictionary of channels with raw data.
+            channels (Dict[str, List[Number]]): The dictionary of channels with raw data.
 
         Returns:
-            The filtered dictionary of channels with valid data only.
+            Dict[str, List[Number]]: The filtered dictionary of channels with valid data only.
         """
         # there is no need to rearrange the byte vector
         if self.scope_setup.scope_trigger.trigger_delay < 0:
@@ -345,7 +367,7 @@ class X2CScope:
             channels[channel].extend(rest)
         return channels
 
-    def get_scope_channel_data(self, valid_data=True) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(self, valid_data: bool = True) -> Dict[str, List[Number]]:
         """Get the sorted and optionally filtered scope channel data.
 
         Args:

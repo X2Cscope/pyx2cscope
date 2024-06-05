@@ -47,6 +47,13 @@ class X2cscopeGui(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.initialize_variables()
+        self.create_widgets()
+        self.setup_layouts()
+        self.init_ui()
+
+    def initialize_variables(self):
+        """Initialize all the necessary variables."""
         self.offset_boxes = None
         self.plot_checkboxes = None
         self.scaled_value_boxes = None
@@ -60,81 +67,101 @@ class X2cscopeGui(QMainWindow):
         self.var_factory = None
         self.ser = None
         self.timerValue = 500
+        self.plot_window_open = False
+        self.error_shown = False
+        self.mutex = QMutex()
+        self.selected_var_indices = [0, 0, 0, 0, 0]
+        self.selected_variables = []
+        decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
+        self.decimal_validator = QtGui.QRegExpValidator(decimal_regex)
+        self.plot_data = deque(maxlen=250)
+        self.fig, self.ax, self.ani = None, None, None
+        self.settings = QSettings("MyCompany", "MyApp")
+        self.file_path: str = self.settings.value("file_path", "", type=str)
+
+    def create_widgets(self):
+        """Create all the necessary widgets."""
         self.port_combo = QComboBox()
-        self.layout = None
         self.slider_var1 = QSlider(Qt.Horizontal)
+        self.create_line_edits()
+        self.create_combo_boxes()
+        self.create_checkboxes()
+        self.create_buttons()
+        self.create_timers()
+
+    def create_line_edits(self):
+        """Create QLineEdit widgets."""
         self.Scaling_var5 = QLineEdit(self)
         self.Unit_var5 = QLineEdit(self)
         self.Scaling_var4 = QLineEdit(self)
         self.Value_var5 = QLineEdit(self)
         self.ScaledValue_var5 = QLineEdit(self)
-        self.combo_box5 = QComboBox()
-        self.Live_var5 = QCheckBox(self)
         self.ScaledValue_var4 = QLineEdit(self)
         self.Unit_var4 = QLineEdit(self)
         self.Value_var4 = QLineEdit(self)
-        self.combo_box4 = QComboBox()
         self.Value_var3 = QLineEdit(self)
-        self.Live_var3 = QCheckBox(self)
-        self.Live_var4 = QCheckBox(self)
         self.Unit_var3 = QLineEdit(self)
         self.ScaledValue_var3 = QLineEdit(self)
         self.Scaling_var3 = QLineEdit(self)
-        self.combo_box3 = QComboBox()
-        self.plot_button = QPushButton("Plot")
-        self.combo_box2 = QComboBox()
         self.ScaledValue_var2 = QLineEdit(self)
         self.Unit_var2 = QLineEdit(self)
         self.Scaling_var2 = QLineEdit(self)
         self.Value_var2 = QLineEdit(self)
-        self.Live_var2 = QCheckBox(self)
-        self.plot_var5_checkbox = QCheckBox()
-        self.plot_var2_checkbox = QCheckBox()
-        self.plot_var4_checkbox = QCheckBox()
-        self.plot_var3_checkbox = QCheckBox()
-        self.plot_var1_checkbox = QCheckBox()
         self.ScaledValue_var1 = QLineEdit(self)
         self.Scaling_var1 = QLineEdit(self)
         self.Unit_var1 = QLineEdit(self)
         self.Value_var1 = QLineEdit(self)
-        self.combo_box1 = QComboBox()
-        self.Live_var1 = QCheckBox(self)
-        self.mutex = QMutex()
-        self.grid_layout = QGridLayout()
-        self.box_layout = QHBoxLayout()
         self.offset_var1 = QLineEdit()
         self.offset_var2 = QLineEdit()
         self.offset_var3 = QLineEdit()
         self.offset_var4 = QLineEdit()
         self.offset_var5 = QLineEdit()
+        self.sampletime = QLineEdit()
+
+    def create_combo_boxes(self):
+        """Create QComboBox widgets."""
+        self.combo_box5 = QComboBox()
+        self.combo_box4 = QComboBox()
+        self.combo_box3 = QComboBox()
+        self.combo_box2 = QComboBox()
+        self.combo_box1 = QComboBox()
+        self.baud_combo = QComboBox()
+
+    def create_checkboxes(self):
+        """Create QCheckBox widgets."""
+        self.Live_var5 = QCheckBox(self)
+        self.Live_var4 = QCheckBox(self)
+        self.Live_var3 = QCheckBox(self)
+        self.Live_var2 = QCheckBox(self)
+        self.Live_var1 = QCheckBox(self)
+        self.plot_var5_checkbox = QCheckBox()
+        self.plot_var2_checkbox = QCheckBox()
+        self.plot_var4_checkbox = QCheckBox()
+        self.plot_var3_checkbox = QCheckBox()
+        self.plot_var1_checkbox = QCheckBox()
+
+    def create_buttons(self):
+        """Create QPushButton widgets."""
+        self.plot_button = QPushButton("Plot")
+        self.Connect_button = QPushButton("Connect")
+        self.select_file_button = QPushButton("Select elf file")
+
+    def create_timers(self):
+        """Create QTimer widgets."""
         self.timer5 = QTimer()
         self.timer4 = QTimer()
         self.timer3 = QTimer()
         self.timer2 = QTimer()
         self.timer1 = QTimer()
-        self.sampletime = QLineEdit()
-        self.Connect_button = QPushButton("Connect")
-        self.baud_combo = QComboBox()
-        self.select_file_button = QPushButton("Select elf file")
-        self.error_shown = False
-        self.plot_window_open = False
-        self.settings = QSettings("MyCompany", "MyApp")
-        self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.selected_var_indices = [
-            0,
-            0,
-            0,
-            0,
-            0,
-        ]  # List to store selected variable indices
-        self.selected_variables = []  # List to store selected variables
-        decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
-        self.decimal_validator = QtGui.QRegExpValidator(decimal_regex)
 
-        self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
-        self.fig, self.ax = None, None
-        self.ani = None
-        # Add self.labels on top
+    def setup_layouts(self):
+        """Setup the layouts for the widgets."""
+        self.layout = None
+        self.grid_layout = QGridLayout()
+        self.box_layout = QHBoxLayout()
+
+    # noinspection PyUnresolvedReferences
+    def init_ui(self):
         self.labels = [
             "Live",
             "Variable",
@@ -145,10 +172,6 @@ class X2cscopeGui(QMainWindow):
             "Unit",
             "Plot",
         ]
-        self.init_ui()
-
-    # noinspection PyUnresolvedReferences
-    def init_ui(self):
         # Create a central widget and layout
         central_widget = QWidget(self)
         self.layout = QGridLayout(central_widget)

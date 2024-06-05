@@ -1,3 +1,12 @@
+"""Main entry point for the X2Cscope application.
+
+This module initializes the logging configuration based on a command-line argument,
+sets up the PyQt5 application, and launches the X2Cscope GUI.
+
+Arguments:
+    LOG_LEVEL (optional): The logging level for the application (e.g., 'DEBUG', 'INFO').
+"""
+
 import logging
 import sys
 import argparse
@@ -9,7 +18,6 @@ from pyx2cscope.gui.web import app
 import pyx2cscope
 
 
-# Define a function to set the logging level based on a string argument
 def set_logging_level(args):
     """Sets the logging level based on the provided argument 'level'.
 

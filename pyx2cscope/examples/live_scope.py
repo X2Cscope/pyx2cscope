@@ -1,3 +1,5 @@
+"""This example can be used to try the scope functionality of pyX2Cscope and save the data acquisition in CSV file."""
+
 import csv
 import logging
 import time

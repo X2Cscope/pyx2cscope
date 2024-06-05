@@ -1,3 +1,9 @@
+"""variable.py!
+
+This module defines classes representing various types of variables in the MCU (Microcontroller Unit) data memory.
+Each variable type handles specific data representations and provides methods for reading, writing, and manipulating
+data stored in the MCU's memory using the LNet protocol.
+"""
 import logging
 import struct
 from abc import abstractmethod
@@ -73,6 +79,9 @@ class Variable:
 
         In case the variable is an array, we will get the array size.
         In case of a single object, we will get the value 0.
+
+        Returns:
+            int: The number of elements in the array or 0 for a single variable.
         """
         return self.array_size
 
@@ -80,6 +89,11 @@ class Variable:
         return self.name
 
     def _get_array_values(self):
+        """Retrieve all values of the array from the MCU memory.
+
+        Returns:
+            List[Number]: The list of values in the array.
+        """
         chunk_data = bytearray()
         data_type = self.get_width()  # width of the array elements.
         chunk_size = self.array_size * data_type
@@ -93,7 +107,7 @@ class Variable:
             chunk_size -= max_chunk
             i += size_to_read
         # split chunk_data into data_type sized groups
-        chunk_data = [chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)]
+        chunk_data = [chunk_data[j: j + data_type] for j in range(0, len(chunk_data), data_type)]
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
 
@@ -127,18 +141,33 @@ class Variable:
 
     @abstractmethod
     def _get_min_max_values(self) -> tuple[Number, Number]:
-        """Return a tuple with allowed [min, max] values."""
+        """Return a tuple with allowed [min, max] values.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum allowed values.
+        """
 
     @abstractmethod
     def bytes_to_value(self, data: bytearray) -> Number:
         """Convert the byte array to the respective variable number value.
 
+        Args:
+            data (bytearray): The byte array to convert.
+
         Returns:
-            Number: the variable value as a number
+            Number: the variable value as a number.
         """
         pass
 
     def bytes_to_array(self, data: bytearray) -> List[Number]:
+        """Convert a byte array to a list of numbers based on variable width.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            List[Number]: The list of numbers.
+        """
         array = []
         for i in range(0, len(data), self.get_width()):
             j = i + self.get_width()
@@ -164,6 +193,11 @@ class Variable:
         pass
 
     def is_array(self):
+        """Check if the variable is an array.
+
+        Returns:
+            bool: True if the variable is an array, False otherwise.
+        """
         return True if self.array_size > 0 else False
 
     def _get_value_raw(self, index=0) -> bytearray:
@@ -239,21 +273,46 @@ class Variable:
 
 
 class VariableInt8(Variable):
+    """Represents an 8-bit signed integer variable in the MCU data memory."""
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 8-bit signed integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return -128, 127
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: True, because this variable is signed.
+        """
         return True
 
     def get_width(self) -> int:
-        """INT8_T width is 1."""
+        """Get the width of the 8-bit signed integer.
+
+        Returns:
+            int: Width of the variable, which is 1.
+        """
         return 1
 
     def set_value(self, value: int):
+        """Set the value of the 8-bit signed integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             int_value = int(value)
@@ -265,6 +324,14 @@ class VariableInt8(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to an 8-bit signed integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 8-bit signed integer value.
+        """
         return int.from_bytes(data, "little", signed=True)
 
 
@@ -272,21 +339,46 @@ class VariableInt8(Variable):
 
 
 class VariableUint8(Variable):
+    """Represents an 8-bit unsigned integer variable in the MCU data memory."""
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 8-bit unsigned integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return 0, 255
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: False, because this variable is unsigned.
+        """
         return False
 
     def get_width(self) -> int:
-        """UINT8 width is 1."""
+        """Get the width of the 8-bit unsigned integer.
+
+        Returns:
+            int: Width of the variable, which is 1.
+        """
         return 1
 
     def set_value(self, value: int):
+        """Set the value of the 8-bit unsigned integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             int_value = int(value)
@@ -298,6 +390,14 @@ class VariableUint8(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to an 8-bit unsigned integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 8-bit unsigned integer value.
+        """
         return int.from_bytes(data, "little", signed=False)
 
 
@@ -305,21 +405,46 @@ class VariableUint8(Variable):
 
 
 class VariableInt16(Variable):
+    """Represents a 16-bit signed integer variable in the MCU data memory."""
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 16-bit signed integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return -32768, 32767
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: True, because this variable is signed.
+        """
         return True
 
     def get_width(self) -> int:
-        """INT16_T width is 2."""
+        """Get the width of the 16-bit signed integer.
+
+        Returns:
+            int: Width of the variable, which is 2.
+        """
         return 2
 
     def set_value(self, value: int):
+        """Set the value of the 16-bit signed integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             int_value = int(value)
@@ -331,6 +456,14 @@ class VariableInt16(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 16-bit signed integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 16-bit signed integer value.
+        """
         return int.from_bytes(data, "little", signed=True)
 
 
@@ -338,20 +471,46 @@ class VariableInt16(Variable):
 
 
 class VariableUint16(Variable):
+    """Represents a 16-bit unsigned integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 16-bit unsigned integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return 0, 65535
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: False, because this variable is unsigned.
+        """
         return False
 
     def get_width(self) -> int:
-        """UINT16_T width is 2."""
+        """Get the width of the 16-bit unsigned integer.
+
+        Returns:
+            int: Width of the variable, which is 2.
+        """
         return 2
 
     def set_value(self, value: int):
+        """Set the value of the 16-bit unsigned integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             int_value = int(value)
@@ -363,6 +522,14 @@ class VariableUint16(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 16-bit unsigned integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 16-bit unsigned integer value.
+        """
         return int.from_bytes(data, "little", signed=False)
 
 
@@ -370,20 +537,46 @@ class VariableUint16(Variable):
 
 
 class VariableInt32(Variable):
+    """Represents a 32-bit signed integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 32-bit signed integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return -0x80000000, 0x7FFFFFFF
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: True, because this variable is signed.
+        """
         return True
 
     def get_width(self) -> int:
-        """INT32_T width is 4."""
+        """Get the width of the 32-bit signed integer.
+
+        Returns:
+            int: Width of the variable, which is 4.
+        """
         return 4
 
     def set_value(self, value: int):
+        """Set the value of the 32-bit signed integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             int_value = int(value)
@@ -395,6 +588,14 @@ class VariableInt32(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 32-bit signed integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 32-bit signed integer value.
+        """
         return int.from_bytes(data, "little", signed=True)
 
 
@@ -402,20 +603,46 @@ class VariableInt32(Variable):
 
 
 class VariableUint32(Variable):
+    """Represents a 32-bit unsigned integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 32-bit unsigned integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return 0, 0xFFFFFFFF
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: False, because this variable is unsigned.
+        """
         return False
 
     def get_width(self) -> int:
-        """UINT32_T width is 4."""
+        """Get the width of the 32-bit unsigned integer.
+
+        Returns:
+            int: Width of the variable, which is 4.
+        """
         return 4
 
     def set_value(self, value: int):
+        """Set the value of the 32-bit unsigned integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             int_value = int(value)
@@ -427,24 +654,58 @@ class VariableUint32(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 32-bit unsigned integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 32-bit unsigned integer value.
+        """
         return int.from_bytes(data, "little", signed=False)
 
 
 class VariableUint64(Variable):
+    """Represents a 64-bit unsigned integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 64-bit unsigned integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return 0, 0xFFFFFFFFFFFFFFFF
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: False, because this variable is unsigned.
+        """
         return False
 
     def get_width(self) -> int:
-        """UINT64 width is 8."""
+        """Get the width of the 64-bit unsigned integer.
+
+        Returns:
+            int: Width of the variable, which is 8.
+        """
         return 8
 
     def set_value(self, value: int):
+        """Set the value of the 64-bit unsigned integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             bytes_data = value.to_bytes(
@@ -455,24 +716,58 @@ class VariableUint64(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 64-bit unsigned integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 64-bit unsigned integer value.
+        """
         return int.from_bytes(data, "little", signed=False)
 
 
 class VariableInt64(Variable):
+    """Represents a 64-bit signed integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 64-bit signed integer.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return -0x8000000000000000, 0x7FFFFFFFFFFFFFFF
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: True, because this variable is an integer.
+        """
         return True
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: True, because this variable is signed.
+        """
         return True
 
     def get_width(self) -> int:
-        """INT64 width is 8."""
+        """Get the width of the 64-bit signed integer.
+
+        Returns:
+            int: Width of the variable, which is 8.
+        """
         return 8
 
     def set_value(self, value: int):
+        """Set the value of the 64-bit signed integer.
+
+        Args:
+            value (int): The value to set.
+        """
         try:
             self._check_value_range(value)
             bytes_data = value.to_bytes(
@@ -483,6 +778,14 @@ class VariableInt64(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 64-bit signed integer.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 64-bit signed integer value.
+        """
         return int.from_bytes(data, "little", signed=True)
 
 
@@ -490,20 +793,46 @@ class VariableInt64(Variable):
 
 
 class VariableFloat(Variable):
+    """Represents a 32-bit floating point variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 32-bit floating point.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
         return -0x80000000, 0x7FFFFFFF
 
     def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: False, because this variable is a float.
+        """
         return False
 
     def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: True, because this variable is signed.
+        """
         return True
 
     def get_width(self) -> int:
-        """FLOAT width is 4."""
+        """Get the width of the 32-bit floating point.
+
+        Returns:
+            int: Width of the variable, which is 4.
+        """
         return 4
 
     def set_value(self, value: float):
+        """Set the value of the 32-bit floating point.
+
+        Args:
+            value (float): The value to set.
+        """
         try:
             float_value = float(value)
             bytes_data = bytearray(struct.pack("f", float_value))
@@ -512,4 +841,12 @@ class VariableFloat(Variable):
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 32-bit floating point.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 32-bit floating point value.
+        """
         return struct.unpack("f", data)[0]
