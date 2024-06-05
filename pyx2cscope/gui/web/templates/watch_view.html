@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col-md-3">
+        <select id="parameterSearch" style="width:100%;"></select>
+    </div>
+    <div class="col-md-1">
+        <button type="button" id="parameterSave" class="btn btn-secondary">Save</button>
+    </div>
+    <div class="col-md-1">
+        <button type="button" id="parameterLoad" class="btn btn-secondary">Load</button>
+    </div>
+    <div class="col-md-2 offset-5">
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary" id="paramRefresh">Refresh</button>
+          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                  data-toggle="dropdown" aria-expanded="false">
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="#" id="refreshNow">Refresh</a>
+            <a class="dropdown-item" href="#" id="refresh1s">Refresh @1s</a>
+            <a class="dropdown-item" href="#" id="refresh3s">Refresh @3s</a>
+            <a class="dropdown-item" href="#" id="refresh5s">Refresh @5s</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#" id="stopRefresh">Stop</a>
+          </div>
+        </div>
+    </div>
+</div>
+<br>
+<table class="table" id="parameterTable">
+    <thead>
+        <tr>
+            <th>Live</th>
+            <th>Variable</th>
+            <th>Type</th>
+            <th>Value</th>
+            <th>Scaling</th>
+            <th>Offset</th>
+            <th>Scaled Value</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="parameterTableBody">
+    </tbody>
+</table>
+

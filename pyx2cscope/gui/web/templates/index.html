@@ -1,112 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyX2CScope</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="static/style.css" rel="stylesheet" />
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-header">
-                Setup
-            </div>
-            <div class="card-body">
-                <div class="form-row">
-                    <div class="form-group col-md-3">
-                        <label for="uart">Select UART:</label>
-                        <select class="form-control" id="uart">
-                            <option value="default">Select UART</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="button" class="btn btn-primary" id="update_com_port">Refresh</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="elfFile">Select .elf file:</label>
-                    <input type="file" accept=".elf" class="form-control-file" id="elfFile">
-                </div>
-                <button id="connect" class="btn btn-primary">Connect</button>
-            </div>
-        </div>
-        <div class="card mt-3 disabled" id="parameterCard">
-            <div class="card-header">
-                Parameter
-            </div>
-            <div class="card-body">
-                <div class="row justify-content-between">
-                    <div class="col-md-6">
-                        <select id="parameterSearch" style="width: 200px;"></select>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="btn-group">
-                          <button type="button" class="btn btn-primary" id="paramRefresh">Refresh</button>
-                          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
-                                  data-toggle="dropdown" aria-expanded="false">
-                            <span class="sr-only">Toggle Dropdown</span>
-                          </button>
-                          <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#" id="refreshNow">Refresh</a>
-                            <a class="dropdown-item" href="#" id="refresh1s">Refresh @1s</a>
-                            <a class="dropdown-item" href="#" id="refresh3s">Refresh @3s</a>
-                            <a class="dropdown-item" href="#" id="refresh5s">Refresh @5s</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#" id="stopRefresh">Stop</a>
-                          </div>
-                        </div>
-                    </div>
-                </div>
-                <br>
-                <table class="table" id="parameterTable">
-                    <thead>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Value</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="parameterTableBody">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card mt-3 disabled" id="scopeCard">
-            <div class="card-header">
-                Scope
-            </div>
-            <div class="card-body">
-                <canvas id="scopeChart" width="400" height="200"></canvas>
-                <br>
-                <hr>
-                <div class="row justify-content-between">
-                    <div class="col-md-6">
-                        <select id="scopeSearch" style="width: 200px;"></select>
-                    </div>
-                </div>
-                <table class="table" id="scopeTable">
-                    <thead>
-                        <tr>
-                            <th>Trigger</th>
-                            <th>Variable</th>
-                            <th>Offset</th>
-                            <th>Gain</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        Setup
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="static/script.js"></script>
-</body>
-</html>
+    <div class="card-body">
+        {% include 'setup.html' %}
+    </div>
+</div>
+<div class="card mt-3" id="parameterCard">
+    <div class="card-header">
+        Parameter
+    </div>
+    <div class="card-body">
+        {% include 'watch_view.html' %}
+    </div>
+</div>
+<div class="card mt-3 disabled" id="scopeCard">
+    <div class="card-header">
+        Scope
+    </div>
+    <div class="card-body">
+         {% include 'scope_view.html' %}
+    </div>
+</div>
+
+{% endblock content %}

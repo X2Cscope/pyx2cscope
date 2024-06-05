@@ -5,30 +5,17 @@ import serial.tools.list_ports
 
 app = Flask(__name__)
 
-# Simulated data for demonstration purposes
-data = [
-    {"id": "motor.A", "text": random.randint(0, 100)},
-    {"id": "motor.B", "text": random.randint(0, 100)},
-    {"id": "motor.C", "text": random.randint(0, 100)}
+watch_data = [ { 'live':0, 'variable':'test', 'type':'int64', 'value':3,
+                 'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
 ]
 
-selected_data = []
-selected_scope_data = []
-
-scope_data = [
-    {"time": i, "value": random.randint(0, 100)} for i in range(100)
-]
-
-@app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', title="pyX2Cscope")
 
-@app.route('/serial-ports')
 def list_serial_ports():
     ports = serial.tools.list_ports.comports()
     return jsonify([port.device for port in ports])
 
-@app.route('/connect', methods=['POST'])
 def connect():
     uart = request.form.get('uart')
     elf_file = request.files.get('elfFile')
@@ -38,16 +25,70 @@ def connect():
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
 
-@app.route('/disconnect')
 def disconnect():
     return jsonify({"status": "success"})
 
-@app.route('/variables', methods=["POST","GET"])
 def variables_autocomplete():
     global data
     query = request.args.get('q', '')
     filtered_options = [{"id":option['id'], "text":option['id']} for option in data if query.lower() in option['id'].lower()]
     return jsonify({"items": filtered_options})
+
+def watch_view_data():
+    return {'data': watch_data}
+
+def get_variable(parameter):
+    return { 'live':0, 'variable':parameter, 'type':'int64', 'value':random.randint(0, 100),
+                 'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
+
+def watch_view_add():
+    parameter = request.args.get('param', '')
+    if not any(_data['variable'] == parameter for _data in watch_data):
+        watch_data.append(get_variable(parameter))
+    return jsonify({"status": "success"})
+
+def watch_view_remove():
+    parameter = request.args.get('param', '')
+    for _data in watch_data:
+        if _data['variable'] == parameter:
+            watch_data.remove(_data)
+            break
+    return jsonify({"status": "success"})
+
+def watch_view_update():
+    param = request.args.get('param', '')
+    value = request.args.get('value', '')
+    print("Parameter:" + param + ", value:" + value)
+    return jsonify({"status": "success"})
+
+
+app.add_url_rule('/', view_func=index)
+app.add_url_rule('/serial-ports', view_func=list_serial_ports)
+app.add_url_rule('/connect', view_func=connect, methods=['POST'])
+app.add_url_rule('/disconnect', view_func=disconnect)
+app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST","GET"])
+app.add_url_rule('/watch-view-data', view_func=watch_view_data, methods=["POST","GET"])
+app.add_url_rule('/watch-view-add', view_func=watch_view_add, methods=["POST","GET"])
+app.add_url_rule('/watch-view-remove', view_func=watch_view_remove, methods=["POST","GET"])
+app.add_url_rule('/watch-view-update', view_func=watch_view_update, methods=["POST","GET"])
+
+
+# Simulated data for demonstration purposes
+data = [
+    {"id": "motor.A", "text": random.randint(0, 100)},
+    {"id": "motor.B", "text": random.randint(0, 100)},
+    {"id": "motor.C", "text": random.randint(0, 100)}
+]
+
+
+selected_scope_data = []
+
+scope_data = [
+    {"time": i, "value": random.randint(0, 100)} for i in range(100)
+]
+
+
+
 
 @app.route('/add-scope-search')
 def add_variable_on_scope():
@@ -55,29 +96,6 @@ def add_variable_on_scope():
     parameter = request.args.get('param', '')
     if parameter not in selected_data:
         selected_scope_data.append(parameter)
-    return jsonify({"status": "success"})
-
-@app.route('/add-parameter-search')
-def add_variable_on_parameter():
-    global selected_data
-    parameter = request.args.get('param', '')
-    if parameter not in selected_data:
-        selected_data.append(parameter)
-    return jsonify({"status": "success"})
-
-@app.route('/delete-parameter-search')
-def delete_variable_on_parameter():
-    global selected_data
-    parameter = request.args.get('param', '')
-    if parameter in selected_data:
-        selected_data.remove(parameter)
-    return jsonify({"status": "success"})
-
-@app.route('/update-parameter-value')
-def update_parameter():
-    param = request.args.get('param', '')
-    value = request.args.get('value', '')
-    print("Parameter:" + param + ", value:" + value)
     return jsonify({"status": "success"})
 
 @app.route('/add-scope-variable')

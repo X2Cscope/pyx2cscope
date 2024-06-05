@@ -1,6 +1,6 @@
-let parameterCardEnabled = false;
+
 let scopeCardEnabled = false;
-let parameterRefreshInterval;
+
 
 function connect(){
     let formData = new FormData();
@@ -66,37 +66,6 @@ function update_parameter_data()
     }
 }
 
-function setParameterRefreshInterval(){
-    // Handle the Refresh button click
-    $('#paramRefresh').click(function() {
-        update_parameter_data();
-    });
-
-    // Handle the dropdown items click
-    $('#refreshNow').click(function() {
-        update_parameter_data();
-    });
-
-    $('#refresh1s').click(function() {
-        clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(update_parameter_data, 1000);
-    });
-
-    $('#refresh3s').click(function() {
-        clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(update_parameter_data, 3000);
-    });
-
-    $('#refresh5s').click(function() {
-        clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(update_parameter_data, 5000);
-    });
-
-    $('#stopRefresh').click(function() {
-        clearInterval(parameterRefreshInterval);
-    });
-}
-
 function updateChart() {
     let selectedData = [];
     $('.scope-checkbox:checked').each(function() {
@@ -151,84 +120,7 @@ function initSetupCard(){
 
 function init_cards() {
     initSetupCard();
-    initParameterCard();
     initScopeCard();
-}
-
-function setParameterTableListeners(){
-    // delete Row on button click
-    $('#parameterTableBody').on('click', '.remove', function () {
-
-        parameter = $(this).parent().siblings()[0].textContent;
-        $.getJSON('/delete-parameter-search',
-        {
-            param: parameter
-        },
-        function(data) {
-            update_parameter_data();
-        });
-    });
-
-    // update variable after focus
-    $('#parameterTable').on('blur', 'td[contenteditable="true"]', function() {
-        // Call your getJSON function here
-        parameter = $(this).siblings()[0].textContent;
-        parameter_value = $(this).html();
-        $.getJSON('/update-parameter-value',
-        {
-            param: parameter,
-            value: parameter_value
-        });
-    });
-
-    // edit the number when on focus
-    $('#parameterTable').on('keypress', 'td[contenteditable="true"]', function(e) {
-        // Replace non-digit characters with an empty string
-        if (e.which === 13) {
-            $(this).blur(); // Remove focus from the current contenteditable element
-            return false;
-        }
-        if ((e.which != 46 || $(this).val().indexOf('.') != -1) && (e.which < 48 || e.which > 57)) {
-            return false;
-        }
-    });
-}
-
-function initParameterSelect(){
-    $('#parameterSearch').select2({
-        placeholder: "Select a variable",
-        allowClear: true,
-        ajax: {
-            url: 'variables',
-            dataType: 'json',
-            delay: 250,
-            processResults: function (data) {
-                return {
-                    results: data.items
-                };
-            },
-            cache: true
-        },
-        minimumInputLength: 3
-    });
-
-    $('#parameterSearch').on('select2:select', function(e){
-        parameter = $('#parameterSearch').select2('data')[0]['text'];
-        $.getJSON('/add-parameter-search',
-        {
-            param: parameter
-        },
-        function(data) {
-            $('#parameterSearch').val(null).trigger('change');
-            update_parameter_data();
-        });
-    });
-}
-
-function initParameterCard(){
-    initParameterSelect();
-    setParameterTableListeners();
-    setParameterRefreshInterval();
 }
 
 function initScopeSelect(){

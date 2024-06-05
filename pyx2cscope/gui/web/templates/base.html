@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+    {% include 'header.html' %}
+  </head>
+  <body>
+    <div class="container mt-5">
+      {% block content %}{% endblock %}
+    </div>
+    <footer class="footer bg-secondary text-center text-lg-start mt-4">
+        <div class="container p-3">
+            {% include 'footer.html' %}
+        </div>
+    </footer>
+    {% include 'scripts.html' %}
+  </body>
+</html>
