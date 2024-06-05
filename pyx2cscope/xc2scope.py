@@ -56,6 +56,7 @@ class TriggerConfig:
     """
 
     def __init__(self, variable: Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int):
+        """Variable intilization for Trigger Config."""
         self.variable = variable
         self.trigger_level = trigger_level
         self.trigger_mode = trigger_mode

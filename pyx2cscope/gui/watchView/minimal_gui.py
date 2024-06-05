@@ -46,6 +46,7 @@ class X2cscopeGui(QMainWindow):
     """
 
     def __init__(self):
+        """Initialize the main GUI class for pyX2Cscope."""
         super().__init__()
         self.initialize_variables()
         self.create_widgets()
@@ -162,6 +163,7 @@ class X2cscopeGui(QMainWindow):
 
     # noinspection PyUnresolvedReferences
     def init_ui(self):
+        """Initialize the user interface."""
         self.labels = [
             "Live",
             "Variable",
@@ -290,15 +292,15 @@ class X2cscopeGui(QMainWindow):
             self.offset_var5,
         ]
 
-        for row, (
-            live_var,
-            combo_box,
-            value_var,
-            scaling_var,
-            offset_var,
-            scaled_value_var,
-            unit_var,
-            plot_checkbox,
+        for row_index, (
+                live_var,
+                combo_box,
+                value_var,
+                scaling_var,
+                offset_var,
+                scaled_value_var,
+                unit_var,
+                plot_checkbox,
         ) in enumerate(
             zip(
                 self.live_checkboxes,
@@ -323,19 +325,20 @@ class X2cscopeGui(QMainWindow):
             offset_var.setValidator(self.decimal_validator)
             scaled_value_var.setText("0")
             scaled_value_var.setValidator(self.decimal_validator)
-            if row > 1:
-                row += 1
-            self.grid_layout.addWidget(live_var, row, 0)
-            self.grid_layout.addWidget(combo_box, row, 1)
-            if row == 1:
-                self.grid_layout.addWidget(self.slider_var1, row + 1, 0, 1, 7)
 
-            self.grid_layout.addWidget(value_var, row, 2)
-            self.grid_layout.addWidget(scaling_var, row, 3)
-            self.grid_layout.addWidget(offset_var, row, 4)
-            self.grid_layout.addWidget(scaled_value_var, row, 5)
-            self.grid_layout.addWidget(unit_var, row, 6)
-            self.grid_layout.addWidget(plot_checkbox, row, 7)
+            adjusted_row = row_index + 1 if row_index > 1 else row_index
+
+            self.grid_layout.addWidget(live_var, adjusted_row, 0)
+            self.grid_layout.addWidget(combo_box, adjusted_row, 1)
+            if adjusted_row == 1:
+                self.grid_layout.addWidget(self.slider_var1, adjusted_row + 1, 0, 1, 7)
+
+            self.grid_layout.addWidget(value_var, adjusted_row, 2)
+            self.grid_layout.addWidget(scaling_var, adjusted_row, 3)
+            self.grid_layout.addWidget(offset_var, adjusted_row, 4)
+            self.grid_layout.addWidget(scaled_value_var, adjusted_row, 5)
+            self.grid_layout.addWidget(unit_var, adjusted_row, 6)
+            self.grid_layout.addWidget(plot_checkbox, adjusted_row, 7)
 
         self.plot_button.clicked.connect(self.plot_data_plot)
 
@@ -910,7 +913,7 @@ class X2cscopeGui(QMainWindow):
         plt.close(self.fig)
         self.plot_window_open = False
 
-    def closeEvent(self, event):
+    def close_event(self, event):
         """Handle the event when the main window is closed.
 
         Args:

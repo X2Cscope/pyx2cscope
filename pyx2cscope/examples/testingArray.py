@@ -1,3 +1,4 @@
+"""This example is for testing array functionality implementation."""
 import logging
 
 import matplotlib.pyplot as plt

@@ -1,4 +1,8 @@
+"""This script demonstrates the simplest usage of the pyX2Cscope library to interact with variables in an ELF file via a serial connection.
 
+The script initializes the X2CScope with a specified serial port and ELF file, retrieves specific variables,
+reads their values, and writes new values to them.
+"""
 from pyx2cscope.xc2scope import X2CScope
 
 # initialize the x2cscope with serial port, by default baud rate is 115200,

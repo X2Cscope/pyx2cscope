@@ -1,3 +1,12 @@
+"""This module provides abstract base classes and data structures for parsing ELF files.
+
+Classes:
+    VariableInfo: A data class representing information about a variable in an ELF file.
+    ElfParser: An abstract base class for parsing ELF files and extracting variable information.
+
+The module is designed to be extended by specific implementations for different ELF file formats.
+"""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -12,6 +21,7 @@ class VariableInfo:
         type (str): The data type of the variable.
         byte_size (int): The size of the variable in bytes.
         address (int): The memory address of the variable.
+        array_size (int): The size of the array if the variable is an array, default is 0.
     """
 
     name: str
