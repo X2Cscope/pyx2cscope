@@ -2,6 +2,7 @@
 import logging
 
 from mchplnet.lnet import LNet
+
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 from pyx2cscope.parser.elf32_parser import Elf32Parser
 from pyx2cscope.variable.variable import (

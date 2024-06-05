@@ -1,14 +1,8 @@
-"""xc2scope.py
+"""X2CScope module for interfacing with the X2C firmware enabled embedded systems.
 
-This module defines the X2CScope class and related functions for interfacing with the X2C Scope tool.
-It provides methods to connect, configure, and retrieve data from the X2C Scope.
-
-Classes:
-    X2CScope: Class for interfacing with the X2C Scope tool.
-    TriggerConfig: Class to encapsulate trigger configuration settings.
-
-Functions:
-    get_variable_as_scope_channel(variable: Variable) -> ScopeChannel: Converts a Variable object to a ScopeChannel object.
+The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers.
+It is utilising LNET protocol to communicate with the firmware. LNET protocoll is implemented in the mchplnet package.
+The package provides an interface to connect to the firmware, set up scope channels, request data, and process received data.
 """
 
 import logging
@@ -20,6 +14,7 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
+
 from pyx2cscope.variable.variable import Variable
 from pyx2cscope.variable.variable_factory import VariableFactory
 
