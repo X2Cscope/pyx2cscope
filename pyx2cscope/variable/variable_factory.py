@@ -5,18 +5,11 @@ from mchplnet.lnet import LNet
 
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 from pyx2cscope.parser.elf32_parser import Elf32Parser
-from pyx2cscope.variable.variable import (
-    Variable,
-    VariableFloat,
-    VariableInt8,
-    VariableInt16,
-    VariableInt32,
-    VariableInt64,
-    VariableUint8,
-    VariableUint16,
-    VariableUint32,
-    VariableUint64,
-)
+from pyx2cscope.variable.variable import (Variable, VariableFloat,
+                                          VariableInt8, VariableInt16,
+                                          VariableInt32, VariableInt64,
+                                          VariableUint8, VariableUint16,
+                                          VariableUint32, VariableUint64)
 
 
 class VariableFactory:

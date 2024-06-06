@@ -3,6 +3,7 @@ import logging
 
 import matplotlib.pyplot as plt
 from utils import get_com_port, get_elf_file_path
+
 from xc2scope import X2CScope
 
 # Set up logging
