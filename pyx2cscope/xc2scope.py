@@ -6,6 +6,7 @@ The package provides an interface to connect to the firmware, set up scope chann
 """
 
 import logging
+from dataclasses import dataclass
 from numbers import Number
 from typing import Dict, List
 
@@ -14,7 +15,6 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
-
 from pyx2cscope.variable.variable import Variable
 from pyx2cscope.variable.variable_factory import VariableFactory
 
@@ -43,32 +43,22 @@ def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
         is_signed=variable.is_signed(),
     )
 
-
+@dataclass
 class TriggerConfig:
     """Configuration class for scope trigger settings.
 
     Attributes:
         variable (Variable): The variable to use as the trigger source.
-        trigger_level (int): The trigger level value.
-        trigger_mode (int): The trigger mode.
-        trigger_delay (int): The trigger delay.
-        trigger_edge (int): The trigger edge setting.
+        trigger_level (int): The trigger level value for specified channel.
+        trigger_mode (int): 0 Auto, 1 Triggered (default) .
+        trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
+        trigger_edge (int): Rising 0, falling 1.
     """
-
-    def __init__(
-        self,
-        variable: Variable,
-        trigger_level: int,
-        trigger_mode: int,
-        trigger_delay: int,
-        trigger_edge: int,
-    ):
-        """Variable intilization for Trigger Config."""
-        self.variable = variable
-        self.trigger_level = trigger_level
-        self.trigger_mode = trigger_mode
-        self.trigger_delay = trigger_delay
-        self.trigger_edge = trigger_edge
+    variable: Variable
+    trigger_level: int = 0
+    trigger_mode: int = 1
+    trigger_delay: int = 0
+    trigger_edge: int = 0
 
 
 class X2CScope:
