@@ -25,6 +25,7 @@ x2cscope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 LED1_BIT = 12  # LATE12
 LED2_BIT = 13  # LATE13
 
+
 def set_led_state(value, bit_position, state):
     """Set or clear the specified bit in the value based on the state.
 
@@ -42,6 +43,7 @@ def set_led_state(value, bit_position, state):
         value &= ~(1 << bit_position)  # Clear the bit to 0 (AND operation)
     return value
 
+
 def sethigh(value, bit_position):
     """Set a specific bit to high (1).
 
@@ -53,6 +55,7 @@ def sethigh(value, bit_position):
         int: The modified register value with the bit set to high.
     """
     return set_led_state(value, bit_position, True)
+
 
 def setlow(value, bit_position):
     """Set a specific bit to low (0).
@@ -66,11 +69,14 @@ def setlow(value, bit_position):
     """
     return set_led_state(value, bit_position, False)
 
+
 def example():
     """Main function to demonstrate LED state changes using SFR."""
     try:
         # Initialize the variable for the Special Function Register (SFR) controlling the LEDs
-        sfr_led = x2cscope.get_variable_raw(3702, "int", "sfr")  # LATE address from data sheet 3702
+        sfr_led = x2cscope.get_variable_raw(
+            3702, "int", "sfr"
+        )  # LATE address from data sheet 3702
 
         # Get the initial LED state from the SFR
         initial_led_state = sfr_led.get_value()
@@ -103,6 +109,7 @@ def example():
     except Exception as e:
         # Handle any other exceptions
         logging.error("Error occurred: {}".format(e))
+
 
 if __name__ == "__main__":
     example()

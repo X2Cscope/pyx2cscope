@@ -52,11 +52,14 @@ DATA_COLLECTION_LIMIT = 400  # Limit for data collection iterations
 # Create a figure and axes for live plotting
 fig, ax = plt.subplots()
 
+
 def on_close(event):
     """Handle plot window close event to reset start/stop variable."""
     start_stop.set_value(10)
 
+
 # fig.canvas.mpl_connect('close_event', on_close)
+
 
 def update_plot(frame):
     """Update the plot with the latest data from the queues.
@@ -83,8 +86,10 @@ def update_plot(frame):
     ax.set_title("Live Current and Voltage Plot")
     ax.legend(loc="upper right")
 
+
 # Create the animation
 ani = animation.FuncAnimation(fig, update_plot, interval=1)  # Timer interval set to 2ms
+
 
 def data_collection():
     """Collect data from the MCU and store it in queues for plotting."""
@@ -103,6 +108,7 @@ def data_collection():
 
     pot.set_value(250)
     start_stop.set_value(10)
+
 
 # Create a thread for data collection
 data_collection_thread = threading.Thread(target=data_collection)

@@ -45,7 +45,11 @@ class VariableFactory:
         """
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
-        parser = Elf16Parser if self.device_info.uc_width == self.device_info.MACHINE_16 else Elf32Parser
+        parser = (
+            Elf16Parser
+            if self.device_info.uc_width == self.device_info.MACHINE_16
+            else Elf32Parser
+        )
         self.parser = parser(elf_path)
 
     def get_var_list(self) -> list[str]:
@@ -109,7 +113,9 @@ class VariableFactory:
             "long long": VariableInt64,
             "long long unsigned int": VariableUint64,
             "long unsigned int": VariableUint32,
-            "pointer": VariableUint16 if self.device_info.uc_width == self.device_info.MACHINE_16 else VariableUint32,  # TODO v 0.2.0
+            "pointer": VariableUint16
+            if self.device_info.uc_width == self.device_info.MACHINE_16
+            else VariableUint32,  # TODO v 0.2.0
             "short": VariableInt16,
             "short int": VariableInt16,
             "short unsigned int": VariableUint16,
@@ -127,4 +133,6 @@ class VariableFactory:
             var_type = var_type.lower().replace("_", "")
             return type_factory[var_type](self.l_net, address, array_size, name)
         except IndexError:
-            raise Exception(f"Type {var_type} not found. Cannot select the right variable representation.")
+            raise Exception(
+                f"Type {var_type} not found. Cannot select the right variable representation."
+            )

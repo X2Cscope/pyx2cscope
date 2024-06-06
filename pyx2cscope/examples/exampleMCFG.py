@@ -27,12 +27,22 @@ elf_file = get_elf_file_path()  # Get the path to the ELF file from the utility 
 x2c_scope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 
 # Retrieve specific variables from the MCU
-speed_reference = x2c_scope.get_variable("motor.apiData.velocityReference")  # Get the speed reference variable
-speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")  # Get the measured speed variable
+speed_reference = x2c_scope.get_variable(
+    "motor.apiData.velocityReference"
+)  # Get the speed reference variable
+speed_measured = x2c_scope.get_variable(
+    "motor.apiData.velocityMeasured"
+)  # Get the measured speed variable
 
 # Attempt to read the value of the 'speedReference' variable and log the result
 try:
-    speed_reference_value = speed_reference.get_value()  # Read the value of the speed reference variable
-    logging.debug(f"Speed Reference Value: {speed_reference_value}")  # Log the retrieved value
+    speed_reference_value = (
+        speed_reference.get_value()
+    )  # Read the value of the speed reference variable
+    logging.debug(
+        f"Speed Reference Value: {speed_reference_value}"
+    )  # Log the retrieved value
 except Exception as e:
-    logging.debug(f"Error reading speed reference value: {e}")  # Log any exceptions that occur
+    logging.debug(
+        f"Error reading speed reference value: {e}"
+    )  # Log any exceptions that occur

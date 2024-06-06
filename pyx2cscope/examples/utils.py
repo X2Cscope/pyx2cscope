@@ -26,10 +26,11 @@ def get_config_file() -> ConfigParser:
         # Create the config file with the default value
         config["ELF_FILE"] = default_path
         config["COM_PORT"] = default_com
-        with open(config_file, 'w') as configfile:
+        with open(config_file, "w") as configfile:
             config.write(configfile)
         print(f"Config file '{config_file}' created with default values")
     return config
+
 
 def get_elf_file_path(key="path") -> str:
     """Gets the path to the ELF file from the configuration.
@@ -42,6 +43,7 @@ def get_elf_file_path(key="path") -> str:
     """
     config = get_config_file()
     return config["ELF_FILE"][key]
+
 
 def get_com_port(key="com_port") -> str:
     """Gets the COM port from the configuration.

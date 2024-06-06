@@ -293,14 +293,14 @@ class X2cscopeGui(QMainWindow):
         ]
 
         for row_index, (
-                live_var,
-                combo_box,
-                value_var,
-                scaling_var,
-                offset_var,
-                scaled_value_var,
-                unit_var,
-                plot_checkbox,
+            live_var,
+            combo_box,
+            value_var,
+            scaling_var,
+            offset_var,
+            scaled_value_var,
+            unit_var,
+            plot_checkbox,
         ) in enumerate(
             zip(
                 self.live_checkboxes,
@@ -351,12 +351,20 @@ class X2cscopeGui(QMainWindow):
         self.layout.addWidget(self.plot_button, 6, 0)
         # self.grid_layout.addWidget(self.slider_var2, 8, 0, 1, 6)
 
-        for timer, combo_box, value_var in zip(self.timer_list, self.combo_boxes, self.Value_var_boxes):
-            timer.timeout.connect(lambda cb=combo_box, v_var=value_var: self.handle_var_update(cb.currentText(), v_var))
+        for timer, combo_box, value_var in zip(
+            self.timer_list, self.combo_boxes, self.Value_var_boxes
+        ):
+            timer.timeout.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_var_update(
+                    cb.currentText(), v_var
+                )
+            )
 
         for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
             combo_box.currentIndexChanged.connect(
-                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(self.VariableList[cb], v_var)
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(
+                    self.VariableList[cb], v_var
+                )
             )
 
         for (
@@ -432,7 +440,9 @@ class X2cscopeGui(QMainWindow):
             scaling.editingFinished.connect(connect_editing_finished())
 
         for timer, live_var in zip(self.timer_list, self.live_checkboxes):
-            live_var.stateChanged.connect(lambda state, lv=live_var, tm=timer: self.var_live(lv, tm))
+            live_var.stateChanged.connect(
+                lambda state, lv=live_var, tm=timer: self.var_live(lv, tm)
+            )
 
         # OffsetSet.
 
@@ -532,7 +542,9 @@ class X2cscopeGui(QMainWindow):
             timestamp = datetime.now()
             if len(self.plot_data) > 0:
                 last_timestamp = self.plot_data[-1][0]
-                time_diff = (timestamp - last_timestamp).total_seconds() * 1000  # to convert time in ms.
+                time_diff = (
+                    timestamp - last_timestamp
+                ).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
             self.plot_data.append(
@@ -565,9 +577,13 @@ class X2cscopeGui(QMainWindow):
             self.ax.clear()
             start = time.time()
 
-            for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
+            for value, combo_box, plot_var in zip(
+                values, self.combo_boxes, self.plot_checkboxes
+            ):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.ax.plot(np.cumsum(time_diffs), value, label=combo_box.currentText())
+                    self.ax.plot(
+                        np.cumsum(time_diffs), value, label=combo_box.currentText()
+                    )
 
             self.ax.set_xlabel("Time (ms)")
             self.ax.set_ylabel("Value")
@@ -589,13 +605,23 @@ class X2cscopeGui(QMainWindow):
             def initialize_plot():
                 self.fig, self.ax = plt.subplots()
 
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1, cache_frame_data=False)
+                self.ani = FuncAnimation(
+                    self.fig, self.update_plot, interval=1, cache_frame_data=False
+                )
                 logging.debug(self.ani)
                 plt.xticks(rotation=45)
-                self.ax.axhline(0, color="black", linewidth=0.5)  # Reference line at y=0
-                self.ax.axvline(0, color="black", linewidth=0.5)  # Reference line at x=0
-                plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
-                plt.show(block=False)  # Use block=False to prevent the GUI from freezing
+                self.ax.axhline(
+                    0, color="black", linewidth=0.5
+                )  # Reference line at y=0
+                self.ax.axvline(
+                    0, color="black", linewidth=0.5
+                )  # Reference line at x=0
+                plt.subplots_adjust(
+                    bottom=0.15, left=0.15
+                )  # Adjust plot window position
+                plt.show(
+                    block=False
+                )  # Use block=False to prevent the GUI from freezing
 
             if self.plot_window_open:
                 if self.fig is not None and plt.fignum_exists(self.fig.number):
@@ -653,8 +679,12 @@ class X2cscopeGui(QMainWindow):
                 counter = self.x2cscope.get_variable(counter)
                 value = counter.get_value()
                 value_var.setText(str(value))
-                if value_var == self.Value_var1:  # Check if it's Variable 1 being updated
-                    self.slider_var1.setValue(int(value))  # Set slider to the updated value
+                if (
+                    value_var == self.Value_var1
+                ):  # Check if it's Variable 1 being updated
+                    self.slider_var1.setValue(
+                        int(value)
+                    )  # Set slider to the updated value
                 self.plot_data_update()
         except Exception as e:
             error_message = f"Error: {e}"
@@ -863,7 +893,9 @@ class X2cscopeGui(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
+            self.x2cscope = X2CScope(
+                port=port, elf_file=self.file_path, baud_rate=baud_rate
+            )
             self.ser = self.x2cscope.interface
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:

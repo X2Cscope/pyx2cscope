@@ -30,7 +30,9 @@ from mchplnet import lnet
 class Variable:
     """Represents a variable in the MCU data memory."""
 
-    def __init__(self, l_net: lnet, address: int, array_size: int, name: str = None) -> None:
+    def __init__(
+        self, l_net: lnet, address: int, array_size: int, name: str = None
+    ) -> None:
         """Initialize the Variable object.
 
         Args:
@@ -121,7 +123,9 @@ class Variable:
             chunk_size -= max_chunk
             i += size_to_read
         # split chunk_data into data_type sized groups
-        chunk_data = [chunk_data[j: j + data_type] for j in range(0, len(chunk_data), data_type)]
+        chunk_data = [
+            chunk_data[j: j + data_type] for j in range(0, len(chunk_data), data_type)
+        ]
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
 
@@ -151,7 +155,9 @@ class Variable:
         """
         min_value, max_value = self._get_min_max_values()
         if value > max_value or value < min_value:
-            raise ValueError(f"Value = {value}: Expected in range {min_value} to {max_value}")
+            raise ValueError(
+                f"Value = {value}: Expected in range {min_value} to {max_value}"
+            )
 
     @abstractmethod
     def _get_min_max_values(self) -> tuple[Number, Number]:
@@ -235,7 +241,9 @@ class Variable:
             bytes_data = self.l_net.get_ram(address, self.get_width())
             data_length = len(bytes_data)
             if data_length > self.get_width():  # double check validity
-                raise ValueError(f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}")
+                raise ValueError(
+                    f"Expecting only {self.get_width()} bytes from LNET, but got {data_length}"
+                )
             return bytes_data
         except Exception as e:
             logging.error(e)
@@ -288,6 +296,7 @@ class Variable:
 
 class VariableInt8(Variable):
     """Represents an 8-bit signed integer variable."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 8-bit signed integer.
 
@@ -476,7 +485,6 @@ class VariableInt16(Variable):
 
 class VariableUint16(Variable):
     """Represents a 16-bit unsigned integer variable in the MCU data memory."""
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 16-bit unsigned integer.
 
@@ -542,7 +550,6 @@ class VariableUint16(Variable):
 
 class VariableInt32(Variable):
     """Represents a 32-bit signed integer variable in the MCU data memory."""
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 32-bit signed integer.
 
@@ -608,7 +615,6 @@ class VariableInt32(Variable):
 
 class VariableUint32(Variable):
     """Represents a 32-bit unsigned integer variable in the MCU data memory."""
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 32-bit unsigned integer.
 
@@ -671,7 +677,6 @@ class VariableUint32(Variable):
 
 class VariableUint64(Variable):
     """Represents a 64-bit unsigned integer variable in the MCU data memory."""
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 64-bit unsigned integer.
 
@@ -733,7 +738,6 @@ class VariableUint64(Variable):
 
 class VariableInt64(Variable):
     """Represents a 64-bit signed integer variable in the MCU data memory."""
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 64-bit signed integer.
 
@@ -798,7 +802,6 @@ class VariableInt64(Variable):
 
 class VariableFloat(Variable):
     """Represents a 32-bit floating point variable in the MCU data memory."""
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 32-bit floating point.
 

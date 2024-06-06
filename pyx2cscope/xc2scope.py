@@ -55,7 +55,14 @@ class TriggerConfig:
         trigger_edge (int): The trigger edge setting.
     """
 
-    def __init__(self, variable: Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int):
+    def __init__(
+        self,
+        variable: Variable,
+        trigger_level: int,
+        trigger_mode: int,
+        trigger_delay: int,
+        trigger_edge: int,
+    ):
         """Variable intilization for Trigger Config."""
         self.variable = variable
         self.trigger_level = trigger_level
@@ -249,7 +256,10 @@ class X2CScope:
         """
         scope_data = self.lnet.load_parameters()
         logging.debug(scope_data)
-        return scope_data.scope_state == 0 or scope_data.data_array_pointer == scope_data.data_array_used_length
+        return (
+            scope_data.scope_state == 0
+            or scope_data.data_array_pointer == scope_data.data_array_used_length
+        )
 
     def get_trigger_position(self) -> int:
         """Get the position of the trigger event.
@@ -258,7 +268,9 @@ class X2CScope:
             int: The index position of the trigger event.
         """
         scope_data: LoadScopeData = self.lnet.scope_data
-        return int(scope_data.trigger_event_position / self.scope_setup.get_dataset_size())
+        return int(
+            scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
+        )
 
     def get_delay_trigger_position(self) -> int:
         """Get the position of the delay trigger.
@@ -275,7 +287,9 @@ class X2CScope:
         Returns:
             int: The length of the used portion of the SDA.
         """
-        bytes_not_used = self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+        bytes_not_used = (
+            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+        )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
     def _read_array_chunks(self) -> List[bytearray]:
@@ -286,7 +300,9 @@ class X2CScope:
         """
         chunk_data = []
         data_type = 1  # It will always be 1 for array data
-        chunk_size = 253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
+        chunk_size = (
+            253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
+        )
         num_chunks = self._calc_sda_used_length() // chunk_size
         chunk_rest = self._calc_sda_used_length() % chunk_size
         loop = num_chunks if chunk_rest == 0 else num_chunks + 1
@@ -312,7 +328,9 @@ class X2CScope:
             List[bytearray]: The read data.
         """
         chunk_data = []
-        chunk_size = 253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
+        chunk_size = (
+            253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
+        )
         for i in range(5):
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
@@ -334,7 +352,7 @@ class X2CScope:
         channels = {channel: [] for channel in self.scope_setup.list_channels()}
         dataset_size = self.scope_setup.get_dataset_size()
         for i in range(0, len(data), dataset_size):
-            dataset = data[i: i + dataset_size]
+            dataset = data[i : i + dataset_size]
             j = 0
             for name, channel in self.scope_setup.list_channels().items():
                 k = channel.data_type_size + j
@@ -343,7 +361,9 @@ class X2CScope:
                 j = k
         return channels
 
-    def _filter_channels(self, channels: Dict[str, List[Number]]) -> Dict[str, List[Number]]:
+    def _filter_channels(
+        self, channels: Dict[str, List[Number]]
+    ) -> Dict[str, List[Number]]:
         """Filter the channels to include only valid data.
 
         Args:
@@ -363,7 +383,9 @@ class X2CScope:
             channels[channel].extend(rest)
         return channels
 
-    def get_scope_channel_data(self, valid_data: bool = True) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(
+        self, valid_data: bool = True
+    ) -> Dict[str, List[Number]]:
         """Get the sorted and optionally filtered scope channel data.
 
         Args:
