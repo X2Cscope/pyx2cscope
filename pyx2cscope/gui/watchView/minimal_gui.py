@@ -37,6 +37,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
+THRESHOLD_INDEX = 3  # Replacing the magic number with a constant variable
+
 
 class X2cscopeGui(QMainWindow):
     """Main GUI class for the pyX2Cscope application.
@@ -134,26 +136,54 @@ class X2cscopeGui(QMainWindow):
         self.layout = QGridLayout(central_widget)
 
         # Initialize Port layout
-        port_layout = QGridLayout()
+        self.setup_port_layout()
+        self.setup_baud_layout()
+        self.setup_sampletime_layout()
+        self.setup_grid_labels()
+        self.setup_grid_widgets()
+
+        self.plot_button.clicked.connect(self.plot_data_plot)
+
+        # Adding everything to the main layout
+        self.layout.addLayout(self.port_layout, 1, 0)
+        self.layout.addLayout(self.baud_layout, 2, 0)
+        self.layout.addWidget(self.select_file_button, 3, 0)
+        self.layout.addLayout(self.box_layout, 4, 0)
+        self.layout.addLayout(self.grid_layout, 5, 0)
+        self.layout.addWidget(self.plot_button, 6, 0)
+
+        # Timer and variable connections
+        self.setup_connections()
+
+        # Set the central widget and example window properties
+        self.setCentralWidget(central_widget)
+        self.setWindowTitle("pyX2Cscope")
+        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")))
+        self.refresh_ports()
+
+    def setup_port_layout(self):
+        """Setup the port selection layout."""
+        self.port_layout = QGridLayout()
         port_label = QLabel("Select Port:")
         refresh_button = self.create_button(self.refresh_ports, 25, 25, "refresh.png")
-        port_layout.addWidget(port_label, 0, 0)
-        port_layout.addWidget(self.port_combo, 0, 1)
-        port_layout.addWidget(refresh_button, 0, 2)
+        self.port_layout.addWidget(port_label, 0, 0)
+        self.port_layout.addWidget(self.port_combo, 0, 1)
+        self.port_layout.addWidget(refresh_button, 0, 2)
 
-        # Initialize Baud layout
-        baud_layout = QGridLayout()
+    def setup_baud_layout(self):
+        """Setup the baud rate selection layout."""
+        self.baud_layout = QGridLayout()
         baud_label = QLabel("Select Baud Rate:")
-        baud_layout.addWidget(baud_label, 0, 0)
-        baud_layout.addWidget(self.baud_combo, 0, 1)
+        self.baud_layout.addWidget(baud_label, 0, 0)
+        self.baud_layout.addWidget(self.baud_combo, 0, 1)
         self.baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
         self.baud_combo.setCurrentIndex(self.baud_combo.findText("115200", Qt.MatchFixedString))
 
-        # Configure connect button
+    def setup_sampletime_layout(self):
+        """Setup the sample time layout."""
         self.Connect_button.clicked.connect(self.toggle_connection)
         self.Connect_button.setFixedSize(100, 30)
 
-        # Configure sample time
         self.sampletime.setText("500")
         self.sampletime.setValidator(self.decimal_validator)
         self.sampletime.editingFinished.connect(self.sampletime_edit)
@@ -165,11 +195,13 @@ class X2cscopeGui(QMainWindow):
         self.box_layout.addStretch(1)
         self.box_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
-        # Add labels to the grid layout
+    def setup_grid_labels(self):
+        """Setup the labels for the grid layout."""
         for col, label in enumerate(self.labels):
             self.grid_layout.addWidget(QLabel(label), 0, col)
 
-        # Add widgets to the grid layout
+    def setup_grid_widgets(self):
+        """Setup the widgets for the grid layout."""
         for row_index, widgets in enumerate(zip(
                 self.live_checkboxes, self.combo_boxes, self.value_var_boxes,
                 self.scaling_boxes, self.offset_boxes, self.scaled_value_boxes,
@@ -179,8 +211,8 @@ class X2cscopeGui(QMainWindow):
                 widget.setEnabled(col_index != 1 or row_index == 1)  # Enable combo box only if row_index == 1
                 if col_index == 1:
                     widget.setFixedWidth(350)
-                if col_index in {2, 3, 4, 5}:
-                    widget.setText("0" if col_index != 3 else "1")
+                if col_index in {2, THRESHOLD_INDEX, 4, 5}:
+                    widget.setText("0" if col_index != THRESHOLD_INDEX else "1")
                     widget.setValidator(self.decimal_validator)
 
                 self.grid_layout.addWidget(widget, row_index + (row_index > 1), col_index)
@@ -189,17 +221,8 @@ class X2cscopeGui(QMainWindow):
             if row_index == 1:
                 self.grid_layout.addWidget(self.slider_var1, row_index + 1, 0, 1, 7)
 
-        self.plot_button.clicked.connect(self.plot_data_plot)
-
-        # Adding everything to the main layout
-        self.layout.addLayout(port_layout, 1, 0)
-        self.layout.addLayout(baud_layout, 2, 0)
-        self.layout.addWidget(self.select_file_button, 3, 0)
-        self.layout.addLayout(self.box_layout, 4, 0)
-        self.layout.addLayout(self.grid_layout, 5, 0)
-        self.layout.addWidget(self.plot_button, 6, 0)
-
-        # Timer and variable connections
+    def setup_connections(self):
+        """Setup the connections for timers and variables."""
         for timer, combo_box, value_var in zip(self.timer_list, self.combo_boxes, self.value_var_boxes):
             timer.timeout.connect(lambda cb=combo_box, v_var=value_var: self.handle_var_update(cb.currentText(), v_var))
             combo_box.currentIndexChanged.connect(
@@ -220,12 +243,6 @@ class X2cscopeGui(QMainWindow):
 
         for timer, live_var in zip(self.timer_list, self.live_checkboxes):
             live_var.stateChanged.connect(lambda state, lv=live_var, tm=timer: self.var_live(lv, tm))
-
-        # Set the central widget and example window properties
-        self.setCentralWidget(central_widget)
-        self.setWindowTitle("pyX2Cscope")
-        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")))
-        self.refresh_ports()
 
     def create_button(self, slot, width, height, icon_path=None):
         """Helper function to create a QPushButton with an icon."""
