@@ -43,6 +43,7 @@ def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
         is_signed=variable.is_signed(),
     )
 
+
 @dataclass
 class TriggerConfig:
     """Configuration class for scope trigger settings.
@@ -54,6 +55,7 @@ class TriggerConfig:
         trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
         trigger_edge (int): Rising 0, falling 1.
     """
+
     variable: Variable
     trigger_level: int = 0
     trigger_mode: int = 1
