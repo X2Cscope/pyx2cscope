@@ -2,9 +2,9 @@
 
 import logging
 
+from mchplnet.lnet import LNet
 from services.frame_device_info import DeviceInfo
 
-from mchplnet.lnet import LNet
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 from pyx2cscope.parser.elf32_parser import Elf32Parser
 from pyx2cscope.variable.variable import (
@@ -19,6 +19,7 @@ from pyx2cscope.variable.variable import (
     VariableUint32,
     VariableUint64,
 )
+
 
 
 class VariableFactory:
