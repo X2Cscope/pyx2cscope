@@ -1,5 +1,8 @@
 """Variable Factory returns the respective variable type according to the variable type found at the elf file."""
+
 import logging
+
+from services.frame_device_info import DeviceInfo
 
 from mchplnet.lnet import LNet
 from pyx2cscope.parser.elf16_parser import Elf16Parser
@@ -46,7 +49,7 @@ class VariableFactory:
         self.device_info = self.l_net.get_device_info()
         parser = (
             Elf16Parser
-            if self.device_info.uc_width == self.device_info.MACHINE_16
+            if self.device_info.uc_width == DeviceInfo.MACHINE_16
             else Elf32Parser
         )
         self.parser = parser(elf_path)
