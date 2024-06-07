@@ -2,8 +2,11 @@ from flask import Flask, render_template, request, jsonify
 import random
 import serial
 import serial.tools.list_ports
+import logging
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+# log.setLevel(logging.ERROR)
 
 watch_data = [ { 'live':0, 'variable':'test', 'type':'int64', 'value':3,
                  'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
@@ -34,12 +37,20 @@ def variables_autocomplete():
     filtered_options = [{"id":option['id'], "text":option['id']} for option in data if query.lower() in option['id'].lower()]
     return jsonify({"items": filtered_options})
 
-def watch_view_data():
-    return {'data': watch_data}
+def read_variable(_data):
+    # pyX2CScope read variable
+    _data["value"] = random.randint(0, 100)
+    _data["scaled_value"] = _data["value"] * _data["scaling"] + _data["offset"]
 
 def get_variable(parameter):
-    return { 'live':0, 'variable':parameter, 'type':'int64', 'value':random.randint(0, 100),
+    return {'live':0, 'variable':parameter, 'type':'int64', 'value':random.randint(0, 100),
                  'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
+
+def watch_view_data():
+    for _data in watch_data:
+        if _data["live"]:
+            read_variable(_data)
+    return {'data': watch_data}
 
 def watch_view_add():
     parameter = request.args.get('param', '')
@@ -57,8 +68,21 @@ def watch_view_remove():
 
 def watch_view_update():
     param = request.args.get('param', '')
+    field = request.args.get('field', '').lower()
     value = request.args.get('value', '')
-    print("Parameter:" + param + ", value:" + value)
+    print("Parameter:" + param + ", field:" + field + ", value:" + value)
+    for _data in watch_data:
+        if _data["variable"] == param:
+            _data[field] = float(value)
+            if field == "value":
+                print("pyX2CScope variable write!")
+            break
+    return jsonify({"status": "success"})
+
+def watch_view_read():
+    for _data in watch_data:
+        if not _data["live"]:
+            read_variable(_data)
     return jsonify({"status": "success"})
 
 
@@ -71,6 +95,7 @@ app.add_url_rule('/watch-view-data', view_func=watch_view_data, methods=["POST",
 app.add_url_rule('/watch-view-add', view_func=watch_view_add, methods=["POST","GET"])
 app.add_url_rule('/watch-view-remove', view_func=watch_view_remove, methods=["POST","GET"])
 app.add_url_rule('/watch-view-update', view_func=watch_view_update, methods=["POST","GET"])
+app.add_url_rule('/watch-view-update-non-live', view_func=watch_view_read, methods=["POST","GET"])
 
 
 # Simulated data for demonstration purposes

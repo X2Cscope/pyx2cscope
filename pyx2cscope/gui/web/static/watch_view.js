@@ -1,36 +1,40 @@
-let parameterCardEnabled = false;
+let parameterCardEnabled = true;
 let parameterRefreshInterval;
 let parameterTable;
 
 function setParameterRefreshInterval(){
     // Handle the Refresh button click
     $('#paramRefresh').click(function() {
-        parameterTable.ajax.reload();
-    });
-
-    // Handle the dropdown items click
-    $('#refreshNow').click(function() {
-        parameterTable.ajax.reload();
+        $.getJSON('/watch-view-update-non-live', function(data){})
+        .success(parameterTable.ajax.reload());
     });
 
     $('#refresh1s').click(function() {
         clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(parameterTable.ajax.reload, 1000);
+        parameterRefreshInterval = setInterval(wv_periodic_update, 1000);
     });
 
     $('#refresh3s').click(function() {
         clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(parameterTable.ajax.reload, 3000);
+        parameterRefreshInterval = setInterval(wv_periodic_update, 3000);
     });
 
     $('#refresh5s').click(function() {
         clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(parameterTable.ajax.reload, 5000);
+        parameterRefreshInterval = setInterval(wv_periodic_update, 5000);
     });
 
-    $('#stopRefresh').click(function() {
-        clearInterval(parameterRefreshInterval);
-    });
+    $('#refresh1s').click();
+}
+
+function wv_periodic_update(){
+    if(!parameterCardEnabled) return;
+    update = false;
+    cbs = $('td:first-child input:checkbox', $('#parameterTableBody'));
+    for(let cb of cbs) {
+        update |= cb.checked?1:0;
+    }
+    if(update) parameterTable.ajax.reload();
 }
 
 function setParameterTableListeners(){
@@ -47,16 +51,9 @@ function setParameterTableListeners(){
         });
     });
 
-    // update variable after focus
-    $('#parameterTable').on('blur', 'td[contenteditable="true"]', function() {
-        // Call your getJSON function here
-        parameter = $(this).siblings()[0].textContent;
-        parameter_value = $(this).html();
-        $.getJSON('/watch-view-update',
-        {
-            param: parameter,
-            value: parameter_value
-        });
+    // update variable after loosing focus on element
+    $('#parameterTable').on('blur', 'td[contenteditable="true"]', function(){
+        wv_update_param(null, this);
     });
 
     // edit the number when on focus
@@ -103,8 +100,31 @@ function initParameterSelect(){
     });
 }
 
+function wv_update_param(cb, element) {
+    parameter = "";
+    parameter_field = "";
+    parameter_value = "0";
+    if(element != null) { // contenteditable
+        parameter = $(element).siblings()[1].textContent;
+        index = $(element).index()
+        parameter_field = $("#parameterTable thead>tr").children()[index].textContent;
+        parameter_value = $(element).html();
+    }
+    if(cb != null) { // checkbox
+        parameter = $(cb).parent().siblings()[0].textContent;
+        parameter_field = "live";
+        parameter_value = cb.checked? "1":"0";
+    }
+    $.getJSON('/watch-view-update',
+    {
+        param: parameter,
+        field: parameter_field,
+        value: parameter_value
+    });
+}
+
 function wv_checkbox(data, type) {
-    val = '<input type="checkbox"';
+    val = '<input type="checkbox" onclick="wv_update_param(this, null);"';
     if(data) val += ' checked="checked"';
     return val += '>';
 }
@@ -132,8 +152,14 @@ $(document).ready(function () {
             {data: 'offset', orderable: false},
             {data: 'scaled_value', orderable: false},
             {data: 'remove', render: wv_remove, orderable: false}
-    ],
-  });
-
-
+        ],
+        columnDefs: [
+            {
+                targets: [3, 4, 5],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    $(td).attr('contenteditable', 'true');
+                }
+            }
+        ]
+    });
 });
