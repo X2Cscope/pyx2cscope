@@ -1,24 +1,25 @@
 <canvas id="scopeChart" width="400" height="200"></canvas>
 <br>
-<hr>
 <div class="row">
-    <div class="col-md-3">
-
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Sample Control
+            </div>
+            <div class="card-body"> Hello
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                Trigger Control
+            </div>
+            <div class="card-body"> Trigger Hello
+            </div>
+        </div>
     </div>
-    <div class="col-md-9">
-        <select id="scopeSearch" style="width:100%;"></select>
+    <div class="col-md-8">
+        {% include 'source_config.html' %}
     </div>
 </div>
-<table class="table" id="scopeTable">
-    <thead>
-        <tr>
-            <th>Trigger</th>
-            <th>Variable</th>
-            <th>Offset</th>
-            <th>Gain</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
+
+

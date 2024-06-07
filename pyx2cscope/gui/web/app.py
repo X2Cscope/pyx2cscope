@@ -8,8 +8,14 @@ app = Flask(__name__)
 log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)
 
-watch_data = [ { 'live':0, 'variable':'test', 'type':'int64', 'value':3,
-                 'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
+watch_data = []
+scope_data = []
+
+# Simulated data for demonstration purposes
+data = [
+    {"id": "motor.A", "text": random.randint(0, 100)},
+    {"id": "motor.B", "text": random.randint(0, 100)},
+    {"id": "motor.C", "text": random.randint(0, 100)}
 ]
 
 def index():
@@ -32,19 +38,21 @@ def disconnect():
     return jsonify({"status": "success"})
 
 def variables_autocomplete():
-    global data
     query = request.args.get('q', '')
-    filtered_options = [{"id":option['id'], "text":option['id']} for option in data if query.lower() in option['id'].lower()]
-    return jsonify({"items": filtered_options})
+    items = [{"id":option['id'], "text":option['id']} for option in data if query.lower() in option['id'].lower()]
+    return jsonify({"items": items})
 
 def read_variable(_data):
     # pyX2CScope read variable
     _data["value"] = random.randint(0, 100)
     _data["scaled_value"] = _data["value"] * _data["scaling"] + _data["offset"]
 
-def get_variable(parameter):
+def get_watch_view_variable(parameter):
     return {'live':0, 'variable':parameter, 'type':'int64', 'value':random.randint(0, 100),
                  'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
+
+def get_scope_view_variable(parameter):
+    return {'trigger':0, 'enable':0, 'variable':parameter, 'color':0, 'gain':0 , 'offset':0, 'remove':0}
 
 def watch_view_data():
     for _data in watch_data:
@@ -55,7 +63,7 @@ def watch_view_data():
 def watch_view_add():
     parameter = request.args.get('param', '')
     if not any(_data['variable'] == parameter for _data in watch_data):
-        watch_data.append(get_variable(parameter))
+        watch_data.append(get_watch_view_variable(parameter))
     return jsonify({"status": "success"})
 
 def watch_view_remove():
@@ -85,6 +93,28 @@ def watch_view_read():
             read_variable(_data)
     return jsonify({"status": "success"})
 
+def scope_view_data():
+    return {'data': scope_data}
+
+def scope_view_add():
+    parameter = request.args.get('param', '')
+    if not any(_data['variable'] == parameter for _data in scope_data):
+        scope_data.append(get_scope_view_variable(parameter))
+    return jsonify({"status": "success"})
+
+def scope_view_remove():
+    parameter = request.args.get('param', '')
+    for _data in scope_data:
+        if _data['variable'] == parameter:
+            scope_data.remove(_data)
+            break
+    return jsonify({"status": "success"})
+
+def scope_view_plot():
+    scope_data = [
+        {"time": i, "value": random.randint(0, 100)} for i in range(100)
+    ]
+    return jsonify(scope_data)
 
 app.add_url_rule('/', view_func=index)
 app.add_url_rule('/serial-ports', view_func=list_serial_ports)
@@ -96,52 +126,10 @@ app.add_url_rule('/watch-view-add', view_func=watch_view_add, methods=["POST","G
 app.add_url_rule('/watch-view-remove', view_func=watch_view_remove, methods=["POST","GET"])
 app.add_url_rule('/watch-view-update', view_func=watch_view_update, methods=["POST","GET"])
 app.add_url_rule('/watch-view-update-non-live', view_func=watch_view_read, methods=["POST","GET"])
-
-
-# Simulated data for demonstration purposes
-data = [
-    {"id": "motor.A", "text": random.randint(0, 100)},
-    {"id": "motor.B", "text": random.randint(0, 100)},
-    {"id": "motor.C", "text": random.randint(0, 100)}
-]
-
-
-selected_scope_data = []
-
-scope_data = [
-    {"time": i, "value": random.randint(0, 100)} for i in range(100)
-]
-
-
-
-
-@app.route('/add-scope-search')
-def add_variable_on_scope():
-    global selected_scope_data
-    parameter = request.args.get('param', '')
-    if parameter not in selected_data:
-        selected_scope_data.append(parameter)
-    return jsonify({"status": "success"})
-
-@app.route('/add-scope-variable')
-def add_scope_variable():
-    return jsonify({"status": "success"})
-
-@app.route('/data')
-def get_data():
-    global selected_data
-    result = []
-    for param in selected_data:
-        result.append({"param": param, "value": random.randint(0, 100)})
-    return jsonify(result)
-
-@app.route('/scope')
-def get_scope_data():
-    global scope_data
-    scope_data = [
-        {"time": i, "value": random.randint(0, 100)} for i in range(100)
-    ]
-    return jsonify(scope_data)
+app.add_url_rule('/scope-view-data', view_func=scope_view_data, methods=["POST","GET"])
+app.add_url_rule('/scope-view-add', view_func=scope_view_add, methods=["POST","GET"])
+app.add_url_rule('/scope-view-remove', view_func=scope_view_remove, methods=["POST","GET"])
+app.add_url_rule('/scope-view-plot', view_func=scope_view_plot, methods=["POST","GET"])
 
 if __name__ == '__main__':
     app.run(debug=False)
