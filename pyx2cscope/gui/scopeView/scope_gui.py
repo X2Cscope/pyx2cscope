@@ -1,4 +1,4 @@
-"""This is the minimal gui to test the pyx2cscope interface library."""
+"""This is the scope_gui to test the pyx2cscope scope functionality."""
 
 import logging
 import os
@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import (
 )
 
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.xc2scope import X2CScope, TriggerConfig
+from pyx2cscope.xc2scope import TriggerConfig, X2CScope
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -57,6 +57,9 @@ class X2cscopeGui(QMainWindow):
 
     def initialize_variables(self):
         """Initialize instance variables."""
+        self.sampling_active = False
+        self.fig = None
+        self.ax = None
         self.offset_boxes = None
         self.plot_checkboxes = None
         self.scaled_value_boxes = None
@@ -1002,8 +1005,10 @@ class X2cscopeGui(QMainWindow):
         This method ensures that all resources are properly released and the
         application is closed cleanly.
         """
-        if self.plot_window_open:
-            self.close_plot_window()
+        if self.sampling_active:
+            self.sampling_active = False
+        if self.fig:
+            plt.close(self.fig)
         if self.ser:
             self.disconnect_serial()
         event.accept()
@@ -1011,17 +1016,29 @@ class X2cscopeGui(QMainWindow):
     def start_sampling(self):
         """Start the sampling process."""
         try:
-            for combo in self.scope_var_combos:
-                variable_name = combo.currentText()
-                print(variable_name)
-                if variable_name and variable_name != "None":
-                    variable = self.x2cscope.get_variable(variable_name)
-                    self.x2cscope.add_scope_channel(variable)
-            self.x2cscope.set_sample_time(int(self.sample_time_factor.text())) #set sample time factor.
-            self.configure_trigger() # trigger configuration.
-            self.x2cscope.request_scope_data()
-            logging.info("Started sampling.")
-            self.sample_scope_data()
+            if self.sampling_active:
+                self.sampling_active = False
+                self.scope_sample_button.setText("Sample")
+                if self.fig:
+                    plt.close(self.fig)
+                logging.info("Stopped sampling.")
+            else:
+                # Reset channels before adding new ones
+                self.x2cscope.reset_channels()
+
+                for combo in self.scope_var_combos:
+                    variable_name = combo.currentText()
+                    print(variable_name)
+                    if variable_name and variable_name != "None":
+                        variable = self.x2cscope.get_variable(variable_name)
+                        self.x2cscope.add_scope_channel(variable)
+                self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
+                self.configure_trigger()  # trigger configuration
+                self.x2cscope.request_scope_data()
+                self.sampling_active = True
+                self.scope_sample_button.setText("Stop")
+                logging.info("Started sampling.")
+                self.sample_scope_data()
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
@@ -1054,42 +1071,42 @@ class X2cscopeGui(QMainWindow):
     def sample_scope_data(self):
         """Sample the scope data."""
         try:
-            sample_count = 0
-            max_sample = 100  # Increase the number of samples if needed
 
             plt.ion()  # Turn on interactive mode
-            fig, ax = plt.subplots()
+            self.fig, self.ax = plt.subplots()
 
-            while sample_count < max_sample:
+            while self.sampling_active:
                 if self.x2cscope.is_scope_data_ready():
-                    sample_count += 1
                     logging.info("Scope data is ready.")
 
                     data_storage = {}
                     for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
                         data_storage[channel] = data
 
-                    ax.clear()
+                    self.ax.clear()
                     for channel, data in data_storage.items():
                         time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
-                        ax.plot(time_values, data, label=f"Channel {channel}")
+                        self.ax.plot(time_values, data, label=f"Channel {channel}")
 
-                    ax.set_xlabel("Time (ms)")
-                    ax.set_ylabel("Value")
-                    ax.set_title("Live Plot of Scope Data")
-                    ax.legend()
+                    self.ax.set_xlabel("Time (ms)")
+                    self.ax.set_ylabel("Value")
+                    self.ax.set_title("Live Plot of Scope Data")
+                    self.ax.legend()
 
                     plt.pause(0.001)  # Add a short pause to update the plot
 
-                    if sample_count >= max_sample:
-                        break
                     self.x2cscope.request_scope_data()
+
+                if not plt.fignum_exists(self.fig.number):
+                    break
 
                 time.sleep(0.1)
 
             plt.ioff()  # Turn off interactive mode after the loop
             plt.show()
 
+            self.sampling_active = False
+            self.scope_sample_button.setText("Sample")
             logging.info("Data collection complete.")
         except Exception as e:
             error_message = f"Error sampling scope data: {e}"
