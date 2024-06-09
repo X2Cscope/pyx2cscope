@@ -1008,12 +1008,17 @@ class X2cscopeGui(QMainWindow):
     def start_sampling(self):
         """Start the sampling process."""
         try:
-            self.x2cscope.set_sample_time(1) # TODO set sampletime window.
-            print(self.scope_var_combos())
-            self.x2cscope.add_scope_channel(self.scope_var_combos())
+            for combo in self.scope_var_combos:
+                variable_name = combo.currentText()
+                print(variable_name)
+                if variable_name and variable_name != "None":
+                    variable = self.x2cscope.get_variable(variable_name)
+                    self.x2cscope.add_scope_channel(variable)
+            self.x2cscope.set_sample_time(5) #set sample time factor.
+            self.configure_trigger() # trigger configuration.
             self.x2cscope.request_scope_data()
             logging.info("Started sampling.")
-            self.plot_scope_data()
+            self.sample_scope_data()
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
@@ -1043,31 +1048,48 @@ class X2cscopeGui(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
-    def plot_scope_data(self):
-        """Plot the scope data."""
+    def sample_scope_data(self):
+        """Sample the scope data."""
         try:
-            if self.x2cscope.is_scope_data_ready():
-                data_storage = {}
-                for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
-                    data_storage[channel] = data
+            sample_count = 0
+            max_sample = 100  # Increase the number of samples if needed
 
-                self.ax.clear()
-                print(data_storage)
-                for channel, data in data_storage.items():
-                    time_values = [i * 0.001 for i in range(len(data))]
-                    self.ax.plot(time_values, data, label=f"Channel {channel}")
+            plt.ion()  # Turn on interactive mode
+            fig, ax = plt.subplots()
 
-                self.ax.set_xlabel("Time (ms)")
-                self.ax.set_ylabel("Value")
-                self.ax.set_title("Live Plot of Scope Data")
-                self.ax.legend()
+            while sample_count < max_sample:
+                if self.x2cscope.is_scope_data_ready():
+                    sample_count += 1
+                    logging.info("Scope data is ready.")
 
-                plt.pause(0.001)
-                plt.show()
-            else:
-                logging.info("Scope data not ready.")
+                    data_storage = {}
+                    for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
+                        data_storage[channel] = data
+
+                    ax.clear()
+                    for channel, data in data_storage.items():
+                        time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
+                        ax.plot(time_values, data, label=f"Channel {channel}")
+
+                    ax.set_xlabel("Time (ms)")
+                    ax.set_ylabel("Value")
+                    ax.set_title("Live Plot of Scope Data")
+                    ax.legend()
+
+                    plt.pause(0.001)  # Add a short pause to update the plot
+
+                    if sample_count >= max_sample:
+                        break
+                    self.x2cscope.request_scope_data()
+
+                time.sleep(0.1)
+
+            plt.ioff()  # Turn off interactive mode after the loop
+            plt.show()
+
+            logging.info("Data collection complete.")
         except Exception as e:
-            error_message = f"Error plotting scope data: {e}"
+            error_message = f"Error sampling scope data: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
 
