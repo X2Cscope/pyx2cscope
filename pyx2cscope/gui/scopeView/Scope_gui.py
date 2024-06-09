@@ -235,7 +235,10 @@ class X2cscopeGui(QMainWindow):
 
         self.scope_var_combos = [QComboBox() for _ in range(7)]
         self.scope_sample_button = QPushButton("Sample")
+
         self.scope_trigger_button = QPushButton("Configure Trigger")
+        self.sample_time_factor = QLineEdit("1")
+        self.sample_time_factor.setValidator(self.decimal_validator)
 
         self.trigger_mode_combo = QComboBox()
         self.trigger_mode_combo.addItems(["Auto", "Triggered"])
@@ -252,19 +255,19 @@ class X2cscopeGui(QMainWindow):
 
         grid_layout.addWidget(QLabel("Select Variable:"), 0, 1)
         for i, combo in enumerate(self.scope_var_combos):
-            grid_layout.addWidget(combo, i + 1, 1)
+            grid_layout.addWidget(combo, i + 1, 2)
 
-        grid_layout.addWidget(QLabel("Trigger Mode:"), 0, 0)
-        grid_layout.addWidget(self.trigger_mode_combo, 1, 0)
+        grid_layout.addWidget(QLabel("Sample Time Factor"), 0, 0)
+        grid_layout.addWidget(self.sample_time_factor, 0, 1)
+        grid_layout.addWidget(QLabel("Trigger Mode:"), 1, 0)
+        grid_layout.addWidget(self.trigger_mode_combo, 1, 1)
         grid_layout.addWidget(QLabel("Trigger Edge:"), 2, 0)
-        grid_layout.addWidget(self.trigger_edge_combo, 3, 0)
-        grid_layout.addWidget(QLabel("Trigger Level:"), 4, 0)
-        grid_layout.addWidget(self.trigger_level_edit, 5, 0)
-        grid_layout.addWidget(QLabel("Trigger Delay:"), 6, 0)
-        grid_layout.addWidget(self.trigger_delay_edit, 7, 0)
-
-        grid_layout.addWidget(self.scope_sample_button, 8, 1)
-        grid_layout.addWidget(self.scope_trigger_button, 8, 0)
+        grid_layout.addWidget(self.trigger_edge_combo, 2, 1)
+        grid_layout.addWidget(QLabel("Trigger Level:"), 3, 0)
+        grid_layout.addWidget(self.trigger_level_edit, 3, 1)
+        grid_layout.addWidget(QLabel("Trigger Delay:"), 4, 0)
+        grid_layout.addWidget(self.trigger_delay_edit, 4, 1)
+        grid_layout.addWidget(self.scope_sample_button, 8, 2)
 
     def setup_port_layout(self, layout):
         """Set up the port selection layout."""
@@ -1014,7 +1017,7 @@ class X2cscopeGui(QMainWindow):
                 if variable_name and variable_name != "None":
                     variable = self.x2cscope.get_variable(variable_name)
                     self.x2cscope.add_scope_channel(variable)
-            self.x2cscope.set_sample_time(5) #set sample time factor.
+            self.x2cscope.set_sample_time(int(self.sample_time_factor.text())) #set sample time factor.
             self.configure_trigger() # trigger configuration.
             self.x2cscope.request_scope_data()
             logging.info("Started sampling.")
