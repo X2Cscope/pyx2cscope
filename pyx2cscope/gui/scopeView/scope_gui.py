@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFileDialog,
     QGridLayout,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -233,16 +234,19 @@ class X2cscopeGui(QMainWindow):
         self.tab2.layout = QVBoxLayout()
         self.tab2.setLayout(self.tab2.layout)
 
-        grid_layout = QGridLayout()
-        self.tab2.layout.addLayout(grid_layout)
+        main_grid_layout = QGridLayout()
+        self.tab2.layout.addLayout(main_grid_layout)
 
-        self.scope_var_combos = [QComboBox() for _ in range(7)]
-        self.scope_sample_button = QPushButton("Sample")
+        # Trigger Configuration Group Box
+        trigger_group = QGroupBox("Trigger Configuration")
+        trigger_layout = QVBoxLayout()
+        trigger_group.setLayout(trigger_layout)
 
-        self.scope_trigger_button = QPushButton("Configure Trigger")
+        grid_layout_trigger = QGridLayout()
+        trigger_layout.addLayout(grid_layout_trigger)
+
         self.sample_time_factor = QLineEdit("1")
         self.sample_time_factor.setValidator(self.decimal_validator)
-
         self.trigger_mode_combo = QComboBox()
         self.trigger_mode_combo.addItems(["Auto", "Triggered"])
         self.trigger_edge_combo = QComboBox()
@@ -251,26 +255,46 @@ class X2cscopeGui(QMainWindow):
         self.trigger_level_edit.setValidator(self.decimal_validator)
         self.trigger_delay_edit = QLineEdit()
         self.trigger_delay_edit.setValidator(self.decimal_validator)
-
-        self.scope_sample_button.clicked.connect(self.start_sampling)
-      #  self.scope_sample_button.clicked.connect()
+        self.scope_trigger_button = QPushButton("Configure Trigger")
         self.scope_trigger_button.clicked.connect(self.configure_trigger)
 
-        grid_layout.addWidget(QLabel("Select Variable:"), 0, 1)
-        for i, combo in enumerate(self.scope_var_combos):
-            grid_layout.addWidget(combo, i + 1, 2)
+        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 0, 0)
+        grid_layout_trigger.addWidget(self.sample_time_factor, 0, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 1, 0)
+        grid_layout_trigger.addWidget(self.trigger_mode_combo, 1, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 2, 0)
+        grid_layout_trigger.addWidget(self.trigger_edge_combo, 2, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 3, 0)
+        grid_layout_trigger.addWidget(self.trigger_level_edit, 3, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 4, 0)
+        grid_layout_trigger.addWidget(self.trigger_delay_edit, 4, 1)
+        grid_layout_trigger.addWidget(self.scope_trigger_button, 5, 0, 1, 2)
 
-        grid_layout.addWidget(QLabel("Sample Time Factor"), 0, 0)
-        grid_layout.addWidget(self.sample_time_factor, 0, 1)
-        grid_layout.addWidget(QLabel("Trigger Mode:"), 1, 0)
-        grid_layout.addWidget(self.trigger_mode_combo, 1, 1)
-        grid_layout.addWidget(QLabel("Trigger Edge:"), 2, 0)
-        grid_layout.addWidget(self.trigger_edge_combo, 2, 1)
-        grid_layout.addWidget(QLabel("Trigger Level:"), 3, 0)
-        grid_layout.addWidget(self.trigger_level_edit, 3, 1)
-        grid_layout.addWidget(QLabel("Trigger Delay:"), 4, 0)
-        grid_layout.addWidget(self.trigger_delay_edit, 4, 1)
-        grid_layout.addWidget(self.scope_sample_button, 8, 2)
+        # Variable Selection Group Box
+        variable_group = QGroupBox("Variable Selection")
+        variable_layout = QVBoxLayout()
+        variable_group.setLayout(variable_layout)
+
+        grid_layout_variable = QGridLayout()
+        variable_layout.addLayout(grid_layout_variable)
+
+        self.scope_var_combos = [QComboBox() for _ in range(7)]
+        self.scope_sample_button = QPushButton("Sample")
+        self.scope_sample_button.clicked.connect(self.start_sampling)
+
+        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
+        for i, combo in enumerate(self.scope_var_combos):
+            grid_layout_variable.addWidget(combo, i + 1, 0)
+
+        grid_layout_variable.addWidget(self.scope_sample_button, 8, 0)
+
+        # Add the group boxes to the main layout with stretch factors
+        main_grid_layout.addWidget(trigger_group, 0, 0)
+        main_grid_layout.addWidget(variable_group, 0, 1)
+
+        # Set the column stretch factors to make the variable group larger
+        main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
+        main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
 
     def setup_port_layout(self, layout):
         """Set up the port selection layout."""
@@ -1023,8 +1047,6 @@ class X2cscopeGui(QMainWindow):
                     plt.close(self.fig)
                 logging.info("Stopped sampling.")
             else:
-                # Reset channels before adding new ones
-                self.x2cscope.reset_channels()
 
                 for combo in self.scope_var_combos:
                     variable_name = combo.currentText()
@@ -1049,8 +1071,31 @@ class X2cscopeGui(QMainWindow):
         try:
             variable_name = self.scope_var_combos[0].currentText()
             variable = self.x2cscope.get_variable(variable_name)
-            trigger_level = float(self.trigger_level_edit.text())
-            trigger_delay = int(self.trigger_delay_edit.text())
+
+            # Handle empty string for trigger level and delay
+            trigger_level_text = self.trigger_level_edit.text().strip()
+            trigger_delay_text = self.trigger_delay_edit.text().strip()
+
+            if not trigger_level_text:
+                trigger_level = 0
+            else:
+                try:
+                    trigger_level = float(trigger_level_text)
+                except ValueError:
+                    logging.error(f"Invalid trigger level value: {trigger_level_text}")
+                    self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
+                    return
+
+            if not trigger_delay_text:
+                trigger_delay = 0
+            else:
+                try:
+                    trigger_delay = int(trigger_delay_text)
+                except ValueError:
+                    logging.error(f"Invalid trigger delay value: {trigger_delay_text}")
+                    self.handle_error(f"Invalid trigger delay value: {trigger_delay_text}")
+                    return
+
             trigger_edge = 0 if self.trigger_edge_combo.currentText() == "Rising" else 1
             trigger_mode = 0 if self.trigger_mode_combo.currentText() == "Auto" else 1
 
