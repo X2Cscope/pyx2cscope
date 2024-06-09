@@ -4,14 +4,18 @@
     {% include 'header.html' %}
   </head>
   <body>
-    <div class="container-fluid mt-5">
+    <div class="container-fluid mt-3">
       {% block content %}{% endblock %}
     </div>
-    <footer class="footer bg-secondary fixed-bottom text-center text-lg-start">
-        <div class="container p-3">
+    <footer class="footer bg-secondary fixed-bottom">
+        <div class="container p-2 text-center">
             {% include 'footer.html' %}
         </div>
     </footer>
     {% include 'scripts.html' %}
+    <br>
+  <br>
+  <br>
+  <br>
   </body>
 </html>
