@@ -118,6 +118,7 @@ class X2cscopeGui(QMainWindow):
         ]
 
     def combo_box(self):
+        """Initializing combo boxes."""
         self.combo_box5 = QComboBox()
         self.combo_box4 = QComboBox()
         self.combo_box3 = QComboBox()
@@ -361,19 +362,20 @@ class X2cscopeGui(QMainWindow):
             offset_var.setValidator(self.decimal_validator)
             scaled_value_var.setText("0")
             scaled_value_var.setValidator(self.decimal_validator)
-            if row_index > 1:
-                row_index += 1
-            self.grid_layout.addWidget(live_var, row_index, 0)
-            self.grid_layout.addWidget(combo_box, row_index, 1)
-            if row_index == 1:
-                self.grid_layout.addWidget(self.slider_var1, row_index + 1, 0, 1, 7)
+            display_row = row_index  # Use a different variable name for the assignment
+            if display_row > 1:
+                display_row += 1
+            self.grid_layout.addWidget(live_var, display_row, 0)
+            self.grid_layout.addWidget(combo_box, display_row, 1)
+            if display_row == 1:
+                self.grid_layout.addWidget(self.slider_var1, display_row + 1, 0, 1, 7)
 
-            self.grid_layout.addWidget(value_var, row_index, 2)
-            self.grid_layout.addWidget(scaling_var, row_index, 3)
-            self.grid_layout.addWidget(offset_var, row_index, 4)
-            self.grid_layout.addWidget(scaled_value_var, row_index, 5)
-            self.grid_layout.addWidget(unit_var, row_index, 6)
-            self.grid_layout.addWidget(plot_checkbox, row_index, 7)
+            self.grid_layout.addWidget(value_var, display_row, 2)
+            self.grid_layout.addWidget(scaling_var, display_row, 3)
+            self.grid_layout.addWidget(offset_var, display_row, 4)
+            self.grid_layout.addWidget(scaled_value_var, display_row, 5)
+            self.grid_layout.addWidget(unit_var, display_row, 6)
+            self.grid_layout.addWidget(plot_checkbox, display_row, 7)
 
         self.layout.addLayout(self.grid_layout, 5, 0)
         self.layout.addWidget(self.plot_button, 6, 0)
