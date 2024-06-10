@@ -1,5 +1,7 @@
 let scopeCardEnabled = true;
-scopeTable;
+let dataReadyRefreshInterval;
+let scopeTable;
+let scopeChart;
 
 function initScopeSelect(){
     $('#scopeSearch').select2({
@@ -32,6 +34,14 @@ function initScopeSelect(){
     });
 }
 
+function sv_remove_chart_data(parameter) {
+    scopeChart.data.labels.pop(parameter);
+    chart.data.datasets.forEach((dataset) => {
+        if(dataset.data.id == parameter) dataset.data.pop();
+    });
+    scopeChart.update();
+}
+
 function setScopeTableListeners(){
     // delete Row on button click
     $('#scopeTableBody').on('click', '.remove', function () {
@@ -42,6 +52,7 @@ function setScopeTableListeners(){
         },
         function(data) {
             scopeTable.ajax.reload();
+            sv_remove_chart_data(parameter);
         });
     });
 
@@ -90,9 +101,11 @@ function sv_update_param(element) {
     });
 }
 
-function update_scope_data() {
+function sv_update_scope_data() {
     $.getJSON('/scope-view-plot', function(data) {
-        sv_updateChart();
+        scopeChart.data.datasets = data.data;
+        scopeChart.data.labels = data.labels;
+        scopeChart.update('none');
     });
 }
 
@@ -117,36 +130,72 @@ function sv_remove(data, type){
     return '<button class="btn btn-danger remove" type="button">Remove</button>';
 }
 
-function sv_updateChart() {
-    let selectedData = [];
-    $('.scope-checkbox:checked').each(function() {
-        selectedData.push({
-            time: $(this).data('time'),
-            value: $(this).data('value')
-        });
-    });
-
+function initScopeChart() {
     let ctx = document.getElementById('scopeChart').getContext('2d');
-    let chart = new Chart(ctx, {
+    scopeChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: selectedData.map(d => d.time),
+            labels: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
             datasets: [{
-                label: 'Scope Data',
-                data: selectedData.map(d => d.value),
+                label: 'Empty Dataset',
+                data: [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
-                fill: false
             }]
         },
         options: {
             scales: {
-                xAxes: [{
+                x: {
                     type: 'linear',
-                    position: 'bottom'
-                }]
+                    title: {
+                        display: true,
+                        text: 'Time (ms)'
+                    }
+                },
+            },
+            plugins: {
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'xy'
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        mode: 'xy'
+                    }
+                }
             }
         }
+    });
+
+    $('#autoZoom').on('click', function() {
+            scopeChart.resetZoom();
+    });
+}
+
+function sv_data_ready_check()
+{
+    $.getJSON('/scope-view-data-ready', function(data) {
+        if(data.finish) {
+            clearInterval(dataReadyRefreshInterval);
+            sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
+            sampleTriggerButtons.forEach(button => {
+                if(button.id == "triggerStop") {
+                    button.parentElement.classList.add("active");
+                    button.parentElement.classList.add("focus");
+                }
+                else {
+                    button.parentElement.classList.remove("active");
+                    button.parentElement.classList.remove("focus");
+                }
+            });
+        }
+        if(data.ready) sv_update_scope_data();
     });
 }
 
@@ -158,10 +207,16 @@ function initScopeForms(){
         $.ajax({
             type: "POST",
             url: "scope-view-form-sample",
-            data: form.serialize(), // serializes the form's elements.
+            data: form.serialize(),
             success: function(data)
             {
-              alert(data.trigger); // show response from the php script.
+              if(data.trigger){
+                  clearInterval(dataReadyRefreshInterval);
+                  dataReadyRefreshInterval = setInterval(sv_data_ready_check, 200);
+              }
+              else {
+                  clearInterval(dataReadyRefreshInterval);
+              }
             }
         });
     });
@@ -173,12 +228,26 @@ function initScopeForms(){
         });
     });
 
+    $("#triggerControlForm").submit(function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+
+        $.ajax({
+            type: "POST",
+            url: "scope-view-form-trigger",
+            data: form.serialize(), // serializes the form's elements.
+            success: function(data){
+            }
+        });
+    });
+
 }
 
 $(document).ready(function () {
     initScopeSelect();
     setScopeTableListeners();
     initScopeForms();
+    initScopeChart();
 
     scopeTable = $('#scopeTable').DataTable({
         ajax: '/scope-view-data',
@@ -203,6 +272,4 @@ $(document).ready(function () {
             }
         ]
     });
-
-    update_scope_data();
 });

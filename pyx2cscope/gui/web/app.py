@@ -98,6 +98,9 @@ def watch_view_read():
 def scope_view_data():
     return {'data': scope_data}
 
+def scope_view_data_ready():
+    return {"ready": True, "finish": True}
+
 def scope_view_add():
     parameter = request.args.get('param', '')
     if not any(_data['variable'] == parameter for _data in scope_data):
@@ -130,11 +133,25 @@ def scope_view_form_sample():
     print("sampleTime", field)
     return jsonify({"trigger": param != "off"})
 
+def scope_view_form_trigger():
+    trigger_enable = (request.form.get('triggerEnable', 'off').lower() == "on")
+    trigger_edge = (request.form.get('triggerEdge', '').lower() == "rising")
+    trigger_level = float(request.form.get('triggerLevel', '0.0'))
+    trigger_delay = float(request.form.get('triggerDelay', '0.0'))
+    print("trigger", trigger_enable)
+    print("edge", trigger_edge)
+    print("level", trigger_level)
+    print("delay", trigger_delay)
+    return jsonify({"trigger": trigger_enable})
+
 def scope_view_plot():
     scope_data = [
-        {"time": i, "value": random.randint(0, 100)} for i in range(100)
+        {"label": "motorA", "data": [random.randint(0, 100) for i in range(100)], "pointRadius": 0},
+        {"label": "motorB", "data": [random.randint(0, 100) for i in range(100)], "pointRadius": 0},
+        {"label": "motorC", "data": [random.randint(0, 100) for i in range(100)], "pointRadius": 0}
     ]
-    return jsonify(scope_data)
+    labels = [i for i in range(0, 100)]
+    return jsonify({"data": scope_data, "labels": labels})
 
 app.add_url_rule('/', view_func=index)
 app.add_url_rule('/serial-ports', view_func=list_serial_ports)
@@ -147,11 +164,13 @@ app.add_url_rule('/watch-view-remove', view_func=watch_view_remove, methods=["PO
 app.add_url_rule('/watch-view-update', view_func=watch_view_update, methods=["POST","GET"])
 app.add_url_rule('/watch-view-update-non-live', view_func=watch_view_read, methods=["POST","GET"])
 app.add_url_rule('/scope-view-data', view_func=scope_view_data, methods=["POST","GET"])
+app.add_url_rule('/scope-view-data-ready', view_func=scope_view_data_ready, methods=["POST","GET"])
 app.add_url_rule('/scope-view-add', view_func=scope_view_add, methods=["POST","GET"])
 app.add_url_rule('/scope-view-remove', view_func=scope_view_remove, methods=["POST","GET"])
 app.add_url_rule('/scope-view-update', view_func=scope_view_update, methods=["POST","GET"])
 app.add_url_rule('/scope-view-plot', view_func=scope_view_plot, methods=["POST","GET"])
 app.add_url_rule('/scope-view-form-sample', view_func=scope_view_form_sample, methods=["POST","GET"])
+app.add_url_rule('/scope-view-form-trigger', view_func=scope_view_form_trigger, methods=["POST","GET"])
 
 if __name__ == '__main__':
     app.run(debug=False)
