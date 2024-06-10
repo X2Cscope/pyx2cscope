@@ -1,0 +1,144 @@
+:py:mod:`pyx2cscope.parser.elf32_parser`
+========================================
+
+.. py:module:: pyx2cscope.parser.elf32_parser
+
+.. autoapi-nested-parse::
+
+   This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+
+   It focuses on extracting structure members and variable information from DWARF debugging information.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.elf32_parser.Elf32Parser
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.elf32_parser.elf_file
+
+
+.. py:class:: Elf32Parser(elf_path: str)
+
+
+   Bases: :py:obj:`pyx2cscope.parser.elf_parser.ElfParser`
+
+   Class for parsing ELF files compatible with 32-bit architectures.
+
+   .. py:method:: _get_structure_members_recursive(type_die, die, parent_name: str, prev_address_offset=0)
+
+      Recursively gets structure members from a DWARF DIE.
+
+      Args:
+          type_die: The DIE representing the type.
+          die: The DIE representing the structure.
+          parent_name (str): Name of the parent structure.
+          prev_address_offset (int): Address offset from the parent.
+
+      Returns:
+          Tuple[dict, int]: Dictionary of members and their offset.
+
+
+   .. py:method:: _get_structure_members(type_die, structure_die, var_name)
+
+      Retrieves structure members from a DWARF DIE.
+
+      Args:
+          type_die: The DIE representing the type.
+          structure_die: The DIE representing the structure.
+          var_name (str): Name of the variable.
+
+      Returns:
+          dict: Dictionary of structure members.
+
+
+   .. py:method:: _processing_end_die(type_die, end_die)
+
+      Processes the end DIE of a tag to extract variable information.
+
+      Args:
+          type_die: The DIE representing the type.
+          end_die: The end DIE of the tag.
+
+
+   .. py:method:: _get_array_length(type_die)
+
+      Gets the length of an array type.
+
+      Args:
+          type_die: The DIE representing the array type.
+
+      Returns:
+          int: Length of the array.
+
+
+   .. py:method:: _load_elf_file()
+
+      Load the ELF file according to the specific hardware architecture.
+
+      This method should be implemented by subclasses to handle different ELF file formats.
+
+
+   .. py:method:: _get_dwarf_die_by_offset(offset)
+
+      Retrieve a DWARF DIE given its offset.
+
+      Args:
+          offset (int): Offset of the DIE.
+
+      Returns:
+          DIE: The DWARF DIE corresponding to the offset.
+
+
+   .. py:method:: _get_end_die(current_die)
+
+      Find the end DIE of a type.
+
+      Args:
+          current_die (elftools.dwarf.die.DIE): The starting DIE.
+
+      Returns:
+          elftools.dwarf.die.DIE: The end DIE of the type.
+
+
+   .. py:method:: _get_member_type(type_offset)
+
+      Retrieve the type information from DWARF given a type offset.
+
+      Args:
+          type_offset (int): Offset of the type DIE.
+
+      Returns:
+          dict or None: Dictionary containing the name and byte size of the type, or None if not found.
+
+
+   .. py:method:: _map_variables() -> dict[str, pyx2cscope.parser.elf_parser.VariableInfo]
+
+      Abstract method to map variables from the parsed DWARF information.
+
+      Subclasses should implement this method to extract variable information specific to their ELF format.
+
+      Returns:
+          Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
+
+
+
+.. py:data:: elf_file
+   :value: 'C:\\Users\\m67250\\Downloads\\mclv2_sam_e54_pim.X.production.elf'
+
+   
+

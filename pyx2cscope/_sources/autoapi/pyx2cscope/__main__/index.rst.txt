@@ -1,0 +1,63 @@
+:py:mod:`pyx2cscope.__main__`
+=============================
+
+.. py:module:: pyx2cscope.__main__
+
+.. autoapi-nested-parse::
+
+   Main entry point for the X2Cscope application.
+
+   This module initializes the logging configuration based on a command-line argument,
+   sets up the PyQt5 application, and launches the X2Cscope GUI.
+
+   Arguments:
+       LOG_LEVEL (optional): The logging level for the application (e.g., 'DEBUG', 'INFO').
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.__main__.set_logging_level
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.__main__.log_level_arg
+   pyx2cscope.__main__.app
+   pyx2cscope.__main__.ex
+
+
+.. py:function:: set_logging_level(level_str)
+
+   Sets the logging level based on the provided level string.
+
+   Args:
+       level_str (str): A string representing the logging level (e.g., 'DEBUG', 'INFO').
+
+   This function attempts to set the logging level based on the level_str argument.
+   If an invalid logging level is provided, it logs an informational message.
+
+
+.. py:data:: log_level_arg
+
+   
+
+.. py:data:: app
+
+   
+
+.. py:data:: ex
+
+   
+

@@ -1,0 +1,22 @@
+:py:mod:`pyx2cscope.parser`
+===========================
+
+.. py:module:: pyx2cscope.parser
+
+.. autoapi-nested-parse::
+
+   This module is for elf parser.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   elf16_parser/index.rst
+   elf32_parser/index.rst
+   elf_parser/index.rst
+
+
