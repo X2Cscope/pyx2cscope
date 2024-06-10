@@ -52,7 +52,9 @@ def get_watch_view_variable(parameter):
                  'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
 
 def get_scope_view_variable(parameter):
-    return {'trigger':0, 'enable':0, 'variable':parameter, 'color':0, 'gain':0 , 'offset':0, 'remove':0}
+    colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF", "#800080", "#CCCCCC"]
+    return {'trigger':0, 'enable':0, 'variable':parameter, 'color':colors[len(scope_data)],
+            'gain':0 , 'offset':0, 'remove':0}
 
 def watch_view_data():
     for _data in watch_data:
@@ -110,6 +112,24 @@ def scope_view_remove():
             break
     return jsonify({"status": "success"})
 
+def scope_view_update():
+    param = request.args.get('param', '')
+    field = request.args.get('field', '').lower()
+    value = request.args.get('value', '')
+    print("Parameter:" + param + ", field:" + field + ", value:" + value)
+    for _data in scope_data:
+        if _data["variable"] == param:
+            _data[field] = float(value)
+            break
+    return jsonify({"status": "success"})
+
+def scope_view_form_sample():
+    param = request.form.get('triggerAction', '')
+    field = request.form.get('sampleTime', '')
+    print("triggering", param)
+    print("sampleTime", field)
+    return jsonify({"trigger": param != "off"})
+
 def scope_view_plot():
     scope_data = [
         {"time": i, "value": random.randint(0, 100)} for i in range(100)
@@ -129,7 +149,9 @@ app.add_url_rule('/watch-view-update-non-live', view_func=watch_view_read, metho
 app.add_url_rule('/scope-view-data', view_func=scope_view_data, methods=["POST","GET"])
 app.add_url_rule('/scope-view-add', view_func=scope_view_add, methods=["POST","GET"])
 app.add_url_rule('/scope-view-remove', view_func=scope_view_remove, methods=["POST","GET"])
+app.add_url_rule('/scope-view-update', view_func=scope_view_update, methods=["POST","GET"])
 app.add_url_rule('/scope-view-plot', view_func=scope_view_plot, methods=["POST","GET"])
+app.add_url_rule('/scope-view-form-sample', view_func=scope_view_form_sample, methods=["POST","GET"])
 
 if __name__ == '__main__':
     app.run(debug=False)

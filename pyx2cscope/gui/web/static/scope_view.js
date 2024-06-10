@@ -35,7 +35,6 @@ function initScopeSelect(){
 function setScopeTableListeners(){
     // delete Row on button click
     $('#scopeTableBody').on('click', '.remove', function () {
-
         parameter = $(this).parent().siblings()[2].textContent;
         $.getJSON('/scope-view-remove',
         {
@@ -48,7 +47,7 @@ function setScopeTableListeners(){
 
     // update variable after loosing focus on element
     $('#scopeTable').on('blur', 'td[contenteditable="true"]', function(){
-        sv_update_param(null, this);
+        sv_update_param(this);
     });
 
     // edit the number when on focus
@@ -64,21 +63,25 @@ function setScopeTableListeners(){
     });
 }
 
-function sv_update_param(cb, element) {
+function sv_update_param(element) {
     parameter = "";
-    parameter_field = "";
+    field = "";
     parameter_value = "0";
-    if(element != null) { // contenteditable
-        parameter = $(element).siblings()[1].textContent;
-        index = $(element).index()
-        parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
+
+    if(element.contentEditable == "true")
+    {
+        index = $(element).index();
         parameter_value = $(element).html();
     }
-    if(cb != null) { // checkbox
-        parameter = $(cb).parent().siblings()[0].textContent;
-        parameter_field = "trigger";
-        parameter_value = cb.checked? "1":"0";
+    else // checkbox, color
+    {
+        index = $(element).parent().index();
+        if(element.type == "checkbox") parameter_value = element.checked? "1":"0";
+        if(element.type == "color") parameter_value = element.value;
     }
+    parameter = $("#scopeTable tbody>tr").children()[2].textContent;
+    parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
+
     $.getJSON('/scope-view-update',
     {
         param: parameter,
@@ -96,6 +99,18 @@ function update_scope_data() {
 function initScopeCard(){
     initScopeSelect();
     setScopeTableListeners();
+}
+
+function sv_checkbox(data, type) {
+    val = '<input type="checkbox" onclick="sv_update_param(this);"';
+    if(data) val += ' checked="checked"';
+    return val += '>';
+}
+
+function sv_color(data, type) {
+    val = '<input type="color" onchange="sv_update_param(this);"';
+    val += ' value="' + data + '">';
+    return val;
 }
 
 function sv_remove(data, type){
@@ -135,9 +150,35 @@ function sv_updateChart() {
     });
 }
 
+function initScopeForms(){
+    $("#sampleControlForm").submit(function(e) {
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+
+        $.ajax({
+            type: "POST",
+            url: "scope-view-form-sample",
+            data: form.serialize(), // serializes the form's elements.
+            success: function(data)
+            {
+              alert(data.trigger); // show response from the php script.
+            }
+        });
+    });
+
+    sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
+    sampleTriggerButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            $("#sampleControlForm").submit();
+        });
+    });
+
+}
+
 $(document).ready(function () {
     initScopeSelect();
     setScopeTableListeners();
+    initScopeForms();
 
     scopeTable = $('#scopeTable').DataTable({
         ajax: '/scope-view-data',
@@ -145,10 +186,10 @@ $(document).ready(function () {
         paging: false,
         info: false,
         columns: [
-            {data: 'trigger', render: wv_checkbox},
-            {data: 'enable'},
+            {data: 'trigger', render: sv_checkbox},
+            {data: 'enable', render: sv_checkbox},
             {data: 'variable'},
-            {data: 'color', orderable: false},
+            {data: 'color', render: sv_color, orderable: false},
             {data: 'gain', orderable: false},
             {data: 'offset', orderable: false},
             {data: 'remove', render: sv_remove, orderable: false}
