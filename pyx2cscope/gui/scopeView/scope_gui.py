@@ -245,6 +245,7 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger = QGridLayout()
         trigger_layout.addLayout(grid_layout_trigger)
 
+        self.single_shot_checkbox = QCheckBox("Single Shot")  # Add Single Shot checkbox
         self.sample_time_factor = QLineEdit("1")
         self.sample_time_factor.setValidator(self.decimal_validator)
         self.trigger_mode_combo = QComboBox()
@@ -258,17 +259,19 @@ class X2cscopeGui(QMainWindow):
         self.scope_trigger_button = QPushButton("Configure Trigger")
         self.scope_trigger_button.clicked.connect(self.configure_trigger)
 
-        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 0, 0)
-        grid_layout_trigger.addWidget(self.sample_time_factor, 0, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 1, 0)
-        grid_layout_trigger.addWidget(self.trigger_mode_combo, 1, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 2, 0)
-        grid_layout_trigger.addWidget(self.trigger_edge_combo, 2, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 3, 0)
-        grid_layout_trigger.addWidget(self.trigger_level_edit, 3, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 4, 0)
-        grid_layout_trigger.addWidget(self.trigger_delay_edit, 4, 1)
-        grid_layout_trigger.addWidget(self.scope_trigger_button, 5, 0, 1, 2)
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
+                                      2)  # Add the Single Shot checkbox to the layout
+        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
+        grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
+        grid_layout_trigger.addWidget(self.trigger_mode_combo, 2, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 3, 0)
+        grid_layout_trigger.addWidget(self.trigger_edge_combo, 3, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 4, 0)
+        grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
+        grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
+        grid_layout_trigger.addWidget(self.scope_trigger_button, 6, 0, 1, 2)
 
         # Variable Selection Group Box
         variable_group = QGroupBox("Variable Selection")
@@ -1050,17 +1053,16 @@ class X2cscopeGui(QMainWindow):
 
                 for combo in self.scope_var_combos:
                     variable_name = combo.currentText()
-                    print(variable_name)
                     if variable_name and variable_name != "None":
                         variable = self.x2cscope.get_variable(variable_name)
                         self.x2cscope.add_scope_channel(variable)
                 self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
                 self.configure_trigger()  # trigger configuration
-                self.x2cscope.request_scope_data()
                 self.sampling_active = True
                 self.scope_sample_button.setText("Stop")
                 logging.info("Started sampling.")
-                self.sample_scope_data()
+                self.x2cscope.request_scope_data()
+                self.sample_scope_data(single_shot=self.single_shot_checkbox.isChecked())
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
@@ -1113,10 +1115,9 @@ class X2cscopeGui(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
-    def sample_scope_data(self):
+    def sample_scope_data(self, single_shot=False):
         """Sample the scope data."""
         try:
-
             plt.ion()  # Turn on interactive mode
             self.fig, self.ax = plt.subplots()
 
@@ -1139,6 +1140,9 @@ class X2cscopeGui(QMainWindow):
                     self.ax.legend()
 
                     plt.pause(0.001)  # Add a short pause to update the plot
+
+                    if single_shot:
+                        break
 
                     self.x2cscope.request_scope_data()
 
