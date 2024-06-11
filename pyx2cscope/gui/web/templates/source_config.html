@@ -8,8 +8,18 @@
     <div class="col-md-2">
         <button type="button" id="scopeLoad" class="btn btn-secondary btn-block">Load</button>
     </div>
-    <div class="col-md-2 offset-2">
-        <button type="button" id="scopeExport" class="btn btn-secondary btn-block">Chart</button>
+    <div class="col-md-2 offset-3">
+        <div class="dropdown">
+            <button class="btn btn-info dropdown-toggle btn-block" type="button" id="chartMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Chart
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" id="chartExport">Export</a>
+            </div>
+        </div>
     </div>
 </div>
 <br>

@@ -102,7 +102,7 @@ function sv_update_param(element) {
 }
 
 function sv_update_scope_data() {
-    $.getJSON('/scope-view-plot', function(data) {
+    $.getJSON('/scope-view-chart', function(data) {
         scopeChart.data.datasets = data.data;
         scopeChart.data.labels = data.labels;
         scopeChart.update('none');
@@ -130,6 +130,25 @@ function sv_remove(data, type){
     return '<button class="btn btn-danger remove" type="button">Remove</button>';
 }
 
+const zoomOptions = {
+    pan: {
+        enabled: true,
+        modifierKey: 'ctrl',
+    },
+    zoom: {
+        drag: {
+            enabled: true,
+        },
+        wheel: {
+            enabled: false,
+        },
+        pinch: {
+            enabled: true
+        },
+        mode: 'xy'
+    }
+}
+
 function initScopeChart() {
     let ctx = document.getElementById('scopeChart').getContext('2d');
     scopeChart = new Chart(ctx, {
@@ -154,28 +173,17 @@ function initScopeChart() {
                 },
             },
             plugins: {
-                zoom: {
-                    pan: {
-                        enabled: true,
-                        mode: 'xy'
-                    },
-                    zoom: {
-                        wheel: {
-                            enabled: true,
-                        },
-                        pinch: {
-                            enabled: true
-                        },
-                        mode: 'xy'
-                    }
-                }
+                zoom: zoomOptions,
             }
         }
     });
 
-    $('#autoZoom').on('click', function() {
-            scopeChart.resetZoom();
+    $('#chartZoomReset').on('click', function() {
+        scopeChart.resetZoom();
     });
+
+    $('#chartExport').attr("href", "scope-view-export")
+
 }
 
 function sv_data_ready_check()

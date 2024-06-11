@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import random
 import serial
 import serial.tools.list_ports
 import logging
+
+import numpy as np
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -122,7 +124,7 @@ def scope_view_update():
     print("Parameter:" + param + ", field:" + field + ", value:" + value)
     for _data in scope_data:
         if _data["variable"] == param:
-            _data[field] = float(value)
+            _data[field] = value if field == "color" else float(value)
             break
     return jsonify({"status": "success"})
 
@@ -144,14 +146,35 @@ def scope_view_form_trigger():
     print("delay", trigger_delay)
     return jsonify({"trigger": trigger_enable})
 
-def scope_view_plot():
-    scope_data = [
-        {"label": "motorA", "data": [random.randint(0, 100) for i in range(100)], "pointRadius": 0},
-        {"label": "motorB", "data": [random.randint(0, 100) for i in range(100)], "pointRadius": 0},
-        {"label": "motorC", "data": [random.randint(0, 100) for i in range(100)], "pointRadius": 0}
-    ]
-    labels = [i for i in range(0, 100)]
-    return jsonify({"data": scope_data, "labels": labels})
+def _get_chart_label():
+    return [i for i in range(0, 100)]
+
+def _get_scope_data():
+    data = []
+    for channel in scope_data:
+        item = {"label": channel["variable"], "pointRadius": 0, "borderColor": channel["color"],
+                "backgroundColor": channel["color"], "data": [random.randint(0, 100) for i in range(100)]}
+        data.append(item)
+    return data
+
+
+def scope_view_chart():
+    data = _get_scope_data()
+    labels = _get_chart_label()
+    return jsonify({"data": data, "labels": labels})
+
+def scope_view_chart_export():
+    scope_data = _get_scope_data()
+    labels = _get_chart_label()
+    csv = "index; " + "; ".join([sc["label"] for sc in scope_data]) + "\n"
+    data = [d["data"] for d in scope_data]
+    data[:0] = [labels]  # place labels as first item im list
+    for i in zip(*data):
+        csv += "\n" + "; ".join(map(str,i))
+    return Response(
+        csv,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=chart.csv"})
 
 app.add_url_rule('/', view_func=index)
 app.add_url_rule('/serial-ports', view_func=list_serial_ports)
@@ -168,7 +191,8 @@ app.add_url_rule('/scope-view-data-ready', view_func=scope_view_data_ready, meth
 app.add_url_rule('/scope-view-add', view_func=scope_view_add, methods=["POST","GET"])
 app.add_url_rule('/scope-view-remove', view_func=scope_view_remove, methods=["POST","GET"])
 app.add_url_rule('/scope-view-update', view_func=scope_view_update, methods=["POST","GET"])
-app.add_url_rule('/scope-view-plot', view_func=scope_view_plot, methods=["POST","GET"])
+app.add_url_rule('/scope-view-chart', view_func=scope_view_chart, methods=["POST","GET"])
+app.add_url_rule('/scope-view-export', view_func=scope_view_chart_export, methods=["POST","GET"])
 app.add_url_rule('/scope-view-form-sample', view_func=scope_view_form_sample, methods=["POST","GET"])
 app.add_url_rule('/scope-view-form-trigger', view_func=scope_view_form_trigger, methods=["POST","GET"])
 
