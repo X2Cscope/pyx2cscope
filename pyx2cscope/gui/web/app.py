@@ -1,10 +1,14 @@
-from flask import render_template, request, jsonify, Response
 import serial.tools.list_ports
+import os
 
+from flask import render_template, request, jsonify
 
-from pyx2cscope.gui.web import create_app, data
+from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.gui.web import create_app, create_x2cscope
 from views.watch_view import wv as watch_view
 from views.scope_view import sv as scope_view
+
+x2cScope: X2CScope
 
 app = create_app()
 app.register_blueprint(watch_view, url_prefix='/watch-view')
@@ -18,20 +22,25 @@ def list_serial_ports():
     return jsonify([port.device for port in ports])
 
 def connect():
+    global x2cScope
     uart = request.form.get('uart')
     elf_file = request.files.get('elfFile')
 
     if "default" not in uart and elf_file and elf_file.filename.endswith('.elf'):
-        print(elf_file.filename)
+        file_name = os.path.join("upload", "elf_file.elf")
+        elf_file.save(file_name)
+        x2cScope = X2CScope(port=uart, elf_file=file_name)
+        x2cScope.list_variables()
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
 
 def disconnect():
+    x2cScope.disconnect()
     return jsonify({"status": "success"})
 
 def variables_autocomplete():
     query = request.args.get('q', '')
-    items = [{"id":option['id'], "text":option['id']} for option in data if query.lower() in option['id'].lower()]
+    items = [{"id":var, "text":var} for var in x2cScope.list_variables() if query.lower() in var.lower()]
     return jsonify({"items": items})
 
 app.add_url_rule('/', view_func=index)

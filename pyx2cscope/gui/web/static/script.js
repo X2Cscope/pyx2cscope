@@ -15,7 +15,10 @@ function connect(){
                 scopeCardEnabled = true;
                 $('#parameterCard').removeClass('disabled');
                 $('#scopeCard').removeClass('disabled');
+                $("#btnWatchView").prop("disabled",false);
+                $("#btnScopeView").prop("disabled",false);
                 $('#connect').html('Disconnect');
+                $("#btnConnSetup").click();
             } else {
                 alert(response.status);
             }
@@ -58,4 +61,6 @@ function initSetupCard(){
 $(document).ready(function() {
     initSetupCard();
     load_uart();
+    $("#btnWatchView").prop("disabled",true);
+    $("#btnScopeView").prop("disabled",true);
 });

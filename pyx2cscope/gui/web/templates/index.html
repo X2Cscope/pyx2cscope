@@ -2,19 +2,19 @@
 
 {% block content %}
 <p>
-  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#setupView" aria-expanded="false" aria-controls="setupView">Connection Setup</button>
-  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#watchView" aria-expanded="false" aria-controls="watchView">Watch View</button>
-  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#scopeView" aria-expanded="false" aria-controls="scopeView">Scope View</button>
+  <button id="btnConnSetup" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#setupView" aria-expanded="false" aria-controls="setupView">Connection Setup</button>
+  <button id="btnWatchView" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#watchView" aria-expanded="false" aria-controls="watchView">Watch View</button>
+  <button id="btnScopeView" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#scopeView" aria-expanded="false" aria-controls="scopeView">Scope View</button>
 </p>
 <div class="row">
-    <div class="col-lg-6 col-md-12">
-             <div class="card collapse setupView" id="setupView">
-                <div class="card-header">
-                    Setup
-                </div>
-                <div class="card-body">
-                    {% include 'setup.html' %}
-                </div>
+    <div class="col-md-4">
+        <div class="card collapse setupView" id="setupView">
+            <div class="card-header">
+                Setup
+            </div>
+            <div class="card-body">
+                {% include 'setup.html' %}
+            </div>
         </div>
     </div>
 </div>
