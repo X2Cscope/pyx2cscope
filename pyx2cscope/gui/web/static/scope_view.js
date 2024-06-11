@@ -23,7 +23,7 @@ function initScopeSelect(){
 
     $('#scopeSearch').on('select2:select', function(e){
         parameter = $('#scopeSearch').select2('data')[0]['text'];
-        $.getJSON('/scope-view-add',
+        $.getJSON('/scope-view/add',
         {
             param: parameter
         },
@@ -46,7 +46,7 @@ function setScopeTableListeners(){
     // delete Row on button click
     $('#scopeTableBody').on('click', '.remove', function () {
         parameter = $(this).parent().siblings()[2].textContent;
-        $.getJSON('/scope-view-remove',
+        $.getJSON('/scope-view/remove',
         {
             param: parameter
         },
@@ -93,7 +93,7 @@ function sv_update_param(element) {
     parameter = $("#scopeTable tbody>tr").children()[2].textContent;
     parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
 
-    $.getJSON('/scope-view-update',
+    $.getJSON('/scope-view/update',
     {
         param: parameter,
         field: parameter_field,
@@ -102,7 +102,7 @@ function sv_update_param(element) {
 }
 
 function sv_update_scope_data() {
-    $.getJSON('/scope-view-chart', function(data) {
+    $.getJSON('/scope-view/chart', function(data) {
         scopeChart.data.datasets = data.data;
         scopeChart.data.labels = data.labels;
         scopeChart.update('none');
@@ -182,13 +182,13 @@ function initScopeChart() {
         scopeChart.resetZoom();
     });
 
-    $('#chartExport').attr("href", "scope-view-export")
+    $('#chartExport').attr("href", "scope-view/export")
 
 }
 
 function sv_data_ready_check()
 {
-    $.getJSON('/scope-view-data-ready', function(data) {
+    $.getJSON('/scope-view/data-ready', function(data) {
         if(data.finish) {
             clearInterval(dataReadyRefreshInterval);
             sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
@@ -214,7 +214,7 @@ function initScopeForms(){
 
         $.ajax({
             type: "POST",
-            url: "scope-view-form-sample",
+            url: "scope-view/form-sample",
             data: form.serialize(),
             success: function(data)
             {
@@ -242,7 +242,7 @@ function initScopeForms(){
 
         $.ajax({
             type: "POST",
-            url: "scope-view-form-trigger",
+            url: "scope-view/form-trigger",
             data: form.serialize(), // serializes the form's elements.
             success: function(data){
             }
@@ -258,7 +258,7 @@ $(document).ready(function () {
     initScopeChart();
 
     scopeTable = $('#scopeTable').DataTable({
-        ajax: '/scope-view-data',
+        ajax: '/scope-view/data',
         searching: false,
         paging: false,
         info: false,

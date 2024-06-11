@@ -5,7 +5,7 @@ let parameterTable;
 function setParameterRefreshInterval(){
     // Handle the Refresh button click
     $('#paramRefresh').click(function() {
-        $.getJSON('/watch-view-update-non-live', function(data){})
+        $.getJSON('/watch-view/update-non-live', function(data){})
         .success(parameterTable.ajax.reload());
     });
 
@@ -42,7 +42,7 @@ function setParameterTableListeners(){
     $('#parameterTableBody').on('click', '.remove', function () {
 
         parameter = $(this).parent().siblings()[1].textContent;
-        $.getJSON('/watch-view-remove',
+        $.getJSON('/watch-view/remove',
         {
             param: parameter
         },
@@ -89,7 +89,7 @@ function initParameterSelect(){
 
     $('#parameterSearch').on('select2:select', function(e){
         parameter = $('#parameterSearch').select2('data')[0]['text'];
-        $.getJSON('/watch-view-add',
+        $.getJSON('/watch-view/add',
         {
             param: parameter
         },
@@ -115,7 +115,7 @@ function wv_update_param(cb, element) {
         parameter_field = "live";
         parameter_value = cb.checked? "1":"0";
     }
-    $.getJSON('/watch-view-update',
+    $.getJSON('/watch-view/update',
     {
         param: parameter,
         field: parameter_field,
@@ -139,7 +139,7 @@ $(document).ready(function () {
     setParameterRefreshInterval();
 
     parameterTable = $('#parameterTable').DataTable({
-        ajax: '/watch-view-data',
+        ajax: '/watch-view/data',
         searching: false,
         paging: false,
         info: false,
