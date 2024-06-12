@@ -71,6 +71,9 @@ class Variable:
     def __len__(self):
         return self.array_size
 
+    def __repr__(self):
+        return self.name
+
     def _get_array_values(self):
         chunk_data = bytearray()
         data_type = self.get_width()  # width of the array elements.

@@ -6,7 +6,7 @@ function setParameterRefreshInterval(){
     // Handle the Refresh button click
     $('#paramRefresh').click(function() {
         $.getJSON('/watch-view/update-non-live', function(data){})
-        .success(parameterTable.ajax.reload());
+        .done(parameterTable.ajax.reload());
     });
 
     $('#refresh1s').click(function() {
@@ -72,6 +72,7 @@ function setParameterTableListeners(){
 function initParameterSelect(){
     $('#parameterSearch').select2({
         placeholder: "Select a variable",
+        dropdownAutoWidth : true,
         allowClear: true,
         ajax: {
             url: 'variables',

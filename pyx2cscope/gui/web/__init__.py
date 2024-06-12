@@ -1,21 +1,19 @@
 from flask import Flask
 import logging
-import random
 
+from pyx2cscope.xc2scope import X2CScope
 
-data = [
-    {"id": "motor.A", "text": random.randint(0, 100)},
-    {"id": "motor.B", "text": random.randint(0, 100)},
-    {"id": "motor.C", "text": random.randint(0, 100)}
-]
+x2cScope : X2CScope
 
-def create_x2cscope(*args, **kwargs):
+def connect_x2c(*args, **kwargs):
     global x2cScope
     x2cScope = X2CScope(**kwargs)
     x2cScope.list_variables()
 
+def get_x2c() -> X2CScope:
+    return x2cScope
+
 def create_app(log_level=logging.ERROR):
     app = Flask(__name__)
-    #log = logging.getLogger('werkzeug')
-    #log.setLevel(log_level)
+    app.logger.setLevel(log_level)
     return app

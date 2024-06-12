@@ -6,6 +6,7 @@ let scopeChart;
 function initScopeSelect(){
     $('#scopeSearch').select2({
         placeholder: "Select a variable",
+        dropdownAutoWidth : true,
         allowClear: true,
         ajax: {
             url: 'variables',

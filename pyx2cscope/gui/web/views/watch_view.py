@@ -1,6 +1,6 @@
-import random
-
 from flask import Blueprint, jsonify, request
+
+from pyx2cscope.gui.web import get_x2c
 
 wv = Blueprint('watch_view', __name__, template_folder='templates')
 
@@ -8,28 +8,34 @@ watch_data = []
 
 def read_variable(_data):
     # pyX2CScope read variable
-    _data["value"] = random.randint(0, 100)
-    _data["scaled_value"] = _data["value"] * _data["scaling"] + _data["offset"]
+    value = _data["variable"].get_value()
+    _data["value"] = value
+    _data["scaled_value"] = value * _data["scaling"] + _data["offset"]
 
 def get_variable(parameter):
-    return {'live':0, 'variable':parameter, 'type':'int64', 'value':random.randint(0, 100),
-                 'scaling':1, 'offset':0, 'scaled_value':0, 'remove':0}
+    variable = get_x2c().get_variable(parameter)
+    value = variable.get_value()
+    primitive = variable.__class__.__name__.split("_")[1]
+    return {'live':0, 'variable':variable, 'type':primitive, 'value':value,
+                 'scaling':1, 'offset':0, 'scaled_value':value, 'remove':0}
 def get_data():
+    result = []
     for _data in watch_data:
         if _data["live"]:
             read_variable(_data)
-    return {'data': watch_data}
+        result.append({f:v.name if f == "variable" else v for f,v in _data.items()})
+    return {"data": result}
 
 def add():
     parameter = request.args.get('param', '')
-    if not any(_data['variable'] == parameter for _data in watch_data):
+    if not any(_data['variable'].name == parameter for _data in watch_data):
         watch_data.append(get_variable(parameter))
     return jsonify({"status": "success"})
 
 def remove():
     parameter = request.args.get('param', '')
     for _data in watch_data:
-        if _data['variable'] == parameter:
+        if _data['variable'].name == parameter:
             watch_data.remove(_data)
             break
     return jsonify({"status": "success"})
@@ -40,10 +46,10 @@ def update():
     value = request.args.get('value', '')
     print("Parameter:" + param + ", field:" + field + ", value:" + value)
     for _data in watch_data:
-        if _data["variable"] == param:
+        if _data["variable"].name == param:
             _data[field] = float(value)
             if field == "value":
-                print("pyX2CScope variable write!")
+                _data["variable"].set_value( _data[field])
             break
     return jsonify({"status": "success"})
 
