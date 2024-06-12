@@ -17,11 +17,6 @@ Create a virtual environment and install pyx2cscope using the following commands
 
 .. code-block:: python
 
-.. image:: images/overview.gif
-   :width: 180
-   :alt: pyx2cscope
-   :align: left
-
    python -m venv .venv
    source .venv/bin/activate
    pip install pyx2cscope
@@ -48,6 +43,8 @@ Simplest scripting example
 
    introduction
    how_to
+   HW_Support
+   example
 
 Indices and tables
 ==================

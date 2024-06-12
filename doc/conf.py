@@ -12,8 +12,8 @@ import sys
 import pyx2cscope
 
 project = "pyX2Cscope"
-copyright = "2024, Yash Agarwal, Edras Pacola, Mark Wendler, Christof Baumgartner"
-author = "Yash Agarwal, Edras Pacola, Mark Wendler, Christof Baumgartner"
+copyright = "2024, Yash Agarwal"
+author = "Yash Agarwal, Edras Pacola, Mark Wendler, Christoph Baumgartner"
 html_favicon = "images/pyx2cscope.ico"
 
 # The short X.Y version.

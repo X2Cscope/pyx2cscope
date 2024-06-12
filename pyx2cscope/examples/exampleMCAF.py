@@ -1,6 +1,6 @@
-"""exampleMCFG.py.
+"""exampleMCAF.py.
 
-this example is the very basic example to retrieve the value of a certain variable.
+this example is the very basic example to retrieve the value of a certain variable for motorBench generated code.
 """
 
 import logging
