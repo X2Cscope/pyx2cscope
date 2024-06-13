@@ -345,6 +345,9 @@ class X2CScope:
         Returns:
             Dict[str, List[Number]]: A dictionary with channel names as keys and data lists as values.
         """
-        data = self._read_array_chunks()
-        channels = self._sort_channel_data(data)
-        return self._filter_channels(channels) if valid_data else channels
+        # handle only if there is at least one channel added to the scope
+        if self.scope_setup.channels:
+            data = self._read_array_chunks()
+            channels = self._sort_channel_data(data)
+            return self._filter_channels(channels) if valid_data else channels
+        return {}
