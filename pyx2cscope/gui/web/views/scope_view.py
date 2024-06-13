@@ -2,86 +2,133 @@ import random
 
 from flask import Blueprint, jsonify, request, Response
 
+from pyx2cscope.gui.web import get_x2c
+
 sv = Blueprint('scope_view', __name__, template_folder='templates')
 
 scope_data = []
+scope_trigger = False
+scope_burst = False
+scope_sample = 1
+scope_time_sample = 50e-6
 
 def get_variable(parameter):
+    variable = get_x2c().get_variable(parameter)
     colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF", "#800080", "#CCCCCC"]
-    return {'trigger':0, 'enable':0, 'variable':parameter, 'color':colors[len(scope_data)],
-            'gain':0 , 'offset':0, 'remove':0}
+    return {'trigger':0, 'enable':1, 'variable':variable, 'color':colors[len(scope_data)],
+            'gain':1 , 'offset':0, 'remove':0}
 
 def get_data():
-    return {'data': scope_data}
-
-def is_data_ready():
-    return {"ready": True, "finish": True}
+    result = []
+    for data in scope_data:
+        result.append({f:v.name if f == "variable" else v for f,v in data.items()})
+    return {'data': result}
 
 def add():
     parameter = request.args.get('param', '')
-    if not any(_data['variable'] == parameter for _data in scope_data):
-        scope_data.append(get_variable(parameter))
+    if not any(_data['variable'].name == parameter for _data in scope_data):
+        data = get_variable(parameter)
+        scope_data.append(data)
+        get_x2c().add_scope_channel(data["variable"])
     return jsonify({"status": "success"})
 
 def remove():
     parameter = request.args.get('param', '')
-    for _data in scope_data:
-        if _data['variable'] == parameter:
-            scope_data.remove(_data)
+    for data in scope_data:
+        if data['variable'].name == parameter:
+            scope_data.remove(data)
+            get_x2c().remove_scope_channel(data["variable"])
             break
     return jsonify({"status": "success"})
+
+# def _set_trigger(data, param, field, value):
+#     if field == "trigger":
+#         value = bool(value)
+#         if data["variable"].name == param:
+#             data["trigger"] = value
+#         else:
+#             data["value"] = False if value else data["value"]
+
+def _set_fields(data, param, field, value):
+    if data["variable"].name == param:
+        data[field] = value if field == "color" else float(value)
+
+def _set_enable(data, param, field, value):
+    if field == "enable":
+        if data["variable"].name == param:
+            if float(value):
+                get_x2c().add_scope_channel(data["variable"])
+            else:
+                get_x2c().remove_scope_channel(data["variable"])
 
 def update():
     param = request.args.get('param', '')
     field = request.args.get('field', '').lower()
     value = request.args.get('value', '')
-    print("Parameter:" + param + ", field:" + field + ", value:" + value)
-    for _data in scope_data:
-        if _data["variable"] == param:
-            _data[field] = value if field == "color" else float(value)
-            break
+    for data in scope_data:
+        # _set_trigger(data, param, field, value)
+        _set_enable(data, param, field, value)
+        _set_fields(data, param, field, value)
     return jsonify({"status": "success"})
 
 def form_sample():
+    global scope_trigger, scope_burst, scope_sample
     param = request.form.get('triggerAction', '')
     field = request.form.get('sampleTime', '')
-    print("triggering", param)
-    print("sampleTime", field)
+    scope_burst = True if param == "shot" else False
+    scope_trigger = True if param == "on" else False
+    scope_sample = int(field)
+    get_x2c().set_sample_time(scope_sample)
+    if scope_trigger or scope_burst:
+        get_x2c().request_scope_data()
     return jsonify({"trigger": param != "off"})
 
 def form_trigger():
-    trigger_enable = (request.form.get('triggerEnable', 'off').lower() == "enable")
-    trigger_edge = (request.form.get('triggerEdge', '').lower() == "rising")
-    trigger_level = float(request.form.get('triggerLevel', '0.0'))
-    trigger_delay = float(request.form.get('triggerDelay', '0.0'))
-    print("trigger", trigger_enable)
-    print("edge", trigger_edge)
-    print("level", trigger_level)
-    print("delay", trigger_delay)
-    return jsonify({"trigger": trigger_enable})
+    trigger = {
+        "trigger_mode": (request.form.get('triggerEnable', 'off').lower() == "enable"),
+        "trigger_edge": (request.form.get('triggerEdge', '').lower() == "rising"),
+        "trigger_level": float(request.form.get('triggerLevel', '0.0')),
+        "trigger_delay": float(request.form.get('triggerDelay', '0.0'))
+    }
+    if trigger["trigger_mode"]:
+        variable = [channel["variable"] for channel in scope_data if channel["trigger"] == True]
+    return jsonify({"trigger": trigger})
 
-def _get_chart_label():
-    return [i for i in range(0, 100)]
+def _get_chart_label(size=100):
+    return [i * scope_time_sample for i in range(0, size)]
 
-def _get_scope_data():
+def _get_datasets():
     data = []
+    channel_data = get_x2c().get_scope_channel_data()
     for channel in scope_data:
-        item = {"label": channel["variable"], "pointRadius": 0, "borderColor": channel["color"],
-                "backgroundColor": channel["color"], "data": [random.randint(0, 100) for i in range(100)]}
-        data.append(item)
+        # if variable is disable on scope_data, it is not available on channel_data
+        if channel["variable"].name in channel_data:
+            variable = channel["variable"].name
+            item = {"label": variable, "pointRadius": 0, "borderColor": channel["color"],
+                    "backgroundColor": channel["color"], "data": channel_data[variable]}
+            data.append(item)
+    if scope_trigger:
+        get_x2c().request_scope_data()
     return data
 
 def chart():
-    data = _get_scope_data()
-    labels = _get_chart_label()
-    return jsonify({"data": data, "labels": labels})
+    ready = get_x2c().is_scope_data_ready()
+    finish = True if ready and scope_burst else False
+    datasets = []
+    label = []
+    if ready:
+        datasets = _get_datasets()
+        size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
+        label = _get_chart_label(size)
+    return jsonify({"ready": ready, "finish": finish, "data": datasets, "labels": label})
 
 def chart_export():
-    scope_data = _get_scope_data()
-    labels = _get_chart_label()
-    csv = "index; " + "; ".join([sc["label"] for sc in scope_data]) + "\n"
-    data = [d["data"] for d in scope_data]
-    data[:0] = [labels]  # place labels as first item im list
+    datasets = _get_datasets()
+    size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
+    label = _get_chart_label(size)
+    csv = "index; " + "; ".join([sc["label"] for sc in datasets]) + "\n"
+    data = [d["data"] for d in datasets]
+    data[:0] = [label]  # place labels as first item im list
     for i in zip(*data):
         csv += "\n" + "; ".join(map(str,i))
     return Response(
@@ -90,7 +137,6 @@ def chart_export():
         headers={"Content-disposition": "attachment; filename=chart.csv"})
 
 sv.add_url_rule('/data', view_func=get_data, methods=["POST","GET"])
-sv.add_url_rule('/data-ready', view_func=is_data_ready, methods=["POST","GET"])
 sv.add_url_rule('/add', view_func=add, methods=["POST","GET"])
 sv.add_url_rule('/remove', view_func=remove, methods=["POST","GET"])
 sv.add_url_rule('/update', view_func=update, methods=["POST","GET"])

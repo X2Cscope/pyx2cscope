@@ -18,6 +18,7 @@ def get_variable(parameter):
     primitive = variable.__class__.__name__.split("_")[1]
     return {'live':0, 'variable':variable, 'type':primitive, 'value':value,
                  'scaling':1, 'offset':0, 'scaled_value':value, 'remove':0}
+
 def get_data():
     result = []
     for _data in watch_data:

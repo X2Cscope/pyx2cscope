@@ -1,5 +1,5 @@
 let scopeCardEnabled = true;
-let dataReadyRefreshInterval;
+let dataReadyInterval;
 let scopeTable;
 let scopeChart;
 
@@ -83,15 +83,16 @@ function sv_update_param(element) {
     if(element.contentEditable == "true")
     {
         index = $(element).index();
+        parameter = $(element).siblings()[2].textContent;
         parameter_value = $(element).html();
     }
     else // checkbox, color
     {
         index = $(element).parent().index();
+        parameter = $(element).parent().siblings()[1].textContent;
         if(element.type == "checkbox") parameter_value = element.checked? "1":"0";
         if(element.type == "color") parameter_value = element.value;
     }
-    parameter = $("#scopeTable tbody>tr").children()[2].textContent;
     parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
 
     $.getJSON('/scope-view/update',
@@ -102,12 +103,10 @@ function sv_update_param(element) {
     });
 }
 
-function sv_update_scope_data() {
-    $.getJSON('/scope-view/chart', function(data) {
-        scopeChart.data.datasets = data.data;
-        scopeChart.data.labels = data.labels;
-        scopeChart.update('none');
-    });
+function sv_update_scope_data(data) {
+    scopeChart.data.datasets = data.data;
+    scopeChart.data.labels = data.labels;
+    scopeChart.update('none');
 }
 
 function initScopeCard(){
@@ -184,27 +183,38 @@ function initScopeChart() {
     });
 
     $('#chartExport').attr("href", "scope-view/export")
+}
 
+function sv_clear_stop_focus() {
+    $("#triggerStop").removeClass("active");
+    $("#triggerStop").removeClass("focus");
+}
+
+function sv_set_stop_focus() {
+    sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
+    sampleTriggerButtons.forEach(button => {
+        if(button.id == "triggerStop") {
+            button.parentElement.classList.add("active");
+            button.parentElement.classList.add("focus");
+        }
+        else {
+            button.parentElement.classList.remove("active");
+            button.parentElement.classList.remove("focus");
+        }
+    });
 }
 
 function sv_data_ready_check()
 {
-    $.getJSON('/scope-view/data-ready', function(data) {
+    $.getJSON('/scope-view/chart', function(data) {
         if(data.finish) {
-            clearInterval(dataReadyRefreshInterval);
-            sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
-            sampleTriggerButtons.forEach(button => {
-                if(button.id == "triggerStop") {
-                    button.parentElement.classList.add("active");
-                    button.parentElement.classList.add("focus");
-                }
-                else {
-                    button.parentElement.classList.remove("active");
-                    button.parentElement.classList.remove("focus");
-                }
-            });
+            sv_set_stop_focus();
+            sv_update_scope_data(data);
         }
-        if(data.ready) sv_update_scope_data();
+        else {
+            if(data.ready) sv_update_scope_data(data);
+            if(dataReadyInterval) setTimeout(sv_data_ready_check, 200);
+        }
     });
 }
 
@@ -219,13 +229,14 @@ function initScopeForms(){
             data: form.serialize(),
             success: function(data)
             {
-              if(data.trigger){
-                  clearInterval(dataReadyRefreshInterval);
-                  dataReadyRefreshInterval = setInterval(sv_data_ready_check, 200);
-              }
-              else {
-                  clearInterval(dataReadyRefreshInterval);
-              }
+                if(data.trigger){
+                    dataReadyInterval = true;
+                    setTimeout(sv_data_ready_check, 200);
+                    sv_clear_stop_focus();
+                }
+                else {
+                    dataReadyInterval = false;
+                }
             }
         });
     });
