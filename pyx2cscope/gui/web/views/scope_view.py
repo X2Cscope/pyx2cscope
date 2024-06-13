@@ -83,10 +83,10 @@ def form_sample():
 
 def form_trigger():
     trigger = {
-        "trigger_mode": (request.form.get('triggerEnable', 'off').lower() == "enable"),
-        "trigger_edge": (request.form.get('triggerEdge', '').lower() == "rising"),
-        "trigger_level": float(request.form.get('triggerLevel', '0.0')),
-        "trigger_delay": float(request.form.get('triggerDelay', '0.0'))
+        "trigger_mode": 1 if (request.form.get('triggerEnable', 'off').lower() == "enable") else 0,
+        "trigger_edge": 1 if (request.form.get('triggerEdge', '').lower() == "rising") else 0,
+        "trigger_level": int(request.form.get('triggerLevel', '0')),
+        "trigger_delay": int(request.form.get('triggerDelay', '0'))
     }
     variable = [channel["variable"] for channel in scope_data if channel["trigger"] == 1.0]
     if trigger["trigger_mode"] and len(variable) == 1:
