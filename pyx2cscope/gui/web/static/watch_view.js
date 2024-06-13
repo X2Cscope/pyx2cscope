@@ -63,7 +63,9 @@ function setParameterTableListeners(){
             $(this).blur(); // Remove focus from the current contenteditable element
             return false;
         }
-        if ((e.which != 46 || $(this).val().indexOf('.') != -1) && (e.which < 48 || e.which > 57)) {
+        if ((e.which != 45 || $(this).val().indexOf('-') != -1)
+            && (e.which != 46 || $(this).val().indexOf('.') != -1)
+            && (e.which < 48 || e.which > 57)) {
             return false;
         }
     });

@@ -41,13 +41,11 @@ def remove():
             break
     return jsonify({"status": "success"})
 
-# def _set_trigger(data, param, field, value):
-#     if field == "trigger":
-#         value = bool(value)
-#         if data["variable"].name == param:
-#             data["trigger"] = value
-#         else:
-#             data["value"] = False if value else data["value"]
+def _set_trigger(data, param, field, value):
+    if field == "trigger":
+        value = float(value)
+        if data["variable"].name != param:
+            data["trigger"] = 0.0 if value == 1.0 else data["trigger"]
 
 def _set_fields(data, param, field, value):
     if data["variable"].name == param:
@@ -66,7 +64,7 @@ def update():
     field = request.args.get('field', '').lower()
     value = request.args.get('value', '')
     for data in scope_data:
-        # _set_trigger(data, param, field, value)
+        _set_trigger(data, param, field, value)
         _set_enable(data, param, field, value)
         _set_fields(data, param, field, value)
     return jsonify({"status": "success"})
@@ -90,8 +88,12 @@ def form_trigger():
         "trigger_level": float(request.form.get('triggerLevel', '0.0')),
         "trigger_delay": float(request.form.get('triggerDelay', '0.0'))
     }
-    if trigger["trigger_mode"]:
-        variable = [channel["variable"] for channel in scope_data if channel["trigger"] == True]
+    variable = [channel["variable"] for channel in scope_data if channel["trigger"] == 1.0]
+    if trigger["trigger_mode"] and len(variable) == 1:
+        get_x2c().set_scope_trigger(variable[0], **trigger)
+    else:
+        get_x2c().reset_scope_trigger()
+
     return jsonify({"trigger": trigger})
 
 def _get_chart_label(size=100):
@@ -104,8 +106,9 @@ def _get_datasets():
         # if variable is disable on scope_data, it is not available on channel_data
         if channel["variable"].name in channel_data:
             variable = channel["variable"].name
+            data_line = [l * channel["gain"] + channel["offset"] for l in channel_data[variable]]
             item = {"label": variable, "pointRadius": 0, "borderColor": channel["color"],
-                    "backgroundColor": channel["color"], "data": channel_data[variable]}
+                    "backgroundColor": channel["color"], "data": data_line}
             data.append(item)
     if scope_trigger:
         get_x2c().request_scope_data()

@@ -69,9 +69,16 @@ function setScopeTableListeners(){
             $(this).blur(); // Remove focus from the current contenteditable element
             return false;
         }
-        if ((e.which != 46 || $(this).val().indexOf('.') != -1) && (e.which < 48 || e.which > 57)) {
+         if ((e.which != 45 || $(this).val().indexOf('-') != -1)
+            && (e.which != 46 || $(this).val().indexOf('.') != -1)
+            && (e.which < 48 || e.which > 57)) {
             return false;
         }
+//        const regex = /[+-]?([0-9]{1,}[.])[0-9]+/;
+//        if(!regex.test($(this).val()))
+//        {
+//            return false;
+//        }
     });
 }
 
@@ -80,26 +87,27 @@ function sv_update_param(element) {
     field = "";
     parameter_value = "0";
 
+    parameter = $(element).closest("tr").children()[2].textContent;
+    index = $(element).closest("td").index();
+    parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
+
     if(element.contentEditable == "true")
     {
-        index = $(element).index();
-        parameter = $(element).siblings()[2].textContent;
         parameter_value = $(element).html();
     }
     else // checkbox, color
     {
-        index = $(element).parent().index();
-        parameter = $(element).parent().siblings()[1].textContent;
         if(element.type == "checkbox") parameter_value = element.checked? "1":"0";
         if(element.type == "color") parameter_value = element.value;
     }
-    parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
 
     $.getJSON('/scope-view/update',
     {
         param: parameter,
         field: parameter_field,
         value: parameter_value
+    }, function (data){
+        scopeTable.ajax.reload();
     });
 }
 
