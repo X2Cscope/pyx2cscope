@@ -276,12 +276,15 @@ class X2CScope:
         chunk_size = 253  # full chunk excluding crc and Service-ID in total bytes 255 0xFF
         # Calculate the number of chunks
         num_chunks = self._calc_sda_used_length() // chunk_size
-        for i in range(num_chunks):
+        chunk_rest = self._calc_sda_used_length() % chunk_size
+        loop = num_chunks if chunk_rest == 0 else num_chunks + 1
+        for i in range(loop):
             # Calculate the starting address for the current chunk
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
                 # Read the chunk of data
-                data = self.lnet.get_ram_array(current_address, chunk_size, data_type)
+                data_size = chunk_size if i < num_chunks else chunk_rest
+                data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
                 logging.error(f"Error reading chunk {i}: {str(e)}")
@@ -334,14 +337,18 @@ class X2CScope:
         Returns:
             The filtered dictionary of channels with valid data only.
         """
+        # there is no need to rearrange the byte vector
+        if self.scope_setup.scope_trigger.trigger_delay < 0:
+            return channels
+
         start = self.get_delay_trigger_position()
-        nr_of_sda = int(self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size())
-        end = nr_of_sda - start
         for channel in channels:
-            channels[channel] = channels[channel][start:end]
+            rest = channels[channel][0:start]
+            channels[channel] = channels[channel][start:]
+            channels[channel].extend(rest)
         return channels
 
-    def get_scope_channel_data(self, valid_data=False) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(self, valid_data=True) -> Dict[str, List[Number]]:
         """
         Get the sorted and optionally filtered scope channel data.
 
