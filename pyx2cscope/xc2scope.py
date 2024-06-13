@@ -156,6 +156,12 @@ class X2CScope:
         """
         return self.scope_setup.list_channels()
 
+    def reset_scope_trigger(self):
+        """
+        Resets scope trigger settings, i.e., no triggering will happen.
+        """
+        self.scope_setup.reset_trigger()
+
     def set_scope_trigger(
         self,
         variable: Variable,
