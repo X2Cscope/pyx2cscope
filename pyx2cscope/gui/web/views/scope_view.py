@@ -10,7 +10,7 @@ scope_data = []
 scope_trigger = False
 scope_burst = False
 scope_sample = 1
-scope_time_sample = 50e-6
+scope_time_sample = 50e-3
 
 def get_variable(parameter):
     variable = get_x2c().get_variable(parameter)
