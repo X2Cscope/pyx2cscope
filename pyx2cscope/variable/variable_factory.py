@@ -2,7 +2,7 @@
 
 import logging
 
-from services.frame_device_info import DeviceInfo
+from mchplnet.services.frame_device_info import DeviceInfo
 
 from mchplnet.lnet import LNet
 from pyx2cscope.parser.elf16_parser import Elf16Parser
