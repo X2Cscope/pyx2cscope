@@ -6,7 +6,7 @@ from threading import Timer
 
 from flask import render_template, request, jsonify
 
-from pyx2cscope.gui.web import create_app, connect_x2c, get_x2c
+from pyx2cscope.gui.web import create_app, connect_x2c, get_x2c, disconnect_x2c
 from pyx2cscope.gui.web.views.watch_view import wv as watch_view
 from pyx2cscope.gui.web.views.scope_view import sv as scope_view
 
@@ -24,7 +24,6 @@ def list_serial_ports():
 def connect():
     uart = request.form.get('uart')
     elf_file = request.files.get('elfFile')
-
     if "default" not in uart and elf_file and elf_file.filename.endswith('.elf'):
         file_name = os.path.join("upload", "elf_file.elf")
         elf_file.save(file_name)
@@ -32,8 +31,11 @@ def connect():
         return jsonify({"status": "success"})
     return jsonify({"status": "error"}), 400
 
+def is_connected():
+    return jsonify({"status": (get_x2c() is not None)})
+
 def disconnect():
-    get_x2c().disconnect()
+    disconnect_x2c()
     return jsonify({"status": "success"})
 
 def variables_autocomplete():
@@ -46,16 +48,18 @@ app.add_url_rule('/', view_func=index)
 app.add_url_rule('/serial-ports', view_func=list_serial_ports)
 app.add_url_rule('/connect', view_func=connect, methods=['POST'])
 app.add_url_rule('/disconnect', view_func=disconnect)
+app.add_url_rule('/is-connected', view_func=is_connected)
 app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST","GET"])
 
+def open_browser(host="localhost", port=5000):
+    webbrowser.open("http://localhost:" + str(port))
 
-def open_browser(host="localhost", port="5000"):
-    webbrowser.open("http://localhost:" + port)
-def main(host="0.0.0.0", port="5000"):
-    Timer(1, open_browser).start()
-    print("Listening at http://" + ("localhost" if host=="0.0.0.0" else host) + ":" + port)
+def main(host="0.0.0.0", port="5000", new=True, *args, **kwargs):
+    if new:
+        Timer(1, open_browser).start()
+    print("Listening at http://" + ("localhost" if host=="0.0.0.0" else host) + ":" + str(port))
     app.run(host=host, port=port)
 
 if __name__ == '__main__':
-    main()
+    main(new=False)
 

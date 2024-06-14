@@ -45,14 +45,18 @@ def parse_arguments():
                         help="Start the Web user interface, pyx2cscope.gui.web.app.")
     parser.add_argument("-p", "--port", type=int, default="5000",
                         help="Configure the Web Server port. Use together with -w")
+    parser.add_argument("--host", type=str, default="0.0.0.0",
+                        help="Configure the Web Server address. Use together with -w")
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s ' + pyx2cscope.__version__)
 
-    return parser.parse_args()
+    return parser.parse_known_args()
 
 def execute_qt(args):
+    # QApplication expects the first argument to be the program name.
+    qt_args = sys.argv[:1] + args
     # Initialize a PyQt5 application
-    app = QApplication(sys.argv)
+    app = QApplication(qt_args)
     # Create an instance of the X2Cscope_GUI
     ex = X2Cscope_GUI()
     # Display the GUI
@@ -60,17 +64,17 @@ def execute_qt(args):
     # Start the PyQt5 application event loop
     app.exec_()
 
-def execute_web(args):
-    app.main(host="0.0.0.0", port=args.port)
+def execute_web(*args, **kwargs):
+    app.main(*args, **kwargs)
 
-args = parse_arguments()
+known_args, unknown_args = parse_arguments()
 
-set_logging_level(args)
+set_logging_level(known_args)
 
-if args.qt and not args.web:
-    execute_qt(args)
+if known_args.qt and not known_args.web:
+    execute_qt(unknown_args)
 
-if args.web:
-    execute_web(args)
+if known_args.web:
+    execute_web(**known_args.__dict__)
 
 

@@ -11,31 +11,21 @@ function connect(){
         contentType: false,
         success: function(response) {
             if (response.status === 'success') {
-                parameterCardEnabled = true;
-                scopeCardEnabled = true;
-                $('#parameterCard').removeClass('disabled');
-                $('#scopeCard').removeClass('disabled');
-                $("#btnWatchView").prop("disabled",false);
-                $("#btnScopeView").prop("disabled",false);
-                $('#connect').html('Disconnect');
-                $("#btnConnSetup").click();
-            } else {
-                alert(response.status);
+                setConnectState(true);
             }
         },
         error: function() {
             alert('Please select the UART and upload a .elf file.');
         }
     });
+
+    $("#btnConnSetup").prop("disabled", true);
+    $("#btnConnect").html("Loading...");
 }
 
 function disconnect(){
     $.getJSON('/disconnect', function(data) {
-        parameterCardEnabled = false;
-        scopeCardEnabled = false;
-        $('#parameterCard').addClass('disabled');
-        $('#scopeCard').addClass('disabled');
-        $('#connect').html('Connect');
+        setConnectState(false);
     });
 }
 
@@ -50,10 +40,35 @@ function load_uart() {
     });
 }
 
+function setConnectState(status) {
+    if(status) {
+        parameterCardEnabled = true;
+        scopeCardEnabled = true;
+        $('#parameterCard').removeClass('disabled');
+        $('#scopeCard').removeClass('disabled');
+        $("#btnWatchView").prop("disabled", false);
+        $("#btnScopeView").prop("disabled", false);
+        $("#btnConnect").prop("disabled", false);
+        $('#btnConnect').html('Disconnect');
+        $('#btnConnect').removeClass('btn-primary');
+        $('#btnConnect').addClass('btn-danger');
+    }
+    else {
+        parameterCardEnabled = false;
+        scopeCardEnabled = false;
+        $('#parameterCard').addClass('disabled');
+        $('#scopeCard').addClass('disabled');
+        $("#btnConnect").prop("disabled", false);
+        $('#btnConnect').html('Connect');
+        $('#btnConnect').removeClass('btn-danger');
+        $('#btnConnect').addClass('btn-primary');
+    }
+}
+
 function initSetupCard(){
     $('#update_com_port').on('click', load_uart);
-    $('#connect').on('click', function() {
-        if($('#connect').html() === "Connect") connect();
+    $('#btnConnect').on('click', function() {
+        if($('#btnConnect').html() === "Connect") connect();
         else disconnect();
     });
 }
@@ -61,6 +76,13 @@ function initSetupCard(){
 $(document).ready(function() {
     initSetupCard();
     load_uart();
+
     $("#btnWatchView").prop("disabled",true);
     $("#btnScopeView").prop("disabled",true);
+
+    $.getJSON('/is-connected', function(data) {
+        setConnectState(data.status);
+        if(data.status == false)
+           $("#btnConnSetup").click();
+    });
 });
