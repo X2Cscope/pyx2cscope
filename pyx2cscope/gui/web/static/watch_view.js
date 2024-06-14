@@ -53,7 +53,7 @@ function setParameterTableListeners(){
 
     // update variable after loosing focus on element
     $('#parameterTable').on('blur', 'td[contenteditable="true"]', function(){
-        wv_update_param(null, this);
+        wv_update_param(this);
     });
 
     // edit the number when on focus
@@ -77,7 +77,7 @@ function initParameterSelect(){
         dropdownAutoWidth : true,
         allowClear: true,
         ajax: {
-            url: 'variables',
+            url: '/variables',
             dataType: 'json',
             delay: 250,
             processResults: function (data) {
@@ -103,20 +103,18 @@ function initParameterSelect(){
     });
 }
 
-function wv_update_param(cb, element) {
-    parameter = "";
-    parameter_field = "";
-    parameter_value = "0";
-    if(element != null) { // contenteditable
-        parameter = $(element).siblings()[1].textContent;
-        index = $(element).index()
-        parameter_field = $("#parameterTable thead>tr").children()[index].textContent;
+function wv_update_param(element) {
+    parameter = $(element).closest("tr").children()[1].textContent;
+    index = $(element).closest("td").index();
+    parameter_field = $("#parameterTable thead>tr").children()[index].textContent;
+
+    if(element.contentEditable == "true")
+    {
         parameter_value = $(element).html();
     }
-    if(cb != null) { // checkbox
-        parameter = $(cb).parent().siblings()[0].textContent;
-        parameter_field = "live";
-        parameter_value = cb.checked? "1":"0";
+    else // checkbox, color
+    {
+        if(element.type == "checkbox") parameter_value = element.checked? "1":"0";
     }
     $.getJSON('/watch-view/update',
     {
@@ -127,7 +125,7 @@ function wv_update_param(cb, element) {
 }
 
 function wv_checkbox(data, type) {
-    val = '<input type="checkbox" onclick="wv_update_param(this, null);"';
+    val = '<input type="checkbox" onclick="wv_update_param(this);"';
     if(data) val += ' checked="checked"';
     return val += '>';
 }

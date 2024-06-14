@@ -9,7 +9,7 @@ function initScopeSelect(){
         dropdownAutoWidth : true,
         allowClear: true,
         ajax: {
-            url: 'variables',
+            url: '/variables',
             dataType: 'json',
             delay: 250,
             processResults: function (data) {
@@ -83,10 +83,6 @@ function setScopeTableListeners(){
 }
 
 function sv_update_param(element) {
-    parameter = "";
-    field = "";
-    parameter_value = "0";
-
     parameter = $(element).closest("tr").children()[2].textContent;
     index = $(element).closest("td").index();
     parameter_field = $("#scopeTable thead>tr").children()[index].textContent;
@@ -233,7 +229,7 @@ function initScopeForms(){
 
         $.ajax({
             type: "POST",
-            url: "scope-view/form-sample",
+            url: "/scope-view/form-sample",
             data: form.serialize(),
             success: function(data)
             {
@@ -262,7 +258,7 @@ function initScopeForms(){
 
         $.ajax({
             type: "POST",
-            url: "scope-view/form-trigger",
+            url: "/scope-view/form-trigger",
             data: form.serialize(), // serializes the form's elements.
             success: function(data){
             }

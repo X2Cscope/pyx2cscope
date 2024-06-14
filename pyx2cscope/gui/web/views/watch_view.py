@@ -48,7 +48,6 @@ def update():
     param = request.args.get('param', '')
     field = request.args.get('field', '').lower()
     value = request.args.get('value', '')
-    print("Parameter:" + param + ", field:" + field + ", value:" + value)
     for _data in watch_data:
         if _data["variable"].name == param:
             _data[field] = float(value)
