@@ -62,9 +62,17 @@ def read():
             read_variable(_data)
     return jsonify({"status": "success"})
 
+def load():
+    return jsonify({"status": "success"})
+
+def save():
+    return jsonify({"status": "success"})
+
 wv.add_url_rule('/', view_func=index, methods=["GET"])
 wv.add_url_rule('/data', view_func=get_data, methods=["POST","GET"])
 wv.add_url_rule('/add', view_func=add, methods=["POST","GET"])
 wv.add_url_rule('/remove', view_func=remove, methods=["POST","GET"])
 wv.add_url_rule('/update', view_func=update, methods=["POST","GET"])
 wv.add_url_rule('/update-non-live', view_func=read, methods=["POST","GET"])
+wv.add_url_rule('/load', view_func=load, methods=["POST","GET"])
+wv.add_url_rule('/save', view_func=save, methods=["POST","GET"])

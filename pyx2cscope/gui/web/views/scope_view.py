@@ -142,6 +142,12 @@ def chart_export():
         mimetype="text/csv",
         headers={"Content-disposition": "attachment; filename=chart.csv"})
 
+def load():
+    return jsonify({"status": "success"})
+
+def save():
+    return jsonify({"status": "success"})
+
 sv.add_url_rule('/', view_func=index, methods=["GET"])
 sv.add_url_rule('/data', view_func=get_data, methods=["POST","GET"])
 sv.add_url_rule('/add', view_func=add, methods=["POST","GET"])
@@ -151,3 +157,5 @@ sv.add_url_rule('/chart', view_func=chart, methods=["POST","GET"])
 sv.add_url_rule('/export', view_func=chart_export, methods=["POST","GET"])
 sv.add_url_rule('/form-sample', view_func=form_sample, methods=["POST","GET"])
 sv.add_url_rule('/form-trigger', view_func=form_trigger, methods=["POST","GET"])
+sv.add_url_rule('/load', view_func=load, methods=["POST","GET"])
+sv.add_url_rule('/save', view_func=save, methods=["POST","GET"])
