@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-auto mb-3">
+        <div class="card" id="scopeView">
+            <div class="card-header">
+                ScopeView
+            </div>
+            <div class="card-body">
+                 {% include 'scope_view.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+ <script src="{{ url_for('static', filename='scope_view.js') }}"></script>
+{% endblock scripts %}

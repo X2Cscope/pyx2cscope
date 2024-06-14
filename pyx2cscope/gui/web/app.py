@@ -4,7 +4,7 @@ import os
 import webbrowser
 from threading import Timer
 
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, url_for
 
 from pyx2cscope.gui.web import create_app, connect_x2c, get_x2c, disconnect_x2c
 from pyx2cscope.gui.web.views.watch_view import wv as watch_view
@@ -58,7 +58,7 @@ def main(host="0.0.0.0", port="5000", new=True, *args, **kwargs):
     if new:
         Timer(1, open_browser).start()
     print("Listening at http://" + ("localhost" if host=="0.0.0.0" else host) + ":" + str(port))
-    app.run(host=host, port=port)
+    app.run(debug=False, host=host, port=port)
 
 if __name__ == '__main__':
     main(new=False)

@@ -1,10 +1,13 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 
 from pyx2cscope.gui.web import get_x2c
 
 wv = Blueprint('watch_view', __name__, template_folder='templates')
 
 watch_data = []
+
+def index():
+    return render_template('index_wv.html', title="WatchView - pyX2Cscope")
 
 def read_variable(_data):
     # pyX2CScope read variable
@@ -60,6 +63,7 @@ def read():
             read_variable(_data)
     return jsonify({"status": "success"})
 
+wv.add_url_rule('/', view_func=index, methods=["GET"])
 wv.add_url_rule('/data', view_func=get_data, methods=["POST","GET"])
 wv.add_url_rule('/add', view_func=add, methods=["POST","GET"])
 wv.add_url_rule('/remove', view_func=remove, methods=["POST","GET"])

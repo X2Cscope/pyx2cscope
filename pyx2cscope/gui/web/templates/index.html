@@ -23,7 +23,11 @@
     <div class="col-auto mb-3">
         <div class="card collapse watchView" id="watchView">
             <div class="card-header">
-                Parameter
+                WatchView
+                <a href="/watch-view" target="_blank" class="float-right" title="Open this card in a new window">
+                    <span class="material-icons">open_in_new</span></a>
+                <a href="" class="float-right" title="Get QR-Code address">
+                    <span class="material-icons md-18">qr_code_2</span></a>
             </div>
             <div class="card-body">
                 {% include 'watch_view.html' %}
@@ -33,7 +37,11 @@
     <div class="col-auto mb-3">
         <div class="card collapse scopeView" id="scopeView">
             <div class="card-header">
-                Scope
+                ScopeView
+                <a href="/scope-view" target="_blank" class="float-right" title="Open this card in a new window">
+                    <span class="material-icons md-18">open_in_new</span></a>
+                <a href="" class="float-right" title="Get QR-Code address">
+                    <span class="material-icons md-18">qr_code_2</span></a>
             </div>
             <div class="card-body">
                  {% include 'scope_view.html' %}
@@ -43,3 +51,9 @@
 </div>
 
 {% endblock content %}
+
+{% block scripts %}
+ <script src="{{ url_for('static', filename='script.js') }}"></script>
+ <script src="{{ url_for('static', filename='watch_view.js') }}"></script>
+ <script src="{{ url_for('static', filename='scope_view.js') }}"></script>
+{% endblock scripts %}

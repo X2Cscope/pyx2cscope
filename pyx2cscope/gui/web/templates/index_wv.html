@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-auto mb-3">
+        <div class="card" id="watchView">
+            <div class="card-header">
+                WatchView
+            </div>
+            <div class="card-body">
+                {% include 'watch_view.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+ <script src="{{ url_for('static', filename='watch_view.js') }}"></script>
+{% endblock scripts %}

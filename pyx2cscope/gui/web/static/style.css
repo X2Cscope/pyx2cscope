@@ -7,6 +7,8 @@
 
 }
 
+a { color: inherit; }
+
 #update_com_port {
     margin-top: 2em;
 }

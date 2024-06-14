@@ -12,6 +12,7 @@ function connect(){
         success: function(response) {
             if (response.status === 'success') {
                 setConnectState(true);
+                $("#btnConnSetup").click();
             }
         },
         error: function() {
@@ -19,7 +20,7 @@ function connect(){
         }
     });
 
-    $("#btnConnSetup").prop("disabled", true);
+    $("#btnConnect").prop("disabled", true);
     $("#btnConnect").html("Loading...");
 }
 
@@ -44,8 +45,8 @@ function setConnectState(status) {
     if(status) {
         parameterCardEnabled = true;
         scopeCardEnabled = true;
-        $('#parameterCard').removeClass('disabled');
-        $('#scopeCard').removeClass('disabled');
+        $('#watchView').removeClass('disabled');
+        $('#scopeView').removeClass('disabled');
         $("#btnWatchView").prop("disabled", false);
         $("#btnScopeView").prop("disabled", false);
         $("#btnConnect").prop("disabled", false);
@@ -56,8 +57,8 @@ function setConnectState(status) {
     else {
         parameterCardEnabled = false;
         scopeCardEnabled = false;
-        $('#parameterCard').addClass('disabled');
-        $('#scopeCard').addClass('disabled');
+        $('#watchView').addClass('disabled');
+        $('#scopeView').addClass('disabled');
         $("#btnConnect").prop("disabled", false);
         $('#btnConnect').html('Connect');
         $('#btnConnect').removeClass('btn-danger');
@@ -77,12 +78,12 @@ $(document).ready(function() {
     initSetupCard();
     load_uart();
 
-    $("#btnWatchView").prop("disabled",true);
-    $("#btnScopeView").prop("disabled",true);
+    //$("#btnWatchView").prop("disabled",true);
+    //$("#btnScopeView").prop("disabled",true);
 
-    $.getJSON('/is-connected', function(data) {
-        setConnectState(data.status);
-        if(data.status == false)
-           $("#btnConnSetup").click();
-    });
+//    $.getJSON('/is-connected', function(data) {
+//        setConnectState(data.status);
+//        if(data.status == false)
+//           $("#btnConnSetup").click();
+//    });
 });

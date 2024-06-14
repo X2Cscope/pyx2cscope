@@ -1,6 +1,6 @@
 import random
 
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, render_template
 
 from pyx2cscope.gui.web import get_x2c
 
@@ -11,6 +11,9 @@ scope_trigger = False
 scope_burst = False
 scope_sample = 1
 scope_time_sample = 50e-3
+
+def index():
+    return render_template('sv_index.html', title="ScopeView - pyX2Cscope")
 
 def get_variable(parameter):
     variable = get_x2c().get_variable(parameter)
@@ -139,6 +142,7 @@ def chart_export():
         mimetype="text/csv",
         headers={"Content-disposition": "attachment; filename=chart.csv"})
 
+sv.add_url_rule('/', view_func=index, methods=["GET"])
 sv.add_url_rule('/data', view_func=get_data, methods=["POST","GET"])
 sv.add_url_rule('/add', view_func=add, methods=["POST","GET"])
 sv.add_url_rule('/remove', view_func=remove, methods=["POST","GET"])
