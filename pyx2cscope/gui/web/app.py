@@ -1,12 +1,14 @@
 import logging
 import serial.tools.list_ports
 import os
+import webbrowser
+from threading import Timer
 
 from flask import render_template, request, jsonify
 
 from pyx2cscope.gui.web import create_app, connect_x2c, get_x2c
-from views.watch_view import wv as watch_view
-from views.scope_view import sv as scope_view
+from pyx2cscope.gui.web.views.watch_view import wv as watch_view
+from pyx2cscope.gui.web.views.scope_view import sv as scope_view
 
 app = create_app(log_level=logging.DEBUG)
 app.register_blueprint(watch_view, url_prefix='/watch-view')
@@ -46,5 +48,14 @@ app.add_url_rule('/connect', view_func=connect, methods=['POST'])
 app.add_url_rule('/disconnect', view_func=disconnect)
 app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST","GET"])
 
+
+def open_browser(host="localhost", port="5000"):
+    webbrowser.open("http://localhost:" + port)
+def main(host="0.0.0.0", port="5000"):
+    Timer(1, open_browser).start()
+    print("Listening at http://" + ("localhost" if host=="0.0.0.0" else host) + ":" + port)
+    app.run(host=host, port=port)
+
 if __name__ == '__main__':
-    app.run(debug=False)
+    main()
+
