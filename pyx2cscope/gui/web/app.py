@@ -55,12 +55,12 @@ app.add_url_rule('/is-connected', view_func=is_connected)
 app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST","GET"])
 
 def open_browser(host="localhost", port=5000):
-    webbrowser.open("http://localhost:" + str(port))
+    webbrowser.open("http://" + host + ":" + str(port))
 
 def main(host="0.0.0.0", port="5000", new=True, *args, **kwargs):
     if new:
         Timer(1, open_browser).start()
-    print("Listening at http://" + ("localhost" if host=="0.0.0.0" else host) + ":" + str(port))
+    print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(port))
     app.run(debug=False, host=host, port=port)
 
 if __name__ == '__main__':
