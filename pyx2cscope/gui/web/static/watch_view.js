@@ -69,6 +69,8 @@ function setParameterTableListeners(){
             return false;
         }
     });
+
+    $("#parameterSave").attr("href", "/watch-view/save")
 }
 
 function initParameterSelect(){

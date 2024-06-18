@@ -146,7 +146,11 @@ def load():
     return jsonify({"status": "success"})
 
 def save():
-    return jsonify({"status": "success"})
+    data = get_data()
+    return Response(
+        str((data["data"])),
+        mimetype="application/octet-stream",
+        headers={"Content-disposition": "attachment; filename=scope.cfg"})
 
 sv.add_url_rule('/', view_func=index, methods=["GET"])
 sv.add_url_rule('/data', view_func=get_data, methods=["POST","GET"])

@@ -15,8 +15,9 @@ function connect(){
                 $("#btnConnSetup").click();
             }
         },
-        error: function() {
-            alert('Please select the UART and upload a .elf file.');
+        error: function(data) {
+            alert(data.responseJSON.msg);
+            setConnectState(false);
         }
     });
 

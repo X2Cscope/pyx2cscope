@@ -186,7 +186,7 @@ function initScopeChart() {
         scopeChart.resetZoom();
     });
 
-    $('#chartExport').attr("href", "scope-view/export")
+    $('#chartExport').attr("href", "/scope-view/export")
 }
 
 function sv_clear_stop_focus() {
@@ -264,6 +264,8 @@ function initScopeForms(){
             }
         });
     });
+
+    $("#scopeSave").attr("href", "/scope-view/save")
 
 }
 

@@ -26,10 +26,13 @@ def connect():
     elf_file = request.files.get('elfFile')
     if "default" not in uart and elf_file and elf_file.filename.endswith('.elf'):
         file_name = os.path.join("upload", "elf_file.elf")
-        elf_file.save(file_name)
-        connect_x2c(port=uart, elf_file=file_name)
-        return jsonify({"status": "success"})
-    return jsonify({"status": "error"}), 400
+        try:
+            elf_file.save(file_name)
+            connect_x2c(port=uart, elf_file=file_name)
+            return jsonify({"status": "success"})
+        except RuntimeError as e:
+            return jsonify({"status": "error", "msg": str(e)}), 401
+    return jsonify({"status": "error", "msg": "COM Port or ELF file invalid."}), 400
 
 def is_connected():
     return jsonify({"status": (get_x2c() is not None)})
