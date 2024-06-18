@@ -26,7 +26,7 @@
                 WatchView
                 <a href="/watch-view" target="_blank" class="float-right" title="Open this card in a new window">
                     <span class="material-icons">open_in_new</span></a>
-                <a href="" class="float-right" title="Get QR-Code address">
+                <a href="#" class="float-right" title="Get QR-Code address" id="watchQRCode">
                     <span class="material-icons md-18">qr_code_2</span></a>
             </div>
             <div class="card-body">
@@ -40,7 +40,7 @@
                 ScopeView
                 <a href="/scope-view" target="_blank" class="float-right" title="Open this card in a new window">
                     <span class="material-icons md-18">open_in_new</span></a>
-                <a href="" class="float-right" title="Get QR-Code address">
+                <a href="#" class="float-right" title="Get QR-Code address" id="scopeQRCode">
                     <span class="material-icons md-18">qr_code_2</span></a>
             </div>
             <div class="card-body">
@@ -53,6 +53,7 @@
 {% endblock content %}
 
 {% block scripts %}
+ <script src="{{ url_for('static', filename='qrcode.min.js') }}"></script>
  <script src="{{ url_for('static', filename='script.js') }}"></script>
  <script src="{{ url_for('static', filename='watch_view.js') }}"></script>
  <script src="{{ url_for('static', filename='scope_view.js') }}"></script>

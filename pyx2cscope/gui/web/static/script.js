@@ -75,16 +75,33 @@ function initSetupCard(){
     });
 }
 
+function initQRCodes() {
+    $("#watchQRCode").on("click", function() {
+        $('#x2cModalTitle').html('WatchView - Scan QR Code');
+        $('#x2cModalBody').html('<div id="qrcode"></div>');
+        new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/watch-view");
+        $('#x2cModal').modal('show');
+    });
+    $("#scopeQRCode").on("click", function() {
+        $('#x2cModalTitle').html('ScopeView - Scan QR Code');
+        $('#x2cModalBody').html('<div id="qrcode"></div>');
+        new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/scope-view");
+        $('#x2cModal').modal('show');
+    });
+}
+
 $(document).ready(function() {
     initSetupCard();
     load_uart();
+    initQRCodes();
 
-//    $("#btnWatchView").prop("disabled",true);
-//    $("#btnScopeView").prop("disabled",true);
-//
-//    $.getJSON('/is-connected', function(data) {
-//        setConnectState(data.status);
-//        if(data.status == false)
-//           $("#btnConnSetup").click();
-//    });
+    $("#btnWatchView").prop("disabled",true);
+    $("#btnScopeView").prop("disabled",true);
+
+    $.getJSON('/is-connected', function(data) {
+        setConnectState(data.status);
+        if(data.status == false)
+           $("#btnConnSetup").click();
+    });
+
 });
