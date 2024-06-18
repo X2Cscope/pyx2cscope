@@ -70,7 +70,28 @@ function setParameterTableListeners(){
         }
     });
 
-    $("#parameterSave").attr("href", "/watch-view/save")
+    $("#parameterSave").attr("href", "/watch-view/save");
+    $('#parameterLoad').on('change', function(event) {
+        var file = event.target.files[0];
+        var formData = new FormData();
+        formData.append('file', file);
+
+        $.ajax({
+            url: '/watch-view/load', // Replace with your server upload endpoint
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                parameterTable.ajax.reload();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseJSON.msg);
+            }
+        }).always(function() {
+            $('#parameterLoad').val('');
+        });
+    });
 }
 
 function initParameterSelect(){

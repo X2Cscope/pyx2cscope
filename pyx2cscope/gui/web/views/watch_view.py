@@ -1,3 +1,5 @@
+import os
+
 from flask import Blueprint, jsonify, request, render_template, Response
 
 from pyx2cscope.gui.web import get_x2c
@@ -63,7 +65,21 @@ def read():
     return jsonify({"status": "success"})
 
 def load():
-    return jsonify({"status": "success"})
+    global watch_data
+    cfg_file = request.files.get('file')
+    if cfg_file and cfg_file.filename.endswith('.cfg'):
+        filename = os.path.join("upload", "watch.cfg")
+        cfg_file.save(filename)
+        data = eval(open(filename).read())
+        if isinstance(data, list):
+            if len(data) > 0:
+                if isinstance(data[0], dict):
+                    if "live" in data[0].keys():
+                        watch_data = data
+                        for item in watch_data:
+                            item["variable"] = get_x2c().get_variable(item["variable"])
+                        return jsonify({"status": "success"})
+        return jsonify({"status": "error", "msg": "Invalid WatchConfig file."}), 400
 
 def save():
     data = get_data()

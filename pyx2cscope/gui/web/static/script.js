@@ -79,12 +79,12 @@ $(document).ready(function() {
     initSetupCard();
     load_uart();
 
-    $("#btnWatchView").prop("disabled",true);
-    $("#btnScopeView").prop("disabled",true);
-
-    $.getJSON('/is-connected', function(data) {
-        setConnectState(data.status);
-        if(data.status == false)
-           $("#btnConnSetup").click();
-    });
+//    $("#btnWatchView").prop("disabled",true);
+//    $("#btnScopeView").prop("disabled",true);
+//
+//    $.getJSON('/is-connected', function(data) {
+//        setConnectState(data.status);
+//        if(data.status == false)
+//           $("#btnConnSetup").click();
+//    });
 });

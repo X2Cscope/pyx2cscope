@@ -1,3 +1,4 @@
+import os
 import random
 
 from flask import Blueprint, jsonify, request, Response, render_template
@@ -143,7 +144,23 @@ def chart_export():
         headers={"Content-disposition": "attachment; filename=chart.csv"})
 
 def load():
-    return jsonify({"status": "success"})
+    global scope_data
+    cfg_file = request.files.get('file')
+    if cfg_file and cfg_file.filename.endswith('.cfg'):
+        filename = os.path.join("upload", "scope.cfg")
+        cfg_file.save(filename)
+        data = eval(open(filename).read())
+        if isinstance(data, list):
+            if len(data) > 0:
+                if isinstance(data[0], dict):
+                    if "trigger" in data[0].keys():
+                        scope_data = data
+                        get_x2c().clear_scope_channel()
+                        for item in scope_data:
+                            item["variable"] = get_x2c().get_variable(item["variable"])
+                            get_x2c().add_scope_channel(item["variable"])
+                        return jsonify({"status": "success"})
+        return jsonify({"status": "error", "msg": "Invalid ScopeConfig file."}), 400
 
 def save():
     data = get_data()

@@ -133,6 +133,18 @@ class X2CScope:
         self.convert_list[variable.name] = variable.bytes_to_value
         return self.scope_setup.add_channel(scope_channel, trigger)
 
+    def clear_scope_channel(self):
+        """
+        Remove all variables from the scope channel and reset any trigger.
+
+        Returns:
+            None.
+        """
+        variables = set(self.convert_list.keys()) # make a copy so we may delete inside the loop
+        for variable in variables:
+            self.convert_list.pop(variable)
+            self.scope_setup.remove_channel(variable)
+
     def remove_scope_channel(self, variable: Variable):
         """
         Remove a variable from the scope channel.

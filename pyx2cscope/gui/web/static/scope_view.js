@@ -37,7 +37,7 @@ function initScopeSelect(){
 
 function sv_remove_chart_data(parameter) {
     scopeChart.data.labels.pop(parameter);
-    chart.data.datasets.forEach((dataset) => {
+    scopeChart.data.datasets.forEach((dataset) => {
         if(dataset.data.id == parameter) dataset.data.pop();
     });
     scopeChart.update();
@@ -265,8 +265,28 @@ function initScopeForms(){
         });
     });
 
-    $("#scopeSave").attr("href", "/scope-view/save")
+    $("#scopeSave").attr("href", "/scope-view/save");
+    $("#scopeLoad").on("change", function(event) {
+        var file = event.target.files[0];
+        var formData = new FormData();
+        formData.append('file', file);
 
+        $.ajax({
+            url: '/scope-view/load', // Replace with your server upload endpoint
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                scopeTable.ajax.reload();
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(jqXHR.responseJSON.msg);
+            }
+        }).always(function() {
+            $("#scopeLoad").val("");
+        });
+    });
 }
 
 $(document).ready(function () {
