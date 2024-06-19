@@ -38,6 +38,8 @@ fig, ax = plt.subplots()
 sample_count = 0
 max_sample = 100  # Increase the number of samples if needed
 
+x2cScope.request_scope_data()
+
 while sample_count < max_sample:
     try:
         if x2cScope.is_scope_data_ready():
