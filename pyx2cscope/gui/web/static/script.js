@@ -75,17 +75,40 @@ function initSetupCard(){
     });
 }
 
+function insertQRCode(link) {
+    qrCodeHtml = "<form id='ipForm'> \
+        <label for='ipAddress'>Enter local IP address:</label> \
+        <input type='text' id='ipAddress' name='ipAddress' placeholder='192.168.1.1'> \
+        <button id='updateButton'>Update</button> \
+        </form><div id='qrcode'></div>";
+
+    $('#x2cModalBody').empty();
+    $('#x2cModalBody').html(qrCodeHtml);
+
+    new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/" + link);
+    $('#updateButton').click(function(e) {
+        e.preventDefault(); // Prevent the default form submit action
+        var ipAddress = $('#ipAddress').val();
+        var ipFormat = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+        if(ipFormat.test(ipAddress)) {
+            $("#qrcode").empty();
+            new QRCode(document.getElementById("qrcode"), "http://" + ipAddress + ":5000/" + link);
+        } else {
+            alert('Invalid IP address format.');
+        }
+    });
+}
+
 function initQRCodes() {
+
     $("#watchQRCode").on("click", function() {
         $('#x2cModalTitle').html('WatchView - Scan QR Code');
-        $('#x2cModalBody').html('<div id="qrcode"></div>');
-        new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/watch-view");
+        insertQRCode("watch-view");
         $('#x2cModal').modal('show');
     });
     $("#scopeQRCode").on("click", function() {
         $('#x2cModalTitle').html('ScopeView - Scan QR Code');
-        $('#x2cModalBody').html('<div id="qrcode"></div>');
-        new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/scope-view");
+        insertQRCode("scope-view");
         $('#x2cModal').modal('show');
     });
 }
@@ -95,13 +118,13 @@ $(document).ready(function() {
     load_uart();
     initQRCodes();
 
-    $("#btnWatchView").prop("disabled",true);
-    $("#btnScopeView").prop("disabled",true);
-
-    $.getJSON('/is-connected', function(data) {
-        setConnectState(data.status);
-        if(data.status == false)
-           $("#btnConnSetup").click();
-    });
+//    $("#btnWatchView").prop("disabled",true);
+//    $("#btnScopeView").prop("disabled",true);
+//
+//    $.getJSON('/is-connected', function(data) {
+//        setConnectState(data.status);
+//        if(data.status == false)
+//           $("#btnConnSetup").click();
+//    });
 
 });
