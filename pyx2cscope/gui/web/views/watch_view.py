@@ -20,7 +20,7 @@ def read_variable(_data):
 def get_variable(parameter):
     variable = get_x2c().get_variable(parameter)
     value = variable.get_value()
-    primitive = variable.__class__.__name__.split("_")[1]
+    primitive = variable.__class__.__name__.lower().replace("variable","")
     return {'live':0, 'variable':variable, 'type':primitive, 'value':value,
                  'scaling':1, 'offset':0, 'scaled_value':value, 'remove':0}
 
