@@ -45,7 +45,7 @@ def parse_arguments():
                         help="Start the Web user interface, pyx2cscope.gui.web.app.")
     parser.add_argument("-p", "--port", type=int, default="5000",
                         help="Configure the Web Server port. Use together with -w")
-    parser.add_argument("--host", type=str, default="0.0.0.0",
+    parser.add_argument("--host", type=str, default="localhost",
                         help="Configure the Web Server address. Use together with -w")
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s ' + pyx2cscope.__version__)

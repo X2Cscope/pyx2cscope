@@ -4,8 +4,9 @@ import os
 import webbrowser
 from threading import Timer
 
-from flask import render_template, request, jsonify, url_for
+from flask import render_template, request, jsonify
 
+from pyx2cscope.gui import web
 from pyx2cscope.gui.web import create_app, connect_x2c, get_x2c, disconnect_x2c
 from pyx2cscope.gui.web.views.watch_view import wv as watch_view
 from pyx2cscope.gui.web.views.scope_view import sv as scope_view
@@ -25,7 +26,10 @@ def connect():
     uart = request.form.get('uart')
     elf_file = request.files.get('elfFile')
     if "default" not in uart and elf_file and elf_file.filename.endswith('.elf'):
-        file_name = os.path.join("upload", "elf_file.elf")
+        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        if not os.path.exists(web_lib_path):
+            os.makedirs(web_lib_path)
+        file_name = os.path.join(web_lib_path, "elf_file.elf")
         try:
             elf_file.save(file_name)
             connect_x2c(port=uart, elf_file=file_name)
@@ -57,7 +61,7 @@ app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST"
 def open_browser(host="localhost", port=5000):
     webbrowser.open("http://" + host + ":" + str(port))
 
-def main(host="0.0.0.0", port="5000", new=True, *args, **kwargs):
+def main(host="0.0.0.0", port=5000, new=True, *args, **kwargs):
     if new:
         Timer(1, open_browser).start()
     print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(port))
