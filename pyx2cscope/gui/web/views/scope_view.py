@@ -1,8 +1,8 @@
 import os
-import random
 
 from flask import Blueprint, jsonify, request, Response, render_template
 
+from pyx2cscope.gui import web
 from pyx2cscope.gui.web import get_x2c
 from pyx2cscope.xc2scope import TriggerConfig
 
@@ -148,7 +148,8 @@ def load():
     global scope_data
     cfg_file = request.files.get('file')
     if cfg_file and cfg_file.filename.endswith('.cfg'):
-        filename = os.path.join("upload", "scope.cfg")
+        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        filename = os.path.join(web_lib_path, "scope.cfg")
         cfg_file.save(filename)
         data = eval(open(filename).read())
         if isinstance(data, list):

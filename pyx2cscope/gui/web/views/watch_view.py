@@ -2,6 +2,7 @@ import os
 
 from flask import Blueprint, jsonify, request, render_template, Response
 
+from pyx2cscope.gui import web
 from pyx2cscope.gui.web import get_x2c
 
 wv = Blueprint('watch_view', __name__, template_folder='templates')
@@ -68,7 +69,8 @@ def load():
     global watch_data
     cfg_file = request.files.get('file')
     if cfg_file and cfg_file.filename.endswith('.cfg'):
-        filename = os.path.join("upload", "watch.cfg")
+        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        filename = os.path.join(web_lib_path, "watch.cfg")
         cfg_file.save(filename)
         data = eval(open(filename).read())
         if isinstance(data, list):
