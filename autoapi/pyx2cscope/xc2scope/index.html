@@ -336,6 +336,16 @@ trigger (bool, optional): If set to True, the channel will be used as a trigger.
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.clear_scope_channel">
+<span class="sig-name descname"><span class="pre">clear_scope_channel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.clear_scope_channel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.clear_scope_channel" title="Link to this definition">#</a></dt>
+<dd><p>Remove all variables from the scope channel and reset any trigger.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.remove_scope_channel">
 <span class="sig-name descname"><span class="pre">remove_scope_channel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../variable/variable/index.html#pyx2cscope.variable.variable.Variable" title="pyx2cscope.variable.variable.Variable"><span class="pre">pyx2cscope.variable.variable.Variable</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.remove_scope_channel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.remove_scope_channel" title="Link to this definition">#</a></dt>
 <dd><p>Remove a variable from the scope channel.</p>
@@ -355,6 +365,12 @@ trigger (bool, optional): If set to True, the channel will be used as a trigger.
 <dt>Returns:</dt><dd><p>Dict[str, ScopeChannel]: A dictionary of scope channels with their names as keys.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.reset_scope_trigger">
+<span class="sig-name descname"><span class="pre">reset_scope_trigger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.reset_scope_trigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.reset_scope_trigger" title="Link to this definition">#</a></dt>
+<dd><p>Resets scope trigger settings, i.e., no triggering will happen.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -402,13 +418,15 @@ trigger_edge (int): The trigger edge setting.</p>
 <dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.request_scope_data">
 <span class="sig-name descname"><span class="pre">request_scope_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.request_scope_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.request_scope_data" title="Link to this definition">#</a></dt>
 <dd><p>Request scope data from the LNet layer.</p>
-<p>This function should be called once all the required settings are made for data acquisition.</p>
+<p>Calling this method will start the scope sampling at the microcontroller side.
+This function should be called once all the required settings are made for data acquisition.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.is_scope_data_ready">
 <span class="sig-name descname"><span class="pre">is_scope_data_ready</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.is_scope_data_ready"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.is_scope_data_ready" title="Link to this definition">#</a></dt>
-<dd><p>Check if the scope data is ready.</p>
+<dd><p>Check if the sampling of scope data is ready. Before calling this method, call
+request_scope_data() first. Please insert a delay between is_scope_data_ready().</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>bool: True if the scope data is ready, False otherwise.</p>
 </dd>
@@ -486,7 +504,7 @@ trigger_edge (int): The trigger edge setting.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.xc2scope.X2CScope.get_scope_channel_data">
-<span class="sig-name descname"><span class="pre">get_scope_channel_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numbers.Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.get_scope_channel_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.get_scope_channel_data" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_scope_channel_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">valid_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numbers.Number</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/xc2scope.html#X2CScope.get_scope_channel_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.xc2scope.X2CScope.get_scope_channel_data" title="Link to this definition">#</a></dt>
 <dd><p>Get the sorted and optionally filtered scope channel data.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>valid_data (bool, optional): If True, return only valid data. Defaults to True.</p>
@@ -562,8 +580,10 @@ trigger_edge (int): The trigger edge setting.</p>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.list_variables"><code class="docutils literal notranslate"><span class="pre">X2CScope.list_variables()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.get_variable"><code class="docutils literal notranslate"><span class="pre">X2CScope.get_variable()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.add_scope_channel"><code class="docutils literal notranslate"><span class="pre">X2CScope.add_scope_channel()</span></code></a></li>
+<li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.clear_scope_channel"><code class="docutils literal notranslate"><span class="pre">X2CScope.clear_scope_channel()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.remove_scope_channel"><code class="docutils literal notranslate"><span class="pre">X2CScope.remove_scope_channel()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.get_scope_channel_list"><code class="docutils literal notranslate"><span class="pre">X2CScope.get_scope_channel_list()</span></code></a></li>
+<li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.reset_scope_trigger"><code class="docutils literal notranslate"><span class="pre">X2CScope.reset_scope_trigger()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.set_scope_trigger"><code class="docutils literal notranslate"><span class="pre">X2CScope.set_scope_trigger()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.clear_trigger"><code class="docutils literal notranslate"><span class="pre">X2CScope.clear_trigger()</span></code></a></li>
 <li><a class="reference internal" href="#pyx2cscope.xc2scope.X2CScope.set_sample_time"><code class="docutils literal notranslate"><span class="pre">X2CScope.set_sample_time()</span></code></a></li>

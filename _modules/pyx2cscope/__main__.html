@@ -215,68 +215,96 @@
           <h1>Source code for pyx2cscope.__main__</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
 
 <span class="kn">from</span> <span class="nn">PyQt5.QtWidgets</span> <span class="kn">import</span> <span class="n">QApplication</span>
 
 <span class="kn">from</span> <span class="nn">pyx2cscope.gui.watchView.minimal_gui</span> <span class="kn">import</span> <span class="n">X2Cscope_GUI</span>
+<span class="kn">from</span> <span class="nn">pyx2cscope.gui.web</span> <span class="kn">import</span> <span class="n">app</span>
+<span class="kn">import</span> <span class="nn">pyx2cscope</span>
 
 
 <span class="c1"># Define a function to set the logging level based on a string argument</span>
 <div class="viewcode-block" id="set_logging_level">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.set_logging_level">[docs]</a>
-<span class="k">def</span> <span class="nf">set_logging_level</span><span class="p">(</span><span class="n">level_str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">set_logging_level</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Sets the logging level based on the provided level string.</span>
+<span class="sd">    Sets the logging level based on the provided argument &#39;level&#39;.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        level_str (str): A string representing the logging level (e.g., &#39;DEBUG&#39;, &#39;INFO&#39;).</span>
+<span class="sd">        the parsed arguments. (ArgumentParser): args contain property level (e.g., &#39;DEBUG&#39;, &#39;INFO&#39;).</span>
 
-<span class="sd">    This function attempts to set the logging level based on the level_str argument.</span>
-<span class="sd">    If an invalid logging level is provided, it logs an informational message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Try to get the numeric logging level from the string</span>
-    <span class="n">numeric_level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">level_str</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">levels</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;DEBUG&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+        <span class="s2">&quot;INFO&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+        <span class="s2">&quot;WARNING&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+        <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+        <span class="s2">&quot;CRITICAL&quot;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span>
+    <span class="p">}</span>
 
-    <span class="c1"># Check if the logging level is valid and set it, else log an informational message</span>
-    <span class="k">if</span> <span class="n">numeric_level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid logging level: </span><span class="si">{</span><span class="n">level_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">numeric_level</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logging level set to </span><span class="si">{</span><span class="n">numeric_level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Log messages of all levels to test the logging configuration</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Debug message&quot;</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Info message&quot;</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning message&quot;</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error message&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">levels</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="p">])</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Logging level set to </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">log_level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="parse_arguments">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.parse_arguments">[docs]</a>
+<span class="k">def</span> <span class="nf">parse_arguments</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;pyX2Cscope&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Microchip python implementation of X2Cscope and LNet protocol.&quot;</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;For documentation visit https://x2cscope.github.io/pyx2cscope/.&quot;</span><span class="p">)</span>
 
-<span class="c1"># Check if a command-line argument was provided for the logging level</span>
-<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-<div class="viewcode-block" id="log_level_arg">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.log_level_arg">[docs]</a>
-    <span class="n">log_level_arg</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-l&quot;</span><span class="p">,</span> <span class="s2">&quot;--log-level&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;CRITICAL&quot;</span><span class="p">],</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the logging level, INFO is the default value.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-q&quot;</span><span class="p">,</span> <span class="s2">&quot;--qt&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-w&quot;</span><span class="p">,</span> <span class="s2">&quot;--web&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start the Web user interface, pyx2cscope.gui.web.app.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;--port&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;5000&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the Web Server port. Use together with -w&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--host&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the Web Server address. Use together with -w&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span>
+                        <span class="n">version</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(prog)s</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
 
-    <span class="n">set_logging_level</span><span class="p">(</span><span class="n">log_level_arg</span><span class="p">)</span>
-
-<span class="c1"># Initialize a PyQt5 application</span>
-<div class="viewcode-block" id="app">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.app">[docs]</a>
-<span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span></div>
-
-
-<span class="c1"># Create an instance of the X2Cscope_GUI</span>
-<div class="viewcode-block" id="ex">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.ex">[docs]</a>
-<span class="n">ex</span> <span class="o">=</span> <span class="n">X2Cscope_GUI</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span></div>
 
 
-<span class="c1"># Display the GUI</span>
-<span class="n">ex</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class="viewcode-block" id="execute_qt">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.execute_qt">[docs]</a>
+<span class="k">def</span> <span class="nf">execute_qt</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="c1"># QApplication expects the first argument to be the program name.</span>
+    <span class="n">qt_args</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span>
+    <span class="c1"># Initialize a PyQt5 application</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">qt_args</span><span class="p">)</span>
+    <span class="c1"># Create an instance of the X2Cscope_GUI</span>
+    <span class="n">ex</span> <span class="o">=</span> <span class="n">X2Cscope_GUI</span><span class="p">()</span>
+    <span class="c1"># Display the GUI</span>
+    <span class="n">ex</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="c1"># Start the PyQt5 application event loop</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span></div>
 
-<span class="c1"># Start the PyQt5 application event loop</span>
-<span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+
+<div class="viewcode-block" id="execute_web">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.execute_web">[docs]</a>
+<span class="k">def</span> <span class="nf">execute_web</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="n">known_args</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">()</span>
+
+<span class="n">set_logging_level</span><span class="p">(</span><span class="n">known_args</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">qt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
+    <span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
+    <span class="n">execute_web</span><span class="p">(</span><span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+
 </pre></div>
         </article>
       </div>

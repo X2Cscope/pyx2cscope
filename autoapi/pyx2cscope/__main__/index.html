@@ -223,25 +223,16 @@
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.set_logging_level" title="pyx2cscope.__main__.set_logging_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_logging_level</span></code></a>(level_str)</p></td>
-<td><p>Sets the logging level based on the provided level string.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.set_logging_level" title="pyx2cscope.__main__.set_logging_level"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_logging_level</span></code></a>(args)</p></td>
+<td><p>Sets the logging level based on the provided argument 'level'.</p></td>
 </tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h3>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.log_level_arg" title="pyx2cscope.__main__.log_level_arg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_level_arg</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.__main__.parse_arguments" title="pyx2cscope.__main__.parse_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_arguments</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.__main__.app" title="pyx2cscope.__main__.app"><code class="xref py py-obj docutils literal notranslate"><span class="pre">app</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.execute_qt" title="pyx2cscope.__main__.execute_qt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_qt</span></code></a>(args)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.ex" title="pyx2cscope.__main__.ex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ex</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.__main__.execute_web" title="pyx2cscope.__main__.execute_web"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_web</span></code></a>(*args, **kwargs)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -249,29 +240,27 @@
 </div>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyx2cscope.__main__.set_logging_level">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">set_logging_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#set_logging_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.set_logging_level" title="Link to this definition">#</a></dt>
-<dd><p>Sets the logging level based on the provided level string.</p>
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">set_logging_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#set_logging_level"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.set_logging_level" title="Link to this definition">#</a></dt>
+<dd><p>Sets the logging level based on the provided argument ‘level’.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>level_str (str): A string representing the logging level (e.g., ‘DEBUG’, ‘INFO’).</p>
+<dt>Args:</dt><dd><p>the parsed arguments. (ArgumentParser): args contain property level (e.g., ‘DEBUG’, ‘INFO’).</p>
 </dd>
 </dl>
-<p>This function attempts to set the logging level based on the level_str argument.
-If an invalid logging level is provided, it logs an informational message.</p>
 </dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="pyx2cscope.__main__.log_level_arg">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">log_level_arg</span></span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#log_level_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.log_level_arg" title="Link to this definition">#</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.__main__.parse_arguments">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">parse_arguments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#parse_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.parse_arguments" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="pyx2cscope.__main__.app">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">app</span></span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#app"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.app" title="Link to this definition">#</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.__main__.execute_qt">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">execute_qt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#execute_qt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.execute_qt" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py data">
-<dt class="sig sig-object py" id="pyx2cscope.__main__.ex">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">ex</span></span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#ex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.ex" title="Link to this definition">#</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.__main__.execute_web">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">execute_web</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#execute_web"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.execute_web" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -335,12 +324,11 @@ If an invalid logging level is provided, it logs an informational message.</p>
             <ul>
 <li><a class="reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.__main__</span></code></a><ul>
 <li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
-<li><a class="reference internal" href="#functions">Functions</a></li>
-<li><a class="reference internal" href="#attributes">Attributes</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a><ul>
 <li><a class="reference internal" href="#pyx2cscope.__main__.set_logging_level"><code class="docutils literal notranslate"><span class="pre">set_logging_level()</span></code></a></li>
-<li><a class="reference internal" href="#pyx2cscope.__main__.log_level_arg"><code class="docutils literal notranslate"><span class="pre">log_level_arg</span></code></a></li>
-<li><a class="reference internal" href="#pyx2cscope.__main__.app"><code class="docutils literal notranslate"><span class="pre">app</span></code></a></li>
-<li><a class="reference internal" href="#pyx2cscope.__main__.ex"><code class="docutils literal notranslate"><span class="pre">ex</span></code></a></li>
+<li><a class="reference internal" href="#pyx2cscope.__main__.parse_arguments"><code class="docutils literal notranslate"><span class="pre">parse_arguments()</span></code></a></li>
+<li><a class="reference internal" href="#pyx2cscope.__main__.execute_qt"><code class="docutils literal notranslate"><span class="pre">execute_qt()</span></code></a></li>
+<li><a class="reference internal" href="#pyx2cscope.__main__.execute_web"><code class="docutils literal notranslate"><span class="pre">execute_web()</span></code></a></li>
 </ul>
 </li>
 </ul>

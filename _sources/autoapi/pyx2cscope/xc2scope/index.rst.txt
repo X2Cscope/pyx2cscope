@@ -109,6 +109,14 @@ Functions
           int: The ID of the added scope channel.
 
 
+   .. py:method:: clear_scope_channel()
+
+      Remove all variables from the scope channel and reset any trigger.
+
+      Returns:
+          None.
+
+
    .. py:method:: remove_scope_channel(variable: pyx2cscope.variable.variable.Variable)
 
       Remove a variable from the scope channel.
@@ -126,6 +134,11 @@ Functions
 
       Returns:
           Dict[str, ScopeChannel]: A dictionary of scope channels with their names as keys.
+
+
+   .. py:method:: reset_scope_trigger()
+
+      Resets scope trigger settings, i.e., no triggering will happen.
 
 
    .. py:method:: set_scope_trigger(variable: pyx2cscope.variable.variable.Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
@@ -166,12 +179,14 @@ Functions
 
       Request scope data from the LNet layer.
 
+      Calling this method will start the scope sampling at the microcontroller side.
       This function should be called once all the required settings are made for data acquisition.
 
 
    .. py:method:: is_scope_data_ready() -> bool
 
-      Check if the scope data is ready.
+      Check if the sampling of scope data is ready. Before calling this method, call
+      request_scope_data() first. Please insert a delay between is_scope_data_ready().
 
       Returns:
           bool: True if the scope data is ready, False otherwise.
@@ -234,7 +249,7 @@ Functions
           The filtered dictionary of channels with valid data only.
 
 
-   .. py:method:: get_scope_channel_data(valid_data=False) -> Dict[str, List[numbers.Number]]
+   .. py:method:: get_scope_channel_data(valid_data=True) -> Dict[str, List[numbers.Number]]
 
       Get the sorted and optionally filtered scope channel data.
 

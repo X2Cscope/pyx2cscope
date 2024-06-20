@@ -374,6 +374,21 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="n">scope_channel</span><span class="p">,</span> <span class="n">trigger</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="X2CScope.clear_scope_channel">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.clear_scope_channel">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_scope_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove all variables from the scope channel and reset any trigger.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="c1"># make a copy so we may delete inside the loop</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">remove_channel</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="X2CScope.remove_scope_channel">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.remove_scope_channel">[docs]</a>
     <span class="k">def</span> <span class="nf">remove_scope_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
@@ -401,6 +416,15 @@
 <span class="sd">            Dict[str, ScopeChannel]: A dictionary of scope channels with their names as keys.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">list_channels</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="X2CScope.reset_scope_trigger">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.reset_scope_trigger">[docs]</a>
+    <span class="k">def</span> <span class="nf">reset_scope_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets scope trigger settings, i.e., no triggering will happen.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">reset_trigger</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.set_scope_trigger">
@@ -473,6 +497,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Request scope data from the LNet layer.</span>
 
+<span class="sd">        Calling this method will start the scope sampling at the microcontroller side.</span>
 <span class="sd">        This function should be called once all the required settings are made for data acquisition.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">save_parameter</span><span class="p">()</span></div>
@@ -482,7 +507,8 @@
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.is_scope_data_ready">[docs]</a>
     <span class="k">def</span> <span class="nf">is_scope_data_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check if the scope data is ready.</span>
+<span class="sd">        Check if the sampling of scope data is ready. Before calling this method, call</span>
+<span class="sd">        request_scope_data() first. Please insert a delay between is_scope_data_ready().</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the scope data is ready, False otherwise.</span>
@@ -546,12 +572,15 @@
         <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">253</span>  <span class="c1"># full chunk excluding crc and Service-ID in total bytes 255 0xFF</span>
         <span class="c1"># Calculate the number of chunks</span>
         <span class="n">num_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_sda_used_length</span><span class="p">()</span> <span class="o">//</span> <span class="n">chunk_size</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">):</span>
+        <span class="n">chunk_rest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_sda_used_length</span><span class="p">()</span> <span class="o">%</span> <span class="n">chunk_size</span>
+        <span class="n">loop</span> <span class="o">=</span> <span class="n">num_chunks</span> <span class="k">if</span> <span class="n">chunk_rest</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">num_chunks</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">loop</span><span class="p">):</span>
             <span class="c1"># Calculate the starting address for the current chunk</span>
             <span class="n">current_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_address</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Read the chunk of data</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
+                <span class="n">data_size</span> <span class="o">=</span> <span class="n">chunk_size</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_chunks</span> <span class="k">else</span> <span class="n">chunk_rest</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
                 <span class="n">chunk_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -613,17 +642,21 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            The filtered dictionary of channels with valid data only.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># there is no need to rearrange the byte vector</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">scope_trigger</span><span class="o">.</span><span class="n">trigger_delay</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">channels</span>
+
         <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_delay_trigger_position</span><span class="p">()</span>
-        <span class="n">nr_of_sda</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">())</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">nr_of_sda</span> <span class="o">-</span> <span class="n">start</span>
         <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
-            <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+            <span class="n">rest</span> <span class="o">=</span> <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="n">start</span><span class="p">]</span>
+            <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">][</span><span class="n">start</span><span class="p">:]</span>
+            <span class="n">channels</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">channels</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_scope_channel_data">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.get_scope_channel_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_scope_channel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valid_data</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
+    <span class="k">def</span> <span class="nf">get_scope_channel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valid_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the sorted and optionally filtered scope channel data.</span>
 
@@ -633,9 +666,12 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, List[Number]]: A dictionary with channel names as keys and data lists as values.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_array_chunks</span><span class="p">()</span>
-        <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort_channel_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid_data</span> <span class="k">else</span> <span class="n">channels</span></div>
+        <span class="c1"># handle only if there is at least one channel added to the scope</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_array_chunks</span><span class="p">()</span>
+            <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sort_channel_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_channels</span><span class="p">(</span><span class="n">channels</span><span class="p">)</span> <span class="k">if</span> <span class="n">valid_data</span> <span class="k">else</span> <span class="n">channels</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
 </div>
 
 </pre></div>

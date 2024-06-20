@@ -14,39 +14,27 @@ Functions
 .. autoapisummary::
 
    pyx2cscope.__main__.set_logging_level
+   pyx2cscope.__main__.parse_arguments
+   pyx2cscope.__main__.execute_qt
+   pyx2cscope.__main__.execute_web
 
 
 
-Attributes
-~~~~~~~~~~
+.. py:function:: set_logging_level(args)
 
-.. autoapisummary::
-
-   pyx2cscope.__main__.log_level_arg
-   pyx2cscope.__main__.app
-   pyx2cscope.__main__.ex
-
-
-.. py:function:: set_logging_level(level_str)
-
-   Sets the logging level based on the provided level string.
+   Sets the logging level based on the provided argument 'level'.
 
    Args:
-       level_str (str): A string representing the logging level (e.g., 'DEBUG', 'INFO').
-
-   This function attempts to set the logging level based on the level_str argument.
-   If an invalid logging level is provided, it logs an informational message.
+       the parsed arguments. (ArgumentParser): args contain property level (e.g., 'DEBUG', 'INFO').
 
 
-.. py:data:: log_level_arg
 
-   
+.. py:function:: parse_arguments()
 
-.. py:data:: app
 
-   
+.. py:function:: execute_qt(args)
 
-.. py:data:: ex
 
-   
+.. py:function:: execute_web(*args, **kwargs)
+
 
