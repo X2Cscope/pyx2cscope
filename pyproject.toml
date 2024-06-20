@@ -7,7 +7,7 @@ line-length = 120
 
 [tool.poetry]
 name = "pyx2cscope"
-version = "0.1.4"
+version = "0.1.5"
 description = "python implementation of X2Cscope"
 authors = [
   "Yash Agarwal <yash.agarwal@microchip.com>",
