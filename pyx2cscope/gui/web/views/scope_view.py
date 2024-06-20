@@ -4,6 +4,7 @@ import random
 from flask import Blueprint, jsonify, request, Response, render_template
 
 from pyx2cscope.gui.web import get_x2c
+from xc2scope import TriggerConfig
 
 sv = Blueprint('scope_view', __name__, template_folder='templates')
 
@@ -94,14 +95,14 @@ def form_trigger():
     }
     variable = [channel["variable"] for channel in scope_data if channel["trigger"] == 1.0]
     if trigger["trigger_mode"] and len(variable) == 1:
-        get_x2c().set_scope_trigger(variable[0], **trigger)
+        get_x2c().set_scope_trigger(TriggerConfig(variable[0], **trigger))
     else:
         get_x2c().reset_scope_trigger()
 
     return jsonify({"trigger": trigger})
 
 def _get_chart_label(size=100):
-    return [i * scope_time_sample for i in range(0, size)]
+    return [i * scope_time_sample * scope_sample for i in range(0, size)]
 
 def _get_datasets():
     data = []
