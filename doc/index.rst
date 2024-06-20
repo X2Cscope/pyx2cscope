@@ -53,6 +53,13 @@ For help or additional command line options, type:
 
    python -m pyx2cscope --help
 
+The log level used by pyX2Cscope is ERROR by default, possible values are
+DEBUG, INFO, WARNING, ERROR, and  CRITICAL. To set a different log level start
+pyX2Cscope with argument **-l** or **--log-level**
+
+.. code-block:: bash
+
+   python -m pyx2cscope --log-level DEBUG
 
 Usage
 -----
@@ -93,7 +100,7 @@ Following you will find specific information on the API, GUIs, and Firmware impl
 See the section examples to check some of the usages you may get by pyX2Cscope.
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 3
    :caption: Contents:
 
    how_to

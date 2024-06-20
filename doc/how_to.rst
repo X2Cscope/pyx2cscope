@@ -5,7 +5,7 @@ This section will guide you on how to use different approaches, the scripting wa
 and the Graphical User Interface:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    scripting.md
    gui_qt.md

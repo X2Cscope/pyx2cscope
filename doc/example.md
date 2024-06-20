@@ -1,5 +1,7 @@
 # Examples
 
+Some examples are available under pyx2cscope.examples
+
 ## ExampleMCAF
 ````python
 

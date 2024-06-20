@@ -33,8 +33,11 @@ def set_logging_level(args):
         "CRITICAL": logging.CRITICAL
     }
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(levels[args.log_level])
+    logging.basicConfig(
+        level=levels[args.log_level],
+        filename="pyX2Cscope.log",
+    )
+
     logging.info(f"Logging level set to {args.log_level}")
 
 def parse_arguments():
@@ -43,7 +46,7 @@ def parse_arguments():
         description="Microchip python implementation of X2Cscope and LNet protocol.",
         epilog="For documentation visit https://x2cscope.github.io/pyx2cscope/.")
 
-    parser.add_argument("-l", "--log-level", default="INFO", type=str,
+    parser.add_argument("-l", "--log-level", default="ERROR", type=str,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Configure the logging level, INFO is the default value.")
     parser.add_argument("-q", "--qt", action="store_false",

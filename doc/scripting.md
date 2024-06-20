@@ -134,30 +134,20 @@ for channel, data in x2c_scope.get_scope_channel_data().items():
 ### Triggering 
 
 To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
+To set any trigger configuration, you need to pass a TriggerConfig imported from from pyx2cscope.xc2scope
 ```
-x2cscope.set_scope_trigger(variable: Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
+trigger_config = TriggerConfig(Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
+x2cscope.set_scope_trigger(trigger_config)
 ```
 
-#### Trigger Parameters:
-```
-srcChannel: TriggerChannel (variable)
-Level: trigger_level
+TriggerConfig needs some parameters like the variable and some trigger values like:
+
+* Variable: the variable which will be monitored
+Trigger_Level: at which level the trigger will start executing
 Trigger_mode: 1 for triggered, 0 for Auto (No trigger)
 Trigger_delay = Value > 0 Pre-trigger, Value < 0 Post trigger
 Trigger_Edge: Rising (1) or Falling (0)
-```
 
-```
-x2cScope.set_scope_trigger(variable3, trigger_level=500, trigger_mode=1, trigger_delay=50, trigger_edge=1)
-```
-
-6. ##### **clear_trigger()**: Clears and diable trigger
-```
-x2cscope.clear_trigger()
-```
-7. #### set_sample_time(sample_time: int): 
-This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution. 0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
-```
-x2cScope.set_sample_time(2)
-```
+Additional information on how to change triggers, clear and change sample time, may be
+found on the API documentation.
 
