@@ -93,7 +93,7 @@ Following you will find specific information on the API, GUIs, and Firmware impl
 See the section examples to check some of the usages you may get by pyX2Cscope.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 5
    :caption: Contents:
 
    how_to

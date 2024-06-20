@@ -6,7 +6,6 @@ and the Graphical User Interface:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    scripting.md
    gui_qt.md

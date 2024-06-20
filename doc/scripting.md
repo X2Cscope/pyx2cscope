@@ -52,31 +52,93 @@ link to a structure directly, only to its members.
 
 ### Reading values
 
-Once you have gone through these steps, you can use the method **get_value()** to retrieve the actual 
-value of the variable
+4. Once you have gone through these steps, you can use the method **get_value()** to retrieve the actual 
+value of the variable:
 ``` 
 variable.get_value() 
 ```
-10. To set the value for the respective variable **set_value()**:
+5. To set the value for the respective variable use the method **set_value()**:
 ```
 variable.set_value(value)
 ```
-## ScopeView
-1. To use the scope functionality, add channel to the scope: **add_scope_channel(variable: Variable)** : 
+## Scope Channel
+
+X2CScope class provide means to retrieve scope data, i.e., instead of getting the current value of
+a variable, collect the values during a time frame, triggering according some trigger values or not,
+and return and array that could be plotted with any available python graphic framework as matplotlib,
+seaborn, etc.  
+ 
+6. To use the scope functionality, first you need to link a variable as previously explained, and 
+add this variable to the scope by means of the method: **add_scope_channel(variable: Variable)** : 
 ```
+variable1 = x2cScope.get_variable("variable1")
+variable2 = x2cScope.get_variable("variable2")
+
 x2cScope.add_scope_channel(variable1)
 x2cScope.add_scope_channel(variable2)
 ```
-2. To remove channel: **remove_scope_channel(variable: Variable)**:
+
+7. To remove a variable from the scope: **remove_scope_channel(variable: Variable)**, to clear all
+variables and reset the scope use instead: **clear_scope_channel()**
 ```
 x2cScope.remove_scope_channel(variable2)
 ```
-3. Up to 8 channels can be added. 
-4. To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
+or 
+```
+x2cScope.clear_scope_channel()
+```
+
+Up to 8 channels can be added. Each time you add or remove a variable, the number of channels present
+on the channel are returned. 
+
+### Getting Data from Scope
+
+To get data from scope channel you need to follow this sequence:
+
+* Request data
+* Check if data is ready (sampling is done)
+    * Data is ready? Yes, get the data and handle it.
+    * Data is not ready? Execute some delay and check again.
+* After handling the data, start from the beginning requesting new data.
+
+Step-by-step you need:
+
+8. Request to X2CScope to collect data for the variables registered on the scope channels.  
+```
+x2c_scope.request_scope_data()
+```
+
+9. Check if the data is ready: 
+Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.  
+```
+while not x2cScope.is_scope_data_ready():
+    time.sleep(0.1)
+```
+10. Get the scope data once sampling is completed
+```
+data = x2cScope.get_scope_channel_data()
+```
+
+A simple loop request example to get only 1 frame of scope data is depicted below:
+```
+# request scope to start sampling data
+x2c_scope.request_scope_data()
+# wait while the data is not yet ready for reading
+while not x2c_scope.is_scope_data_ready():
+    time.sleep(0.1)
+for channel, data in x2c_scope.get_scope_channel_data().items():
+    # Do something with the data. 
+    # channel contains the variable name, data is an array of values 
+```
+
+### Triggering 
+
+To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
 ```
 x2cscope.set_scope_trigger(variable: Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
 ```
-5. ##### Trigger Parameters:
+
+#### Trigger Parameters:
 ```
 srcChannel: TriggerChannel (variable)
 Level: trigger_level
@@ -98,14 +160,4 @@ This paramater defines a pre-scaler when the scope is in the sampling mode. This
 ```
 x2cScope.set_sample_time(2)
 ```
-8. #### is_scope_data_ready(self) -> bool: 
-Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.  
-```
-while not x2cScope.is_scope_data_ready():
-    time.sleep(0.1)
-```
-9. #### get_scope_channel_data(valid_data=False) -> Dict[str, List[Number]]: 
-Once sampling is completed, this function could be used to get the sampled data.
-```
-data = x2cScope.get_scope_channel_data()
-```
+
