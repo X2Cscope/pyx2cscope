@@ -30,7 +30,7 @@ pyelftools = "^0.29"
 numpy = "^1.25.1"
 matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
-mchplnet = "0.1.0"
+mchplnet = "0.1.2"
 
 [tool.isort]
 profile = "black"

@@ -230,13 +230,15 @@ class X2CScope:
         """
         Request scope data from the LNet layer.
 
+        Calling this method will start the scope sampling at the microcontroller side.
         This function should be called once all the required settings are made for data acquisition.
         """
         self.lnet.save_parameter()
 
     def is_scope_data_ready(self) -> bool:
         """
-        Check if the scope data is ready.
+        Check if the sampling of scope data is ready. Before calling this method, call
+        request_scope_data() first. Please insert a delay between is_scope_data_ready().
 
         Returns:
             bool: True if the scope data is ready, False otherwise.
