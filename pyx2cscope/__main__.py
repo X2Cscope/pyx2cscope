@@ -72,7 +72,8 @@ def execute_qt(args):
     app.exec_()
 
 def execute_web(*args, **kwargs):
-    app.main(*args, **kwargs)
+    # app.main(*args, **kwargs)
+    pass
 
 known_args, unknown_args = parse_arguments()
 
