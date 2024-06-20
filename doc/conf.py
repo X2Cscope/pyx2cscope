@@ -12,7 +12,7 @@ import sys
 import pyx2cscope
 
 project = "pyX2Cscope"
-copyright = "2024, Yash Agarwal"
+copyright = "2024, Microchip Technology Inc"
 author = "Yash Agarwal, Edras Pacola, Mark Wendler, Christoph Baumgartner"
 html_favicon = "images/pyx2cscope.ico"
 
