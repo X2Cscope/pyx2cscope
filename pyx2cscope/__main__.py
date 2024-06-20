@@ -1,52 +1,80 @@
 import logging
 import sys
+import argparse
 
 from PyQt5.QtWidgets import QApplication
 
 from pyx2cscope.gui.watchView.minimal_gui import X2Cscope_GUI
+from pyx2cscope.gui.web import app
+import pyx2cscope
 
 
 # Define a function to set the logging level based on a string argument
-def set_logging_level(level_str):
+def set_logging_level(args):
     """
-    Sets the logging level based on the provided level string.
+    Sets the logging level based on the provided argument 'level'.
 
     Args:
-        level_str (str): A string representing the logging level (e.g., 'DEBUG', 'INFO').
+        the parsed arguments. (ArgumentParser): args contain property level (e.g., 'DEBUG', 'INFO').
 
-    This function attempts to set the logging level based on the level_str argument.
-    If an invalid logging level is provided, it logs an informational message.
     """
-    # Try to get the numeric logging level from the string
-    numeric_level = getattr(logging, level_str.upper(), None)
+    levels={
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL
+    }
 
-    # Check if the logging level is valid and set it, else log an informational message
-    if numeric_level is None:
-        logging.info(f"Invalid logging level: {level_str}")
-    else:
-        logging.root.setLevel(numeric_level)
-        logging.info(f"Logging level set to {numeric_level}")
+    logger = logging.getLogger(__name__)
+    logger.setLevel(levels[args.log_level])
+    logging.info(f"Logging level set to {args.log_level}")
 
-        # Log messages of all levels to test the logging configuration
-        logging.debug("Debug message")
-        logging.info("Info message")
-        logging.warning("Warning message")
-        logging.error("Error message")
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        prog="pyX2Cscope",
+        description="Microchip python implementation of X2Cscope and LNet protocol.",
+        epilog="For documentation visit https://x2cscope.github.io/pyx2cscope/.")
+
+    parser.add_argument("-l", "--log-level", default="INFO", type=str,
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+                        help="Configure the logging level, INFO is the default value.")
+    parser.add_argument("-q", "--qt", action="store_false",
+                        help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.")
+    parser.add_argument("-w", "--web", action="store_true",
+                        help="Start the Web user interface, pyx2cscope.gui.web.app.")
+    parser.add_argument("-p", "--port", type=int, default="5000",
+                        help="Configure the Web Server port. Use together with -w")
+    parser.add_argument("--host", type=str, default="localhost",
+                        help="Configure the Web Server address. Use together with -w")
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s ' + pyx2cscope.__version__)
+
+    return parser.parse_known_args()
+
+def execute_qt(args):
+    # QApplication expects the first argument to be the program name.
+    qt_args = sys.argv[:1] + args
+    # Initialize a PyQt5 application
+    app = QApplication(qt_args)
+    # Create an instance of the X2Cscope_GUI
+    ex = X2Cscope_GUI()
+    # Display the GUI
+    ex.show()
+    # Start the PyQt5 application event loop
+    app.exec_()
+
+def execute_web(*args, **kwargs):
+    app.main(*args, **kwargs)
+
+known_args, unknown_args = parse_arguments()
+
+set_logging_level(known_args)
+
+if known_args.qt and not known_args.web:
+    execute_qt(unknown_args)
+
+if known_args.web:
+    execute_web(**known_args.__dict__)
 
 
-# Check if a command-line argument was provided for the logging level
-if len(sys.argv) > 1:
-    log_level_arg = sys.argv[1]
-    set_logging_level(log_level_arg)
-
-# Initialize a PyQt5 application
-app = QApplication(sys.argv)
-
-# Create an instance of the X2Cscope_GUI
-ex = X2Cscope_GUI()
-
-# Display the GUI
-ex.show()
-
-# Start the PyQt5 application event loop
-app.exec_()

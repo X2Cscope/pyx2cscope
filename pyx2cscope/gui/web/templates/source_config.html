@@ -1,0 +1,42 @@
+<div class="row">
+    <div class="col-3 col-md-3">
+        <select id="scopeSearch" style="width:100%;"></select>
+    </div>
+    <div class="col-2 col-md-2">
+        <a type="button" id="scopeSave" href=#" class="btn btn-secondary btn-block">Save</a>
+    </div>
+    <div class="col-2 col-md-2">
+        <label class="btn btn-secondary btn-block" for="scopeLoad">
+            <input type="file" accept=".cfg" class="custom-file-input" id="scopeLoad" style="display: none">Load
+        </label>
+    </div>
+    <div class="col-2 col-md-2 ml-auto">
+        <div class="dropdown">
+            <button class="btn btn-info dropdown-toggle" type="button" id="chartMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Chart
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" id="chartExport">Export</a>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<table class="table" style="width:100%" id="scopeTable">
+    <thead>
+        <tr>
+            <th>Trigger</th>
+            <th>Enable</th>
+            <th>Variable</th>
+            <th>Color</th>
+            <th>Gain</th>
+            <th>Offset</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="scopeTableBody">
+    </tbody>
+</table>

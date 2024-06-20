@@ -1,0 +1,16 @@
+<div class="form-row">
+    <div class="form-group col-5">
+        <label for="uart">Select UART:</label>
+        <select class="form-control" id="uart">
+            <option value="default">Select UART</option>
+        </select>
+    </div>
+    <div class="col-2 text-left">
+        <button type="button" class="btn btn-primary" id="update_com_port">Refresh</button>
+    </div>
+</div>
+<div class="form-group">
+    <label for="elfFile">Select .elf file:</label>
+    <input type="file" accept=".elf" class="form-control-file" id="elfFile">
+</div>
+<button id="btnConnect" class="btn btn-primary">Connect</button>

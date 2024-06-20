@@ -137,3 +137,4 @@ dmypy.json
 /pyx2cscope/examples/scope_data.csv
 /doc/_build/
 /doc/source/
+/pyx2cscope/gui/web/upload/

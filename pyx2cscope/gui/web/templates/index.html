@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<p>
+  <button id="btnConnSetup" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#setupView" aria-expanded="false" aria-controls="setupView">Connection Setup</button>
+  <button id="btnWatchView" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#watchView" aria-expanded="false" aria-controls="watchView">Watch View</button>
+  <button id="btnScopeView" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#scopeView" aria-expanded="false" aria-controls="scopeView">Scope View</button>
+</p>
+<div class="row">
+    <div class="col-10 col-md-5 col-lg-3">
+        <div class="card collapse setupView" id="setupView">
+            <div class="card-header">
+                Setup
+            </div>
+            <div class="card-body">
+                {% include 'setup.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<div class="row justify-content-center">
+    <div class="col-auto mb-3">
+        <div class="card collapse watchView" id="watchView">
+            <div class="card-header">
+                WatchView
+                <a href="/watch-view" target="_blank" class="float-right" title="Open this card in a new window">
+                    <span class="material-icons">open_in_new</span></a>
+                <a href="#" class="float-right" title="Get QR-Code address" id="watchQRCode">
+                    <span class="material-icons md-18">qr_code_2</span></a>
+            </div>
+            <div class="card-body">
+                {% include 'watch_view.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="col-auto mb-3">
+        <div class="card collapse scopeView" id="scopeView">
+            <div class="card-header">
+                ScopeView
+                <a href="/scope-view" target="_blank" class="float-right" title="Open this card in a new window">
+                    <span class="material-icons md-18">open_in_new</span></a>
+                <a href="#" class="float-right" title="Get QR-Code address" id="scopeQRCode">
+                    <span class="material-icons md-18">qr_code_2</span></a>
+            </div>
+            <div class="card-body">
+                 {% include 'scope_view.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+ <script src="{{ url_for('static', filename='qrcode.min.js') }}"></script>
+ <script src="{{ url_for('static', filename='script.js') }}"></script>
+ <script src="{{ url_for('static', filename='watch_view.js') }}"></script>
+ <script src="{{ url_for('static', filename='scope_view.js') }}"></script>
+{% endblock scripts %}

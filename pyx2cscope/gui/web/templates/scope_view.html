@@ -1,0 +1,28 @@
+<canvas id="scopeChart" width="400" height="200"></canvas>
+<br>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Sample Control
+            </div>
+            <div class="card-body">
+                {% include 'sample_control.html' %}
+            </div>
+        </div>
+        <br>
+        <div class="card">
+            <div class="card-header">
+                Trigger Control
+            </div>
+            <div class="card-body">
+                {% include 'trigger_control.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        {% include 'source_config.html' %}
+    </div>
+</div>
+
+

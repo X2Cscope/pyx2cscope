@@ -1,0 +1,28 @@
+<form id="sampleControlForm">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="btn-group btn-group-toggle d-flex" role="group" data-toggle="buttons">
+              <label class="btn btn-primary">
+                <input type="radio" name="triggerAction" id="triggerStart" value="on" autocomplete="off">Sample
+              </label>
+              <label class="btn btn-danger active focus">
+                <input type="radio" name="triggerAction" id="triggerStop" value="off" autocomplete="off">Stop
+              </label>
+              <label class="btn btn-secondary">
+                <input type="radio" name="triggerAction" id="triggerShot" value="shot" autocomplete="off">Burst
+              </label>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Sample time factor</span>
+                </div>
+                <input type="number" id="sampleTime" name="sampleTime" class="form-control" size="2" min="1" max="30" value="1">
+            </div>
+        </div>
+    </div>
+</form>
