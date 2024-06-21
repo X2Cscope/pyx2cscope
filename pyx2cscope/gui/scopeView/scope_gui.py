@@ -1,4 +1,4 @@
-"""This is the minimal gui to test the pyx2cscope interface library."""
+"""This is the scope_gui to test the pyx2cscope scope functionality."""
 
 import logging
 import os
@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QFileDialog,
     QGridLayout,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -28,11 +29,13 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSlider,
+    QTabWidget,
+    QVBoxLayout,
     QWidget,
 )
 
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.xc2scope import TriggerConfig, X2CScope
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -49,11 +52,15 @@ class X2cscopeGui(QMainWindow):
     def __init__(self):
         """Initializing all the elements required."""
         super().__init__()
+
         self.initialize_variables()
         self.init_ui()
 
     def initialize_variables(self):
         """Initialize instance variables."""
+        self.sampling_active = False
+        self.fig = None
+        self.ax = None
         self.offset_boxes = None
         self.plot_checkboxes = None
         self.scaled_value_boxes = None
@@ -77,7 +84,7 @@ class X2cscopeGui(QMainWindow):
         self.timer()
         self.offset_var()
         self.plot_var_check()
-        self.scailing_var()
+        self.scaling_var()
         self.value_var()
         self.live_var()
         self.scaled_value()
@@ -169,7 +176,7 @@ class X2cscopeGui(QMainWindow):
         self.plot_var4_checkbox = QCheckBox()
         self.plot_var3_checkbox = QCheckBox()
         self.plot_var1_checkbox = QCheckBox()
-    def scailing_var(self):
+    def scaling_var(self):
         """Initializing Scaling variable."""
         self.Scaling_var1 = QLineEdit(self)
         self.Scaling_var2 = QLineEdit(self)
@@ -188,15 +195,18 @@ class X2cscopeGui(QMainWindow):
     def init_ui(self):
         """Initializing all the required for GUI."""
         central_widget = QWidget(self)
-        self.layout = QGridLayout(central_widget)
+        self.tab_widget = QTabWidget()
+        self.layout = QVBoxLayout(central_widget)
+        self.layout.addWidget(self.tab_widget)
 
-        self.setup_port_layout()
-        self.setup_baud_layout()
-        self.setup_sampletime_layout()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
 
-        self.setup_variable_layout()
+        self.tab_widget.addTab(self.tab1, "WatchView")
+        self.tab_widget.addTab(self.tab2, "ScopeView")
 
-        self.setup_connections()
+        self.setup_tab1()
+        self.setup_tab2()
 
         self.setCentralWidget(central_widget)
         self.setWindowTitle("pyX2Cscope")
@@ -205,7 +215,91 @@ class X2cscopeGui(QMainWindow):
 
         self.refresh_ports()
 
-    def setup_port_layout(self):
+    def setup_tab1(self):
+        """Set up the first tab with the original functionality."""
+        self.tab1.layout = QVBoxLayout()
+        self.tab1.setLayout(self.tab1.layout)
+
+        grid_layout = QGridLayout()
+        self.tab1.layout.addLayout(grid_layout)
+
+        self.setup_port_layout(grid_layout)
+        self.setup_baud_layout(grid_layout)
+        self.setup_sampletime_layout(grid_layout)
+        self.setup_variable_layout(grid_layout)
+        self.setup_connections()
+
+    def setup_tab2(self):
+        """Set up the second tab with the scope functionality."""
+        self.tab2.layout = QVBoxLayout()
+        self.tab2.setLayout(self.tab2.layout)
+
+        main_grid_layout = QGridLayout()
+        self.tab2.layout.addLayout(main_grid_layout)
+
+        # Trigger Configuration Group Box
+        trigger_group = QGroupBox("Trigger Configuration")
+        trigger_layout = QVBoxLayout()
+        trigger_group.setLayout(trigger_layout)
+
+        grid_layout_trigger = QGridLayout()
+        trigger_layout.addLayout(grid_layout_trigger)
+
+        self.single_shot_checkbox = QCheckBox("Single Shot")  # Add Single Shot checkbox
+        self.sample_time_factor = QLineEdit("1")
+        self.sample_time_factor.setValidator(self.decimal_validator)
+        self.trigger_mode_combo = QComboBox()
+        self.trigger_mode_combo.addItems(["Auto", "Triggered"])
+        self.trigger_edge_combo = QComboBox()
+        self.trigger_edge_combo.addItems(["Rising", "Falling"])
+        self.trigger_level_edit = QLineEdit()
+        self.trigger_level_edit.setValidator(self.decimal_validator)
+        self.trigger_delay_edit = QLineEdit()
+        self.trigger_delay_edit.setValidator(self.decimal_validator)
+        self.scope_trigger_button = QPushButton("Configure Trigger")
+        self.scope_trigger_button.clicked.connect(self.configure_trigger)
+
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
+                                      2)  # Add the Single Shot checkbox to the layout
+        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
+        grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
+        grid_layout_trigger.addWidget(self.trigger_mode_combo, 2, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 3, 0)
+        grid_layout_trigger.addWidget(self.trigger_edge_combo, 3, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 4, 0)
+        grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
+        grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
+        grid_layout_trigger.addWidget(self.scope_trigger_button, 6, 0, 1, 2)
+
+        # Variable Selection Group Box
+        variable_group = QGroupBox("Variable Selection")
+        variable_layout = QVBoxLayout()
+        variable_group.setLayout(variable_layout)
+
+        grid_layout_variable = QGridLayout()
+        variable_layout.addLayout(grid_layout_variable)
+
+        self.scope_var_combos = [QComboBox() for _ in range(7)]
+        self.scope_sample_button = QPushButton("Sample")
+        self.scope_sample_button.clicked.connect(self.start_sampling)
+
+        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
+        for i, combo in enumerate(self.scope_var_combos):
+            grid_layout_variable.addWidget(combo, i + 1, 0)
+
+        grid_layout_variable.addWidget(self.scope_sample_button, 8, 0)
+
+        # Add the group boxes to the main layout with stretch factors
+        main_grid_layout.addWidget(trigger_group, 0, 0)
+        main_grid_layout.addWidget(variable_group, 0, 1)
+
+        # Set the column stretch factors to make the variable group larger
+        main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
+        main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
+
+    def setup_port_layout(self, layout):
         """Set up the port selection layout."""
         port_layout = QGridLayout()
         port_label = QLabel("Select Port:")
@@ -224,9 +318,9 @@ class X2cscopeGui(QMainWindow):
         port_layout.addWidget(self.port_combo, 0, 1)
         port_layout.addWidget(refresh_button, 0, 2)
 
-        self.layout.addLayout(port_layout, 1, 0)
+        layout.addLayout(port_layout, 1, 0)
 
-    def setup_baud_layout(self):
+    def setup_baud_layout(self, layout):
         """Set up the baud rate selection layout."""
         baud_layout = QGridLayout()
         baud_label = QLabel("Select Baud Rate:")
@@ -239,9 +333,9 @@ class X2cscopeGui(QMainWindow):
         if index >= 0:
             self.baud_combo.setCurrentIndex(index)
 
-        self.layout.addLayout(baud_layout, 2, 0)
+        layout.addLayout(baud_layout, 2, 0)
 
-    def setup_sampletime_layout(self):
+    def setup_sampletime_layout(self, layout):
         """Set up the sample time layout."""
         self.Connect_button.clicked.connect(self.toggle_connection)
         self.Connect_button.setFixedSize(100, 30)
@@ -257,10 +351,10 @@ class X2cscopeGui(QMainWindow):
         self.box_layout.addStretch(1)
         self.box_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
-        self.layout.addWidget(self.select_file_button, 3, 0)
-        self.layout.addLayout(self.box_layout, 4, 0)
+        layout.addWidget(self.select_file_button, 3, 0)
+        layout.addLayout(self.box_layout, 4, 0)
 
-    def setup_variable_layout(self):
+    def setup_variable_layout(self, layout):
         """Set up the variable selection layout."""
         self.timer_list = [
             self.timer1,
@@ -377,8 +471,8 @@ class X2cscopeGui(QMainWindow):
             self.grid_layout.addWidget(unit_var, display_row, 6)
             self.grid_layout.addWidget(plot_checkbox, display_row, 7)
 
-        self.layout.addLayout(self.grid_layout, 5, 0)
-        self.layout.addWidget(self.plot_button, 6, 0)
+        layout.addLayout(self.grid_layout, 5, 0)
+        layout.addWidget(self.plot_button, 6, 0)
 
     def setup_connections(self):
         """Set up connections for various widgets."""
@@ -792,6 +886,10 @@ class X2cscopeGui(QMainWindow):
                     combo_box.setCurrentIndex(combo_box.findText(current_selected_text))
                 else:
                     combo_box.setCurrentIndex(selected_index)
+
+            for combo in self.scope_var_combos:
+                combo.clear()
+                combo.addItems(self.VariableList)
         else:
             logging.warning("VariableList is None. Unable to refresh combo boxes.")
 
@@ -934,11 +1032,135 @@ class X2cscopeGui(QMainWindow):
         This method ensures that all resources are properly released and the
         application is closed cleanly.
         """
-        if self.plot_window_open:
-            self.close_plot_window()
+        if self.sampling_active:
+            self.sampling_active = False
+        if self.fig:
+            plt.close(self.fig)
         if self.ser:
             self.disconnect_serial()
         event.accept()
+
+    def start_sampling(self):
+        """Start the sampling process."""
+        try:
+            if self.sampling_active:
+                self.sampling_active = False
+                self.scope_sample_button.setText("Sample")
+                if self.fig:
+                    plt.close(self.fig)
+                logging.info("Stopped sampling.")
+            else:
+
+                for combo in self.scope_var_combos:
+                    variable_name = combo.currentText()
+                    if variable_name and variable_name != "None":
+                        variable = self.x2cscope.get_variable(variable_name)
+                        self.x2cscope.add_scope_channel(variable)
+                self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
+                self.configure_trigger()  # trigger configuration
+                self.sampling_active = True
+                self.scope_sample_button.setText("Stop")
+                logging.info("Started sampling.")
+                self.x2cscope.request_scope_data()
+                self.sample_scope_data(single_shot=self.single_shot_checkbox.isChecked())
+        except Exception as e:
+            error_message = f"Error starting sampling: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
+
+    def configure_trigger(self):
+        """Configure the trigger settings."""
+        try:
+            variable_name = self.scope_var_combos[0].currentText()
+            variable = self.x2cscope.get_variable(variable_name)
+
+            # Handle empty string for trigger level and delay
+            trigger_level_text = self.trigger_level_edit.text().strip()
+            trigger_delay_text = self.trigger_delay_edit.text().strip()
+
+            if not trigger_level_text:
+                trigger_level = 0
+            else:
+                try:
+                    trigger_level = float(trigger_level_text)
+                except ValueError:
+                    logging.error(f"Invalid trigger level value: {trigger_level_text}")
+                    self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
+                    return
+
+            if not trigger_delay_text:
+                trigger_delay = 0
+            else:
+                try:
+                    trigger_delay = int(trigger_delay_text)
+                except ValueError:
+                    logging.error(f"Invalid trigger delay value: {trigger_delay_text}")
+                    self.handle_error(f"Invalid trigger delay value: {trigger_delay_text}")
+                    return
+
+            trigger_edge = 0 if self.trigger_edge_combo.currentText() == "Rising" else 1
+            trigger_mode = 0 if self.trigger_mode_combo.currentText() == "Auto" else 1
+
+            trigger_config = TriggerConfig(
+                variable=variable,
+                trigger_level=trigger_level,
+                trigger_mode=trigger_mode,
+                trigger_delay=trigger_delay,
+                trigger_edge=trigger_edge,
+            )
+            self.x2cscope.set_scope_trigger(trigger_config)
+            logging.info("Trigger configured.")
+        except Exception as e:
+            error_message = f"Error configuring trigger: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
+
+    def sample_scope_data(self, single_shot=False):
+        """Sample the scope data."""
+        try:
+            plt.ion()  # Turn on interactive mode
+            self.fig, self.ax = plt.subplots()
+
+            while self.sampling_active:
+                if self.x2cscope.is_scope_data_ready():
+                    logging.info("Scope data is ready.")
+
+                    data_storage = {}
+                    for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
+                        data_storage[channel] = data
+
+                    self.ax.clear()
+                    for channel, data in data_storage.items():
+                        time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
+                        self.ax.plot(time_values, data, label=f"Channel {channel}")
+
+                    self.ax.set_xlabel("Time (ms)")
+                    self.ax.set_ylabel("Value")
+                    self.ax.set_title("Live Plot of Scope Data")
+                    self.ax.legend()
+
+                    plt.pause(0.001)  # Add a short pause to update the plot
+
+                    if single_shot:
+                        break
+
+                    self.x2cscope.request_scope_data()
+
+                if not plt.fignum_exists(self.fig.number):
+                    break
+
+                time.sleep(0.1)
+
+            plt.ioff()  # Turn off interactive mode after the loop
+            plt.show()
+
+            self.sampling_active = False
+            self.scope_sample_button.setText("Sample")
+            logging.info("Data collection complete.")
+        except Exception as e:
+            error_message = f"Error sampling scope data: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
 
 
 if __name__ == "__main__":

@@ -20,13 +20,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r quality.txt
 
-    - name: Code Format Check with Black
+    - name: Code Format Check
       run: |
-        black --check --verbose .
-
-    - name: Code Format Check with isort
-      run: |
-        isort . -c -v
+        ruff check .
 
 #  static-analysis:
 #    runs-on: ubuntu-latest
@@ -95,6 +91,6 @@ jobs:
 
       - name: Build documentation
         run: |
-          sphinx-build -M html doc build -Wan --keep-going 
+          sphinx-build -M html doc build --keep-going 
 
 

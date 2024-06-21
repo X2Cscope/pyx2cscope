@@ -1,8 +1,9 @@
+"""To run the minimal gui (watch-View)."""
 import sys
 
 from PyQt5.QtWidgets import QApplication
 
-from pyx2cscope.gui.watchView.minimal_gui import X2Cscope_GUI
+from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
 
 # logging.basicConfig(
 #     level=0,
@@ -12,6 +13,6 @@ from pyx2cscope.gui.watchView.minimal_gui import X2Cscope_GUI
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ex = X2Cscope_GUI()
+    ex = X2cscopeGui()
     ex.show()
     app.exec_()

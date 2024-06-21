@@ -1,8 +1,11 @@
+"""This example can be used to try the scope functionality of pyX2Cscope and save the data acquisition in CSV file."""
+
 import csv
 import logging
 import time
 
 import matplotlib.pyplot as plt
+from utils import get_com_port, get_elf_file_path
 
 from pyx2cscope.xc2scope import X2CScope
 
@@ -13,8 +16,8 @@ logging.basicConfig(
 )
 
 # X2C Scope Set up
-elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-x2cScope = X2CScope(port="COM14", elf_file=elf_file)
+elf_file = get_elf_file_path()
+x2c_scope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
 # Define variables
 variables = [
@@ -26,9 +29,9 @@ variables = [
 ]
 
 for var in variables:
-    x2cScope.add_scope_channel(x2cScope.get_variable(var))
+    x2c_scope.add_scope_channel(x2c_scope.get_variable(var))
 
-x2cScope.set_sample_time(1)
+x2c_scope.set_sample_time(1)
 
 # Create the plot
 plt.ion()  # Turn on interactive mode
@@ -38,16 +41,19 @@ fig, ax = plt.subplots()
 sample_count = 0
 max_sample = 100  # Increase the number of samples if needed
 
-x2cScope.request_scope_data()
+# request scope to start sampling data
+x2c_scope.request_scope_data()
 
 while sample_count < max_sample:
     try:
-        if x2cScope.is_scope_data_ready():
+        if x2c_scope.is_scope_data_ready():
             sample_count += 1
             logging.info("Scope data is ready.")
 
             data_storage = {}
-            for channel, data in x2cScope.get_scope_channel_data(valid_data=False).items():
+            for channel, data in x2c_scope.get_scope_channel_data(
+                valid_data=False
+            ).items():
                 data_storage[channel] = data
 
             ax.clear()
@@ -66,7 +72,7 @@ while sample_count < max_sample:
 
             if sample_count >= max_sample:
                 break
-            x2cScope.request_scope_data()
+            x2c_scope.request_scope_data()
 
     except Exception as e:
         logging.error(f"Error in main loop: {str(e)}")
@@ -88,7 +94,10 @@ with open(csv_file_path, mode="w", newline="") as file:
     writer.writeheader()
     for i in range(max_length):
         row = {
-            channel: (data_storage[channel][i] if i < len(data_storage[channel]) else None) for channel in data_storage
+            channel: (
+                data_storage[channel][i] if i < len(data_storage[channel]) else None
+            )
+            for channel in data_storage
         }
         writer.writerow(row)
 

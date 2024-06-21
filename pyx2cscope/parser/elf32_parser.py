@@ -1,14 +1,18 @@
+"""This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+
+It focuses on extracting structure members and variable information from DWARF debugging information.
+"""
+
+
 import logging
 
 from elftools.elf.elffile import ELFFile
 
-from pyx2cscope.parser.Elf_Parser import ElfParser, VariableInfo
+from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
 
 
 class Elf32Parser(ElfParser):
-    """
-    Class for parsing ELF files compatible with 32-bit architectures.
-    """
+    """Class for parsing ELF files compatible with 32-bit architectures."""
 
     def _get_structure_members_recursive(
         self,
@@ -17,10 +21,10 @@ class Elf32Parser(ElfParser):
         parent_name: str,
         prev_address_offset=0,
     ):
-        """
-        Recursively gets structure members from a DWARF DIE.
+        """Recursively gets structure members from a DWARF DIE.
 
         Args:
+            type_die: The DIE representing the type.
             die: The DIE representing the structure.
             parent_name (str): Name of the parent structure.
             prev_address_offset (int): Address offset from the parent.
@@ -30,7 +34,7 @@ class Elf32Parser(ElfParser):
         """
         members = {}
         for child_die in die.iter_children():
-            if child_die.tag == "DW_TAG_member" or child_die.tag == "DW_TAG_pointer_type":
+            if child_die.tag in {"DW_TAG_member", "DW_TAG_pointer_type"}:
                 member = {}
                 member_name = ""
                 name_attr = child_die.attributes.get("DW_AT_name")
@@ -42,7 +46,9 @@ class Elf32Parser(ElfParser):
                     try:
                         member_type = self._get_member_type(type_offset)
                         offset_value_from_member_address = int(
-                            child_die.attributes.get("DW_AT_data_member_location").value[1]
+                            child_die.attributes.get(
+                                "DW_AT_data_member_location"
+                            ).value[1]
                         )
                         nested_die = self._get_end_die(child_die)
                         if nested_die.tag == "DW_TAG_structure_type":
@@ -50,6 +56,7 @@ class Elf32Parser(ElfParser):
                                 nested_members,
                                 nested_offset,
                             ) = self._get_structure_members_recursive(
+                                type_die,
                                 nested_die,
                                 member_name,
                                 prev_address_offset + offset_value_from_member_address,
@@ -59,23 +66,23 @@ class Elf32Parser(ElfParser):
                         else:
                             member["type"] = member_type["name"]
                             member["byte_size"] = member_type["byte_size"]
-                            member["address_offset"] = prev_address_offset + offset_value_from_member_address
+                            member["address_offset"] = (
+                                prev_address_offset + offset_value_from_member_address
+                            )
                             member["array_size"] = self._get_array_length(type_die)
                             members[member_name] = member
                     except Exception as e:
-                        logging.error("exception", e)
+                        logging.error("Exception occurred: %s", e)
                         # Handle missing fields
-                        # TODO This will be handled in future versions
                         continue
 
-                    # If the member type is a structure or class, recurse into it
         return members, prev_address_offset
 
     def _get_structure_members(self, type_die, structure_die, var_name):
-        """
-        Retrieves structure members from a DWARF DIE.
+        """Retrieves structure members from a DWARF DIE.
 
         Args:
+            type_die: The DIE representing the type.
             structure_die: The DIE representing the structure.
             var_name (str): Name of the variable.
 
@@ -83,13 +90,15 @@ class Elf32Parser(ElfParser):
             dict: Dictionary of structure members.
         """
         prev_address_offset = 0
-        return self._get_structure_members_recursive(type_die, structure_die, var_name, prev_address_offset)
+        return self._get_structure_members_recursive(
+            type_die, structure_die, var_name, prev_address_offset
+        )
 
     def _processing_end_die(self, type_die, end_die):
-        """
-        Processes the end DIE of a tag to extract variable information.
+        """Processes the end DIE of a tag to extract variable information.
 
         Args:
+            type_die: The DIE representing the type.
             end_die: The end DIE of the tag.
         """
         try:
@@ -97,17 +106,14 @@ class Elf32Parser(ElfParser):
                 data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
                 self.address = int.from_bytes(bytes(data), byteorder="little")
             else:
-                address = None
+                self.address = None
         except Exception as e:
-            logging.error(e)
+            logging.error("Exception occurred: %s", e)
             pass
-            # continue  # if there's an error, skip this variable and move to the next
         if self.address == 0:
             pass
-            # continue  # Skip variables with address 0
         if self.var_name.startswith("_") or self.var_name.startswith("__"):
             pass
-            # continue  # Skip variables with names starting with '_' or '__'
 
         if end_die.tag == "DW_TAG_pointer_type":
             type_name = "pointer"
@@ -139,8 +145,7 @@ class Elf32Parser(ElfParser):
             )
 
     def _get_array_length(self, type_die):
-        """
-        Gets the length of an array type.
+        """Gets the length of an array type.
 
         Args:
             type_die: The DIE representing the array type.
@@ -148,13 +153,13 @@ class Elf32Parser(ElfParser):
         Returns:
             int: Length of the array.
         """
-        # print(type_die)
-
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")
                 if array_length_attr:
-                    array_length = array_length_attr.value + 1  # upper_bound is 0-indexed
+                    array_length = (
+                        array_length_attr.value + 1
+                    )  # upper_bound is 0-indexed
                     return array_length
 
     def _load_elf_file(self):
@@ -163,11 +168,10 @@ class Elf32Parser(ElfParser):
                 self.elf_file = ELFFile(stream)
                 self.dwarf_info = self.elf_file.get_dwarf_info()
         except IOError:
-            raise Exception("Error loading ELF file: {}".format(self.elf_path))
+            raise Exception(f"Error loading ELF file: {self.elf_path}")
 
     def _get_dwarf_die_by_offset(self, offset):
-        """
-        Retrieve a DWARF DIE given its offset.
+        """Retrieve a DWARF DIE given its offset.
 
         Args:
             offset (int): Offset of the DIE.
@@ -183,8 +187,7 @@ class Elf32Parser(ElfParser):
         return None
 
     def _get_end_die(self, current_die):
-        """
-        Find the end DIE of a type.
+        """Find the end DIE of a type.
 
         Args:
             current_die (elftools.dwarf.die.DIE): The starting DIE.
@@ -192,19 +195,20 @@ class Elf32Parser(ElfParser):
         Returns:
             elftools.dwarf.die.DIE: The end DIE of the type.
         """
-        valid_words = [
+        valid_tags = {
             "DW_TAG_base_type",
             "DW_TAG_pointer_type",
             "DW_TAG_structure_type",
-        ]
-        while not any(current_die.tag == word for word in valid_words):
-            ref_addr = current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
+        }
+        while current_die.tag not in valid_tags:
+            ref_addr = (
+                current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
+            )
             current_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         return current_die
 
     def _get_member_type(self, type_offset):
-        """
-        Retrieve the type information from DWARF given a type offset.
+        """Retrieve the type information from DWARF given a type offset.
 
         Args:
             type_offset (int): Offset of the type DIE.
@@ -236,21 +240,28 @@ class Elf32Parser(ElfParser):
             root_die = compilation_unit.iter_DIEs()
             tag_variables = filter(lambda die: die.tag == "DW_TAG_variable", root_die)
 
-            for self.die_variable in tag_variables:
-                #  the structure which has address in specific DIE.
+            for die_variable in tag_variables:
+                self.die_variable = die_variable
                 if "DW_AT_specification" in self.die_variable.attributes:
                     spec_ref_addr = (
-                        self.die_variable.attributes["DW_AT_specification"].value + self.die_variable.cu.cu_offset
+                        self.die_variable.attributes["DW_AT_specification"].value
+                        + self.die_variable.cu.cu_offset
                     )
                     spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
                     if self.die_variable.attributes.get("DW_AT_location"):
-                        address_set = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
-                        self.address = int.from_bytes(bytes(address_set), byteorder="little")
+                        address_set = list(
+                            self.die_variable.attributes["DW_AT_location"].value
+                        )[1:]
+                        self.address = int.from_bytes(
+                            bytes(address_set), byteorder="little"
+                        )
 
                     if spec_die.tag == "DW_TAG_variable" and self.address is not None:
                         self.die_variable = spec_die
-                        self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+                        self.var_name = self.die_variable.attributes.get(
+                            "DW_AT_name"
+                        ).value.decode("utf-8")
                     else:
                         continue
 
@@ -258,7 +269,9 @@ class Elf32Parser(ElfParser):
                     self.die_variable.attributes.get("DW_AT_location")
                     and self.die_variable.attributes.get("DW_AT_name") is not None
                 ):
-                    self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+                    self.var_name = self.die_variable.attributes.get(
+                        "DW_AT_name"
+                    ).value.decode("utf-8")
                 else:
                     continue  # Skip to the next iteration if DW_AT_name is missing
 
@@ -268,12 +281,7 @@ class Elf32Parser(ElfParser):
 
                 ref_addr = type_attr.value + self.die_variable.cu.cu_offset
 
-                #
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-                # if type_die.tag == "DW_TAG_array_type":
-                #     self.array_size = self._get_array_length(type_die)
-                #     print(self.die_variable.attributes.get("DW_AT_name"))
-                #     print("array_length", self.array_size)
                 if type_die.tag != "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
                     self._processing_end_die(type_die, end_die)

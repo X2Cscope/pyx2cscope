@@ -1,3 +1,12 @@
+"""This module provides abstract base classes and data structures for parsing ELF files.
+
+Classes:
+    VariableInfo: A data class representing information about a variable in an ELF file.
+    ElfParser: An abstract base class for parsing ELF files and extracting variable information.
+
+The module is designed to be extended by specific implementations for different ELF file formats.
+"""
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -5,14 +14,14 @@ from typing import Dict, List, Optional
 
 @dataclass
 class VariableInfo:
-    """
-    A data class representing information about a variable in an ELF file.
+    """A data class representing information about a variable in an ELF file.
 
     Attributes:
         name (str): The name of the variable.
         type (str): The data type of the variable.
         byte_size (int): The size of the variable in bytes.
         address (int): The memory address of the variable.
+        array_size (int): The size of the array if the variable is an array, default is 0.
     """
 
     name: str
@@ -23,8 +32,7 @@ class VariableInfo:
 
 
 class ElfParser(ABC):
-    """
-    Abstract base class for parsing ELF files.
+    """Abstract base class for parsing ELF files.
 
     This class provides a general interface for parsing ELF files and extracting
     information about variables contained within. Subclasses should provide specific
@@ -44,8 +52,7 @@ class ElfParser(ABC):
     """
 
     def __init__(self, elf_path: str):
-        """
-        Initialize the ElfParser with the path to the ELF file.
+        """Initialize the ElfParser with the path to the ELF file.
 
         Args:
             elf_path (str): Path to the ELF file.
@@ -59,8 +66,7 @@ class ElfParser(ABC):
         self._load_elf_file()
 
     def get_var_info(self, name: str) -> Optional[VariableInfo]:
-        """
-        Return the VariableInfo associated with a given variable name, or None if not found.
+        """Return the VariableInfo associated with a given variable name, or None if not found.
 
         Args:
             name (str): The name of the variable.
@@ -73,8 +79,7 @@ class ElfParser(ABC):
         return self.variable_map.get(name)
 
     def get_var_list(self) -> List[str]:
-        """
-        Return a list of all variable names available in the ELF file.
+        """Return a list of all variable names available in the ELF file.
 
         Returns:
             List[str]: A sorted list of variable names.
@@ -84,8 +89,7 @@ class ElfParser(ABC):
         return sorted(self.variable_map.keys(), key=lambda x: x.lower())
 
     def map_variables(self) -> Dict[str, VariableInfo]:
-        """
-        Map variables from the parsed DWARF information and return them.
+        """Map variables from the parsed DWARF information and return them.
 
         Returns:
             Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
@@ -96,16 +100,14 @@ class ElfParser(ABC):
 
     @abstractmethod
     def _load_elf_file(self):
-        """
-        Load the ELF file according to the specific hardware architecture.
+        """Load the ELF file according to the specific hardware architecture.
 
         This method should be implemented by subclasses to handle different ELF file formats.
         """
 
     @abstractmethod
     def _map_variables(self) -> Dict[str, VariableInfo]:
-        """
-        Abstract method to map variables from the parsed DWARF information.
+        """Abstract method to map variables from the parsed DWARF information.
 
         Subclasses should implement this method to extract variable information specific to their ELF format.
 

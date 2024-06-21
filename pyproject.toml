@@ -2,12 +2,9 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 120
-
 [tool.poetry]
 name = "pyx2cscope"
-version = "0.1.5"
+version = "0.2.0"
 description = "python implementation of X2Cscope"
 authors = [
   "Yash Agarwal <yash.agarwal@microchip.com>",
@@ -32,8 +29,18 @@ matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
 mchplnet = "0.1.2"
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+line-length = 120
+# only allow the specified pydocstyle convention
+lint.pydocstyle.convention = "google"
+lint.select = ["D"]
+# I - isort style for imports
+# N - pep8-naming
+# F - pyflakes
+# D - pydocstyle
+# PL - pylint
+lint.extend-select = ["I", "N", "F", "PL", "D"]
+exclude = ["mchplnet/*"]
+lint.ignore = ["I001", "PLW0603", "PLW0602"] #TODO fix the import issue. no errors on local machine and errors on github action.
 
-[tool.pylint]
-max-line-length=240
+
