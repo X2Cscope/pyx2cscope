@@ -3,6 +3,11 @@
 
 .. py:module:: pyx2cscope.parser
 
+.. autoapi-nested-parse::
+
+   This module is responsible for getting the required parameters from the elf file to be able to fetch data from microcontroller.
+
+
 
 Submodules
 ----------
@@ -10,10 +15,8 @@ Submodules
    :titlesonly:
    :maxdepth: 1
 
-   Elf16Parser/index.rst
-   Elf32Parser/index.rst
-   Elf_Parser/index.rst
-   TestarraySupport/index.rst
-   arraySupport/index.rst
+   elf16_parser/index.rst
+   elf32_parser/index.rst
+   elf_parser/index.rst
 
 

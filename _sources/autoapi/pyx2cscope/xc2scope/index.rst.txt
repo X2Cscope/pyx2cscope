@@ -3,6 +3,15 @@
 
 .. py:module:: pyx2cscope.xc2scope
 
+.. autoapi-nested-parse::
+
+   X2CScope module for interfacing with the X2C firmware enabled embedded systems.
+
+   The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers.
+   It is utilising LNET protocol to communicate with the firmware. LNET protocoll is implemented in the mchplnet package.
+   The package provides an interface to connect to the firmware, set up scope channels, request data, and process received data.
+
+
 
 Module Contents
 ---------------
@@ -12,6 +21,7 @@ Classes
 
 .. autoapisummary::
 
+   pyx2cscope.xc2scope.TriggerConfig
    pyx2cscope.xc2scope.X2CScope
 
 
@@ -34,6 +44,48 @@ Functions
 
    Returns:
        ScopeChannel: A ScopeChannel object representing the given variable.
+
+
+.. py:class:: TriggerConfig
+
+
+   Configuration class for scope trigger settings.
+
+   Attributes:
+       variable (Variable): The variable to use as the trigger source.
+       trigger_level (int): The trigger level value for specified channel.
+       trigger_mode (int): 0 Auto, 1 Triggered (default) .
+       trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
+       trigger_edge (int): Rising 0, falling 1.
+
+   .. py:attribute:: variable
+      :type: pyx2cscope.variable.variable.Variable
+
+      
+
+   .. py:attribute:: trigger_level
+      :type: int
+      :value: 0
+
+      
+
+   .. py:attribute:: trigger_mode
+      :type: int
+      :value: 1
+
+      
+
+   .. py:attribute:: trigger_delay
+      :type: int
+      :value: 0
+
+      
+
+   .. py:attribute:: trigger_edge
+      :type: int
+      :value: 0
+
+      
 
 
 .. py:class:: X2CScope(elf_file: str, interface: mchplnet.interfaces.abstract_interface.InterfaceABC = None, *args, **kwargs)
@@ -141,26 +193,24 @@ Functions
       Resets scope trigger settings, i.e., no triggering will happen.
 
 
-   .. py:method:: set_scope_trigger(variable: pyx2cscope.variable.variable.Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
+   .. py:method:: set_scope_trigger(config: TriggerConfig)
 
       Set the scope trigger configuration.
 
       Args:
-          variable (Variable): The variable to use as the trigger source.
-          trigger_level (int): The trigger level value.
-          trigger_mode (int): The trigger mode.
-          trigger_delay (int): The trigger delay.
-          trigger_edge (int): The trigger edge setting.
+          config (TriggerConfig): Configuration object for trigger settings.
 
 
    .. py:method:: clear_trigger()
 
-      Reset Trigger configuration.
+      Reset the trigger configuration.
 
 
    .. py:method:: set_sample_time(sample_time: int)
 
-      This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution.
+      Define a pre-scaler for sampling mode.
+
+      This can be used to extend total sampling time at the cost of resolution.
       0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
 
       Args:
@@ -185,8 +235,10 @@ Functions
 
    .. py:method:: is_scope_data_ready() -> bool
 
-      Check if the sampling of scope data is ready. Before calling this method, call
-      request_scope_data() first. Please insert a delay between is_scope_data_ready().
+      Check if the sampling of scope data is ready.
+
+      Before calling this method, call request_scope_data() first.
+      Please insert a delay between is_scope_data_ready().
 
       Returns:
           bool: True if the scope data is ready, False otherwise.
@@ -208,48 +260,57 @@ Functions
           int: The index position of the delay trigger.
 
 
-   .. py:method:: _calc_sda_used_length()
+   .. py:method:: _calc_sda_used_length() -> int
 
       Calculate the used length of the Scope Data Array (SDA).
 
       Returns:
-          The length of the used portion of the SDA.
+          int: The length of the used portion of the SDA.
 
 
-   .. py:method:: _read_array_chunks()
+   .. py:method:: _read_array_chunks() -> List[bytearray]
 
       Read array chunks from the LNet layer.
 
       Returns:
-          A list containing the chunk data.
+          List[bytearray]: A list containing the chunk data.
 
 
-   .. py:method:: read_array(address, data_type)
+   .. py:method:: read_array(address: int, data_type: int) -> List[bytearray]
+
+      Read an array from the specified address in the MCU memory.
+
+      Args:
+          address (int): The address to read from.
+          data_type (int): The type of data to read.
+
+      Returns:
+          List[bytearray]: The read data.
 
 
-   .. py:method:: _sort_channel_data(data) -> Dict[str, List[numbers.Number]]
+   .. py:method:: _sort_channel_data(data: bytearray) -> Dict[str, List[numbers.Number]]
 
       Sort and convert the dataset byte order into channel byte order.
 
       Args:
-          data: The raw data read from the scope.
+          data (bytearray): The raw data read from the scope.
 
       Returns:
           Dict[str, List[Number]]: A dictionary with channel names as keys and lists of sorted data as values.
 
 
-   .. py:method:: _filter_channels(channels)
+   .. py:method:: _filter_channels(channels: Dict[str, List[numbers.Number]]) -> Dict[str, List[numbers.Number]]
 
       Filter the channels to include only valid data.
 
       Args:
-          channels: The dictionary of channels with raw data.
+          channels (Dict[str, List[Number]]): The dictionary of channels with raw data.
 
       Returns:
-          The filtered dictionary of channels with valid data only.
+          Dict[str, List[Number]]: The filtered dictionary of channels with valid data only.
 
 
-   .. py:method:: get_scope_channel_data(valid_data=True) -> Dict[str, List[numbers.Number]]
+   .. py:method:: get_scope_channel_data(valid_data: bool = True) -> Dict[str, List[numbers.Number]]
 
       Get the sorted and optionally filtered scope channel data.
 

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyx2cscope.parser.elf32_parser &mdash; pyX2Cscope 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/pyx2cscope.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="pyx2cscope.parser.elf_parser" href="../elf_parser/index.html" />
+    <link rel="prev" title="pyx2cscope.parser.elf16_parser" href="../elf16_parser/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            pyX2Cscope
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../how_to.html">How-To</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope</span></code></a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../variable/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.variable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyX2Cscope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope</span></code></a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.elf32_parser</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/pyx2cscope/parser/elf32_parser/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pyx2cscope.parser.elf32_parser">
+<span id="pyx2cscope-parser-elf32-parser"></span><h1><a class="reference internal" href="#module-pyx2cscope.parser.elf32_parser" title="pyx2cscope.parser.elf32_parser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.parser.elf32_parser</span></code></a><a class="headerlink" href="#module-pyx2cscope.parser.elf32_parser" title="Link to this heading"></a></h1>
+<p>This module provides functionalities for parsing ELF files compatible with 32-bit architectures.</p>
+<p>It focuses on extracting structure members and variable information from DWARF debugging information.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf32_parser.Elf32Parser" title="pyx2cscope.parser.elf32_parser.Elf32Parser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Elf32Parser</span></code></a></p></td>
+<td><p>Class for parsing ELF files compatible with 32-bit architectures.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf32_parser.elf_file" title="pyx2cscope.parser.elf32_parser.elf_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elf_file</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf32_parser.</span></span><span class="sig-name descname"><span class="pre">Elf32Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser" title="pyx2cscope.parser.elf_parser.ElfParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyx2cscope.parser.elf_parser.ElfParser</span></code></a></p>
+<p>Class for parsing ELF files compatible with 32-bit architectures.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members_recursive">
+<span class="sig-name descname"><span class="pre">_get_structure_members_recursive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_address_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_structure_members_recursive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members_recursive" title="Link to this definition"></a></dt>
+<dd><p>Recursively gets structure members from a DWARF DIE.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>type_die: The DIE representing the type.
+die: The DIE representing the structure.
+parent_name (str): Name of the parent structure.
+prev_address_offset (int): Address offset from the parent.</p>
+</dd>
+<dt>Returns:</dt><dd><p>Tuple[dict, int]: Dictionary of members and their offset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members">
+<span class="sig-name descname"><span class="pre">_get_structure_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_structure_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members" title="Link to this definition"></a></dt>
+<dd><p>Retrieves structure members from a DWARF DIE.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>type_die: The DIE representing the type.
+structure_die: The DIE representing the structure.
+var_name (str): Name of the variable.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict: Dictionary of structure members.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die">
+<span class="sig-name descname"><span class="pre">_processing_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._processing_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die" title="Link to this definition"></a></dt>
+<dd><p>Processes the end DIE of a tag to extract variable information.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>type_die: The DIE representing the type.
+end_die: The end DIE of the tag.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_array_length">
+<span class="sig-name descname"><span class="pre">_get_array_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_array_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_array_length" title="Link to this definition"></a></dt>
+<dd><p>Gets the length of an array type.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>type_die: The DIE representing the array type.</p>
+</dd>
+<dt>Returns:</dt><dd><p>int: Length of the array.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._load_elf_file">
+<span class="sig-name descname"><span class="pre">_load_elf_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._load_elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._load_elf_file" title="Link to this definition"></a></dt>
+<dd><p>Load the ELF file according to the specific hardware architecture.</p>
+<p>This method should be implemented by subclasses to handle different ELF file formats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_dwarf_die_by_offset">
+<span class="sig-name descname"><span class="pre">_get_dwarf_die_by_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_dwarf_die_by_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_dwarf_die_by_offset" title="Link to this definition"></a></dt>
+<dd><p>Retrieve a DWARF DIE given its offset.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>offset (int): Offset of the DIE.</p>
+</dd>
+<dt>Returns:</dt><dd><p>DIE: The DWARF DIE corresponding to the offset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_end_die">
+<span class="sig-name descname"><span class="pre">_get_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_end_die" title="Link to this definition"></a></dt>
+<dd><p>Find the end DIE of a type.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>current_die (elftools.dwarf.die.DIE): The starting DIE.</p>
+</dd>
+<dt>Returns:</dt><dd><p>elftools.dwarf.die.DIE: The end DIE of the type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_member_type">
+<span class="sig-name descname"><span class="pre">_get_member_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_member_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_member_type" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the type information from DWARF given a type offset.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>type_offset (int): Offset of the type DIE.</p>
+</dd>
+<dt>Returns:</dt><dd><p>dict or None: Dictionary containing the name and byte size of the type, or None if not found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._map_variables">
+<span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../elf_parser/index.html#pyx2cscope.parser.elf_parser.VariableInfo" title="pyx2cscope.parser.elf_parser.VariableInfo"><span class="pre">pyx2cscope.parser.elf_parser.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._map_variables" title="Link to this definition"></a></dt>
+<dd><p>Abstract method to map variables from the parsed DWARF information.</p>
+<p>Subclasses should implement this method to extract variable information specific to their ELF format.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.elf_file">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf32_parser.</span></span><span class="sig-name descname"><span class="pre">elf_file</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'C:\\Users\\m67250\\Downloads\\mclv2_sam_e54_pim.X.production.elf'</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.elf_file" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../elf16_parser/index.html" class="btn btn-neutral float-left" title="pyx2cscope.parser.elf16_parser" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../elf_parser/index.html" class="btn btn-neutral float-right" title="pyx2cscope.parser.elf_parser" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Microchip Technology Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

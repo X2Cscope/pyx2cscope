@@ -3,6 +3,17 @@
 
 .. py:module:: pyx2cscope.__main__
 
+.. autoapi-nested-parse::
+
+   Main entry point for the X2Cscope application.
+
+   This module initializes the logging configuration based on a command-line argument,
+   sets up the PyQt5 application, and launches the X2Cscope GUI.
+
+   Arguments:
+       LOG_LEVEL (optional): The logging level for the application (e.g., 'DEBUG', 'INFO').
+
+
 
 Module Contents
 ---------------
@@ -25,16 +36,36 @@ Functions
    Sets the logging level based on the provided argument 'level'.
 
    Args:
-       the parsed arguments. (ArgumentParser): args contain property level (e.g., 'DEBUG', 'INFO').
-
+       args (dict): ArgParse parsed arguments. args.log_level contain the log  level (e.g., 'DEBUG', 'INFO').
 
 
 .. py:function:: parse_arguments()
 
+   Forward the received arguments to ArgParse and parse them.
+
+   possible arguments are:
+     | "-l", Configure the logging level, INFO is the default value
+     | "-v", action='version'
+     | "-w", Start the Web user interface, pyx2cscope.gui.web.app.
+     |
+     | For a complete list of arguments, execute python -m pyx2cscope --help
+
 
 .. py:function:: execute_qt(args)
 
+   Execute the GUI Qt implementation.
+
+   Args:
+       args: non-keyed arguments for Qt App.
+   :return:
+
 
 .. py:function:: execute_web(*args, **kwargs)
+
+   Start the web server.
+
+   Args:
+       *args: non-keyed arguments
+       **kwargs: keyed arguments related to the web server. See parse_arguments function documentations.
 
 

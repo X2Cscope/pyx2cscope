@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scripting &mdash; pyX2Cscope 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
+
+  
+    <link rel="shortcut icon" href="_static/pyx2cscope.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GUI Qt" href="gui_qt.html" />
+    <link rel="prev" title="How-To" href="how_to.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pyX2Cscope
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="how_to.html">How-To</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Scripting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#x2cscope-class">X2CScope class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#port">Port</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#elf-file">Elf File</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#variable-class">Variable class</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#reading-values">Reading values</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#scope-channel">Scope Channel</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#getting-data-from-scope">Getting Data from Scope</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#triggering">Triggering</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gui_qt.html">GUI Qt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui_web.html">GUI Web</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyX2Cscope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="how_to.html">How-To</a></li>
+      <li class="breadcrumb-item active">Scripting</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/scripting.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scripting">
+<h1>Scripting<a class="headerlink" href="#scripting" title="Link to this heading"></a></h1>
+<p>Once you have successfully installed pyX2Cscope into your environment or python project,
+start importing the X2CScope class. So you be able to read and write values from/to variables
+inside the controller. Follow the steps below to get your script running.</p>
+<section id="x2cscope-class">
+<h2>X2CScope class<a class="headerlink" href="#x2cscope-class" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Import the X2Cscope clss:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyx2scope</span> <span class="kn">import</span> <span class="n">X2CScope</span>
+</pre></div>
+</div>
+<p>X2CScope class needs two parameters to be instantiated:</p>
+<ul class="simple">
+<li><p><strong>port</strong>: The desired communication port name, i.e.:”COM3”, “dev/ttyUSB”, etc.</p></li>
+<li><p><strong>elf_file</strong>: The path to the elf file.</p></li>
+</ul>
+<section id="port">
+<h3>Port<a class="headerlink" href="#port" title="Link to this heading"></a></h3>
+<p>X2CScope will support multiple communication interfaces. Currently, only <strong>Serial</strong> is supported: CAN, LIN,
+and TCP/IP are coming in near future. For serial, the only parameter needed is the desired port name, by
+default baud rate is set to <strong><em>115200</em></strong>. If there’s a need to change the baud rate, include the baud_rate
+parameter with your preferred baud rate.</p>
+</section>
+<section id="elf-file">
+<h3>Elf File<a class="headerlink" href="#elf-file" title="Link to this heading"></a></h3>
+<p>When compiling your C/C++ program with Microchip DevTools, two files will be generated: the .hex file which
+will be flashed on the microcontroller and the .elf file, which contains the description of the variables
+and addresses included into your program. X2Cscope needs this file to locate variables and its values inside
+the running memory of the microcontroller. The elf file may be found under your MPLABX project folder at
+dist &gt; production &gt; your_elf_file.elf.</p>
+<ol class="arabic simple" start="2">
+<li><p>Once defined the desired comm port and elf file path, instantiate X2CScope:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;your_path_to_elf_file/elf_file.elf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="variable-class">
+<h2>Variable class<a class="headerlink" href="#variable-class" title="Link to this heading"></a></h2>
+<p>X2CScope class handles variables, either for retrieving and writing values as well for plotting graphics.
+The next step is to get a variable object that will represent the variable inside the microcontroller.
+Use the method <code class="docutils literal notranslate"><span class="pre">get_variable</span></code> to link to a desired variable. The only parameter needed for that method
+is a string containing the variable name.</p>
+<ol class="arabic simple" start="3">
+<li><p>Create a Variable object for the variable you want to monitor:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">&#39;variable_name&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Replace ‘variable_name’ with the name of the variable you want to monitor. You can create multiple variable
+objects as required. To get variables that are underneath a struct, use the “dot” convention:
+“struct_name.variable”. It is only possible to link to <strong>final</strong> variables, i.e., it is not possible to
+link to a structure directly, only to its members.</p>
+<section id="reading-values">
+<h3>Reading values<a class="headerlink" href="#reading-values" title="Link to this heading"></a></h3>
+<ol class="arabic simple" start="4">
+<li><p>Once you have gone through these steps, you can use the method <strong>get_value()</strong> to retrieve the actual
+value of the variable:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> 
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>To set the value for the respective variable use the method <strong>set_value()</strong>:</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="scope-channel">
+<h2>Scope Channel<a class="headerlink" href="#scope-channel" title="Link to this heading"></a></h2>
+<p>X2CScope class provide means to retrieve scope data, i.e., instead of getting the current value of
+a variable, collect the values during a time frame, triggering according some trigger values or not,
+and return and array that could be plotted with any available python graphic framework as matplotlib,
+seaborn, etc.</p>
+<ol class="arabic simple" start="6">
+<li><p>To use the scope functionality, first you need to link a variable as previously explained, and
+add this variable to the scope by means of the method: <strong>add_scope_channel(variable: Variable)</strong> :</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable1</span> <span class="o">=</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable1&quot;</span><span class="p">)</span>
+<span class="n">variable2</span> <span class="o">=</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable2&quot;</span><span class="p">)</span>
+
+<span class="n">x2cScope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable1</span><span class="p">)</span>
+<span class="n">x2cScope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="7">
+<li><p>To remove a variable from the scope: <strong>remove_scope_channel(variable: Variable)</strong>, to clear all
+variables and reset the scope use instead: <strong>clear_scope_channel()</strong></p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span><span class="o">.</span><span class="n">remove_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span><span class="o">.</span><span class="n">clear_scope_channel</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Up to 8 channels can be added. Each time you add or remove a variable, the number of channels present
+on the channel are returned.</p>
+<section id="getting-data-from-scope">
+<h3>Getting Data from Scope<a class="headerlink" href="#getting-data-from-scope" title="Link to this heading"></a></h3>
+<p>To get data from scope channel you need to follow this sequence:</p>
+<ul class="simple">
+<li><p>Request data</p></li>
+<li><p>Check if data is ready (sampling is done)</p>
+<ul>
+<li><p>Data is ready? Yes, get the data and handle it.</p></li>
+<li><p>Data is not ready? Execute some delay and check again.</p></li>
+</ul>
+</li>
+<li><p>After handling the data, start from the beginning requesting new data.</p></li>
+</ul>
+<p>Step-by-step you need:</p>
+<ol class="arabic simple" start="8">
+<li><p>Request to X2CScope to collect data for the variables registered on the scope channels.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="9">
+<li><p>Check if the data is ready:
+Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="ow">not</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="10">
+<li><p>Get the scope data once sampling is completed</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A simple loop request example to get only 1 frame of scope data is depicted below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># request scope to start sampling data</span>
+<span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
+<span class="c1"># wait while the data is not yet ready for reading</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">channel</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="c1"># Do something with the data. </span>
+    <span class="c1"># channel contains the variable name, data is an array of values </span>
+</pre></div>
+</div>
+</section>
+<section id="triggering">
+<h3>Triggering<a class="headerlink" href="#triggering" title="Link to this heading"></a></h3>
+<p>To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
+To set any trigger configuration, you need to pass a TriggerConfig imported from from pyx2cscope.xc2scope</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trigger_config</span> <span class="o">=</span> <span class="n">TriggerConfig</span><span class="p">(</span><span class="n">Variable</span><span class="p">,</span> <span class="n">trigger_level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_mode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_edge</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<span class="n">x2cscope</span><span class="o">.</span><span class="n">set_scope_trigger</span><span class="p">(</span><span class="n">trigger_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>TriggerConfig needs some parameters like the variable and some trigger values like:</p>
+<ul class="simple">
+<li><p>Variable: the variable which will be monitored
+Trigger_Level: at which level the trigger will start executing
+Trigger_mode: 1 for triggered, 0 for Auto (No trigger)
+Trigger_delay = Value &gt; 0 Pre-trigger, Value &lt; 0 Post trigger
+Trigger_Edge: Rising (1) or Falling (0)</p></li>
+</ul>
+<p>Additional information on how to change triggers, clear and change sample time, may be
+found on the API documentation.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="how_to.html" class="btn btn-neutral float-left" title="How-To" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gui_qt.html" class="btn btn-neutral float-right" title="GUI Qt" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Microchip Technology Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
