@@ -28,6 +28,8 @@ numpy = "^1.25.1"
 matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
 mchplnet = "0.1.2"
+flask = "^3.0.3"
+
 
 [tool.ruff]
 line-length = 120
