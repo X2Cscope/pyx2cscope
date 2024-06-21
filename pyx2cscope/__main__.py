@@ -18,7 +18,7 @@ from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
 from pyx2cscope.gui.web import app
 
 
-def set_logging_level(args):
+def set_logging_level(args: argparse.Namespace):
     """Sets the logging level based on the provided argument 'level'.
 
     Args:
