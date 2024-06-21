@@ -155,8 +155,7 @@ class X2CScope:
         return self.scope_setup.add_channel(scope_channel, trigger)
 
     def clear_scope_channel(self):
-        """
-        Remove all variables from the scope channel and reset any trigger.
+        """Remove all variables from the scope channel and reset any trigger.
 
         Returns:
             None.
@@ -188,9 +187,7 @@ class X2CScope:
         return self.scope_setup.list_channels()
 
     def reset_scope_trigger(self):
-        """
-        Resets scope trigger settings, i.e., no triggering will happen.
-        """
+        """Resets scope trigger settings, i.e., no triggering will happen."""
         self.scope_setup.reset_trigger()
 
     def set_scope_trigger(self, config: TriggerConfig):
@@ -240,8 +237,10 @@ class X2CScope:
         self.lnet.save_parameter()
 
     def is_scope_data_ready(self) -> bool:
-        """Check if the sampling of scope data is ready. Before calling this method, call
-        request_scope_data() first. Please insert a delay between is_scope_data_ready().
+        """Check if the sampling of scope data is ready.
+
+        Before calling this method, call request_scope_data() first.
+        Please insert a delay between is_scope_data_ready().
 
         Returns:
             bool: True if the scope data is ready, False otherwise.

@@ -7,23 +7,22 @@ Arguments:
     LOG_LEVEL (optional): The logging level for the application (e.g., 'DEBUG', 'INFO').
 """
 
+import argparse
 import logging
 import sys
-import argparse
 
 from PyQt5.QtWidgets import QApplication
 
+import pyx2cscope
 from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
 from pyx2cscope.gui.web import app
-import pyx2cscope
 
 
 def set_logging_level(args):
     """Sets the logging level based on the provided argument 'level'.
 
     Args:
-        the parsed arguments. (ArgumentParser): args contain property level (e.g., 'DEBUG', 'INFO').
-
+        args (dict): ArgParse parsed arguments. args.log_level contain the log  level (e.g., 'DEBUG', 'INFO').
     """
     levels={
         "DEBUG": logging.DEBUG,
@@ -41,6 +40,15 @@ def set_logging_level(args):
     logging.info(f"Logging level set to {args.log_level}")
 
 def parse_arguments():
+    """Forward the received arguments to ArgParse and parse them.
+
+    possible arguments are:
+      | "-l", Configure the logging level, INFO is the default value
+      | "-v", action='version'
+      | "-w", Start the Web user interface, pyx2cscope.gui.web.app.
+      |
+      | For a complete list of arguments, execute python -m pyx2cscope --help
+    """
     parser = argparse.ArgumentParser(
         prog="pyX2Cscope",
         description="Microchip python implementation of X2Cscope and LNet protocol.",
@@ -63,6 +71,12 @@ def parse_arguments():
     return parser.parse_known_args()
 
 def execute_qt(args):
+    """Execute the GUI Qt implementation.
+
+    Args:
+        args: non-keyed arguments for Qt App.
+    :return:
+    """
     # QApplication expects the first argument to be the program name.
     qt_args = sys.argv[:1] + args
     # Initialize a PyQt5 application
@@ -75,6 +89,12 @@ def execute_qt(args):
     app.exec_()
 
 def execute_web(*args, **kwargs):
+    """Start the web server.
+
+    Args:
+        *args: non-keyed arguments
+        **kwargs: keyed arguments related to the web server. See parse_arguments function documentations.
+    """
     app.main(*args, **kwargs)
 
 known_args, unknown_args = parse_arguments()

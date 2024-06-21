@@ -1,6 +1,11 @@
+"""Scope View Blueprint. This module handle all urls called over {server_url}/scope-view.
+
+Calling the url {server_url}/scope-view, will render the scope-view page. 
+Attention: this page should be called only after a successful setup connection on the {server_url}
+"""""
 import os
 
-from flask import Blueprint, jsonify, request, Response, render_template
+from flask import Blueprint, Response, jsonify, render_template, request
 
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web import get_x2c
@@ -15,29 +20,42 @@ scope_sample = 1
 scope_time_sample = 50e-3
 
 def index():
+    """Scope View url entry point. Calling the page {url}/scope-view will render the scope view page."""
     return render_template('sv_index.html', title="ScopeView - pyX2Cscope")
 
-def get_variable(parameter):
+def _get_variable(parameter):
     variable = get_x2c().get_variable(parameter)
     colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF", "#800080", "#CCCCCC"]
     return {'trigger':0, 'enable':1, 'variable':variable, 'color':colors[len(scope_data)],
             'gain':1 , 'offset':0, 'remove':0}
 
 def get_data():
+    """Return the scope-view data.
+
+    Calling the link {watch-view-url}/data will execute this function.
+    """
     result = []
     for data in scope_data:
         result.append({f:v.name if f == "variable" else v for f,v in data.items()})
     return {'data': result}
 
 def add():
+    """Add a parameter to the scope-view table.
+
+    Calling the link {scope-view-url}/add will execute this function.
+    """
     parameter = request.args.get('param', '')
     if not any(_data['variable'].name == parameter for _data in scope_data):
-        data = get_variable(parameter)
+        data = _get_variable(parameter)
         scope_data.append(data)
         get_x2c().add_scope_channel(data["variable"])
     return jsonify({"status": "success"})
 
 def remove():
+    """Remove the parameter from the scope-view table.
+
+    Calling the link {scope-view-url}/remove will execute this function.
+    """
     parameter = request.args.get('param', '')
     for data in scope_data:
         if data['variable'].name == parameter:
@@ -65,6 +83,10 @@ def _set_enable(data, param, field, value):
                 get_x2c().remove_scope_channel(data["variable"])
 
 def update():
+    """Update edited values on the scope-view table.
+
+    Calling the link {scope-view-url}/update will execute this function.
+    """
     param = request.args.get('param', '')
     field = request.args.get('field', '').lower()
     value = request.args.get('value', '')
@@ -75,6 +97,10 @@ def update():
     return jsonify({"status": "success"})
 
 def form_sample():
+    """Handles the sample form.
+
+    Arguments expected are the input field triggerAction (on, off, shot) and sampleTime (1,2,3, etc.).
+    """
     global scope_trigger, scope_burst, scope_sample
     param = request.form.get('triggerAction', '')
     field = request.form.get('sampleTime', '')
@@ -87,6 +113,11 @@ def form_sample():
     return jsonify({"trigger": param != "off"})
 
 def form_trigger():
+    """Handles the trigger form.
+
+    Expected arguments are trigger_enable (on, off), triggerEdge (rising, falling), triggerLevel (int),
+    and triggerDelay (-30, -20, ..., 20, 30).
+    """
     trigger = {
         "trigger_mode": 1 if (request.form.get('triggerEnable', 'off').lower() == "enable") else 0,
         "trigger_edge": 1 if (request.form.get('triggerEdge', '').lower() == "rising") else 0,
@@ -120,6 +151,13 @@ def _get_datasets():
     return data
 
 def chart():
+    """Return the chart data ready for chart.js framework.
+
+    Calling the link {watch-view-url}/chart will execute this function.
+    For this function to return valid data, variables must be added on the scope channel and optional trigger
+    parameters. Finally, a command of burst or sample need to be called. Date will be returned only if data is
+    available. This function calls in the background x2cscope.is_scope_data_ready()
+    """
     ready = get_x2c().is_scope_data_ready()
     finish = True if ready and scope_burst else False
     datasets = []
@@ -131,6 +169,11 @@ def chart():
     return jsonify({"ready": ready, "finish": finish, "data": datasets, "labels": label})
 
 def chart_export():
+    """Generate and Download the scope-view graphic's data to a csv file.
+
+    Calling the link {scope-view-url}/export will collect all the variable arrays depicted on the chart
+    and generate a csv file ready for download.
+    """
     datasets = _get_datasets()
     size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
     label = _get_chart_label(size)
@@ -145,6 +188,10 @@ def chart_export():
         headers={"Content-disposition": "attachment; filename=chart.csv"})
 
 def load():
+    """Receive the scope view config file.
+
+    Calling the link {scope-view-url}/load will store the parameters supplied and update the scope view table.
+    """
     global scope_data
     cfg_file = request.files.get('file')
     if cfg_file and cfg_file.filename.endswith('.cfg'):
@@ -165,6 +212,11 @@ def load():
         return jsonify({"status": "error", "msg": "Invalid ScopeConfig file."}), 400
 
 def save():
+    """Generate and Download the scope config file.
+
+    Calling the link {scope-view-url}/save will collect all the variable present at the scope view table
+    and generate a config file returning a .cfg file ready for download.
+    """
     data = get_data()
     return Response(
         str((data["data"])),

@@ -102,6 +102,11 @@ class Variable:
         return self.array_size
 
     def __repr__(self):
+        """String representation of the Variable.
+
+        When printing the variable on a terminal or with str() operator, instead of printing the object and
+        class attributes, the name of the variable will be printed.
+        """
         return self.name
 
     def _get_array_values(self):

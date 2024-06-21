@@ -41,6 +41,6 @@ lint.select = ["D"]
 # PL - pylint
 lint.extend-select = ["I", "N", "F", "PL", "D"]
 exclude = ["mchplnet/*"]
-#ignore = ["I001"] #TODO fix the import issue. no errors on local machine and errors on github action.
+lint.ignore = ["I001", "PLW0603", "PLW0602"] #TODO fix the import issue. no errors on local machine and errors on github action.
 
 
