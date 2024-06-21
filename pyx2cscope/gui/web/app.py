@@ -17,7 +17,7 @@ from pyx2cscope.gui.web import connect_x2c, create_app, disconnect_x2c, get_x2c
 from pyx2cscope.gui.web.views.scope_view import sv as scope_view
 from pyx2cscope.gui.web.views.watch_view import wv as watch_view
 
-app = create_app(log_level=logging.DEBUG)
+app = create_app()
 app.register_blueprint(watch_view, url_prefix='/watch-view')
 app.register_blueprint(scope_view, url_prefix='/scope-view')
 

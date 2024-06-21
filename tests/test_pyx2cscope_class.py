@@ -13,7 +13,7 @@ class TestPyX2CScope:
     elf_file = os.path.join(os.path.abspath(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf")
 
     def test_missing_elf_file_16(self, mocker):
-        """Check if the corresponding exception is raised in case of wrong 32 bit elf path."""
+        """Check if the corresponding exception is raised in case of wrong 16 bit elf path."""
         fake_serial(mocker, 16)
         with pytest.raises(Exception, match=r"Error loading ELF file"):
             X2CScope(elf_file="wrong_elf_file.elf", port="COM0")
