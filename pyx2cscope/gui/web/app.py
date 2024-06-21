@@ -12,14 +12,13 @@ from threading import Timer
 import serial.tools.list_ports
 from flask import jsonify, render_template, request
 
+from pyx2cscope import set_logger
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web import connect_x2c, create_app, disconnect_x2c, get_x2c
 from pyx2cscope.gui.web.views.scope_view import sv as scope_view
 from pyx2cscope.gui.web.views.watch_view import wv as watch_view
 
-app = create_app()
-app.register_blueprint(watch_view, url_prefix='/watch-view')
-app.register_blueprint(scope_view, url_prefix='/scope-view')
+set_logger(logging.INFO)
 
 def index():
     """Web X2CScope url entry point. Calling the page {url_server} will render the web X2CScope view page."""
@@ -79,13 +78,6 @@ def variables_autocomplete():
     items = [{"id":var, "text":var} for var in x2c.list_variables() if query.lower() in var.lower()]
     return jsonify({"items": items})
 
-app.add_url_rule('/', view_func=index)
-app.add_url_rule('/serial-ports', view_func=list_serial_ports)
-app.add_url_rule('/connect', view_func=connect, methods=['POST'])
-app.add_url_rule('/disconnect', view_func=disconnect)
-app.add_url_rule('/is-connected', view_func=is_connected)
-app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST","GET"])
-
 def open_browser(host="localhost", port=5000):
     """Open a new browser pointing to the Flask server.
 
@@ -108,6 +100,22 @@ def main(host="localhost", port=5000, new=True, *args, **kwargs):
     if new:
         Timer(1, open_browser).start()
     print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(port))
+
+    app = create_app()
+    app.register_blueprint(watch_view, url_prefix='/watch-view')
+    app.register_blueprint(scope_view, url_prefix='/scope-view')
+
+    app.add_url_rule('/', view_func=index)
+    app.add_url_rule('/serial-ports', view_func=list_serial_ports)
+    app.add_url_rule('/connect', view_func=connect, methods=['POST'])
+    app.add_url_rule('/disconnect', view_func=disconnect)
+    app.add_url_rule('/is-connected', view_func=is_connected)
+    app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST", "GET"])
+
+    log_level = kwargs["log_level"] if "log_level" in kwargs else "ERROR"
+    app.logger.setLevel(log_level)
+    logging.getLogger("werkzeug").setLevel(log_level)
+
     app.run(debug=False, host=host, port=port)
 
 if __name__ == '__main__':

@@ -4,8 +4,6 @@ The pyX2Cscope object is stored at this level and available to all other subview
 Additionally connect, disconnect and is_connected functions are available to handle
 pyX2Cscope states.
 """
-import logging
-
 from flask import Flask
 
 from pyx2cscope.xc2scope import X2CScope
@@ -40,12 +38,11 @@ def get_x2c() -> X2CScope:
     """Return the module x2cScope object to all subviews."""
     return x2c_scope if x2c_scope_init else None
 
-def create_app(log_level=logging.ERROR):
+def create_app(log_level=None):
     """Create the Flask app.
 
     Args:
-        log_level (logging): Default ERROR. The log level to be used.
+        log_level (int): Default ERROR. The log level to be used.
     """
     app = Flask(__name__)
-    app.logger.setLevel(log_level)
     return app

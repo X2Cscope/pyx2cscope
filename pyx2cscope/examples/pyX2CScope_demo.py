@@ -10,11 +10,11 @@ import time
 
 import matplotlib.pyplot as plt
 from utils import get_com_port, get_elf_file_path
+from pyx2cscope import set_logger
 
 from pyx2cscope.xc2scope import X2CScope
 
-# Set up logging
-# This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
+set_logger(logging.INFO, )# This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
 logging.basicConfig(
     level=logging.INFO,
     filename=__file__ + ".log",
