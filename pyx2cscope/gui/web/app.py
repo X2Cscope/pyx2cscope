@@ -50,6 +50,8 @@ def connect():
             return jsonify({"status": "success"})
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
+        except ValueError as e:
+            return jsonify({"status": "error", "msg": str(e)}), 401
     return jsonify({"status": "error", "msg": "COM Port or ELF file invalid."}), 400
 
 def is_connected():
