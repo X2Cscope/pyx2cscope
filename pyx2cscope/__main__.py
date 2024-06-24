@@ -5,10 +5,7 @@ sets up the PyQt5 application, and launches the X2Cscope GUI.
 """
 import logging
 
-logging.basicConfig(
-    level=logging.ERROR,
-    filename="pyX2Cscope.log",
-)
+logging.basicConfig(level=logging.ERROR)
 
 import argparse
 import sys
@@ -80,8 +77,8 @@ def execute_web(*args, **kwargs):
 
 known_args, unknown_args = parse_arguments()
 
-if known_args.log_level != "ERROR":
-    logging.root.setLevel(known_args.log_level)
+logging.root.handlers.clear()
+pyx2cscope.set_logger(level=known_args.log_level, console=True)
 
 if known_args.qt and not known_args.web:
     execute_qt(unknown_args)

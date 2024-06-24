@@ -119,5 +119,5 @@ def main(host="localhost", port=5000, new=True, *args, **kwargs):
     app.run(debug=False, host=host, port=port)
 
 if __name__ == '__main__':
-    main(new=False)
+    main(new=True)
 
