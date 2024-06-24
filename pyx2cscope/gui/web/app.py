@@ -20,9 +20,11 @@ from pyx2cscope.gui.web.views.watch_view import wv as watch_view
 
 set_logger(logging.INFO)
 
+
 def index():
     """Web X2CScope url entry point. Calling the page {url_server} will render the web X2CScope view page."""
     return render_template('index.html', title="pyX2Cscope")
+
 
 def list_serial_ports():
     """Return a list of all serial ports available on the server.
@@ -31,6 +33,7 @@ def list_serial_ports():
     """
     ports = serial.tools.list_ports.comports()
     return jsonify([port.device for port in ports])
+
 
 def connect():
     """Connect pyX2CScope.
@@ -54,12 +57,14 @@ def connect():
             return jsonify({"status": "error", "msg": str(e)}), 401
     return jsonify({"status": "error", "msg": "COM Port or ELF file invalid."}), 400
 
+
 def is_connected():
     """Check if pyX2Cscope is connected.
 
     call {server_url}/is_disconnect to execute.
     """
     return jsonify({"status": (get_x2c() is not None)})
+
 
 def disconnect():
     """Disconnect pyX2CScope.
@@ -69,6 +74,7 @@ def disconnect():
     disconnect_x2c()
     return jsonify({"status": "success"})
 
+
 def variables_autocomplete():
     """Variable search filter.
 
@@ -77,8 +83,21 @@ def variables_autocomplete():
     """
     query = request.args.get('q', '')
     x2c = get_x2c()
-    items = [{"id":var, "text":var} for var in x2c.list_variables() if query.lower() in var.lower()]
+    items = [{"id": var, "text": var} for var in x2c.list_variables() if query.lower() in var.lower()]
     return jsonify({"items": items})
+
+
+def get_variables():
+    """List all variables.
+
+    Returns a list of all variables available on the elf file.
+    Access this function over {server_url}/variables/all.
+    """
+    query = request.args.get('q', '')
+    x2c = get_x2c()
+    items = [{"id": var, "text": var} for var in x2c.list_variables()]
+    return jsonify({"items": items})
+
 
 def open_browser(host="localhost", port=5000):
     """Open a new browser pointing to the Flask server.
@@ -88,6 +107,7 @@ def open_browser(host="localhost", port=5000):
         port (int): the host port.
     """
     webbrowser.open("http://" + host + ":" + str(port))
+
 
 def main(host="localhost", port=5000, new=True, *args, **kwargs):
     """Web X2Cscope main function. Calling this function will start Web X2Cscope.
@@ -113,6 +133,7 @@ def main(host="localhost", port=5000, new=True, *args, **kwargs):
     app.add_url_rule('/disconnect', view_func=disconnect)
     app.add_url_rule('/is-connected', view_func=is_connected)
     app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST", "GET"])
+    app.add_url_rule('/variables/all', get_variables, methods=["POST", "GET"])
 
     log_level = kwargs["log_level"] if "log_level" in kwargs else "ERROR"
     app.logger.setLevel(log_level)
