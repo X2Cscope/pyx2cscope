@@ -39,7 +39,7 @@ Create a virtual environment and install pyx2cscope using the following commands
 .. code-block:: python
 
    python -m venv .venv
-   .venv/Scripts/activate
+   .venv\Scripts\activate
    pip install pyx2cscope
 
 It is highly recommended to install python libraries underneath a virtual environment.
