@@ -35,6 +35,8 @@ def parse_arguments():
     parser.add_argument("-l", "--log-level", default="ERROR", type=str,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Configure the logging level, INFO is the default value.")
+    parser.add_argument("-c", "--log-console", action="store_true",
+                        help="Output log to the console.")
     parser.add_argument("-q", "--qt", action="store_false",
                         help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.")
     parser.add_argument("-w", "--web", action="store_true",
@@ -78,7 +80,7 @@ def execute_web(*args, **kwargs):
 known_args, unknown_args = parse_arguments()
 
 logging.root.handlers.clear()
-pyx2cscope.set_logger(level=known_args.log_level, console=True)
+pyx2cscope.set_logger(level=known_args.log_level, console=known_args.log_console)
 
 if known_args.qt and not known_args.web:
     execute_qt(unknown_args)
