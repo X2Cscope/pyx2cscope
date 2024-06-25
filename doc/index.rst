@@ -34,15 +34,29 @@ functionality of X2Cscope even outside MPLABX environment / Standalone. It allow
 Installation
 ============
 
-Create a virtual environment and install pyx2cscope using the following commands:
+Create a virtual environment and install pyx2cscope using the following commands (Windows):
 
 .. code-block:: python
 
    python -m venv .venv
-   source .venv/bin/activate
+   .venv\Scripts\activate
    pip install pyx2cscope
 
-To check pyx2cscope version, in a terminal, run the following command:
+
+It is highly recommended to install python libraries underneath a virtual environment.
+
+Nevertheless, to install at system level, execute the following lines:
+
+.. code-block:: python
+   
+   pip install pyx2cscope
+   pip install PyQt5 --user --ignore-installed
+
+.. code-block:: python
+
+   pip install --upgrade pyx2cscope
+
+To check the current pyx2cscope version, in a terminal, run the following command:
 
 .. code-block:: python
 

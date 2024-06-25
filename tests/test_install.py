@@ -35,3 +35,20 @@ def test_x2cscope_install_serial_32(mocker):
     scope_data: LoadScopeData = pyx2cscope.lnet.scope_data
     assert scope_data.scope_state == 0, "wrong scope state value"
     assert scope_data.data_array_size == 8192, "wrong scope array size" # noqa: PLR2004
+
+
+# def test_web_x2cscope_install():
+#     """Test if all dependencies are there for web x2c.
+
+#     An instance of the server is started and a request is sent to check if pyx2cscope is connected or not.
+#     The result should be False, once the serial connection hasn't started yet. We check here that the
+#     server started correctly and is able to manage requests.
+#     """
+#     # start a new process of flask with argument new=False (do not open a new browser window)
+#     app_process = Process(target=app.main, kwargs={"new":False})
+#     app_process.start()
+#     response = requests.get("http://localhost:5000/is-connected")
+#     is_connected = json.loads(response.text)["status"]
+#     assert is_connected == False, "x2cscope should be disconnected"
+#     app_process.terminate()
+#     app_process.join()

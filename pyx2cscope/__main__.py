@@ -2,13 +2,12 @@
 
 This module initializes the logging configuration based on a command-line argument,
 sets up the PyQt5 application, and launches the X2Cscope GUI.
-
-Arguments:
-    LOG_LEVEL (optional): The logging level for the application (e.g., 'DEBUG', 'INFO').
 """
+import logging
+
+logging.basicConfig(level=logging.ERROR)
 
 import argparse
-import logging
 import sys
 
 from PyQt5.QtWidgets import QApplication
@@ -17,27 +16,6 @@ import pyx2cscope
 from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
 from pyx2cscope.gui.web import app
 
-
-def set_logging_level(args):
-    """Sets the logging level based on the provided argument 'level'.
-
-    Args:
-        args (dict): ArgParse parsed arguments. args.log_level contain the log  level (e.g., 'DEBUG', 'INFO').
-    """
-    levels={
-        "DEBUG": logging.DEBUG,
-        "INFO": logging.INFO,
-        "WARNING": logging.WARNING,
-        "ERROR": logging.ERROR,
-        "CRITICAL": logging.CRITICAL
-    }
-
-    logging.basicConfig(
-        level=levels[args.log_level],
-        filename="pyX2Cscope.log",
-    )
-
-    logging.info(f"Logging level set to {args.log_level}")
 
 def parse_arguments():
     """Forward the received arguments to ArgParse and parse them.
@@ -57,6 +35,8 @@ def parse_arguments():
     parser.add_argument("-l", "--log-level", default="ERROR", type=str,
                         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
                         help="Configure the logging level, INFO is the default value.")
+    parser.add_argument("-c", "--log-console", action="store_true",
+                        help="Output log to the console.")
     parser.add_argument("-q", "--qt", action="store_false",
                         help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.")
     parser.add_argument("-w", "--web", action="store_true",
@@ -99,7 +79,8 @@ def execute_web(*args, **kwargs):
 
 known_args, unknown_args = parse_arguments()
 
-set_logging_level(known_args)
+logging.root.handlers.clear()
+pyx2cscope.set_logger(level=known_args.log_level, console=known_args.log_console)
 
 if known_args.qt and not known_args.web:
     execute_qt(unknown_args)
