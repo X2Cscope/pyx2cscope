@@ -99,14 +99,17 @@ def update():
 def form_sample():
     """Handles the sample form.
 
-    Arguments expected are the input field triggerAction (on, off, shot) and sampleTime (1,2,3, etc.).
+    Arguments expected are the input field triggerAction (on, off, shot),
+    sampleTime (1,2,3, etc.), and sampleFreq
     """
-    global scope_trigger, scope_burst, scope_sample
-    param = request.form.get('triggerAction', '')
-    field = request.form.get('sampleTime', '')
+    global scope_trigger, scope_burst, scope_sample, scope_time_sample
+    param = request.form.get('triggerAction', 'off')
+    field = request.form.get('sampleTime', '1')
+    freq = request.form.get('sampleFreq', '20')
     scope_burst = True if param == "shot" else False
     scope_trigger = True if param == "on" else False
     scope_sample = int(field)
+    scope_time_sample = 1/int(freq)
     get_x2c().set_sample_time(scope_sample)
     if scope_trigger or scope_burst:
         get_x2c().request_scope_data()
