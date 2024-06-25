@@ -42,10 +42,15 @@ Create a virtual environment and install pyx2cscope using the following commands
    .venv\Scripts\activate
    pip install pyx2cscope
 
+
 It is highly recommended to install python libraries underneath a virtual environment.
-Nevertheless, to install at system level, execute only the last line described above.
-In case you already have installed pyx2cscope, you only need to update the package to the
-new version typing:
+
+Nevertheless, to install at system level, execute the following lines:
+
+.. code-block:: python
+   
+   pip install pyx2cscope
+   pip install PyQt5 --user --ignore-installed
 
 .. code-block:: python
 
