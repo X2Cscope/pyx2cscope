@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyX2Cscope &mdash; pyX2Cscope 0.2.0 documentation</title>
+  <title>pyX2Cscope &mdash; pyX2Cscope 0.2.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=938c9ccc"></script>
+        <script src="_static/documentation_options.js?v=37f418d5"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.2.0
+                0.2.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -104,13 +104,22 @@ functionality of X2Cscope even outside MPLABX environment / Standalone. It allow
 </section>
 <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
-<p>Create a virtual environment and install pyx2cscope using the following commands:</p>
+<p>Create a virtual environment and install pyx2cscope using the following commands (Windows):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="o">.</span><span class="n">venv</span>
-<span class="n">source</span> <span class="o">.</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="o">.</span><span class="n">venv</span>\<span class="n">Scripts</span>\<span class="n">activate</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="n">pyx2cscope</span>
 </pre></div>
 </div>
-<p>To check pyx2cscope version, in a terminal, run the following command:</p>
+<p>It is highly recommended to install python libraries underneath a virtual environment.</p>
+<p>Nevertheless, to install at system level, execute the following lines:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">pyx2cscope</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">PyQt5</span> <span class="o">--</span><span class="n">user</span> <span class="o">--</span><span class="n">ignore</span><span class="o">-</span><span class="n">installed</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="n">pyx2cscope</span>
+</pre></div>
+</div>
+<p>To check the current pyx2cscope version, in a terminal, run the following command:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pyx2cscope</span> <span class="o">--</span><span class="n">version</span>
 </pre></div>
 </div>
@@ -187,11 +196,7 @@ See the section examples to check some of the usages you may get by pyX2Cscope.<
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="HW_Support.html">Firmware Support</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="HW_Support.html#plug-and-play-demos">Plug and play Demos:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="HW_Support.html#prepared-libraries">Prepared libraries</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="HW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="example.html#examplemcaf">ExampleMCAF</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#sfr-example">SFR_Example</a></li>
