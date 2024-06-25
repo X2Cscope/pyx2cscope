@@ -93,7 +93,6 @@ def get_variables():
     Returns a list of all variables available on the elf file.
     Access this function over {server_url}/variables/all.
     """
-    query = request.args.get('q', '')
     x2c = get_x2c()
     items = [{"id": var, "text": var} for var in x2c.list_variables()]
     return jsonify({"items": items})
