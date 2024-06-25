@@ -1,13 +1,9 @@
 """Integration test to check if after install, PyX2CScope outputs the expected behavior."""
-import json
 import os
-from multiprocessing import Process
-import requests
 
 from mchplnet.services.frame_device_info import DeviceInfo
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from pyx2cscope.xc2scope import X2CScope
-from pyx2cscope.gui.web import app
 from tests import data
 from tests.utils.serial_stub import fake_serial
 
