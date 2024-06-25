@@ -1,10 +1,10 @@
 """This module contains the pyx2cscope package.
 
-Version: 0.2.0
+Version: 0.2.1
 """
 import logging
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 def set_logger(level: int = logging.ERROR, filename: str = __name__, console: bool = False, mode: str = 'a'):
     """Call the logging basicConfig.
