@@ -54,6 +54,7 @@ function setConnectState(status) {
         $('#btnConnect').html('Disconnect');
         $('#btnConnect').removeClass('btn-primary');
         $('#btnConnect').addClass('btn-danger');
+        $('#setupControl').addClass('disabled');
     }
     else {
         parameterCardEnabled = false;
@@ -64,6 +65,7 @@ function setConnectState(status) {
         $('#btnConnect').html('Connect');
         $('#btnConnect').removeClass('btn-danger');
         $('#btnConnect').addClass('btn-primary');
+        $('#setupControl').removeClass('disabled');
     }
 }
 
