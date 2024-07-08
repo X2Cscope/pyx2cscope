@@ -1,3 +1,8 @@
+"""This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+
+It focuses on extracting structure members and variable information from DWARF debugging information.
+"""
+
 import logging
 
 from elftools.elf.elffile import ELFFile
@@ -326,6 +331,11 @@ class Elf32Parser(ElfParser):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\_prg\mc_foc_dyno_same54_mclv2\firmware\MC_FOC_DYNO_SAME54_MCLV2.X\dist\default\production\MC_FOC_DYNO_SAME54_MCLV2.X.production.elf"
+    #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\portingGateDriver\testing_parser\test_delete.X\dist\default\production\test_delete.X.production.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(variable_map)
+    # Print variables with array_size != 0
+    for var_name, var_info in variable_map.items():
+        if var_info.array_size != 0:
+            print(f"Variable Name: {var_name}, Info: {var_info}")
