@@ -6,7 +6,7 @@ this example is the very basic example to retrieve the value of a certain variab
 import logging
 
 from pyx2cscope.utils import get_com_port, get_elf_file_path
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 # Configure logging settings to capture all levels of log messages and write them to a file
 logging.basicConfig(

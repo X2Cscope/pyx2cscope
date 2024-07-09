@@ -3,6 +3,7 @@
 Some examples are available under pyx2cscope.examples
 
 ## ExampleMCAF
+
 ````python
 
 """exampleMCAF.py.
@@ -14,7 +15,7 @@ import logging
 
 from utils import get_com_port, get_elf_file_path
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 # Configure logging settings to capture all levels of log messages and write them to a file
 logging.basicConfig(
@@ -56,7 +57,7 @@ except Exception as e:
 
 ````
 ## SFR_Example
- 
+
 ````python
 
 """Example to change LED states by modifying the bit value on a dspic33ck256mp508 using Special Function Register."""
@@ -66,7 +67,7 @@ import time
 
 from utils import get_com_port, get_elf_file_path
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 # Configure logging settings
 logging.basicConfig(
@@ -192,7 +193,7 @@ import time
 import matplotlib.pyplot as plt
 from utils import get_com_port, get_elf_file_path
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 # Set up logging
 logging.basicConfig(
@@ -211,7 +212,7 @@ variables = [
     "motor.vabc.b",
     "motor.vabc.c",
     "motor.apiData.velocityMeasured",
-] # upto 8 variables could be selected.
+]  # upto 8 variables could be selected.
 
 for var in variables:
     x2c_scope.add_scope_channel(x2c_scope.get_variable(var))
@@ -234,7 +235,7 @@ while sample_count < max_sample:
 
             data_storage = {}
             for channel, data in x2c_scope.get_scope_channel_data(
-                valid_data=False
+                    valid_data=False
             ).items():
                 data_storage[channel] = data
 

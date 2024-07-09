@@ -147,5 +147,5 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
     app.run(debug=False, host=host, port=web_port)
 
 if __name__ == '__main__':
-    main(new=True)
+    main(new=True, host="0.0.0.0")
 

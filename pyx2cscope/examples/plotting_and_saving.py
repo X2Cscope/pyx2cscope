@@ -14,7 +14,7 @@ import pandas as pd
 from matplotlib import animation
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 # Configure logging
 logging.basicConfig(

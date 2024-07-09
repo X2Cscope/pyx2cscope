@@ -33,7 +33,7 @@ from PyQt5.QtWidgets import (
 
 from pyx2cscope import set_logger
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 set_logger(logging.INFO, __name__)
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
