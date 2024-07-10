@@ -32,6 +32,8 @@ from PyQt5.QtWidgets import (
     QTabWidget,
     QVBoxLayout,
     QWidget,
+    QStyleFactory,
+    QSizePolicy,
 )
 
 from pyx2cscope.gui import img as img_src
@@ -195,6 +197,8 @@ class X2cscopeGui(QMainWindow):
     # noinspection PyUnresolvedReferences
     def init_ui(self):
         """Initializing all the required for GUI."""
+        QApplication.setStyle(QStyleFactory.create("Fusion"))
+
         central_widget = QWidget(self)
         self.tab_widget = QTabWidget()
         self.layout = QVBoxLayout(central_widget)
@@ -257,8 +261,6 @@ class X2cscopeGui(QMainWindow):
         self.trigger_level_edit.setValidator(self.decimal_validator)
         self.trigger_delay_edit = QLineEdit()
         self.trigger_delay_edit.setValidator(self.decimal_validator)
-        self.scope_trigger_button = QPushButton("Configure Trigger")
-        self.scope_trigger_button.clicked.connect(self.configure_trigger)
 
         grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
                                       2)  # Add the Single Shot checkbox to the layout
@@ -272,7 +274,6 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
         grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
         grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
-        grid_layout_trigger.addWidget(self.scope_trigger_button, 6, 0, 1, 2)
 
         # Variable Selection Group Box
         variable_group = QGroupBox("Variable Selection")
@@ -285,10 +286,14 @@ class X2cscopeGui(QMainWindow):
         self.scope_var_combos = [QComboBox() for _ in range(7)]
         self.scope_var_checkboxes = [QCheckBox() for _ in range(7)]
         self.scope_sample_button = QPushButton("Sample")
+        self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
         self.scope_sample_button.clicked.connect(self.start_sampling)
 
-        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 1)
+        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
         for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.scope_var_checkboxes)):
+            combo.setMinimumHeight(20)
+            checkbox.setMinimumHeight(20)
+            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             grid_layout_variable.addWidget(checkbox, i + 1, 0)
             grid_layout_variable.addWidget(combo, i + 1, 1)
             checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
@@ -318,7 +323,6 @@ class X2cscopeGui(QMainWindow):
         port_label = QLabel("Select Port:")
 
         refresh_button = QPushButton()
-        refresh_button.setFixedHeight(10)
         refresh_button.setFixedSize(25, 25)
         refresh_button.clicked.connect(self.refresh_ports)
         refresh_img = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
@@ -352,20 +356,22 @@ class X2cscopeGui(QMainWindow):
         """Set up the sample time layout."""
         self.Connect_button.clicked.connect(self.toggle_connection)
         self.Connect_button.setFixedSize(100, 30)
+        self.Connect_button.setMinimumHeight(30)
 
         self.sampletime.setText("500")
         self.sampletime.setValidator(self.decimal_validator)
         self.sampletime.editingFinished.connect(self.sampletime_edit)
-        self.sampletime.setFixedSize(30, 20)
+        self.sampletime.setFixedSize(50, 20)
 
-        self.box_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
-        self.box_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
-        self.box_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
-        self.box_layout.addStretch(1)
-        self.box_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
+        sampletime_layout = QHBoxLayout()
+        sampletime_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
+        sampletime_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
+        sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
+        sampletime_layout.addStretch(1)
+        sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
         layout.addWidget(self.select_file_button, 3, 0)
-        layout.addLayout(self.box_layout, 4, 0)
+        layout.addLayout(sampletime_layout, 4, 0)
 
     def setup_variable_layout(self, layout):
         """Set up the variable selection layout."""
@@ -438,14 +444,14 @@ class X2cscopeGui(QMainWindow):
         ]
 
         for row_index, (
-            live_var,
-            combo_box,
-            value_var,
-            scaling_var,
-            offset_var,
-            scaled_value_var,
-            unit_var,
-            plot_checkbox,
+                live_var,
+                combo_box,
+                value_var,
+                scaling_var,
+                offset_var,
+                scaled_value_var,
+                unit_var,
+                plot_checkbox,
         ) in enumerate(
             zip(
                 self.live_checkboxes,
@@ -461,7 +467,7 @@ class X2cscopeGui(QMainWindow):
         ):
             live_var.setEnabled(False)
             combo_box.setEnabled(False)
-            combo_box.setFixedWidth(350)
+            combo_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             value_var.setText("0")
             value_var.setValidator(self.decimal_validator)
             scaling_var.setText("1")
@@ -486,6 +492,12 @@ class X2cscopeGui(QMainWindow):
 
         layout.addLayout(self.grid_layout, 5, 0)
         layout.addWidget(self.plot_button, 6, 0)
+
+        # Resize buttons to the same size
+        self.plot_button.setFixedSize(100, 30)
+        self.Connect_button.setFixedSize(100, 30)
+        self.select_file_button.setFixedSize(100, 30)
+       #self.scope_sample_button.setFixedSize(100, 30)
 
     def setup_connections(self):
         """Set up connections for various widgets."""
@@ -1070,7 +1082,8 @@ class X2cscopeGui(QMainWindow):
                         variable = self.x2cscope.get_variable(variable_name)
                         self.x2cscope.add_scope_channel(variable)
                 self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
-                self.configure_trigger()  # trigger configuration
+                if self.single_shot_checkbox.isChecked():
+                    self.configure_trigger()  # trigger configuration
                 self.sampling_active = True
                 self.scope_sample_button.setText("Stop")
                 logging.info("Started sampling.")
