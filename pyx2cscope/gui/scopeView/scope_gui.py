@@ -53,6 +53,7 @@ class X2cscopeGui(QMainWindow):
         """Initializing all the elements required."""
         super().__init__()
 
+        self.triggerVariable = None
         self.initialize_variables()
         self.init_ui()
 
@@ -282,14 +283,17 @@ class X2cscopeGui(QMainWindow):
         variable_layout.addLayout(grid_layout_variable)
 
         self.scope_var_combos = [QComboBox() for _ in range(7)]
+        self.scope_var_checkboxes = [QCheckBox() for _ in range(7)]
         self.scope_sample_button = QPushButton("Sample")
         self.scope_sample_button.clicked.connect(self.start_sampling)
 
-        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
-        for i, combo in enumerate(self.scope_var_combos):
-            grid_layout_variable.addWidget(combo, i + 1, 0)
+        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 1)
+        for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.scope_var_checkboxes)):
+            grid_layout_variable.addWidget(checkbox, i + 1, 0)
+            grid_layout_variable.addWidget(combo, i + 1, 1)
+            checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
 
-        grid_layout_variable.addWidget(self.scope_sample_button, 8, 0)
+        grid_layout_variable.addWidget(self.scope_sample_button, 8, 0, 1, 2)
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -298,6 +302,15 @@ class X2cscopeGui(QMainWindow):
         # Set the column stretch factors to make the variable group larger
         main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
         main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
+
+    def handle_scope_checkbox_change(self, state, index):
+        """Handle the change in the state of the scope view checkboxes."""
+        if state == Qt.Checked:
+            for i, checkbox in enumerate(self.scope_var_checkboxes):
+                if i != index:
+                    checkbox.setChecked(False)
+            self.triggerVariable = self.scope_var_combos[index].currentText()
+            print(f"Checked variable: {self.scope_var_combos[index].currentText()}")
 
     def setup_port_layout(self, layout):
         """Set up the port selection layout."""
@@ -692,7 +705,7 @@ class X2cscopeGui(QMainWindow):
 
             self.ax.set_xlabel("Time (ms)")
             self.ax.set_ylabel("Value")
-            self.ax.set_title("Live Plot")
+            self.ax.setTitle("Live Plot")
             self.ax.legend(loc="upper right")
             end = time.time()
             logging.debug(end - start)
@@ -1071,7 +1084,7 @@ class X2cscopeGui(QMainWindow):
     def configure_trigger(self):
         """Configure the trigger settings."""
         try:
-            variable_name = self.scope_var_combos[0].currentText()
+            variable_name =self.triggerVariable
             variable = self.x2cscope.get_variable(variable_name)
 
             # Handle empty string for trigger level and delay
@@ -1082,7 +1095,7 @@ class X2cscopeGui(QMainWindow):
                 trigger_level = 0
             else:
                 try:
-                    trigger_level = float(trigger_level_text)
+                    trigger_level = int(trigger_level_text)
                 except ValueError:
                     logging.error(f"Invalid trigger level value: {trigger_level_text}")
                     self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
