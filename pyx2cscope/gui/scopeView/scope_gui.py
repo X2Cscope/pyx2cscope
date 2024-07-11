@@ -262,6 +262,10 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit()
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
+        self.scope_sample_button = QPushButton("Sample")
+        self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
+        self.scope_sample_button.clicked.connect(self.start_sampling)
+
         grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
                                       2)  # Add the Single Shot checkbox to the layout
         grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
@@ -274,6 +278,8 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
         grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
         grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
+        grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0)
+
 
         # Variable Selection Group Box
         variable_group = QGroupBox("Variable Selection")
@@ -285,9 +291,8 @@ class X2cscopeGui(QMainWindow):
 
         self.scope_var_combos = [QComboBox() for _ in range(7)]
         self.scope_var_checkboxes = [QCheckBox() for _ in range(7)]
-        self.scope_sample_button = QPushButton("Sample")
-        self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
-        self.scope_sample_button.clicked.connect(self.start_sampling)
+
+
 
         grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
         for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.scope_var_checkboxes)):
@@ -298,7 +303,7 @@ class X2cscopeGui(QMainWindow):
             grid_layout_variable.addWidget(combo, i + 1, 1)
             checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
 
-        grid_layout_variable.addWidget(self.scope_sample_button, 8, 0, 1, 2)
+
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -369,9 +374,13 @@ class X2cscopeGui(QMainWindow):
         sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
         sampletime_layout.addStretch(1)
         sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
+#        sampletime_layout.addWidget(self.plot_button, alignment=Qt.AlignCenter)  # Add the plot button here
 
+        plot_layout = QVBoxLayout()
+        plot_layout.addWidget(self.plot_button, alignment=Qt.AlignRight)
         layout.addWidget(self.select_file_button, 3, 0)
         layout.addLayout(sampletime_layout, 4, 0)
+        layout.addLayout(plot_layout,6,0)
 
     def setup_variable_layout(self, layout):
         """Set up the variable selection layout."""
@@ -489,9 +498,10 @@ class X2cscopeGui(QMainWindow):
             self.grid_layout.addWidget(scaled_value_var, display_row, 5)
             self.grid_layout.addWidget(unit_var, display_row, 6)
             self.grid_layout.addWidget(plot_checkbox, display_row, 7)
+            #self.grid_layout.addWidget(self.plot_button, 8,6)
 
         layout.addLayout(self.grid_layout, 5, 0)
-        layout.addWidget(self.plot_button, 6, 0)
+       # layout.addWidget(self.plot_button, 6, 0)
 
         # Resize buttons to the same size
         self.plot_button.setFixedSize(100, 30)
