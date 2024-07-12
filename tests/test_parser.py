@@ -27,11 +27,11 @@ class TestParser:
         assert variable.is_array() is True, "variable should be an array"
         assert len(variable) == 4, "array has wrong length" # noqa: PLR2004
 
-    def test_array_variable_32(self, mocker):
+    def test_array_variable_32(self, mocker, array_size_test=10):
         """Given a valid 16 bit elf file, check if an array variable is read correctly."""
         fake_serial(mocker, 32)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("systemData.adc_data.potentiometer.buffer")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == True, "variable should be an array"
-        assert len(variable) == 10, "array has wrong length"
+        assert len(variable) == array_size_test, "array has wrong length"

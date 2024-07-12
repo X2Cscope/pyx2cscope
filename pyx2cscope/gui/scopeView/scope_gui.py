@@ -1,4 +1,5 @@
-"""This is the scope_gui to test the pyx2cscope scope functionality."""
+"""This is the scope_gui to test the pyx2cscope scope functionality.
+"""
 
 import logging
 import os
@@ -127,6 +128,45 @@ class X2cscopeGui(QMainWindow):
             "Plot",
         ]
 
+    def init_ui(self):
+        """Initialize the user interface."""
+        self.setup_application_style()
+        self.create_central_widget()
+        self.create_tabs()
+        self.setup_tabs()
+        self.setup_window_properties()
+        self.refresh_ports()
+
+    def setup_application_style(self):
+        """Set the application style."""
+        QApplication.setStyle(QStyleFactory.create("Fusion"))
+
+    def create_central_widget(self):
+        """Create the central widget."""
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
+        self.layout = QVBoxLayout(central_widget)
+        self.tab_widget = QTabWidget()
+        self.layout.addWidget(self.tab_widget)
+
+    def create_tabs(self):
+        """Create tabs for the main window."""
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.tab_widget.addTab(self.tab1, "WatchView")
+        self.tab_widget.addTab(self.tab2, "ScopeView")
+
+    def setup_tabs(self):
+        """Set up the contents of each tab."""
+        self.setup_tab1()
+        self.setup_tab2()
+
+    def setup_window_properties(self):
+        """Set up the main window properties."""
+        self.setWindowTitle("pyX2Cscope")
+        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
+        self.setWindowIcon(QtGui.QIcon(mchp_img))
+
     def combo_box(self):
         """Initializing combo boxes."""
         self.combo_box5 = QComboBox()
@@ -195,31 +235,6 @@ class X2cscopeGui(QMainWindow):
         self.Unit_var4 = QLineEdit(self)
         self.Unit_var5 = QLineEdit(self)
     # noinspection PyUnresolvedReferences
-    def init_ui(self):
-        """Initializing all the required for GUI."""
-        QApplication.setStyle(QStyleFactory.create("Fusion"))
-
-        central_widget = QWidget(self)
-        self.tab_widget = QTabWidget()
-        self.layout = QVBoxLayout(central_widget)
-        self.layout.addWidget(self.tab_widget)
-
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
-
-        self.tab_widget.addTab(self.tab1, "WatchView")
-        self.tab_widget.addTab(self.tab2, "ScopeView")
-
-        self.setup_tab1()
-        self.setup_tab2()
-
-        self.setCentralWidget(central_widget)
-        self.setWindowTitle("pyX2Cscope")
-        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
-        self.setWindowIcon(QtGui.QIcon(mchp_img))
-
-        self.refresh_ports()
-
     def setup_tab1(self):
         """Set up the first tab with the original functionality."""
         self.tab1.layout = QVBoxLayout()
@@ -237,6 +252,7 @@ class X2cscopeGui(QMainWindow):
     def setup_tab2(self):
         """Set up the second tab with the scope functionality."""
         self.tab2.layout = QVBoxLayout()
+
         self.tab2.setLayout(self.tab2.layout)
 
         main_grid_layout = QGridLayout()
@@ -292,8 +308,6 @@ class X2cscopeGui(QMainWindow):
         self.scope_var_combos = [QComboBox() for _ in range(7)]
         self.scope_var_checkboxes = [QCheckBox() for _ in range(7)]
 
-
-
         grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
         for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.scope_var_checkboxes)):
             combo.setMinimumHeight(20)
@@ -302,8 +316,6 @@ class X2cscopeGui(QMainWindow):
             grid_layout_variable.addWidget(checkbox, i + 1, 0)
             grid_layout_variable.addWidget(combo, i + 1, 1)
             checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
-
-
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
