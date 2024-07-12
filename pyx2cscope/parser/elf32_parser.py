@@ -227,9 +227,10 @@ class Elf32Parser(ElfParser):
             "DW_TAG_array_type",
         }
         while current_die.tag not in valid_words:
-            ref_addr = (
-                current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
-            )
+            if "DW_AT_type" not in current_die.attributes:
+                logging.warning(f"Skipping DIE at offset {current_die.offset} with no 'DW_AT_type' attribute")
+                return None
+            ref_addr = current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
             current_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         return current_die
 
@@ -270,8 +271,8 @@ class Elf32Parser(ElfParser):
             for self.die_variable in tag_variables:
                 if "DW_AT_specification" in self.die_variable.attributes:
                     spec_ref_addr = (
-                        self.die_variable.attributes["DW_AT_specification"].value
-                        + self.die_variable.cu.cu_offset
+                            self.die_variable.attributes["DW_AT_specification"].value
+                            + self.die_variable.cu.cu_offset
                     )
                     spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
@@ -292,8 +293,8 @@ class Elf32Parser(ElfParser):
                         continue
 
                 elif (
-                    self.die_variable.attributes.get("DW_AT_location")
-                    and self.die_variable.attributes.get("DW_AT_name") is not None
+                        self.die_variable.attributes.get("DW_AT_location")
+                        and self.die_variable.attributes.get("DW_AT_name") is not None
                 ):
                     self.var_name = self.die_variable.attributes.get(
                         "DW_AT_name"
@@ -310,11 +311,15 @@ class Elf32Parser(ElfParser):
                 type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
                 if type_die.tag != "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
+                    if end_die is None:
+                        logging.warning(f"Skipping variable {self.var_name} due to missing end DIE")
+                        continue
                     self._processing_end_die(type_die, end_die)
 
                 elif type_die.tag == "DW_TAG_volatile_type":
                     end_die = self._get_end_die(type_die)
                     if end_die is None:
+                        logging.warning(f"Skipping volatile type variable {self.var_name} due to missing end DIE")
                         continue
                     self._processing_end_die(type_die, end_die)
                     continue
@@ -324,7 +329,8 @@ class Elf32Parser(ElfParser):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\_prg\mc_foc_dyno_same54_mclv2\firmware\MC_FOC_DYNO_SAME54_MCLV2.X\dist\default\production\MC_FOC_DYNO_SAME54_MCLV2.X.production.elf"
+    elf_file = r""
+    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\production\LAB4_FOC.X.production.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(variable_map)
