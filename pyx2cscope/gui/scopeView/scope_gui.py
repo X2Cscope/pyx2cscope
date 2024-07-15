@@ -1,5 +1,4 @@
-"""This is the scope_gui to test the pyx2cscope scope functionality.
-"""
+"""This is the scope_gui to test the pyx2cscope scope functionality."""
 
 import logging
 import os
@@ -174,6 +173,7 @@ class X2cscopeGui(QMainWindow):
         self.combo_box3 = QComboBox()
         self.combo_box2 = QComboBox()
         self.combo_box1 = QComboBox()
+
     def scaled_value(self):
         """Initializing Scaled variable."""
         self.ScaledValue_var1 = QLineEdit(self)
@@ -181,6 +181,7 @@ class X2cscopeGui(QMainWindow):
         self.ScaledValue_var3 = QLineEdit(self)
         self.ScaledValue_var4 = QLineEdit(self)
         self.ScaledValue_var5 = QLineEdit(self)
+
     def live_var(self):
         """Initializing live variable."""
         self.Live_var1 = QCheckBox(self)
@@ -188,7 +189,6 @@ class X2cscopeGui(QMainWindow):
         self.Live_var3 = QCheckBox(self)
         self.Live_var4 = QCheckBox(self)
         self.Live_var5 = QCheckBox(self)
-
 
     def value_var(self):
         """Initializing value variable."""
@@ -205,6 +205,7 @@ class X2cscopeGui(QMainWindow):
         self.timer3 = QTimer()
         self.timer2 = QTimer()
         self.timer1 = QTimer()
+
     def offset_var(self):
         """Initializing Offset Variable."""
         self.offset_var1 = QLineEdit()
@@ -212,6 +213,7 @@ class X2cscopeGui(QMainWindow):
         self.offset_var3 = QLineEdit()
         self.offset_var4 = QLineEdit()
         self.offset_var5 = QLineEdit()
+
     def plot_var_check(self):
         """Initializing plot variable check boxes."""
         self.plot_var5_checkbox = QCheckBox()
@@ -219,6 +221,7 @@ class X2cscopeGui(QMainWindow):
         self.plot_var4_checkbox = QCheckBox()
         self.plot_var3_checkbox = QCheckBox()
         self.plot_var1_checkbox = QCheckBox()
+
     def scaling_var(self):
         """Initializing Scaling variable."""
         self.Scaling_var1 = QLineEdit(self)
@@ -234,6 +237,7 @@ class X2cscopeGui(QMainWindow):
         self.Unit_var3 = QLineEdit(self)
         self.Unit_var4 = QLineEdit(self)
         self.Unit_var5 = QLineEdit(self)
+
     # noinspection PyUnresolvedReferences
     def setup_tab1(self):
         """Set up the first tab with the original functionality."""
@@ -295,7 +299,6 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
         grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
         grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0)
-
 
         # Variable Selection Group Box
         variable_group = QGroupBox("Variable Selection")
@@ -386,13 +389,13 @@ class X2cscopeGui(QMainWindow):
         sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
         sampletime_layout.addStretch(1)
         sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
-#        sampletime_layout.addWidget(self.plot_button, alignment=Qt.AlignCenter)  # Add the plot button here
+        #        sampletime_layout.addWidget(self.plot_button, alignment=Qt.AlignCenter)  # Add the plot button here
 
         plot_layout = QVBoxLayout()
         plot_layout.addWidget(self.plot_button, alignment=Qt.AlignRight)
         layout.addWidget(self.select_file_button, 3, 0)
         layout.addLayout(sampletime_layout, 4, 0)
-        layout.addLayout(plot_layout,6,0)
+        layout.addLayout(plot_layout, 6, 0)
 
     def setup_variable_layout(self, layout):
         """Set up the variable selection layout."""
@@ -510,16 +513,17 @@ class X2cscopeGui(QMainWindow):
             self.grid_layout.addWidget(scaled_value_var, display_row, 5)
             self.grid_layout.addWidget(unit_var, display_row, 6)
             self.grid_layout.addWidget(plot_checkbox, display_row, 7)
-            #self.grid_layout.addWidget(self.plot_button, 8,6)
+            # self.grid_layout.addWidget(self.plot_button, 8,6)
 
         layout.addLayout(self.grid_layout, 5, 0)
-       # layout.addWidget(self.plot_button, 6, 0)
+        # layout.addWidget(self.plot_button, 6, 0)
 
         # Resize buttons to the same size
         self.plot_button.setFixedSize(100, 30)
         self.Connect_button.setFixedSize(100, 30)
         self.select_file_button.setFixedSize(100, 30)
-       #self.scope_sample_button.setFixedSize(100, 30)
+
+    # self.scope_sample_button.setFixedSize(100, 30)
 
     def setup_connections(self):
         """Set up connections for various widgets."""
@@ -546,22 +550,21 @@ class X2cscopeGui(QMainWindow):
     def connect_editing_finished(self):
         """Connect editingFinished signals for value and scaling inputs."""
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_editing_finished(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_editing_finished():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -571,22 +574,21 @@ class X2cscopeGui(QMainWindow):
             value_var.editingFinished.connect(connect_editing_finished())
 
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_editing_finished(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_editing_finished():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -596,22 +598,21 @@ class X2cscopeGui(QMainWindow):
             scaling.editingFinished.connect(connect_editing_finished())
 
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_text_changed(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_text_changed():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -621,22 +622,21 @@ class X2cscopeGui(QMainWindow):
             value_var.textChanged.connect(connect_text_changed())
 
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_text_changed(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_text_changed():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -1119,7 +1119,7 @@ class X2cscopeGui(QMainWindow):
     def configure_trigger(self):
         """Configure the trigger settings."""
         try:
-            variable_name =self.triggerVariable
+            variable_name = self.triggerVariable
             variable = self.x2cscope.get_variable(variable_name)
 
             # Handle empty string for trigger level and delay
@@ -1175,6 +1175,8 @@ class X2cscopeGui(QMainWindow):
 
                     data_storage = {}
                     for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
+                        print(channel)
+                        print(data)
                         data_storage[channel] = data
 
                     self.ax.clear()

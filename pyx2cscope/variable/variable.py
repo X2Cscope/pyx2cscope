@@ -861,4 +861,5 @@ class VariableFloat(Variable):
         Returns:
             Number: The 32-bit floating point value.
         """
-        return struct.unpack("f", data)[0]
+        data = bytearray(data)
+        return struct.unpack("<f", data)[0]

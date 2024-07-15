@@ -347,7 +347,7 @@ class X2CScope:
             j = 0
             for name, channel in self.scope_setup.list_channels().items():
                 k = channel.data_type_size + j
-                value = self.convert_list[name](dataset[j:k])
+                value = self.convert_list[name](dataset[j:k]) # TODO checking whats wrong here
                 channels[name].append(value)
                 j = k
         return channels
