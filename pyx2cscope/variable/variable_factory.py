@@ -47,10 +47,11 @@ class VariableFactory:
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
         parser = (
-            Elf16Parser
-            if self.device_info.uc_width == DeviceInfo.MACHINE_16
-            else Elf32Parser
+            Elf16Parser if self.device_info.uc_width == DeviceInfo.MACHINE_16 else Elf32Parser
         )
+        if self.device_info.processor_id == "__GENERIC_MICROCHIP_DSPIC__":  # TODO implement it better for future cores.
+            self.device_info.uc_width = 2
+
         self.parser = parser(elf_path)
 
     def get_var_list(self) -> list[str]:

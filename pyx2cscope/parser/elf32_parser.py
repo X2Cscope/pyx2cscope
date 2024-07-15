@@ -281,7 +281,7 @@ class Elf32Parser(ElfParser):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\production\LAB4_FOC.X.production.elf"
+    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(variable_map)
