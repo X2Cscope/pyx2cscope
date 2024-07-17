@@ -320,6 +320,7 @@ class X2cscopeGui(QMainWindow):
         # Add the plot widget for scope view
         self.scope_plot_widget = pg.PlotWidget(title="Scope Plot")
         self.scope_plot_widget.setBackground('w')
+        self.scope_plot_widget.addLegend()  # Add legend to the plot widget
         self.tab2.layout.addWidget(self.scope_plot_widget)
 
     def handle_scope_checkbox_change(self, state, index):
@@ -510,6 +511,7 @@ class X2cscopeGui(QMainWindow):
         # Add the plot widget for watch view
         self.watch_plot_widget = pg.PlotWidget(title="Watch Plot")
         self.watch_plot_widget.setBackground('w')
+        self.watch_plot_widget.addLegend()  # Add legend to the plot widget
         self.tab1.layout.addWidget(self.watch_plot_widget)
 
     def setup_connections(self):
@@ -715,9 +717,11 @@ class X2cscopeGui(QMainWindow):
             values = data[2:7]
             self.watch_plot_widget.clear()
 
-            for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
+            colors = ['b', 'g', 'r', 'c', 'm']
+
+            for value, combo_box, plot_var, color in zip(values, self.combo_boxes, self.plot_checkboxes, colors):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color='b', width=1), name=combo_box.currentText())
+                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color=color, width=1), name=combo_box.currentText())
 
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
@@ -735,9 +739,11 @@ class X2cscopeGui(QMainWindow):
             values = data[2:7]
             self.scope_plot_widget.clear()
 
-            for value, combo_box, plot_var in zip(values, self.scope_var_combos, self.scope_var_checkboxes):
+            colors = ['b', 'g', 'r', 'c', 'm']
+
+            for value, combo_box, plot_var, color in zip(values, self.scope_var_combos, self.scope_var_checkboxes, colors):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.scope_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color='r', width=1), name=combo_box.currentText())
+                    self.scope_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color=color, width=1), name=combo_box.currentText())
 
             self.scope_plot_widget.setLabel('left', 'Value')
             self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
@@ -1148,9 +1154,11 @@ class X2cscopeGui(QMainWindow):
                         data_storage[channel] = data
 
                     self.scope_plot_widget.clear()
-                    for channel, data in data_storage.items():
+                    colors = ['b', 'g', 'r', 'c', 'm']
+
+                    for (channel, data), color in zip(data_storage.items(), colors):
                         time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
-                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color='b', width=1), name=f"Channel {channel}")
+                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=color, width=1), name=f"Channel {channel}")
 
                     self.scope_plot_widget.setLabel('left', 'Value')
                     self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
@@ -1178,4 +1186,3 @@ if __name__ == "__main__":
     ex = X2cscopeGui()
     ex.show()
     sys.exit(app.exec_())
-
