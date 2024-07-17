@@ -82,6 +82,7 @@ class X2cscopeGui(QMainWindow):
         self.timer3 = QTimer()
         self.timer4 = QTimer()
         self.timer5 = QTimer()
+        self.plot_update_timer = QTimer()  # Timer for continuous plot update
         self.timer()
         self.offset_var()
         self.plot_var_check()
@@ -538,6 +539,8 @@ class X2cscopeGui(QMainWindow):
         self.slider_var1.setEnabled(False)
         self.slider_var1.valueChanged.connect(self.slider_var1_changed)
 
+        self.plot_update_timer.timeout.connect(self.update_watch_plot)  # Connect the QTimer to the update method
+
     def connect_editing_finished(self):
         """Connect editingFinished signals for value and scaling inputs."""
         for (
@@ -724,13 +727,22 @@ class X2cscopeGui(QMainWindow):
             data = np.array(self.plot_data, dtype=object).T
             time_diffs = np.array(data[1], dtype=float)
             values = [np.array(data[i], dtype=float) for i in range(2, 7)]
-            self.watch_plot_widget.clear()
+
+            # Keep the last plot lines to avoid clearing and recreate them
+            plot_lines = {}
+            for item in self.watch_plot_widget.plotItem.items:
+                if isinstance(item, pg.PlotDataItem):
+                    plot_lines[item.name()] = item
 
             for i, (value, combo_box, plot_var) in enumerate(zip(values, self.combo_boxes, self.plot_checkboxes)):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
-                                                pen=pg.mkPen(color=self.plot_colors[i], width=1),
-                                                name=combo_box.currentText())
+                    if combo_box.currentText() in plot_lines:
+                        plot_line = plot_lines[combo_box.currentText()]
+                        plot_line.setData(np.cumsum(time_diffs), value)
+                    else:
+                        self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
+                                                    pen=pg.mkPen(color=self.plot_colors[i], width=1),
+                                                    name=combo_box.currentText())
 
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
@@ -1012,6 +1024,8 @@ class X2cscopeGui(QMainWindow):
                 if timer.isActive():
                     timer.stop()
 
+            self.plot_update_timer.stop()  # Stop the continuous plot update
+
         except Exception as e:
             error_message = f"Error while disconnecting: {e}"
             logging.error(error_message)
@@ -1065,6 +1079,8 @@ class X2cscopeGui(QMainWindow):
             for live_var, timer in timer_list:
                 if live_var.isChecked():
                     timer.start(self.timerValue)
+
+            self.plot_update_timer.start(self.timerValue)  # Start the continuous plot update
 
         except Exception as e:
             error_message = f"Error while connecting: {e}"
