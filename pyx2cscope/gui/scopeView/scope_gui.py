@@ -536,6 +536,10 @@ class X2cscopeGui(QMainWindow):
             combo_box.currentIndexChanged.connect(
                 lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(self.VariableList[cb], v_var)
             )
+        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+            value_var.editingFinished.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_putram(cb.currentText(), v_var)
+            )
 
         self.connect_editing_finished()
 
