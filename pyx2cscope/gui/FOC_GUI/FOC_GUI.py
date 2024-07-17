@@ -694,15 +694,22 @@ class X2cscopeGui(QMainWindow):
                 time_diff = (timestamp - last_timestamp).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
+
+            def safe_float(value):
+                try:
+                    return float(value)
+                except ValueError:
+                    return 0.0
+
             self.plot_data.append(
                 (
                     timestamp,
                     time_diff,
-                    float(self.ScaledValue_var1.text()),
-                    float(self.ScaledValue_var2.text()),
-                    float(self.ScaledValue_var3.text()),
-                    float(self.ScaledValue_var4.text()),
-                    float(self.ScaledValue_var5.text()),
+                    safe_float(self.ScaledValue_var1.text()),
+                    safe_float(self.ScaledValue_var2.text()),
+                    safe_float(self.ScaledValue_var3.text()),
+                    safe_float(self.ScaledValue_var4.text()),
+                    safe_float(self.ScaledValue_var5.text()),
                 )
             )
         except Exception as e:
@@ -714,43 +721,59 @@ class X2cscopeGui(QMainWindow):
             if not self.plot_data:
                 return
 
-            data = np.array(self.plot_data).T
-            time_diffs = data[1]
-            values = data[2:7]
+            data = np.array(self.plot_data, dtype=object).T
+            time_diffs = np.array(data[1], dtype=float)
+            values = [np.array(data[i], dtype=float) for i in range(2, 7)]
             self.watch_plot_widget.clear()
 
-            colors = ['b', 'g', 'r', 'c', 'm']
-
-            for value, combo_box, plot_var, color in zip(values, self.combo_boxes, self.plot_checkboxes, colors):
+            for i, (value, combo_box, plot_var) in enumerate(zip(values, self.combo_boxes, self.plot_checkboxes)):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color=color, width=1), name=combo_box.currentText())
+                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
+                                                pen=pg.mkPen(color=self.plot_colors[i], width=1),
+                                                name=combo_box.currentText())
 
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
         except Exception as e:
             logging.error(e)
 
-    def update_scope_plot(self):
-        """Updates the plot in the ScopeView tab with new data."""
+    def sample_scope_data(self, single_shot=False):
+        """Sample the scope data."""
         try:
-            if not self.plot_data:
-                return
+            while self.sampling_active:
+                if self.x2cscope.is_scope_data_ready():
+                    logging.info("Scope data is ready.")
 
-            data = np.array(self.plot_data).T
-            time_diffs = data[1]
-            values = data[2:7]
-            self.scope_plot_widget.clear()
+                    data_storage = {}
+                    for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
+                        data_storage[channel] = data
 
-            colors = ['b', 'g', 'r', 'c', 'm']
+                    self.scope_plot_widget.clear()
+                    for i, (channel, data) in enumerate(data_storage.items()):
+                        time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                        data = np.array(data, dtype=float)
+                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=1),
+                                                    name=f"Channel {channel}")
 
-            for value, combo_box, plot_var, color in zip(values, self.scope_var_combos, self.scope_var_checkboxes, colors):
-                if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.scope_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color=color, width=1), name=combo_box.currentText())
+                    self.scope_plot_widget.setLabel('left', 'Value')
+                    self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
 
-            self.scope_plot_widget.setLabel('left', 'Value')
-            self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
+                    if single_shot:
+                        break
+
+                    self.x2cscope.request_scope_data()
+
+                QApplication.processEvents()  # Keep the GUI responsive
+
+                time.sleep(0.1)
+
+            self.sampling_active = False
+            self.scope_sample_button.setText("Sample")
+            logging.info("Data collection complete.")
         except Exception as e:
-            logging.error(e)
+            error_message = f"Error sampling scope data: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
 
     def plot_data_plot(self):
         """Initializes and starts data plotting."""
