@@ -1,5 +1,3 @@
-"""This is the scope_gui to test the pyx2cscope scope functionality."""
-
 import logging
 import os
 import sys
@@ -10,7 +8,8 @@ from datetime import datetime
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import serial.tools.list_ports
+import pyqtgraph as pg  # Added pyqtgraph for interactive plotting
+import serial.tools.list_ports  # Import the serial module to fix the NameError
 from matplotlib.animation import FuncAnimation
 from PyQt5 import QtGui
 from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
@@ -37,7 +36,7 @@ from PyQt5.QtWidgets import (
 )
 
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.x2cscope import TriggerConfig, X2CScope
+from pyx2cscope.xc2scope import TriggerConfig, X2CScope
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -45,11 +44,7 @@ matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
 
 class X2cscopeGui(QMainWindow):
-    """Main GUI class for the pyX2Cscope application.
-
-    This class creates and manages the GUI for pyX2Cscope, providing an interface
-    to connect to a microcontroller, select variables for monitoring, and plot their values.
-    """
+    """Main GUI class for the pyX2Cscope application."""
 
     def __init__(self):
         """Initializing all the elements required."""
@@ -62,8 +57,6 @@ class X2cscopeGui(QMainWindow):
     def initialize_variables(self):
         """Initialize instance variables."""
         self.sampling_active = False
-        self.fig = None
-        self.ax = None
         self.offset_boxes = None
         self.plot_checkboxes = None
         self.scaled_value_boxes = None
@@ -84,6 +77,11 @@ class X2cscopeGui(QMainWindow):
         self.mutex = QMutex()
         self.grid_layout = QGridLayout()
         self.box_layout = QHBoxLayout()
+        self.timer1 = QTimer()
+        self.timer2 = QTimer()
+        self.timer3 = QTimer()
+        self.timer4 = QTimer()
+        self.timer5 = QTimer()
         self.timer()
         self.offset_var()
         self.plot_var_check()
@@ -101,20 +99,12 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.selected_var_indices = [
-            0,
-            0,
-            0,
-            0,
-            0,
-        ]  # List to store selected variable indices
+        self.selected_var_indices = [0, 0, 0, 0, 0]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
         decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
-        self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
-        self.fig, self.ax = None, None
-        self.ani = None
+        self.plot_data = deque(maxlen=250)  # Store plot data for all variables
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -286,8 +276,7 @@ class X2cscopeGui(QMainWindow):
         self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
         self.scope_sample_button.clicked.connect(self.start_sampling)
 
-        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
-                                      2)  # Add the Single Shot checkbox to the layout
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1, 2)  # Add the Single Shot checkbox to the layout
         grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
         grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
         grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
@@ -327,6 +316,11 @@ class X2cscopeGui(QMainWindow):
         # Set the column stretch factors to make the variable group larger
         main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
         main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
+
+        # Add the plot widget for scope view
+        self.scope_plot_widget = pg.PlotWidget(title="Scope Plot")
+        self.scope_plot_widget.setBackground('w')
+        self.tab2.layout.addWidget(self.scope_plot_widget)
 
     def handle_scope_checkbox_change(self, state, index):
         """Handle the change in the state of the scope view checkboxes."""
@@ -389,13 +383,9 @@ class X2cscopeGui(QMainWindow):
         sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
         sampletime_layout.addStretch(1)
         sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
-        #        sampletime_layout.addWidget(self.plot_button, alignment=Qt.AlignCenter)  # Add the plot button here
 
-        plot_layout = QVBoxLayout()
-        plot_layout.addWidget(self.plot_button, alignment=Qt.AlignRight)
-        layout.addWidget(self.select_file_button, 3, 0)
-        layout.addLayout(sampletime_layout, 4, 0)
-        layout.addLayout(plot_layout, 6, 0)
+        layout.addLayout(sampletime_layout, 3, 0)
+        layout.addWidget(self.select_file_button, 4, 0)
 
     def setup_variable_layout(self, layout):
         """Set up the variable selection layout."""
@@ -513,17 +503,14 @@ class X2cscopeGui(QMainWindow):
             self.grid_layout.addWidget(scaled_value_var, display_row, 5)
             self.grid_layout.addWidget(unit_var, display_row, 6)
             self.grid_layout.addWidget(plot_checkbox, display_row, 7)
-            # self.grid_layout.addWidget(self.plot_button, 8,6)
+            plot_checkbox.stateChanged.connect(lambda state, x=row_index - 1: self.update_watch_plot())
 
         layout.addLayout(self.grid_layout, 5, 0)
-        # layout.addWidget(self.plot_button, 6, 0)
 
-        # Resize buttons to the same size
-        self.plot_button.setFixedSize(100, 30)
-        self.Connect_button.setFixedSize(100, 30)
-        self.select_file_button.setFixedSize(100, 30)
-
-    # self.scope_sample_button.setFixedSize(100, 30)
+        # Add the plot widget for watch view
+        self.watch_plot_widget = pg.PlotWidget(title="Watch Plot")
+        self.watch_plot_widget.setBackground('w')
+        self.tab1.layout.addWidget(self.watch_plot_widget)
 
     def setup_connections(self):
         """Set up connections for various widgets."""
@@ -717,12 +704,8 @@ class X2cscopeGui(QMainWindow):
         except Exception as e:
             logging.error(e)
 
-    def update_plot(self, frame):
-        """Updates the plot with new data.
-
-        Args:
-            frame: The current frame for the FuncAnimation.
-        """
+    def update_watch_plot(self):
+        """Updates the plot in the WatchView tab with new data."""
         try:
             if not self.plot_data:
                 return
@@ -730,21 +713,34 @@ class X2cscopeGui(QMainWindow):
             data = np.array(self.plot_data).T
             time_diffs = data[1]
             values = data[2:7]
-            self.ax.clear()
-            start = time.time()
+            self.watch_plot_widget.clear()
 
             for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.ax.plot(np.cumsum(time_diffs), value, label=combo_box.currentText())
+                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color='b', width=1), name=combo_box.currentText())
 
-            self.ax.set_xlabel("Time (ms)")
-            self.ax.set_ylabel("Value")
-            self.ax.setTitle("Live Plot")
-            self.ax.legend(loc="upper right")
-            end = time.time()
-            logging.debug(end - start)
-            self.fig.canvas.draw()
-            self.fig.canvas.flush_events()
+            self.watch_plot_widget.setLabel('left', 'Value')
+            self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
+        except Exception as e:
+            logging.error(e)
+
+    def update_scope_plot(self):
+        """Updates the plot in the ScopeView tab with new data."""
+        try:
+            if not self.plot_data:
+                return
+
+            data = np.array(self.plot_data).T
+            time_diffs = data[1]
+            values = data[2:7]
+            self.scope_plot_widget.clear()
+
+            for value, combo_box, plot_var in zip(values, self.scope_var_combos, self.scope_var_checkboxes):
+                if plot_var.isChecked() and combo_box.currentIndex() != 0:
+                    self.scope_plot_widget.plot(np.cumsum(time_diffs), value, pen=pg.mkPen(color='r', width=1), name=combo_box.currentText())
+
+            self.scope_plot_widget.setLabel('left', 'Value')
+            self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
         except Exception as e:
             logging.error(e)
 
@@ -754,26 +750,10 @@ class X2cscopeGui(QMainWindow):
             if not self.plot_data:
                 return
 
-            def initialize_plot():
-                self.fig, self.ax = plt.subplots()
+            self.update_watch_plot()
+            self.update_scope_plot()
 
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1, cache_frame_data=False)
-                logging.debug(self.ani)
-                plt.xticks(rotation=45)
-                self.ax.axhline(0, color="black", linewidth=0.5)  # Reference line at y=0
-                self.ax.axvline(0, color="black", linewidth=0.5)  # Reference line at x=0
-                plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
-                plt.show(block=False)  # Use block=False to prevent the GUI from freezing
-
-            if self.plot_window_open:
-                if self.fig is not None and plt.fignum_exists(self.fig.number):
-                    self.update_plot(0)
-                    self.ani.event_source.stop()
-                    self.ani.event_source.start(self.timerValue)
-                else:
-                    initialize_plot()
-            else:
-                initialize_plot()
+            if not self.plot_window_open:
                 self.plot_window_open = True
         except Exception as e:
             logging.error(e)
@@ -1065,9 +1045,6 @@ class X2cscopeGui(QMainWindow):
 
         This method stops the animation and closes the plot window, if it is open.
         """
-        if self.ani is not None:
-            self.ani.event_source.stop()
-        plt.close(self.fig)
         self.plot_window_open = False
 
     def close_event(self, event):
@@ -1081,8 +1058,6 @@ class X2cscopeGui(QMainWindow):
         """
         if self.sampling_active:
             self.sampling_active = False
-        if self.fig:
-            plt.close(self.fig)
         if self.ser:
             self.disconnect_serial()
         event.accept()
@@ -1093,11 +1068,9 @@ class X2cscopeGui(QMainWindow):
             if self.sampling_active:
                 self.sampling_active = False
                 self.scope_sample_button.setText("Sample")
-                if self.fig:
-                    plt.close(self.fig)
                 logging.info("Stopped sampling.")
             else:
-
+                self.x2cscope.clear_all_scope_channel()
                 for combo in self.scope_var_combos:
                     variable_name = combo.currentText()
                     if variable_name and variable_name != "None":
@@ -1166,9 +1139,6 @@ class X2cscopeGui(QMainWindow):
     def sample_scope_data(self, single_shot=False):
         """Sample the scope data."""
         try:
-            plt.ion()  # Turn on interactive mode
-            self.fig, self.ax = plt.subplots()
-
             while self.sampling_active:
                 if self.x2cscope.is_scope_data_ready():
                     logging.info("Scope data is ready.")
@@ -1177,30 +1147,22 @@ class X2cscopeGui(QMainWindow):
                     for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
                         data_storage[channel] = data
 
-                    self.ax.clear()
+                    self.scope_plot_widget.clear()
                     for channel, data in data_storage.items():
                         time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
-                        self.ax.plot(time_values, data, label=f"Channel {channel}")
+                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color='b', width=1), name=f"Channel {channel}")
 
-                    self.ax.set_xlabel("Time (ms)")
-                    self.ax.set_ylabel("Value")
-                    self.ax.set_title("Live Plot of Scope Data")
-                    self.ax.legend()
-
-                    plt.pause(0.001)  # Add a short pause to update the plot
+                    self.scope_plot_widget.setLabel('left', 'Value')
+                    self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
 
                     if single_shot:
                         break
 
                     self.x2cscope.request_scope_data()
 
-                if not plt.fignum_exists(self.fig.number):
-                    break
+                QApplication.processEvents()  # Keep the GUI responsive
 
                 time.sleep(0.1)
-
-            plt.ioff()  # Turn off interactive mode after the loop
-            plt.show()
 
             self.sampling_active = False
             self.scope_sample_button.setText("Sample")
@@ -1216,3 +1178,4 @@ if __name__ == "__main__":
     ex = X2cscopeGui()
     ex.show()
     sys.exit(app.exec_())
+

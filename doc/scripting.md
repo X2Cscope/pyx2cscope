@@ -79,13 +79,13 @@ x2cScope.add_scope_channel(variable2)
 ```
 
 7. To remove a variable from the scope: **remove_scope_channel(variable: Variable)**, to clear all
-variables and reset the scope use instead: **clear_scope_channel()**
+variables and reset the scope use instead: **clear_all_scope_channel()**
 ```
 x2cScope.remove_scope_channel(variable2)
 ```
 or 
 ```
-x2cScope.clear_scope_channel()
+x2cScope.clear_all_scope_channel()
 ```
 
 Up to 8 channels can be added. Each time you add or remove a variable, the number of channels present

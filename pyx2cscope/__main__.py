@@ -1,12 +1,4 @@
-"""Main entry point for the X2Cscope application.
-
-This module initializes the logging configuration based on a command-line argument,
-sets up the PyQt5 application, and launches the X2Cscope GUI.
-"""
 import logging
-
-logging.basicConfig(level=logging.ERROR)
-
 import argparse
 
 import pyx2cscope
@@ -22,6 +14,8 @@ def parse_arguments():
       |
       | For a complete list of arguments, execute python -m pyx2cscope --help
     """
+    import pyx2cscope
+
     parser = argparse.ArgumentParser(
         prog="pyX2Cscope",
         description="Microchip python implementation of X2Cscope and LNet protocol.",
@@ -32,9 +26,9 @@ def parse_arguments():
                         help="Configure the logging level, INFO is the default value.")
     parser.add_argument("-c", "--log-console", action="store_true",
                         help="Output log to the console.")
-    parser.add_argument("-e", "--elf", 
+    parser.add_argument("-e", "--elf",
                         help="Path to elf-file, i.e. -e my_elf.elf. Use together with -s")
-    parser.add_argument("-p", "--port", 
+    parser.add_argument("-p", "--port",
                         help="The serial COM port to be used. Use together with -e")
     parser.add_argument("-q", "--qt", action="store_false",
                         help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.")
@@ -73,17 +67,20 @@ def _args_check(k_args: argparse.Namespace):
             raise ValueError("An elf-file path must be supplied!")
 
 
-known_args, unknown_args = parse_arguments()
+def main():
+    known_args, unknown_args = parse_arguments()
 # if arguments logic is correct,
 _args_check(known_args)
 
-logging.root.handlers.clear()
-pyx2cscope.set_logger(level=known_args.log_level, console=known_args.log_console)
+    logging.root.handlers.clear()
+    import pyx2cscope
+    pyx2cscope.set_logger(level=known_args.log_level, console=known_args.log_console)
 
-if known_args.qt and not known_args.web:
-    gui.execute_qt(unknown_args, **known_args.__dict__)
+    if known_args.qt and not known_args.web:
+        gui.execute_qt(unknown_args, **known_args.__dict__)
 
-if known_args.web:
-    gui.execute_web(**known_args.__dict__)
+    if known_args.web:
+        gui.execute_web(**known_args.__dict__)
 
-
+if __name__ == "__main__":
+    main()

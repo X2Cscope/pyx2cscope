@@ -207,7 +207,7 @@ def load():
                 if isinstance(data[0], dict):
                     if "trigger" in data[0].keys():
                         scope_data = data
-                        get_x2c().clear_scope_channel()
+                        get_x2c().clear_all_scope_channel()
                         for item in scope_data:
                             item["variable"] = get_x2c().get_variable(item["variable"])
                             get_x2c().add_scope_channel(item["variable"])

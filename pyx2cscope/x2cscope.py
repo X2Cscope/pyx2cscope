@@ -140,6 +140,11 @@ class X2CScope:
         """
         return self.variable_factory.get_variable(name)
 
+    def reboot_device(self):
+        """reboot the device for restart the application."""
+
+        return self.lnet.reboot_device()
+
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
         """Add a variable as a scope channel.
 
@@ -154,7 +159,7 @@ class X2CScope:
         self.convert_list[variable.name] = variable.bytes_to_value
         return self.scope_setup.add_channel(scope_channel, trigger)
 
-    def clear_scope_channel(self):
+    def clear_all_scope_channel(self):
         """Remove all variables from the scope channel and reset any trigger.
 
         Returns:
