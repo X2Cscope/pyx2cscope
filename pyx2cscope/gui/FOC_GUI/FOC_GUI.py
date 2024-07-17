@@ -105,6 +105,7 @@ class X2cscopeGui(QMainWindow):
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variables
+        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k'] #colours for different plot
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -251,6 +252,7 @@ class X2cscopeGui(QMainWindow):
 
         main_grid_layout = QGridLayout()
         self.tab2.layout.addLayout(main_grid_layout)
+
 
         # Trigger Configuration Group Box
         trigger_group = QGroupBox("Trigger Configuration")
@@ -1109,7 +1111,7 @@ class X2cscopeGui(QMainWindow):
                 trigger_level = 0
             else:
                 try:
-                    trigger_level = int(trigger_level_text)
+                    trigger_level = float(trigger_level_text)
                 except ValueError:
                     logging.error(f"Invalid trigger level value: {trigger_level_text}")
                     self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
@@ -1154,11 +1156,10 @@ class X2cscopeGui(QMainWindow):
                         data_storage[channel] = data
 
                     self.scope_plot_widget.clear()
-                    colors = ['b', 'g', 'r', 'c', 'm']
-
-                    for (channel, data), color in zip(data_storage.items(), colors):
-                        time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
-                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=color, width=1), name=f"Channel {channel}")
+                    for i, (channel, data) in enumerate(data_storage.items()):
+                        time_values = [j * 0.001 for j in range(len(data))]  # milliseconds
+                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=1),
+                                                    name=f"Channel {channel}")
 
                     self.scope_plot_widget.setLabel('left', 'Value')
                     self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
