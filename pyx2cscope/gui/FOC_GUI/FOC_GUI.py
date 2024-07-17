@@ -300,10 +300,10 @@ class X2cscopeGui(QMainWindow):
         variable_layout.addLayout(grid_layout_variable)
 
         self.scope_var_combos = [QComboBox() for _ in range(7)]
-        self.scope_var_checkboxes = [QCheckBox() for _ in range(7)]
+        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
 
         grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
-        for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.scope_var_checkboxes)):
+        for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.trigger_var_checkbox)):
             combo.setMinimumHeight(20)
             checkbox.setMinimumHeight(20)
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -328,7 +328,7 @@ class X2cscopeGui(QMainWindow):
     def handle_scope_checkbox_change(self, state, index):
         """Handle the change in the state of the scope view checkboxes."""
         if state == Qt.Checked:
-            for i, checkbox in enumerate(self.scope_var_checkboxes):
+            for i, checkbox in enumerate(self.trigger_var_checkbox):
                 if i != index:
                     checkbox.setChecked(False)
             self.triggerVariable = self.scope_var_combos[index].currentText()
@@ -1107,10 +1107,10 @@ class X2cscopeGui(QMainWindow):
                     if variable_name and variable_name != "None":
                         variable = self.x2cscope.get_variable(variable_name)
                         self.x2cscope.add_scope_channel(variable)
+
                 self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
-                if self.single_shot_checkbox.isChecked():
-                    self.configure_trigger()  # trigger configuration
                 self.sampling_active = True
+                self.configure_trigger()
                 self.scope_sample_button.setText("Stop")
                 logging.info("Started sampling.")
                 self.x2cscope.request_scope_data()
@@ -1135,6 +1135,7 @@ class X2cscopeGui(QMainWindow):
             else:
                 try:
                     trigger_level = float(trigger_level_text)
+                    print(trigger_level)
                 except ValueError:
                     logging.error(f"Invalid trigger level value: {trigger_level_text}")
                     self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
@@ -1161,6 +1162,7 @@ class X2cscopeGui(QMainWindow):
                 trigger_edge=trigger_edge,
             )
             self.x2cscope.set_scope_trigger(trigger_config)
+            print(self.x2cscope.get_trigger_position())
             logging.info("Trigger configured.")
         except Exception as e:
             error_message = f"Error configuring trigger: {e}"
