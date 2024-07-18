@@ -1,5 +1,3 @@
-"""This GUI going to work for most of the application as X2Cscope."""
-
 import logging
 import os
 import sys
@@ -106,7 +104,7 @@ class X2cscopeGui(QMainWindow):
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variables
-        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  #colours for different plot
+        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  # colours for different plot
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -754,22 +752,13 @@ class X2cscopeGui(QMainWindow):
             time_diffs = np.array(data[1], dtype=float)
             values = [np.array(data[i], dtype=float) for i in range(2, 7)]
 
-            # Keep the last plot lines to avoid clearing and recreate them
-            plot_lines = {}
-            for item in self.watch_plot_widget.plotItem.items:
-                if isinstance(item, pg.PlotDataItem):
-                    plot_lines[item.name()] = item
+            self.watch_plot_widget.clear()  # Clear all plots
 
             for i, (value, combo_box, plot_var) in enumerate(zip(values, self.combo_boxes, self.plot_checkboxes)):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    if combo_box.currentText() in plot_lines:
-                        plot_line = plot_lines[combo_box.currentText()]
-                        plot_line.setData(np.cumsum(time_diffs), value)
-                    else:
-                        self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
-                                                    pen=pg.mkPen(color=self.plot_colors[i], width=2),
-                                                    # Thicker plot line
-                                                    name=combo_box.currentText())
+                    self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
+                                                pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
+                                                name=combo_box.currentText())
 
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
@@ -1103,9 +1092,7 @@ class X2cscopeGui(QMainWindow):
         """Start the sampling process."""
         try:
             if self.sampling_active:
-                self.sampling_active = False
-                self.scope_sample_button.setText("Sample")
-                logging.info("Stopped sampling.")
+                self.stop_sampling()
             else:
                 self.x2cscope.clear_all_scope_channel()
                 for combo in self.scope_var_combos:
@@ -1176,46 +1163,55 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(error_message)
 
     def sample_scope_data(self, single_shot=False):
-        """Sample the scope data."""
+        """Sample the scope data using a QTimer instead of a while loop."""
         try:
-            while self.sampling_active:
-                if self.x2cscope.is_scope_data_ready():
-                    logging.info("Scope data is ready.")
-
-                    data_storage = {}
-                    for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
-                        data_storage[channel] = data
-
-                    self.scope_plot_widget.clear()
-                    for i, (channel, data) in enumerate(data_storage.items()):
-                        if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
-                            time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
-                            data = np.array(data, dtype=float)
-                            self.scope_plot_widget.plot(time_values, data,
-                                                        pen=pg.mkPen(color=self.plot_colors[i], width=2),
-                                                        # Thicker plot line
-                                                        name=f"Channel {channel}")
-
-                    self.scope_plot_widget.setLabel('left', 'Value')
-                    self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
-                    self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
-
-                    if single_shot:
-                        break
-
-                    self.x2cscope.request_scope_data()
-
-                QApplication.processEvents()  # Keep the GUI responsive
-
-                time.sleep(0.1)
-
-            self.sampling_active = False
-            self.scope_sample_button.setText("Sample")
-            logging.info("Data collection complete.")
+            self.single_shot = single_shot
+            self.scope_data_timer = QTimer()
+            self.scope_data_timer.timeout.connect(self.check_scope_data_ready)
+            self.scope_data_timer.start(100)  # Check every 100 ms
         except Exception as e:
             error_message = f"Error sampling scope data: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
+
+    def check_scope_data_ready(self):
+        """Check if the scope data is ready and handle it."""
+        try:
+            if self.sampling_active and self.x2cscope.is_scope_data_ready():
+                logging.info("Scope data is ready.")
+
+                data_storage = {}
+                for channel, data in self.x2cscope.get_scope_channel_data().items():
+                    data_storage[channel] = data
+
+                self.scope_plot_widget.clear()
+                for i, (channel, data) in enumerate(data_storage.items()):
+                    time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                    data = np.array(data, dtype=float)
+                    self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                                                name=f"Channel {channel}")
+
+                self.scope_plot_widget.setLabel('left', 'Value')
+                self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
+                self.scope_plot_widget.showGrid(x=True, y=True)
+
+                if self.single_shot:
+                    self.stop_sampling()
+                else:
+                    self.x2cscope.request_scope_data()
+
+            QApplication.processEvents()  # Keep the GUI responsive
+        except Exception as e:
+            error_message = f"Error checking scope data: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
+
+    def stop_sampling(self):
+        """Stop the sampling process."""
+        self.sampling_active = False
+        self.scope_data_timer.stop()
+        self.scope_sample_button.setText("Sample")
+        logging.info("Data collection complete.")
 
 
 if __name__ == "__main__":
