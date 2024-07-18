@@ -1,3 +1,5 @@
+"""This GUI going to work for most of the application as X2Cscope."""
+
 import logging
 import os
 import sys
@@ -6,11 +8,9 @@ from collections import deque
 from datetime import datetime
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import pyqtgraph as pg  # Added pyqtgraph for interactive plotting
 import serial.tools.list_ports  # Import the serial module to fix the NameError
-from matplotlib.animation import FuncAnimation
 from PyQt5 import QtGui
 from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QIcon, QRegExpValidator
@@ -66,7 +66,7 @@ class X2cscopeGui(QMainWindow):
         self.live_checkboxes = None
         self.timer_list = None
         self.VariableList = []
-        self.old_Variablelist = []
+        self.old_Variable_list = []
         self.var_factory = None
         self.ser = None
         self.timerValue = 500
@@ -106,7 +106,7 @@ class X2cscopeGui(QMainWindow):
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variables
-        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k'] #colours for different plot
+        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  #colours for different plot
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -254,7 +254,6 @@ class X2cscopeGui(QMainWindow):
         main_grid_layout = QGridLayout()
         self.tab2.layout.addLayout(main_grid_layout)
 
-
         # Trigger Configuration Group Box
         trigger_group = QGroupBox("Trigger Configuration")
         trigger_layout = QVBoxLayout()
@@ -279,7 +278,8 @@ class X2cscopeGui(QMainWindow):
         self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
         self.scope_sample_button.clicked.connect(self.start_sampling)
 
-        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1, 2)  # Add the Single Shot checkbox to the layout
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
+                                      2)  # Add the Single Shot checkbox to the layout
         grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
         grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
         grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
@@ -302,15 +302,33 @@ class X2cscopeGui(QMainWindow):
 
         self.scope_var_combos = [QComboBox() for _ in range(7)]
         self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]  # Add checkboxes for each channel
 
-        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
-        for i, (combo, checkbox) in enumerate(zip(self.scope_var_combos, self.trigger_var_checkbox)):
+        for checkbox in self.scope_channel_checkboxes:
+            checkbox.setChecked(True)  # Check all checkboxes by default
+
+        # Add "Select Variable" label
+        grid_layout_variable.addWidget(QLabel("Select Variable"), 0, 1)
+
+        # Add "Trigger" and "Show" labels spanning across multiple columns
+        trigger_label = QLabel("Trigger")
+        trigger_label.setAlignment(Qt.AlignCenter)  # Center align the label
+        grid_layout_variable.addWidget(trigger_label, 0, 0)
+
+        show_label = QLabel("Show")
+        show_label.setAlignment(Qt.AlignCenter)  # Center align the label
+        grid_layout_variable.addWidget(show_label, 0, 2)
+
+        for i, (combo, trigger_checkbox, show_checkbox) in enumerate(
+                zip(self.scope_var_combos, self.trigger_var_checkbox, self.scope_channel_checkboxes)):
             combo.setMinimumHeight(20)
-            checkbox.setMinimumHeight(20)
+            trigger_checkbox.setMinimumHeight(20)
+            show_checkbox.setMinimumHeight(20)  # Set minimum height for channel checkboxes
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            grid_layout_variable.addWidget(checkbox, i + 1, 0)
+            grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
             grid_layout_variable.addWidget(combo, i + 1, 1)
-            checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
+            grid_layout_variable.addWidget(show_checkbox, i + 1, 2)  # Add channel checkboxes to layout
+            trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -324,6 +342,7 @@ class X2cscopeGui(QMainWindow):
         self.scope_plot_widget = pg.PlotWidget(title="Scope Plot")
         self.scope_plot_widget.setBackground('w')
         self.scope_plot_widget.addLegend()  # Add legend to the plot widget
+        self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         self.tab2.layout.addWidget(self.scope_plot_widget)
 
     def handle_scope_checkbox_change(self, state, index):
@@ -517,6 +536,7 @@ class X2cscopeGui(QMainWindow):
         self.watch_plot_widget = pg.PlotWidget(title="Watch Plot")
         self.watch_plot_widget.setBackground('w')
         self.watch_plot_widget.addLegend()  # Add legend to the plot widget
+        self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         self.tab1.layout.addWidget(self.watch_plot_widget)
 
     def setup_connections(self):
@@ -534,7 +554,6 @@ class X2cscopeGui(QMainWindow):
             value_var.editingFinished.connect(
                 lambda cb=combo_box, v_var=value_var: self.handle_variable_putram(cb.currentText(), v_var)
             )
-
 
         self.connect_editing_finished()
 
@@ -748,7 +767,8 @@ class X2cscopeGui(QMainWindow):
                         plot_line.setData(np.cumsum(time_diffs), value)
                     else:
                         self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
-                                                    pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
+                                                    pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                                                    # Thicker plot line
                                                     name=combo_box.currentText())
 
             self.watch_plot_widget.setLabel('left', 'Value')
@@ -756,44 +776,6 @@ class X2cscopeGui(QMainWindow):
             self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         except Exception as e:
             logging.error(e)
-
-    def sample_scope_data(self, single_shot=False):
-        """Sample the scope data."""
-        try:
-            while self.sampling_active:
-                if self.x2cscope.is_scope_data_ready():
-                    logging.info("Scope data is ready.")
-
-                    data_storage = {}
-                    for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
-                        data_storage[channel] = data
-
-                    self.scope_plot_widget.clear()
-                    for i, (channel, data) in enumerate(data_storage.items()):
-                        time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
-                        data = np.array(data, dtype=float)
-                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=1),
-                                                    name=f"Channel {channel}")
-
-                    self.scope_plot_widget.setLabel('left', 'Value')
-                    self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
-
-                    if single_shot:
-                        break
-
-                    self.x2cscope.request_scope_data()
-
-                QApplication.processEvents()  # Keep the GUI responsive
-
-                time.sleep(0.1)
-
-            self.sampling_active = False
-            self.scope_sample_button.setText("Sample")
-            logging.info("Data collection complete.")
-        except Exception as e:
-            error_message = f"Error sampling scope data: {e}"
-            logging.error(error_message)
-            self.handle_error(error_message)
 
     def plot_data_plot(self):
         """Initializes and starts data plotting."""
@@ -1151,7 +1133,7 @@ class X2cscopeGui(QMainWindow):
                 variable_name = self.triggerVariable
                 variable = self.x2cscope.get_variable(variable_name)
 
-            # Handle empty string for trigger level and delay
+                # Handle empty string for trigger level and delay
                 trigger_level_text = self.trigger_level_edit.text().strip()
                 trigger_delay_text = self.trigger_delay_edit.text().strip()
 
@@ -1193,7 +1175,6 @@ class X2cscopeGui(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
-
     def sample_scope_data(self, single_shot=False):
         """Sample the scope data."""
         try:
@@ -1207,10 +1188,13 @@ class X2cscopeGui(QMainWindow):
 
                     self.scope_plot_widget.clear()
                     for i, (channel, data) in enumerate(data_storage.items()):
-                        time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
-                        data = np.array(data, dtype=float)
-                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
-                                                    name=f"Channel {channel}")
+                        if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
+                            time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                            data = np.array(data, dtype=float)
+                            self.scope_plot_widget.plot(time_values, data,
+                                                        pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                                                        # Thicker plot line
+                                                        name=f"Channel {channel}")
 
                     self.scope_plot_widget.setLabel('left', 'Value')
                     self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
