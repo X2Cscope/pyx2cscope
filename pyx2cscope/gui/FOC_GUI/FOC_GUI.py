@@ -334,6 +334,8 @@ class X2cscopeGui(QMainWindow):
                     checkbox.setChecked(False)
             self.triggerVariable = self.scope_var_combos[index].currentText()
             print(f"Checked variable: {self.scope_var_combos[index].currentText()}")
+        else:
+            self.triggerVariable = None
 
     def setup_port_layout(self, layout):
         """Set up the port selection layout."""
@@ -746,11 +748,12 @@ class X2cscopeGui(QMainWindow):
                         plot_line.setData(np.cumsum(time_diffs), value)
                     else:
                         self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
-                                                    pen=pg.mkPen(color=self.plot_colors[i], width=1),
+                                                    pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
                                                     name=combo_box.currentText())
 
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
+            self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         except Exception as e:
             logging.error(e)
 
@@ -1144,51 +1147,52 @@ class X2cscopeGui(QMainWindow):
     def configure_trigger(self):
         """Configure the trigger settings."""
         try:
-            variable_name = self.triggerVariable
-            variable = self.x2cscope.get_variable(variable_name)
+            if self.triggerVariable is not None:
+                variable_name = self.triggerVariable
+                variable = self.x2cscope.get_variable(variable_name)
 
             # Handle empty string for trigger level and delay
-            trigger_level_text = self.trigger_level_edit.text().strip()
-            trigger_delay_text = self.trigger_delay_edit.text().strip()
+                trigger_level_text = self.trigger_level_edit.text().strip()
+                trigger_delay_text = self.trigger_delay_edit.text().strip()
 
-            if not trigger_level_text:
-                trigger_level = 0
-            else:
-                try:
-                    trigger_level = float(trigger_level_text)
-                    print(trigger_level)
-                except ValueError:
-                    logging.error(f"Invalid trigger level value: {trigger_level_text}")
-                    self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
-                    return
+                if not trigger_level_text:
+                    trigger_level = 0
+                else:
+                    try:
+                        trigger_level = float(trigger_level_text)
+                        print(trigger_level)
+                    except ValueError:
+                        logging.error(f"Invalid trigger level value: {trigger_level_text}")
+                        self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
+                        return
 
-            if not trigger_delay_text:
-                trigger_delay = 0
-            else:
-                try:
-                    trigger_delay = int(trigger_delay_text)
-                except ValueError:
-                    logging.error(f"Invalid trigger delay value: {trigger_delay_text}")
-                    self.handle_error(f"Invalid trigger delay value: {trigger_delay_text}")
-                    return
+                if not trigger_delay_text:
+                    trigger_delay = 0
+                else:
+                    try:
+                        trigger_delay = int(trigger_delay_text)
+                    except ValueError:
+                        logging.error(f"Invalid trigger delay value: {trigger_delay_text}")
+                        self.handle_error(f"Invalid trigger delay value: {trigger_delay_text}")
+                        return
 
-            trigger_edge = 0 if self.trigger_edge_combo.currentText() == "Rising" else 1
-            trigger_mode = 0 if self.trigger_mode_combo.currentText() == "Auto" else 1
+                trigger_edge = 0 if self.trigger_edge_combo.currentText() == "Rising" else 1
+                trigger_mode = 0 if self.trigger_mode_combo.currentText() == "Auto" else 1
 
-            trigger_config = TriggerConfig(
-                variable=variable,
-                trigger_level=trigger_level,
-                trigger_mode=trigger_mode,
-                trigger_delay=trigger_delay,
-                trigger_edge=trigger_edge,
-            )
-            self.x2cscope.set_scope_trigger(trigger_config)
-            print(self.x2cscope.get_trigger_position())
-            logging.info("Trigger configured.")
+                trigger_config = TriggerConfig(
+                    variable=variable,
+                    trigger_level=trigger_level,
+                    trigger_mode=trigger_mode,
+                    trigger_delay=trigger_delay,
+                    trigger_edge=trigger_edge,
+                )
+                self.x2cscope.set_scope_trigger(trigger_config)
+                logging.info("Trigger configured.")
         except Exception as e:
             error_message = f"Error configuring trigger: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
+
 
     def sample_scope_data(self, single_shot=False):
         """Sample the scope data."""
@@ -1203,12 +1207,14 @@ class X2cscopeGui(QMainWindow):
 
                     self.scope_plot_widget.clear()
                     for i, (channel, data) in enumerate(data_storage.items()):
-                        time_values = [j * 0.001 for j in range(len(data))]  # milliseconds
-                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=1),
+                        time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                        data = np.array(data, dtype=float)
+                        self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
                                                     name=f"Channel {channel}")
 
                     self.scope_plot_widget.setLabel('left', 'Value')
                     self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
+                    self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
 
                     if single_shot:
                         break
