@@ -246,7 +246,6 @@ class X2cscopeGui(QMainWindow):
     def setup_tab2(self):
         """Set up the second tab with the scope functionality."""
         self.tab2.layout = QVBoxLayout()
-
         self.tab2.setLayout(self.tab2.layout)
 
         main_grid_layout = QGridLayout()
@@ -263,6 +262,7 @@ class X2cscopeGui(QMainWindow):
         self.single_shot_checkbox = QCheckBox("Single Shot")  # Add Single Shot checkbox
         self.sample_time_factor = QLineEdit("1")
         self.sample_time_factor.setValidator(self.decimal_validator)
+        self.sample_time_factor.setFixedSize(50, 20)  # Set fixed size for sample time factor
         self.trigger_mode_combo = QComboBox()
         self.trigger_mode_combo.addItems(["Auto", "Triggered"])
         self.trigger_edge_combo = QComboBox()
@@ -309,34 +309,35 @@ class X2cscopeGui(QMainWindow):
         # Add "Select Variable" label
         grid_layout_variable.addWidget(QLabel("Select Variable"), 0, 1)
 
-        # Add "Trigger" and "Show" labels spanning across multiple columns
+        # Add "Trigger", "Scale", and "Show" labels spanning across multiple columns
         trigger_label = QLabel("Trigger")
         trigger_label.setAlignment(Qt.AlignCenter)  # Center align the label
         grid_layout_variable.addWidget(trigger_label, 0, 0)
 
-        show_label = QLabel("Show")
-        show_label.setAlignment(Qt.AlignCenter)  # Center align the label
-        grid_layout_variable.addWidget(show_label, 0, 2)
-
         scale_label = QLabel("Scale")  # Add a label for scaling
         scale_label.setAlignment(Qt.AlignCenter)
-        grid_layout_variable.addWidget(scale_label, 0, 3)
+        grid_layout_variable.addWidget(scale_label, 0, 2)
 
-        for i, (combo, trigger_checkbox, show_checkbox, scale_box) in enumerate(
-                zip(self.scope_var_combos, self.trigger_var_checkbox, self.scope_channel_checkboxes,
-                    self.scope_scaling_boxes)
+        show_label = QLabel("Plot enable")
+        show_label.setAlignment(Qt.AlignCenter)  # Center align the label
+        grid_layout_variable.addWidget(show_label, 0, 3)
+
+        for i, (combo, trigger_checkbox, scale_box, show_checkbox) in enumerate(
+                zip(self.scope_var_combos, self.trigger_var_checkbox, self.scope_scaling_boxes,
+                    self.scope_channel_checkboxes)
         ):
             combo.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
             show_checkbox.setMinimumHeight(20)  # Set minimum height for channel checkboxes
             scale_box.setMinimumHeight(20)  # Set minimum height for scaling boxes
+            scale_box.setFixedSize(50, 20)  # Set fixed size for scaling boxes
             scale_box.setValidator(self.decimal_validator)  # Validate as float
 
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
             grid_layout_variable.addWidget(combo, i + 1, 1)
-            grid_layout_variable.addWidget(show_checkbox, i + 1, 2)  # Add channel checkboxes to layout
-            grid_layout_variable.addWidget(scale_box, i + 1, 3)  # Add scaling boxes to layout
+            grid_layout_variable.addWidget(scale_box, i + 1, 2)  # Add scaling boxes to layout
+            grid_layout_variable.addWidget(show_checkbox, i + 1, 3)  # Add channel checkboxes to layout
 
             trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
             scale_box.editingFinished.connect(self.update_scope_plot)  # Connect scaling box change to plot update
