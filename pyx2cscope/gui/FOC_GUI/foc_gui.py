@@ -301,6 +301,7 @@ class X2cscopeGui(QMainWindow):
         self.scope_var_combos = [QComboBox() for _ in range(7)]
         self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
         self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]  # Add checkboxes for each channel
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]  # Add scaling boxes
 
         for checkbox in self.scope_channel_checkboxes:
             checkbox.setChecked(True)  # Check all checkboxes by default
@@ -317,16 +318,28 @@ class X2cscopeGui(QMainWindow):
         show_label.setAlignment(Qt.AlignCenter)  # Center align the label
         grid_layout_variable.addWidget(show_label, 0, 2)
 
-        for i, (combo, trigger_checkbox, show_checkbox) in enumerate(
-                zip(self.scope_var_combos, self.trigger_var_checkbox, self.scope_channel_checkboxes)):
+        scale_label = QLabel("Scale")  # Add a label for scaling
+        scale_label.setAlignment(Qt.AlignCenter)
+        grid_layout_variable.addWidget(scale_label, 0, 3)
+
+        for i, (combo, trigger_checkbox, show_checkbox, scale_box) in enumerate(
+                zip(self.scope_var_combos, self.trigger_var_checkbox, self.scope_channel_checkboxes,
+                    self.scope_scaling_boxes)
+        ):
             combo.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
             show_checkbox.setMinimumHeight(20)  # Set minimum height for channel checkboxes
+            scale_box.setMinimumHeight(20)  # Set minimum height for scaling boxes
+            scale_box.setValidator(self.decimal_validator)  # Validate as float
+
             combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
             grid_layout_variable.addWidget(combo, i + 1, 1)
             grid_layout_variable.addWidget(show_checkbox, i + 1, 2)  # Add channel checkboxes to layout
+            grid_layout_variable.addWidget(scale_box, i + 1, 3)  # Add scaling boxes to layout
+
             trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
+            scale_box.editingFinished.connect(self.update_scope_plot)  # Connect scaling box change to plot update
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -780,6 +793,35 @@ class X2cscopeGui(QMainWindow):
         except Exception as e:
             logging.error(e)
 
+    def update_scope_plot(self):
+        """Updates the plot in the ScopeView tab with new data and scaling."""
+        try:
+            if not self.sampling_active:
+                return
+
+            if not self.x2cscope.is_scope_data_ready():
+                return
+
+            data_storage = {}
+            for channel, data in self.x2cscope.get_scope_channel_data().items():
+                data_storage[channel] = data
+
+            self.scope_plot_widget.clear()
+            for i, (channel, data) in enumerate(data_storage.items()):
+                scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
+                time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
+                self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                                            name=f"Channel {channel}")
+
+            self.scope_plot_widget.setLabel('left', 'Value')
+            self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
+            self.scope_plot_widget.showGrid(x=True, y=True)
+        except Exception as e:
+            error_message = f"Error updating scope plot: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
+
     def handle_error(self, error_message: str):
         """Displays an error message in a message box.
 
@@ -1186,8 +1228,9 @@ class X2cscopeGui(QMainWindow):
 
                 self.scope_plot_widget.clear()
                 for i, (channel, data) in enumerate(data_storage.items()):
+                    scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                     time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
-                    data = np.array(data, dtype=float)
+                    data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                 name=f"Channel {channel}")
 
