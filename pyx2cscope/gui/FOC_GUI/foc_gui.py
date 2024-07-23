@@ -1,7 +1,8 @@
+"""General pyX2Cscope GUI for user to experience same behaviour as mplabX plugin."""
+
 import logging
 import os
 import sys
-import time
 from collections import deque
 from datetime import datetime
 
@@ -318,7 +319,7 @@ class X2cscopeGui(QMainWindow):
         scale_label.setAlignment(Qt.AlignCenter)
         grid_layout_variable.addWidget(scale_label, 0, 2)
 
-        show_label = QLabel("Plot enable")
+        show_label = QLabel("Plot")
         show_label.setAlignment(Qt.AlignCenter)  # Center align the label
         grid_layout_variable.addWidget(show_label, 0, 3)
 
