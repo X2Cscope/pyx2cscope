@@ -1,6 +1,5 @@
-"""This GUI going to work for most of the application as X2Cscope."""
-
 import logging
+logging.basicConfig(level=logging.WARNING)
 import os
 import sys
 import time
@@ -12,6 +11,7 @@ import numpy as np
 import pyqtgraph as pg  # Added pyqtgraph for interactive plotting
 import serial.tools.list_ports  # Import the serial module to fix the NameError
 from PyQt5 import QtGui
+from PyQt5 import QtCore
 from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QIcon, QRegExpValidator
 from PyQt5.QtWidgets import (
@@ -33,6 +33,10 @@ from PyQt5.QtWidgets import (
     QWidget,
     QStyleFactory,
     QSizePolicy,
+    QDialog,
+    QListWidget,
+    QVBoxLayout,
+    QDialogButtonBox,
 )
 
 from pyx2cscope.gui import img as img_src
@@ -42,6 +46,48 @@ logging.basicConfig(level=logging.DEBUG)
 
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
+class VariableSelectionDialog(QDialog):
+    """Dialog for selecting a variable from a list with search functionality."""
+
+    def __init__(self, variables, parent=None):
+        super().__init__(parent)
+        self.variables = variables
+        self.selected_variable = None
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("Select Variable")
+        self.setMinimumSize(300, 400)
+
+        self.layout = QVBoxLayout()
+
+        self.search_bar = QLineEdit(self)
+        self.search_bar.setPlaceholderText("Search...")
+        self.search_bar.textChanged.connect(self.filter_variables)
+        self.layout.addWidget(self.search_bar)
+
+        self.variable_list = QListWidget(self)
+        self.variable_list.addItems(self.variables)
+        self.variable_list.itemDoubleClicked.connect(self.accept_selection)
+        self.layout.addWidget(self.variable_list)
+
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        self.button_box.accepted.connect(self.accept_selection)
+        self.button_box.rejected.connect(self.reject)
+        self.layout.addWidget(self.button_box)
+
+        self.setLayout(self.layout)
+
+    def filter_variables(self, text):
+        self.variable_list.clear()
+        filtered_variables = [var for var in self.variables if text.lower() in var.lower()]
+        self.variable_list.addItems(filtered_variables)
+
+    def accept_selection(self):
+        selected_items = self.variable_list.selectedItems()
+        if selected_items:
+            self.selected_variable = selected_items[0].text()
+            self.accept()
 
 class X2cscopeGui(QMainWindow):
     """Main GUI class for the pyX2Cscope application."""
@@ -62,7 +108,7 @@ class X2cscopeGui(QMainWindow):
         self.scaled_value_boxes = None
         self.scaling_boxes = None
         self.Value_var_boxes = None
-        self.combo_boxes = None
+        self.line_edit_boxes = None
         self.live_checkboxes = None
         self.timer_list = None
         self.VariableList = []
@@ -100,13 +146,13 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.selected_var_indices = [0, 0, 0, 0, 0]  # List to store selected variable indices
+        self.selected_var_indices = ["", "", "", "", ""]  # List to store selected variable texts
         self.selected_variables = []  # List to store selected variables
         decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variables
-        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  #colours for different plot
+        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  # colours for different plot
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -159,12 +205,13 @@ class X2cscopeGui(QMainWindow):
         self.setWindowIcon(QtGui.QIcon(mchp_img))
 
     def combo_box(self):
-        """Initializing combo boxes."""
-        self.combo_box5 = QComboBox()
-        self.combo_box4 = QComboBox()
-        self.combo_box3 = QComboBox()
-        self.combo_box2 = QComboBox()
-        self.combo_box1 = QComboBox()
+        """Initializing line edit boxes for variable selection."""
+        self.line_edit_boxes = [QLineEdit(self) for _ in range(5)]
+
+        for line_edit in self.line_edit_boxes:
+            line_edit.setReadOnly(True)
+            line_edit.setPlaceholderText("Select Variable")
+            line_edit.installEventFilter(self)
 
     def scaled_value(self):
         """Initializing Scaled variable."""
@@ -300,7 +347,7 @@ class X2cscopeGui(QMainWindow):
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
 
-        self.scope_var_combos = [QComboBox() for _ in range(7)]
+        self.scope_var_lines = [QLineEdit(self) for _ in range(7)]
         self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
         self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]  # Add checkboxes for each channel
         self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]  # Add scaling boxes
@@ -324,19 +371,21 @@ class X2cscopeGui(QMainWindow):
         show_label.setAlignment(Qt.AlignCenter)  # Center align the label
         grid_layout_variable.addWidget(show_label, 0, 3)
 
-        for i, (combo, trigger_checkbox, scale_box, show_checkbox) in enumerate(
-                zip(self.scope_var_combos, self.trigger_var_checkbox, self.scope_scaling_boxes,
+        for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
+                zip(self.scope_var_lines, self.trigger_var_checkbox, self.scope_scaling_boxes,
                     self.scope_channel_checkboxes)):
-            combo.setMinimumHeight(20)
+            line_edit.setReadOnly(True)
+            line_edit.setPlaceholderText("Select Variable")
+            line_edit.installEventFilter(self)
             trigger_checkbox.setMinimumHeight(20)
             show_checkbox.setMinimumHeight(20)  # Set minimum height for channel checkboxes
             scale_box.setMinimumHeight(20)  # Set minimum height for scaling boxes
             scale_box.setFixedSize(50, 20)  # Set fixed size for scaling boxes
             scale_box.setValidator(self.decimal_validator)  # Validate as float
 
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            line_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
-            grid_layout_variable.addWidget(combo, i + 1, 1)
+            grid_layout_variable.addWidget(line_edit, i + 1, 1)
             grid_layout_variable.addWidget(scale_box, i + 1, 2)  # Add scaling boxes to layout
             grid_layout_variable.addWidget(show_checkbox, i + 1, 3)  # Add channel checkboxes to layout
 
@@ -365,8 +414,8 @@ class X2cscopeGui(QMainWindow):
             for i, checkbox in enumerate(self.trigger_var_checkbox):
                 if i != index:
                     checkbox.setChecked(False)
-            self.triggerVariable = self.scope_var_combos[index].currentText()
-            print(f"Checked variable: {self.scope_var_combos[index].currentText()}")
+            self.triggerVariable = self.scope_var_lines[index].text()
+            print(f"Checked variable: {self.scope_var_lines[index].text()}")
         else:
             self.triggerVariable = None
 
@@ -446,13 +495,6 @@ class X2cscopeGui(QMainWindow):
             self.Live_var4,
             self.Live_var5,
         ]
-        self.combo_boxes = [
-            self.combo_box1,
-            self.combo_box2,
-            self.combo_box3,
-            self.combo_box4,
-            self.combo_box5,
-        ]
         self.Value_var_boxes = [
             self.Value_var1,
             self.Value_var2,
@@ -498,7 +540,7 @@ class X2cscopeGui(QMainWindow):
 
         for row_index, (
                 live_var,
-                combo_box,
+                line_edit,
                 value_var,
                 scaling_var,
                 offset_var,
@@ -508,7 +550,7 @@ class X2cscopeGui(QMainWindow):
         ) in enumerate(
             zip(
                 self.live_checkboxes,
-                self.combo_boxes,
+                self.line_edit_boxes,
                 self.Value_var_boxes,
                 self.scaling_boxes,
                 self.offset_boxes,
@@ -519,8 +561,8 @@ class X2cscopeGui(QMainWindow):
             1,
         ):
             live_var.setEnabled(False)
-            combo_box.setEnabled(False)
-            combo_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            line_edit.setEnabled(False)
+            line_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             value_var.setText("0")
             value_var.setValidator(self.decimal_validator)
             scaling_var.setText("1")
@@ -532,7 +574,7 @@ class X2cscopeGui(QMainWindow):
             if display_row > 1:
                 display_row += 1
             self.grid_layout.addWidget(live_var, display_row, 0)
-            self.grid_layout.addWidget(combo_box, display_row, 1)
+            self.grid_layout.addWidget(line_edit, display_row, 1)
             if display_row == 1:
                 self.grid_layout.addWidget(self.slider_var1, display_row + 1, 0, 1, 7)
 
@@ -557,16 +599,12 @@ class X2cscopeGui(QMainWindow):
         """Set up connections for various widgets."""
         self.plot_button.clicked.connect(self.plot_data_plot)
 
-        for timer, combo_box, value_var in zip(self.timer_list, self.combo_boxes, self.Value_var_boxes):
-            timer.timeout.connect(lambda cb=combo_box, v_var=value_var: self.handle_var_update(cb.currentText(), v_var))
+        for timer, line_edit, value_var in zip(self.timer_list, self.line_edit_boxes, self.Value_var_boxes):
+            timer.timeout.connect(lambda le=line_edit, v_var=value_var: self.handle_var_update(le.text(), v_var))
 
-        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
-            combo_box.currentIndexChanged.connect(
-                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(self.VariableList[cb], v_var)
-            )
-        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+        for line_edit, value_var in zip(self.line_edit_boxes, self.Value_var_boxes):
             value_var.editingFinished.connect(
-                lambda cb=combo_box, v_var=value_var: self.handle_variable_putram(cb.currentText(), v_var)
+                lambda le=line_edit, v_var=value_var: self.handle_variable_putram(le.text(), v_var)
             )
 
         self.connect_editing_finished()
@@ -774,16 +812,16 @@ class X2cscopeGui(QMainWindow):
                 if isinstance(item, pg.PlotDataItem):
                     plot_lines[item.name()] = item
 
-            for i, (value, combo_box, plot_var) in enumerate(zip(values, self.combo_boxes, self.plot_checkboxes)):
-                if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    if combo_box.currentText() in plot_lines:
-                        plot_line = plot_lines[combo_box.currentText()]
+            for i, (value, line_edit, plot_var) in enumerate(zip(values, self.line_edit_boxes, self.plot_checkboxes)):
+                if plot_var.isChecked() and line_edit.text():
+                    if line_edit.text() in plot_lines:
+                        plot_line = plot_lines[line_edit.text()]
                         plot_line.setData(np.cumsum(time_diffs), value)
                     else:
                         self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
                                                     pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                     # Thicker plot line
-                                                    name=combo_box.currentText())
+                                                    name=line_edit.text())
 
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
@@ -893,7 +931,7 @@ class X2cscopeGui(QMainWindow):
         Args:
             value (int): The new value of the slider.
         """
-        if self.combo_box1.currentIndex() == 0:
+        if not self.line_edit_boxes[0].text():
             self.handle_error("Select Variable")
         else:
             self.Value_var1.setText(str(value))
@@ -903,7 +941,7 @@ class X2cscopeGui(QMainWindow):
                 self.ScaledValue_var1,
                 self.offset_var1,
             )
-            self.handle_variable_putram(self.combo_box1.currentText(), self.Value_var1)
+            self.handle_variable_putram(self.line_edit_boxes[0].text(), self.Value_var1)
 
     @pyqtSlot()
     def handle_variable_getram(self, variable, value_var):
@@ -916,9 +954,9 @@ class X2cscopeGui(QMainWindow):
         try:
             current_variable = variable
 
-            for index, combo_box in enumerate(self.combo_boxes):
-                if combo_box.currentText() == current_variable:
-                    self.selected_var_indices[index] = combo_box.currentIndex()
+            for index, line_edit in enumerate(self.line_edit_boxes):
+                if line_edit.text() == current_variable:
+                    self.selected_var_indices[index] = line_edit.text()
 
             if current_variable and current_variable != "None":
                 counter = self.x2cscope.get_variable(current_variable)
@@ -979,29 +1017,24 @@ class X2cscopeGui(QMainWindow):
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
 
     def refresh_combo_box(self):
-        """Refresh the contents of the variable selection combo boxes.
+        """Refresh the contents of the variable selection line edits.
 
-        This method repopulates the combo boxes used for variable selection
+        This method repopulates the line edits used for variable selection
         with the updated list of variables.
         """
         if self.VariableList is not None:
-            for index, combo_box in enumerate(self.combo_boxes):
-                selected_index = self.selected_var_indices[index]
-                current_selected_text = combo_box.currentText()
-
-                combo_box.clear()
-                combo_box.addItems(self.VariableList)
+            for index, line_edit in enumerate(self.line_edit_boxes):
+                current_selected_text = self.selected_var_indices[index]
 
                 if current_selected_text in self.VariableList:
-                    combo_box.setCurrentIndex(combo_box.findText(current_selected_text))
+                    line_edit.setText(current_selected_text)
                 else:
-                    combo_box.setCurrentIndex(selected_index)
+                    line_edit.setText("")
 
-            for combo in self.scope_var_combos:
-                combo.clear()
-                combo.addItems(self.VariableList)
+            for line_edit in self.scope_var_lines:
+                line_edit.clear()
         else:
-            logging.warning("VariableList is None. Unable to refresh combo boxes.")
+            logging.warning("VariableList is None. Unable to refresh line edits.")
 
     def refresh_ports(self):
         """Refresh the list of available serial ports.
@@ -1053,8 +1086,8 @@ class X2cscopeGui(QMainWindow):
             for widget in widget_list:
                 widget.setEnabled(True)
 
-            for combo_box in self.combo_boxes:
-                combo_box.setEnabled(False)
+            for line_edit in self.line_edit_boxes:
+                line_edit.setEnabled(False)
 
             for live_var in self.live_checkboxes:
                 live_var.setEnabled(False)
@@ -1105,8 +1138,8 @@ class X2cscopeGui(QMainWindow):
             for widget in widget_list:
                 widget.setEnabled(False)
 
-            for combo_box in self.combo_boxes:
-                combo_box.setEnabled(True)
+            for line_edit in self.line_edit_boxes:
+                line_edit.setEnabled(True)
             self.slider_var1.setEnabled(True)
 
             for live_var in self.live_checkboxes:
@@ -1158,8 +1191,8 @@ class X2cscopeGui(QMainWindow):
                 logging.info("Stopped sampling.")
             else:
                 self.x2cscope.clear_all_scope_channel()
-                for combo in self.scope_var_combos:
-                    variable_name = combo.currentText()
+                for line_edit in self.scope_var_lines:
+                    variable_name = line_edit.text()
                     if variable_name and variable_name != "None":
                         variable = self.x2cscope.get_variable(variable_name)
                         self.x2cscope.add_scope_channel(variable)
@@ -1267,6 +1300,17 @@ class X2cscopeGui(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
+    def eventFilter(self, source, event):
+        """Event filter to handle line edit click events."""
+        if event.type() == QtCore.QEvent.MouseButtonPress:
+            if isinstance(source, QLineEdit):
+                dialog = VariableSelectionDialog(self.VariableList, self)
+                if dialog.exec_() == QDialog.Accepted:
+                    selected_variable = dialog.selected_variable
+                    if selected_variable:
+                        source.setText(selected_variable)
+                        self.handle_variable_getram(selected_variable, self.Value_var_boxes[self.line_edit_boxes.index(source)])
+        return super().eventFilter(source, event)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
