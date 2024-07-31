@@ -16,8 +16,8 @@ from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqt
 from PyQt5.QtGui import QIcon, QRegExpValidator
 from PyQt5.QtWidgets import (
     QApplication,
-    QCheckBox,
     QComboBox,
+    QCheckBox,
     QFileDialog,
     QGridLayout,
     QGroupBox,
@@ -35,7 +35,6 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QDialog,
     QListWidget,
-    QVBoxLayout,
     QDialogButtonBox,
 )
 
@@ -136,7 +135,7 @@ class X2cscopeGui(QMainWindow):
         self.value_var()
         self.live_var()
         self.scaled_value()
-        self.combo_box()
+        self.line_edit()
         self.sampletime = QLineEdit()
         self.unit_var()
         self.Connect_button = QPushButton("Connect")
@@ -146,13 +145,14 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.selected_var_indices = ["", "", "", "", ""]  # List to store selected variable texts
+        self.selected_var_indices = [0, 0, 0, 0, 0]  # List to store selected variable indices
         self.selected_variables = []  # List to store selected variables
+        self.previous_selected_variables = {}  # Dictionary to store previous selections
         decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variables
-        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  # colours for different plot
+        self.plot_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']  #colours for different plot
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -204,11 +204,15 @@ class X2cscopeGui(QMainWindow):
         mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
         self.setWindowIcon(QtGui.QIcon(mchp_img))
 
-    def combo_box(self):
-        """Initializing line edit boxes for variable selection."""
-        self.line_edit_boxes = [QLineEdit(self) for _ in range(5)]
+    def line_edit(self):
+        """Initializing line edits."""
+        self.line_edit5 = QLineEdit()
+        self.line_edit4 = QLineEdit()
+        self.line_edit3 = QLineEdit()
+        self.line_edit2 = QLineEdit()
+        self.line_edit1 = QLineEdit()
 
-        for line_edit in self.line_edit_boxes:
+        for line_edit in [self.line_edit1, self.line_edit2, self.line_edit3, self.line_edit4, self.line_edit5]:
             line_edit.setReadOnly(True)
             line_edit.setPlaceholderText("Select Variable")
             line_edit.installEventFilter(self)
@@ -347,13 +351,18 @@ class X2cscopeGui(QMainWindow):
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
 
-        self.scope_var_lines = [QLineEdit(self) for _ in range(7)]
+        self.scope_var_lines = [QLineEdit() for _ in range(7)]
         self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
         self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]  # Add checkboxes for each channel
         self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]  # Add scaling boxes
 
         for checkbox in self.scope_channel_checkboxes:
             checkbox.setChecked(True)  # Check all checkboxes by default
+
+        for line_edit in self.scope_var_lines:
+            line_edit.setReadOnly(True)
+            line_edit.setPlaceholderText("Select Variable")
+            line_edit.installEventFilter(self)
 
         # Add "Select Variable" label
         grid_layout_variable.addWidget(QLabel("Select Variable"), 0, 1)
@@ -374,9 +383,7 @@ class X2cscopeGui(QMainWindow):
         for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
                 zip(self.scope_var_lines, self.trigger_var_checkbox, self.scope_scaling_boxes,
                     self.scope_channel_checkboxes)):
-            line_edit.setReadOnly(True)
-            line_edit.setPlaceholderText("Select Variable")
-            line_edit.installEventFilter(self)
+            line_edit.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
             show_checkbox.setMinimumHeight(20)  # Set minimum height for channel checkboxes
             scale_box.setMinimumHeight(20)  # Set minimum height for scaling boxes
@@ -495,6 +502,13 @@ class X2cscopeGui(QMainWindow):
             self.Live_var4,
             self.Live_var5,
         ]
+        self.line_edit_boxes = [
+            self.line_edit1,
+            self.line_edit2,
+            self.line_edit3,
+            self.line_edit4,
+            self.line_edit5,
+        ]
         self.Value_var_boxes = [
             self.Value_var1,
             self.Value_var2,
@@ -600,11 +614,11 @@ class X2cscopeGui(QMainWindow):
         self.plot_button.clicked.connect(self.plot_data_plot)
 
         for timer, line_edit, value_var in zip(self.timer_list, self.line_edit_boxes, self.Value_var_boxes):
-            timer.timeout.connect(lambda le=line_edit, v_var=value_var: self.handle_var_update(le.text(), v_var))
+            timer.timeout.connect(lambda cb=line_edit, v_var=value_var: self.handle_var_update(cb.text(), v_var))
 
         for line_edit, value_var in zip(self.line_edit_boxes, self.Value_var_boxes):
             value_var.editingFinished.connect(
-                lambda le=line_edit, v_var=value_var: self.handle_variable_putram(le.text(), v_var)
+                lambda cb=line_edit, v_var=value_var: self.handle_variable_putram(cb.text(), v_var)
             )
 
         self.connect_editing_finished()
@@ -813,7 +827,7 @@ class X2cscopeGui(QMainWindow):
                     plot_lines[item.name()] = item
 
             for i, (value, line_edit, plot_var) in enumerate(zip(values, self.line_edit_boxes, self.plot_checkboxes)):
-                if plot_var.isChecked() and line_edit.text():
+                if plot_var.isChecked() and line_edit.text() != "":
                     if line_edit.text() in plot_lines:
                         plot_line = plot_lines[line_edit.text()]
                         plot_line.setData(np.cumsum(time_diffs), value)
@@ -931,7 +945,7 @@ class X2cscopeGui(QMainWindow):
         Args:
             value (int): The new value of the slider.
         """
-        if not self.line_edit_boxes[0].text():
+        if self.line_edit1.text() == "":
             self.handle_error("Select Variable")
         else:
             self.Value_var1.setText(str(value))
@@ -941,7 +955,7 @@ class X2cscopeGui(QMainWindow):
                 self.ScaledValue_var1,
                 self.offset_var1,
             )
-            self.handle_variable_putram(self.line_edit_boxes[0].text(), self.Value_var1)
+            self.handle_variable_putram(self.line_edit1.text(), self.Value_var1)
 
     @pyqtSlot()
     def handle_variable_getram(self, variable, value_var):
@@ -956,7 +970,7 @@ class X2cscopeGui(QMainWindow):
 
             for index, line_edit in enumerate(self.line_edit_boxes):
                 if line_edit.text() == current_variable:
-                    self.selected_var_indices[index] = line_edit.text()
+                    self.selected_var_indices[index] = current_variable
 
             if current_variable and current_variable != "None":
                 counter = self.x2cscope.get_variable(current_variable)
@@ -1016,7 +1030,7 @@ class X2cscopeGui(QMainWindow):
                 self.settings.setValue("file_path", self.file_path)
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
 
-    def refresh_combo_box(self):
+    def refresh_line_edit(self):
         """Refresh the contents of the variable selection line edits.
 
         This method repopulates the line edits used for variable selection
@@ -1024,7 +1038,7 @@ class X2cscopeGui(QMainWindow):
         """
         if self.VariableList is not None:
             for index, line_edit in enumerate(self.line_edit_boxes):
-                current_selected_text = self.selected_var_indices[index]
+                current_selected_text = line_edit.text()
 
                 if current_selected_text in self.VariableList:
                     line_edit.setText(current_selected_text)
@@ -1032,7 +1046,12 @@ class X2cscopeGui(QMainWindow):
                     line_edit.setText("")
 
             for line_edit in self.scope_var_lines:
-                line_edit.clear()
+                current_selected_text = line_edit.text()
+
+                if current_selected_text in self.VariableList:
+                    line_edit.setText(current_selected_text)
+                else:
+                    line_edit.setText("")
         else:
             logging.warning("VariableList is None. Unable to refresh line edits.")
 
@@ -1063,9 +1082,27 @@ class X2cscopeGui(QMainWindow):
                 if timer.isActive():
                     timer.stop()
             self.plot_data.clear()
+            self.save_selected_variables()  # Save the current selections before disconnecting
             self.connect_serial()
         else:
             self.disconnect_serial()
+
+    def save_selected_variables(self):
+        """Save the current selections of variables in WatchView and ScopeView."""
+        self.previous_selected_variables = {
+            'watch': [(le.text(), le.text()) for le in self.line_edit_boxes],
+            'scope': [(le.text(), le.text()) for le in self.scope_var_lines]
+        }
+
+    def restore_selected_variables(self):
+        """Restore the previously selected variables in WatchView and ScopeView."""
+        if 'watch' in self.previous_selected_variables:
+            for le, (var, _) in zip(self.line_edit_boxes, self.previous_selected_variables['watch']):
+                le.setText(var)
+
+        if 'scope' in self.previous_selected_variables:
+            for le, (var, _) in zip(self.scope_var_lines, self.previous_selected_variables['scope']):
+                le.setText(var)
 
     def disconnect_serial(self):
         """Disconnect the current serial connection.
@@ -1125,7 +1162,7 @@ class X2cscopeGui(QMainWindow):
                 self.VariableList.insert(0, "None")
             else:
                 return
-            self.refresh_combo_box()
+            self.refresh_line_edit()
             logging.info("Serial Port Configuration:")
             logging.info(f"Port: {port}")
             logging.info(f"Baud Rate: {baud_rate}")
@@ -1154,6 +1191,8 @@ class X2cscopeGui(QMainWindow):
                     timer.start(self.timerValue)
 
             self.plot_update_timer.start(self.timerValue)  # Start the continuous plot update
+
+            self.restore_selected_variables()  # Restore the selections after reconnecting
 
         except Exception as e:
             error_message = f"Error while connecting: {e}"
@@ -1317,3 +1356,4 @@ if __name__ == "__main__":
     ex = X2cscopeGui()
     ex.show()
     sys.exit(app.exec_())
+
