@@ -6,6 +6,7 @@ import sys
 import time
 from collections import deque
 from datetime import datetime
+import json
 
 import matplotlib
 import numpy as np
@@ -297,6 +298,19 @@ class X2cscopeGui(QMainWindow):
         self.setup_variable_layout(grid_layout)
         self.setup_connections()
 
+        # Add Save and Load buttons
+        self.save_button_watch = QPushButton("Save Config")
+        self.load_button_watch = QPushButton("Load Config")
+        self.save_button_watch.setFixedSize(100, 30)
+        self.load_button_watch.setFixedSize(100, 30)
+        self.save_button_watch.clicked.connect(self.save_config)
+        self.load_button_watch.clicked.connect(self.load_config)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.save_button_watch)
+        button_layout.addWidget(self.load_button_watch)
+        self.tab1.layout.addLayout(button_layout)
+
     def setup_tab2(self):
         """Set up the second tab with the scope functionality."""
         self.tab2.layout = QVBoxLayout()
@@ -415,6 +429,19 @@ class X2cscopeGui(QMainWindow):
         self.scope_plot_widget.addLegend()  # Add legend to the plot widget
         self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         self.tab2.layout.addWidget(self.scope_plot_widget)
+
+        # Add Save and Load buttons
+        self.save_button_scope = QPushButton("Save Config")
+        self.load_button_scope = QPushButton("Load Config")
+        self.save_button_scope.setFixedSize(100, 30)
+        self.load_button_scope.setFixedSize(100, 30)
+        self.save_button_scope.clicked.connect(self.save_config)
+        self.load_button_scope.clicked.connect(self.load_config)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.save_button_scope)
+        button_layout.addWidget(self.load_button_scope)
+        self.tab2.layout.addLayout(button_layout)
 
     def handle_scope_checkbox_change(self, state, index):
         """Handle the change in the state of the scope view checkboxes."""
@@ -1356,6 +1383,77 @@ class X2cscopeGui(QMainWindow):
                         source.setText(selected_variable)
                         self.handle_variable_getram(selected_variable, self.Value_var_boxes[self.line_edit_boxes.index(source)])
         return super().eventFilter(source, event)
+
+    def save_config(self):
+        """Save the current configuration to a file."""
+        config = {
+            "watch_view": {
+                "variables": [le.text() for le in self.line_edit_boxes],
+                "values": [ve.text() for ve in self.Value_var_boxes],
+                "scaling": [sc.text() for sc in self.scaling_boxes],
+                "offsets": [off.text() for off in self.offset_boxes],
+                "plot": [cb.isChecked() for cb in self.plot_checkboxes],
+                "live": [cb.isChecked() for cb in self.live_checkboxes],
+            },
+            "scope_view": {
+                "variables": [le.text() for le in self.scope_var_lines],
+                "trigger": [cb.isChecked() for cb in self.trigger_var_checkbox],
+                "scale": [sc.text() for sc in self.scope_scaling_boxes],
+                "show": [cb.isChecked() for cb in self.scope_channel_checkboxes],
+                "trigger_variable": self.triggerVariable,
+                "trigger_level": self.trigger_level_edit.text(),
+                "trigger_delay": self.trigger_delay_edit.text(),
+                "trigger_edge": self.trigger_edge_combo.currentText(),
+                "trigger_mode": self.trigger_mode_combo.currentText(),
+                "sample_time_factor": self.sample_time_factor.text(),
+                "single_shot": self.single_shot_checkbox.isChecked(),
+            }
+        }
+
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Configuration", "", "JSON Files (*.json)")
+        if file_path:
+            with open(file_path, "w") as file:
+                json.dump(config, file, indent=4)
+
+    def load_config(self):
+        """Load a configuration from a file."""
+        file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
+        if file_path:
+            with open(file_path, "r") as file:
+                config = json.load(file)
+
+            watch_view = config.get("watch_view", {})
+            scope_view = config.get("scope_view", {})
+
+            for le, var in zip(self.line_edit_boxes, watch_view.get("variables", [])):
+                le.setText(var)
+            for ve, val in zip(self.Value_var_boxes, watch_view.get("values", [])):
+                ve.setText(val)
+            for sc, scale in zip(self.scaling_boxes, watch_view.get("scaling", [])):
+                sc.setText(scale)
+            for off, offset in zip(self.offset_boxes, watch_view.get("offsets", [])):
+                off.setText(offset)
+            for cb, plot in zip(self.plot_checkboxes, watch_view.get("plot", [])):
+                cb.setChecked(plot)
+            for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
+                cb.setChecked(live)
+
+            for le, var in zip(self.scope_var_lines, scope_view.get("variables", [])):
+                le.setText(var)
+            for cb, trigger in zip(self.trigger_var_checkbox, scope_view.get("trigger", [])):
+                cb.setChecked(trigger)
+            for sc, scale in zip(self.scope_scaling_boxes, scope_view.get("scale", [])):
+                sc.setText(scale)
+            for cb, show in zip(self.scope_channel_checkboxes, scope_view.get("show", [])):
+                cb.setChecked(show)
+
+            self.triggerVariable = scope_view.get("trigger_variable", "")
+            self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
+            self.trigger_delay_edit.setText(scope_view.get("trigger_delay", ""))
+            self.trigger_edge_combo.setCurrentText(scope_view.get("trigger_edge", ""))
+            self.trigger_mode_combo.setCurrentText(scope_view.get("trigger_mode", ""))
+            self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
+            self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
