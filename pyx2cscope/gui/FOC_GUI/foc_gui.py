@@ -1,3 +1,4 @@
+"""replicate of X2Cscpope."""
 import logging
 logging.basicConfig(level=logging.WARNING)
 import os
@@ -428,8 +429,9 @@ class X2cscopeGui(QMainWindow):
 
     def setup_port_layout(self, layout):
         """Set up the port selection layout."""
-        port_layout = QGridLayout()
+        port_layout = QGridLayout()  # Use QVBoxLayout to align items vertically
         port_label = QLabel("Select Port:")
+        self.port_combo.setFixedSize(100, 25)  # Set fixed size for the port combo box
 
         refresh_button = QPushButton()
         refresh_button.setFixedSize(25, 25)
@@ -440,18 +442,22 @@ class X2cscopeGui(QMainWindow):
         self.select_file_button.setEnabled(True)
         self.select_file_button.clicked.connect(self.select_elf_file)
 
-        port_layout.addWidget(port_label, 0, 0)
-        port_layout.addWidget(self.port_combo, 0, 1)
-        port_layout.addWidget(refresh_button, 0, 2)
+        port_layout.addWidget(port_label,0,0)
+        port_layout.addWidget(self.port_combo,0,2)
+        port_layout.addWidget(refresh_button,0,1)
+        port_layout.setAlignment(Qt.AlignLeft)  # Align all widgets to the left
 
         layout.addLayout(port_layout, 1, 0)
 
     def setup_baud_layout(self, layout):
         """Set up the baud rate selection layout."""
-        baud_layout = QGridLayout()
+        baud_layout = QHBoxLayout()  # Use QVBoxLayout to align items vertically
         baud_label = QLabel("Select Baud Rate:")
-        baud_layout.addWidget(baud_label, 0, 0)
-        baud_layout.addWidget(self.baud_combo, 0, 1)
+        self.baud_combo.setFixedSize(100, 25)  # Set fixed size for the baud combo box
+
+        baud_layout.addWidget(baud_label)
+        baud_layout.addWidget(self.baud_combo)
+        baud_layout.setAlignment(Qt.AlignRight)  # Align all widgets to the left
 
         self.baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
         default_baud_rate = "115200"
@@ -1356,4 +1362,3 @@ if __name__ == "__main__":
     ex = X2cscopeGui()
     ex.show()
     sys.exit(app.exec_())
-
