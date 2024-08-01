@@ -1,8 +1,3 @@
-"""This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
-
-It focuses on extracting structure members and variable information from DWARF debugging information.
-"""
-
 import logging
 from elftools.elf.elffile import ELFFile
 from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
@@ -49,23 +44,21 @@ class Elf32Parser(ElfParser):
             )
             spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
 
-            if die_variable.attributes.get("DW_AT_location"):
-                address_set = list(die_variable.attributes["DW_AT_location"].value)[1:]
-                self.address = int.from_bytes(bytes(address_set), byteorder="little")
-
-            if spec_die.tag == "DW_TAG_variable" and self.address is not None:
+            if spec_die.tag == "DW_TAG_variable":
                 self.die_variable = spec_die
                 self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+                self._extract_address(die_variable)
             else:
                 return
 
         elif die_variable.attributes.get("DW_AT_location") and die_variable.attributes.get("DW_AT_name") is not None:
             self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
             self.die_variable = die_variable
+            self._extract_address(die_variable)
         elif die_variable.attributes.get("DW_AT_external") and die_variable.attributes.get("DW_AT_name") is not None:
             self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
             self.die_variable = die_variable
-            self.address = None  # Extern variables might not have a location
+            self._extract_address(die_variable)
         else:
             return
 
@@ -107,7 +100,7 @@ class Elf32Parser(ElfParser):
 
     def _processing_end_die(self, end_die):
         """Processes the end DIE of a tag to extract variable information."""
-        self._extract_address()
+        self._extract_address(self.die_variable)
         if self.address is None and not self.die_variable.attributes.get("DW_AT_external"):
             return
 
@@ -120,19 +113,34 @@ class Elf32Parser(ElfParser):
         else:
             self._process_base_type(end_die)
 
-    def _extract_address(self):
+    def _extract_address(self, die_variable):
         """Extracts the address of the current variable."""
         try:
-            if self.die_variable.attributes.get("DW_AT_location"):
-                data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
+            if die_variable.attributes.get("DW_AT_location"):
+                data = list(die_variable.attributes["DW_AT_location"].value)[1:]
                 self.address = int.from_bytes(bytes(data), byteorder="little")
-            elif self.die_variable.attributes.get("DW_AT_external"):
-                self.address = None  # Extern variables might not have a location in this CU
+            elif die_variable.attributes.get("DW_AT_external"):
+                actual_die = self._find_actual_declaration(die_variable)
+                if actual_die and actual_die.attributes.get("DW_AT_location"):
+                    data = list(actual_die.attributes["DW_AT_location"].value)[1:]
+                    self.address = int.from_bytes(bytes(data), byteorder="little")
+                else:
+                    self.address = None
             else:
                 self.address = None
         except Exception as e:
             logging.error(e)
             self.address = None
+
+    def _find_actual_declaration(self, die_variable):
+        """Find the actual declaration of an extern variable."""
+        while "DW_AT_specification" in die_variable.attributes:
+            spec_ref_addr = (
+                die_variable.attributes["DW_AT_specification"].value
+                + die_variable.cu.cu_offset
+            )
+            die_variable = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
+        return die_variable
 
     def _process_pointer_type(self, end_die):
         """Process a pointer type variable."""
