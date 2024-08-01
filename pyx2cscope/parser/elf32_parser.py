@@ -62,6 +62,10 @@ class Elf32Parser(ElfParser):
         elif die_variable.attributes.get("DW_AT_location") and die_variable.attributes.get("DW_AT_name") is not None:
             self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
             self.die_variable = die_variable
+        elif die_variable.attributes.get("DW_AT_external") and die_variable.attributes.get("DW_AT_name") is not None:
+            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+            self.die_variable = die_variable
+            self.address = None  # Extern variables might not have a location
         else:
             return
 
@@ -104,7 +108,7 @@ class Elf32Parser(ElfParser):
     def _processing_end_die(self, end_die):
         """Processes the end DIE of a tag to extract variable information."""
         self._extract_address()
-        if self.address is None or self.var_name.startswith("_"):
+        if self.address is None and not self.die_variable.attributes.get("DW_AT_external"):
             return
 
         if end_die.tag == "DW_TAG_pointer_type":
@@ -122,6 +126,8 @@ class Elf32Parser(ElfParser):
             if self.die_variable.attributes.get("DW_AT_location"):
                 data = list(self.die_variable.attributes["DW_AT_location"].value)[1:]
                 self.address = int.from_bytes(bytes(data), byteorder="little")
+            elif self.die_variable.attributes.get("DW_AT_external"):
+                self.address = None  # Extern variables might not have a location in this CU
             else:
                 self.address = None
         except Exception as e:
@@ -146,7 +152,7 @@ class Elf32Parser(ElfParser):
                 name=member_name,
                 byte_size=member_data["byte_size"],
                 type=member_data["type"],
-                address=self.address + member_data["address_offset"],
+                address=self.address + member_data["address_offset"] if self.address else None,
                 array_size=member_data["array_size"],
             )
 
@@ -282,6 +288,7 @@ class Elf32Parser(ElfParser):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
+    elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(variable_map)
