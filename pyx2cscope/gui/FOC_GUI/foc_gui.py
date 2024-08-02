@@ -1344,8 +1344,9 @@ class X2cscopeGui(QMainWindow):
                     self.scope_plot_widget.clear()
                     for i, (channel, data) in enumerate(data_storage.items()):
                         if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
+                            scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                             time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
-                            data = np.array(data, dtype=float)
+                            data = np.array(data, dtype=float)  * scale_factor  # Apply the scaling factor
                             self.scope_plot_widget.plot(time_values, data,
                                                         pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                         # Thicker plot line
@@ -1381,7 +1382,11 @@ class X2cscopeGui(QMainWindow):
                     selected_variable = dialog.selected_variable
                     if selected_variable:
                         source.setText(selected_variable)
-                        self.handle_variable_getram(selected_variable, self.Value_var_boxes[self.line_edit_boxes.index(source)])
+                        try:
+                            self.handle_variable_getram(selected_variable, self.Value_var_boxes[self.line_edit_boxes.index(source)])
+                        except Exception as e:
+                            print(e)
+
         return super().eventFilter(source, event)
 
     def save_config(self):
