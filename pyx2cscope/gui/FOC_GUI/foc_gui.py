@@ -412,8 +412,8 @@ class X2cscopeGui(QMainWindow):
             grid_layout_variable.addWidget(show_checkbox, i + 1, 3)  # Add channel checkboxes to layout
 
             trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
-            scale_box.editingFinished.connect(self.sample_scope_data) # Connect scaling box change to plot update
-            show_checkbox.stateChanged.connect(self.sample_scope_data) # Connect the state change to update_scope_plot
+            scale_box.editingFinished.connect(self.update_scope_plot)  # Connect scaling box change to plot update
+            show_checkbox.stateChanged.connect(self.update_scope_plot)  # Connect the state change to update_scope_plot
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -876,6 +876,42 @@ class X2cscopeGui(QMainWindow):
         except Exception as e:
             logging.error(e)
 
+    def update_scope_plot(self):
+        """Updates the plot in the ScopeView tab with new data and scaling."""
+        try:
+            if not self.sampling_active:
+                return
+
+            if not self.x2cscope.is_scope_data_ready():
+                return
+
+            data_storage = {}
+            for channel, data in self.x2cscope.get_scope_channel_data().items():
+                data_storage[channel] = data
+
+            self.scope_plot_widget.clear()
+
+            for i, (channel, data) in enumerate(data_storage.items()):
+                checkbox_state = self.scope_channel_checkboxes[i].isChecked()
+                logging.debug(f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}")
+                if checkbox_state:  # Check if the checkbox is checked
+                    scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
+                    time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                    data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
+                    self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                                                name=f"Channel {channel}")
+                    logging.debug(f"Plotting channel {channel} with color {self.plot_colors[i]}")
+                else:
+                    logging.debug(f"Not plotting channel {channel}")
+
+            self.scope_plot_widget.setLabel('left', 'Value')
+            self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
+            self.scope_plot_widget.showGrid(x=True, y=True)
+        except Exception as e:
+            error_message = f"Error updating scope plot: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
+
     def plot_data_plot(self):
         """Initializes and starts data plotting."""
         try:
@@ -883,7 +919,7 @@ class X2cscopeGui(QMainWindow):
                 return
 
             self.update_watch_plot()
-            self.sample_scope_data()
+            self.update_scope_plot()
 
             if not self.plot_window_open:
                 self.plot_window_open = True
