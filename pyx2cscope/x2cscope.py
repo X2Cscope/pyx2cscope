@@ -396,3 +396,32 @@ class X2CScope:
             channels = self._sort_channel_data(data)
             return self._filter_channels(channels) if valid_data else channels
         return {}
+
+    def scope_sample_time(self, time_microseconds: float) -> float: #TODO testing and implementing the time axis.
+        """Evaluate the scope sample time based on user-provided time value.
+
+        Args:
+            time_microseconds (float): The time value in microseconds for evaluating one scope sample.
+
+        Returns:
+            float: The real-time duration for the scope functionality in milliseconds.
+        """
+        # - `self.scope_setup.channels`: a dictionary of all configured scope channels
+        # - `self.scope_setup.get_dataset_size()`: returns the total size of one dataset in bytes
+        # - `self.lnet.scope_data.data_array_size`: the total size of the data array in bytes
+
+        # Get the total number of channels and the dataset size
+        dataset_size = self.scope_setup.get_dataset_size()
+        buffer_size = self.lnet.scope_data.data_array_size
+
+        # Calculate the number of samples that fit in the buffer
+        samples_in_buffer = buffer_size // dataset_size
+
+        # Calculate the total time duration for the samples in the buffer
+        total_time_microseconds = time_microseconds * samples_in_buffer
+
+        # Convert the total time to milliseconds
+        total_time_milliseconds = total_time_microseconds / 1000
+
+        logging.info(f"Total time for the scope functionality: {total_time_milliseconds} ms")
+        return total_time_milliseconds
