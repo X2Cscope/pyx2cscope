@@ -57,7 +57,7 @@ class VariableSelectionDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle("Select Variable")
+        self.setWindowTitle("Search Variable")
         self.setMinimumSize(300, 400)
 
         self.layout = QVBoxLayout()
@@ -216,7 +216,7 @@ class X2cscopeGui(QMainWindow):
 
         for line_edit in [self.line_edit1, self.line_edit2, self.line_edit3, self.line_edit4, self.line_edit5]:
             line_edit.setReadOnly(True)
-            line_edit.setPlaceholderText("Select Variable")
+            line_edit.setPlaceholderText("Search Variable")
             line_edit.installEventFilter(self)
 
     def scaled_value(self):
@@ -376,11 +376,11 @@ class X2cscopeGui(QMainWindow):
 
         for line_edit in self.scope_var_lines:
             line_edit.setReadOnly(True)
-            line_edit.setPlaceholderText("Select Variable")
+            line_edit.setPlaceholderText("Search Variable")
             line_edit.installEventFilter(self)
 
-        # Add "Select Variable" label
-        grid_layout_variable.addWidget(QLabel("Select Variable"), 0, 1)
+        # Add "Search Variable" label
+        grid_layout_variable.addWidget(QLabel("Search Variable"), 0, 1)
 
         # Add "Trigger", "Scale", and "Show" labels spanning across multiple columns
         trigger_label = QLabel("Trigger")
@@ -979,7 +979,7 @@ class X2cscopeGui(QMainWindow):
             value (int): The new value of the slider.
         """
         if self.line_edit1.text() == "":
-            self.handle_error("Select Variable")
+            self.handle_error("Search Variable")
         else:
             self.Value_var1.setText(str(value))
             self.update_scaled_value(

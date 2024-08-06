@@ -1,3 +1,7 @@
+"""This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+
+It focuses on extracting structure members and variable information from DWARF debugging information.
+"""
 import logging
 from elftools.elf.elffile import ELFFile
 from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
@@ -303,5 +307,9 @@ if __name__ == "__main__":
 
     print("'''''''''''''''''''''''''''''''''''''''' ")
     for var_name, var_info in variable_map.items():
-        if var_info.array_size != 0:
+
+        if var_info.address ==None and var_info.array_size !=0:
+            if var_info.array_size!=0:
+                print(var_name)
             print(f"Variable Name: {var_name}, Info: {var_info}")
+
