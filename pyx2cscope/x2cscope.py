@@ -426,4 +426,4 @@ class X2CScope:
         total_time_milliseconds = total_time_microseconds / 1000
 
         logging.info(f"Total time for the scope functionality: {total_time_milliseconds} ms")
-        return total_time_milliseconds
+        return self.scope_setup.sample_time_factor * total_time_milliseconds

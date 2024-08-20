@@ -915,7 +915,6 @@ class X2cscopeGui(QMainWindow):
 
             # Use the scope sample time set by the user
             scope_sample_time_us = self.real_sampletime
-            print(scope_sample_time_us)
 
             for i, (channel, data) in enumerate(data_storage.items()):
                 checkbox_state = self.scope_channel_checkboxes[i].isChecked()
@@ -925,7 +924,6 @@ class X2cscopeGui(QMainWindow):
                     #time_values = self.real_sampletime  # Generate time values in ms
                     start = self.real_sampletime / len(data)
                     time_values = np.linspace(start, self.real_sampletime, len(data))
-                    print(time_values)
                     data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                 name=f"Channel {channel}")
@@ -1284,7 +1282,9 @@ class X2cscopeGui(QMainWindow):
 
     def start_sampling(self):
         """Start the sampling process."""
+
         try:
+            a = time.time()
             if self.sampling_active:
                 self.sampling_active = False
                 self.scope_sample_button.setText("Sample")
@@ -1301,8 +1301,7 @@ class X2cscopeGui(QMainWindow):
 
                 # Set the scope sample time from the user input in microseconds
                 scope_sample_time_us = int(self.scope_sampletime_edit.text())
-                self.real_sampletime = int(self.sample_time_factor.text()) * self.x2cscope.scope_sample_time(
-                    scope_sample_time_us)
+                self.real_sampletime = self.x2cscope.scope_sample_time(scope_sample_time_us)
 
                 # Update the Total Time display
                 self.total_time_value.setText(str(self.real_sampletime))
@@ -1313,6 +1312,8 @@ class X2cscopeGui(QMainWindow):
                 logging.info("Started sampling.")
                 self.x2cscope.request_scope_data()
                 self.sample_scope_data(single_shot=self.single_shot_checkbox.isChecked())
+            b = time.time()
+            print("time execution", b - a)
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
@@ -1384,6 +1385,8 @@ class X2cscopeGui(QMainWindow):
                             scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                             start = self.real_sampletime / len(data)
                             time_values = np.linspace(start, self.real_sampletime, len(data))
+                            print(self.real_sampletime)
+                            print(len(data))
                             data = np.array(data, dtype=float) *scale_factor  # Apply the scaling factor
                             self.scope_plot_widget.plot(time_values, data,
                                                         pen=pg.mkPen(color=self.plot_colors[i], width=2),
