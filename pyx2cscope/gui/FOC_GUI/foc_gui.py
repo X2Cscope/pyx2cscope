@@ -335,9 +335,9 @@ class X2cscopeGui(QMainWindow):
         self.trigger_mode_combo.addItems(["Auto", "Triggered"])
         self.trigger_edge_combo = QComboBox()
         self.trigger_edge_combo.addItems(["Rising", "Falling"])
-        self.trigger_level_edit = QLineEdit()
+        self.trigger_level_edit = QLineEdit("0")
         self.trigger_level_edit.setValidator(self.decimal_validator)
-        self.trigger_delay_edit = QLineEdit()
+        self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
         self.scope_sample_button = QPushButton("Sample")
@@ -362,9 +362,15 @@ class X2cscopeGui(QMainWindow):
         variable_group = QGroupBox("Variable Selection")
         variable_layout = QVBoxLayout()
         variable_group.setLayout(variable_layout)
+        # Samplescope Time for real time x-axis
+        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        self.scope_sampletime_edit.setValidator(self.decimal_validator)  # Only allow numeric input
+        grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 6, 0)
+        grid_layout_trigger.addWidget(self.scope_sampletime_edit, 6, 1)
 
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
+
 
         self.scope_var_lines = [QLineEdit() for _ in range(7)]
         self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
@@ -437,6 +443,7 @@ class X2cscopeGui(QMainWindow):
         self.load_button_scope.setFixedSize(100, 30)
         self.save_button_scope.clicked.connect(self.save_config)
         self.load_button_scope.clicked.connect(self.load_config)
+
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.save_button_scope)
@@ -891,12 +898,17 @@ class X2cscopeGui(QMainWindow):
 
             self.scope_plot_widget.clear()
 
+            # Use the scope sample time set by the user
+            scope_sample_time_us = self.real_sampletime
+            print(scope_sample_time_us)
+
             for i, (channel, data) in enumerate(data_storage.items()):
                 checkbox_state = self.scope_channel_checkboxes[i].isChecked()
                 logging.debug(f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}")
                 if checkbox_state:  # Check if the checkbox is checked
                     scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
-                    time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
+                    time_values = np.array([j * scope_sample_time_us for j in range(len(data))],
+                                           dtype=float)  #milliseconds
                     data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                 name=f"Channel {channel}")
@@ -1270,6 +1282,11 @@ class X2cscopeGui(QMainWindow):
                         self.x2cscope.add_scope_channel(variable)
 
                 self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
+
+                # Set the scope sample time from the user input in microseconds
+                scope_sample_time_us = int(self.scope_sampletime_edit.text())
+                self.real_sampletime =  self.x2cscope.scope_sample_time(scope_sample_time_us)
+
                 self.sampling_active = True
                 self.configure_trigger()
                 self.scope_sample_button.setText("Stop")
@@ -1345,8 +1362,8 @@ class X2cscopeGui(QMainWindow):
                     for i, (channel, data) in enumerate(data_storage.items()):
                         if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
                             scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
-                            time_values = np.array([j * 0.001 for j in range(len(data))], dtype=float)  # milliseconds
-                            data = np.array(data, dtype=float)  * scale_factor  # Apply the scaling factor
+                            time_values = np.array([j * self.real_sampletime for j in range(len(data))], dtype=float)  # milliseconds
+                            data = np.array(data, dtype=float) *scale_factor  # Apply the scaling factor
                             self.scope_plot_widget.plot(time_values, data,
                                                         pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                         # Thicker plot line
