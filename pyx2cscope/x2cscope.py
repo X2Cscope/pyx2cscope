@@ -94,6 +94,7 @@ class X2CScope:
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
+        self.ucwidth =  self.variable_factory.device_info.uc_width
 
     def set_interface(self, interface: InterfaceABC):
         """Set the communication interface for the scope.
@@ -265,7 +266,7 @@ class X2CScope:
         """
         scope_data: LoadScopeData = self.lnet.scope_data
         return int(
-            scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
+            scope_data.trigger_event_position / (self.scope_setup.get_dataset_size() / self.ucwidth)
         )
 
     def get_delay_trigger_position(self) -> int:
@@ -284,7 +285,7 @@ class X2CScope:
             int: The length of the used portion of the SDA.
         """
         bytes_not_used = (
-            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+            self.lnet.scope_data.data_array_size % (self.scope_setup.get_dataset_size() /  self.ucwidth)
         )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
@@ -302,14 +303,15 @@ class X2CScope:
         num_chunks = self._calc_sda_used_length() // chunk_size
         chunk_rest = self._calc_sda_used_length() % chunk_size
         loop = num_chunks if chunk_rest == 0 else num_chunks + 1
-        for i in range(loop):
+        for i in range(int(loop)):
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
                 # Read the chunk of data
-                data_size = chunk_size if i < num_chunks else chunk_rest
+                data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
                 data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
+
                 logging.error(f"Error reading chunk {i}: {str(e)}")
         return chunk_data
 
@@ -411,7 +413,7 @@ class X2CScope:
         # - `self.lnet.scope_data.data_array_size`: the total size of the data array in bytes
 
         # Get the total number of channels and the dataset size
-        dataset_size = self.scope_setup.get_dataset_size()
+        dataset_size = self.scope_setup.get_dataset_size() /  self.ucwidth
         buffer_size = self.lnet.scope_data.data_array_size
 
         # Calculate the number of samples that fit in the buffer

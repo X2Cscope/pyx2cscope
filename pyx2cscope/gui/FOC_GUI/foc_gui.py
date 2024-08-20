@@ -1351,7 +1351,7 @@ class X2cscopeGui(QMainWindow):
                         return
 
                 trigger_edge = 0 if self.trigger_edge_combo.currentText() == "Rising" else 1
-                trigger_mode = 0 if self.trigger_mode_combo.currentText() == "Auto" else 1
+                trigger_mode = 2 if self.trigger_mode_combo.currentText() == "Auto" else 1
 
                 trigger_config = TriggerConfig(
                     variable=variable,
