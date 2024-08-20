@@ -408,11 +408,11 @@ class X2cscopeGui(QMainWindow):
         trigger_label.setAlignment(Qt.AlignCenter)  # Center align the label
         grid_layout_variable.addWidget(trigger_label, 0, 0)
 
-        scale_label = QLabel("Scale")  # Add a label for scaling
+        scale_label = QLabel("Gain")  # Add a label for scaling
         scale_label.setAlignment(Qt.AlignCenter)
         grid_layout_variable.addWidget(scale_label, 0, 2)
 
-        show_label = QLabel("Plot")
+        show_label = QLabel("Visible")
         show_label.setAlignment(Qt.AlignCenter)  # Center align the label
         grid_layout_variable.addWidget(show_label, 0, 3)
 
@@ -1436,7 +1436,7 @@ class X2cscopeGui(QMainWindow):
                 "values": [ve.text() for ve in self.Value_var_boxes],
                 "scaling": [sc.text() for sc in self.scaling_boxes],
                 "offsets": [off.text() for off in self.offset_boxes],
-                "plot": [cb.isChecked() for cb in self.plot_checkboxes],
+                "visible": [cb.isChecked() for cb in self.plot_checkboxes],
                 "live": [cb.isChecked() for cb in self.live_checkboxes],
             },
             "scope_view": {
@@ -1477,7 +1477,7 @@ class X2cscopeGui(QMainWindow):
                 sc.setText(scale)
             for off, offset in zip(self.offset_boxes, watch_view.get("offsets", [])):
                 off.setText(offset)
-            for cb, plot in zip(self.plot_checkboxes, watch_view.get("plot", [])):
+            for cb, plot in zip(self.plot_checkboxes, watch_view.get("Visible", [])):
                 cb.setChecked(plot)
             for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
                 cb.setChecked(live)
