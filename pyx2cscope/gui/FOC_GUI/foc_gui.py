@@ -314,7 +314,6 @@ class X2cscopeGui(QMainWindow):
     def setup_tab2(self):
         """Set up the second tab with the scope functionality."""
         self.tab2.layout = QVBoxLayout()
-
         self.tab2.setLayout(self.tab2.layout)
 
         main_grid_layout = QGridLayout()
@@ -340,33 +339,49 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
+        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        self.scope_sampletime_edit.setValidator(self.decimal_validator)  # Only allow numeric input
+
+        # Add a new label and line edit for Total Time
+        self.total_time_label = QLabel("Total Time (ms):")
+        self.total_time_value = QLineEdit("0")
+        self.total_time_value.setReadOnly(True)
+
         self.scope_sample_button = QPushButton("Sample")
         self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
         self.scope_sample_button.clicked.connect(self.start_sampling)
 
-        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
-                                      2)  # Add the Single Shot checkbox to the layout
+        # Arrange widgets in grid layout
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1, 2)
         grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
         grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
-        grid_layout_trigger.addWidget(self.trigger_mode_combo, 2, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 3, 0)
-        grid_layout_trigger.addWidget(self.trigger_edge_combo, 3, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 4, 0)
-        grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
-        grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
-        grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0)
+        grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 2, 0)
+        grid_layout_trigger.addWidget(self.scope_sampletime_edit, 2, 1)
+        # Add Total Time label and value
+        grid_layout_trigger.addWidget(self.total_time_label, 3, 0)
+        grid_layout_trigger.addWidget(self.total_time_value, 3, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 4, 0)
+        grid_layout_trigger.addWidget(self.trigger_mode_combo, 4, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 5, 0)
+        grid_layout_trigger.addWidget(self.trigger_edge_combo, 5, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 6, 0)
+        grid_layout_trigger.addWidget(self.trigger_level_edit, 6, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 7, 0)
+        grid_layout_trigger.addWidget(self.trigger_delay_edit, 7, 1)
+
+
+
+        grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0, 1, 2)
 
         # Variable Selection Group Box
         variable_group = QGroupBox("Variable Selection")
         variable_layout = QVBoxLayout()
         variable_group.setLayout(variable_layout)
         # Samplescope Time for real time x-axis
-        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
-        self.scope_sampletime_edit.setValidator(self.decimal_validator)  # Only allow numeric input
-        grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 6, 0)
-        grid_layout_trigger.addWidget(self.scope_sampletime_edit, 6, 1)
+        # self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        # self.scope_sampletime_edit.setValidator(self.decimal_validator)  # Only allow numeric input
+        # grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 6, 0)
+        # grid_layout_trigger.addWidget(self.scope_sampletime_edit, 6, 1)
 
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
@@ -907,15 +922,16 @@ class X2cscopeGui(QMainWindow):
                 logging.debug(f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}")
                 if checkbox_state:  # Check if the checkbox is checked
                     scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
-                    time_values = np.array([j * scope_sample_time_us for j in range(len(data))],
-                                           dtype=float)  #milliseconds
+                    #time_values = self.real_sampletime  # Generate time values in ms
+                    start = self.real_sampletime / len(data)
+                    time_values = np.linspace(start, self.real_sampletime, len(data))
+                    print(time_values)
                     data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                 name=f"Channel {channel}")
                     logging.debug(f"Plotting channel {channel} with color {self.plot_colors[i]}")
                 else:
                     logging.debug(f"Not plotting channel {channel}")
-
             self.scope_plot_widget.setLabel('left', 'Value')
             self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
             self.scope_plot_widget.showGrid(x=True, y=True)
@@ -1285,7 +1301,11 @@ class X2cscopeGui(QMainWindow):
 
                 # Set the scope sample time from the user input in microseconds
                 scope_sample_time_us = int(self.scope_sampletime_edit.text())
-                self.real_sampletime =  self.x2cscope.scope_sample_time(scope_sample_time_us)
+                self.real_sampletime = int(self.sample_time_factor.text()) * self.x2cscope.scope_sample_time(
+                    scope_sample_time_us)
+
+                # Update the Total Time display
+                self.total_time_value.setText(str(self.real_sampletime))
 
                 self.sampling_active = True
                 self.configure_trigger()
@@ -1362,12 +1382,14 @@ class X2cscopeGui(QMainWindow):
                     for i, (channel, data) in enumerate(data_storage.items()):
                         if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
                             scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
-                            time_values = np.array([j * self.real_sampletime for j in range(len(data))], dtype=float)  # milliseconds
+                            start = self.real_sampletime / len(data)
+                            time_values = np.linspace(start, self.real_sampletime, len(data))
                             data = np.array(data, dtype=float) *scale_factor  # Apply the scaling factor
                             self.scope_plot_widget.plot(time_values, data,
                                                         pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                                         # Thicker plot line
                                                         name=f"Channel {channel}")
+
 
                     self.scope_plot_widget.setLabel('left', 'Value')
                     self.scope_plot_widget.setLabel('bottom', 'Time', units='ms')
