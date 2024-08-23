@@ -1,6 +1,6 @@
 """replicate of X2Cscpope."""
 import logging
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
 import os
 import sys
 import time
@@ -1385,6 +1385,7 @@ class X2cscopeGui(QMainWindow):
                             scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                             start = self.real_sampletime / len(data)
                             time_values = np.linspace(start, self.real_sampletime, len(data))
+                            print("timevalue",len(time_values))
                             print(self.real_sampletime)
                             print(len(data))
                             data = np.array(data, dtype=float) *scale_factor  # Apply the scaling factor
@@ -1463,7 +1464,7 @@ class X2cscopeGui(QMainWindow):
                 json.dump(config, file, indent=4)
 
     def load_config(self):
-        """Load a configuration from a file."""
+        """Load the configuration from a file."""
         file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
         if file_path:
             with open(file_path, "r") as file:

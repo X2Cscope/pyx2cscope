@@ -94,7 +94,7 @@ class X2CScope:
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
-        self.ucwidth =  self.variable_factory.device_info.uc_width
+        self.ucwidth = self.variable_factory.device_info.uc_width
 
     def set_interface(self, interface: InterfaceABC):
         """Set the communication interface for the scope.
@@ -285,7 +285,7 @@ class X2CScope:
             int: The length of the used portion of the SDA.
         """
         bytes_not_used = (
-            self.lnet.scope_data.data_array_size % (self.scope_setup.get_dataset_size() /  self.ucwidth)
+            self.lnet.scope_data.data_array_size % (self.scope_setup.get_dataset_size() / self.ucwidth)
         )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
@@ -413,7 +413,7 @@ class X2CScope:
         # - `self.lnet.scope_data.data_array_size`: the total size of the data array in bytes
 
         # Get the total number of channels and the dataset size
-        dataset_size = self.scope_setup.get_dataset_size() /  self.ucwidth
+        dataset_size = self.scope_setup.get_dataset_size()
         buffer_size = self.lnet.scope_data.data_array_size
 
         # Calculate the number of samples that fit in the buffer
