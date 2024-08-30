@@ -39,13 +39,21 @@ class Elf16Parser(ElfParser):
         elf_path (str): Path to the input ELF file.
 
         Raises:
-        ValueError: If the XC16 compiler is not found on the system path.
+        ValueError: If the XC16 compiler is not found in the local directory or on the system path.
         """
-        self.xc16_read_elf_path = which("xc16-readelf")
-        if self.xc16_read_elf_path is None or not os.path.exists(
-            self.xc16_read_elf_path
-        ):
-            raise ValueError("XC16 compiler not found. Is it listed on PATH?")
+        # Check if the xc16-readelf executable exists in the current directory
+        local_readelf = os.path.join(os.path.dirname(os.path.abspath(__file__)), "xc16-readelf")
+
+        # Checking if the xc16-readelf executable exists in the same directory as the script or executable
+        if os.path.exists(local_readelf):
+            self.xc16_read_elf_path = local_readelf
+        else:
+            # Fallback to checking if xc16-readelf is on the system path
+            self.xc16_read_elf_path = which("xc16-readelf")
+            if self.xc16_read_elf_path is None or not os.path.exists(self.xc16_read_elf_path):
+                raise ValueError(
+                    "XC16 compiler not found. Ensure xc16-readelf is in the same folder or listed on PATH.")
+
         super().__init__(elf_path)
         self.tree_string = None
         self.next_line = None
