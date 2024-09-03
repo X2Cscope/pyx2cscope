@@ -5,7 +5,7 @@ import logging
 import time
 
 import matplotlib.pyplot as plt
-from utils import get_com_port, get_elf_file_path
+from pyx2cscope.utils import get_com_port, get_elf_file_path
 
 from pyx2cscope.xc2scope import X2CScope
 

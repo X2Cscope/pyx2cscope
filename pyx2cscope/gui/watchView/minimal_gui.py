@@ -45,7 +45,7 @@ class X2cscopeGui(QMainWindow):
     to connect to a microcontroller, select variables for monitoring, and plot their values.
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Initializing all the elements required."""
         super().__init__()
         self.initialize_variables()

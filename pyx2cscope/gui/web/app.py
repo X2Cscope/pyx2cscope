@@ -1,4 +1,4 @@
-"""This is the main Web entry point for Flash server.
+"""This is the main Web entry point for Flask server.
 
 This module holds and handles the main url and forward the relative urls to the specific
 pages (blueprints).
@@ -36,7 +36,7 @@ def list_serial_ports():
 
 
 def connect():
-    """Connect pyX2CScope.
+    """Connect pyX2CScope using arguments coming from the web.
 
     call {server_url}/connect to execute.
     """
@@ -98,30 +98,26 @@ def get_variables():
     return jsonify({"items": items})
 
 
-def open_browser(host="localhost", port=5000):
+def open_browser(host="localhost", web_port=5000):
     """Open a new browser pointing to the Flask server.
 
     Args:
         host (str): the host address/name
-        port (int): the host port.
+        web_port (int): the host port.
     """
-    webbrowser.open("http://" + host + ":" + str(port))
+    webbrowser.open("http://" + host + ":" + str(web_port))
 
 
-def main(host="localhost", port=5000, new=True, *args, **kwargs):
+def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
     """Web X2Cscope main function. Calling this function will start Web X2Cscope.
 
     Args:
         host (string): Default 'localhost'. Use 0.0.0.0 to open the server for external requests.
-        port (int): Default 5000. The port where the server is available.
+        web_port (int): Default 5000. The port where the web server is available.
         new (bool): Default True. Should a new browser window/tab be opened at start?
         *args: additional non-key arguments supplied on program call.
         **kwargs: additional keyed arguments supplied on program call.
     """
-    if new:
-        Timer(1, open_browser).start()
-    print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(port))
-
     app = create_app()
     app.register_blueprint(watch_view, url_prefix='/watch-view')
     app.register_blueprint(scope_view, url_prefix='/scope-view')
@@ -138,7 +134,17 @@ def main(host="localhost", port=5000, new=True, *args, **kwargs):
     app.logger.setLevel(log_level)
     logging.getLogger("werkzeug").setLevel(log_level)
 
-    app.run(debug=False, host=host, port=port)
+    # check if keys elf and port were supplied
+    if "elf" in kwargs and "port" in kwargs:
+        # check if both keys are not None
+        if kwargs["elf"] and kwargs["port"]:
+            print("Loading elf file...")
+            connect_x2c(port=kwargs["port"], elf_file=kwargs["elf"])
+
+    if new:
+        Timer(1, open_browser, None, {"web_port": web_port}).start()
+    print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(web_port))
+    app.run(debug=False, host=host, port=web_port)
 
 if __name__ == '__main__':
     main(new=True)
