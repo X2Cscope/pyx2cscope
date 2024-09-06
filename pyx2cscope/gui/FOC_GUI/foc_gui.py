@@ -1543,11 +1543,19 @@ class X2cscopeGui(QMainWindow):
         unit_edit = QLineEdit(self)
         remove_button = QPushButton("Remove", self)
 
+        # Set default values for scaling and offset
+        scaling_edit.setText("1")  # Default scaling to 1
+        offset_edit.setText("0")  # Default offset to 0
+
         # Set placeholder text for variable search (like in WatchView)
         variable_edit.setPlaceholderText("Search Variable")
 
         # Make scaled value read-only
         scaled_value_edit.setReadOnly(True)
+
+        # Set size policies to make the variable name and value resize dynamically
+        variable_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        value_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         # Add the widgets to the grid layout
         self.watchview_grid.addWidget(live_checkbox, row, 0)
@@ -1559,6 +1567,14 @@ class X2cscopeGui(QMainWindow):
         self.watchview_grid.addWidget(unit_edit, row, 6)
         self.watchview_grid.addWidget(remove_button, row, 7)
 
+        # Set column stretch to allow the variable field to resize
+        self.watchview_grid.setColumnStretch(1, 5)  # Column for 'Variable'
+        self.watchview_grid.setColumnStretch(2, 2)  # Column for 'Value'
+        self.watchview_grid.setColumnStretch(3, 1)  # Column for 'Scaling'
+        self.watchview_grid.setColumnStretch(4, 1)  # Column for 'Offset'
+        self.watchview_grid.setColumnStretch(5, 1)  # Column for 'Scaled Value'
+        self.watchview_grid.setColumnStretch(6, 1)  # Column for 'Unit'
+
         # Connect remove button to function to remove the row
         remove_button.clicked.connect(
             lambda: self.remove_variable_row(live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit,
@@ -1569,6 +1585,15 @@ class X2cscopeGui(QMainWindow):
 
         # Connect value editing to set value using handle_putram when Enter is pressed
         value_edit.editingFinished.connect(lambda: self.handle_variable_putram(variable_edit.text(), value_edit))
+
+        # Connect scaling and offset fields to recalculate the scaled value
+        scaling_edit.editingFinished.connect(
+            lambda: self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit))
+        offset_edit.editingFinished.connect(
+            lambda: self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit))
+
+        # Calculate and show the scaled value immediately using the default scaling and offset
+        self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit)
 
         # Add widgets to the lists for tracking
         self.live_checkboxes.append(live_checkbox)
