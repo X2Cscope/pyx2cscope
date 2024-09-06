@@ -825,24 +825,35 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Live Variable: {e}")
 
     @pyqtSlot()
-    def update_scaled_value(self, value_edit, scaling_edit, offset_edit, scaled_value_edit):
-        """Updates the scaled value in both Tab 1 and Tab 3 based on the provided scaling factor and offset.
+    def update_scaled_value(self, scaling_var, value_var, scaled_value_var, offset_var):
+        """Updates the scaled value based on the provided scaling factor and offset.
 
         Args:
-            value_edit : Input field for the raw value.
-            scaling_edit : Input field for the scaling factor.
-            offset_edit : Input field for the offset.
-            scaled_value_edit : Output field for the scaled value.
+            scaling_var : Input field for the scaling factor.
+            value_var : Input field for the raw value.
+            scaled_value_var : Input field for the scaled value.
+            offset_var : Input field for the offset.
         """
+        scaling_text = scaling_var.text()
+        value_text = value_var.text()
+        offset_text = offset_var.text()
         try:
-            value = float(value_edit.text())
-            scaling = float(scaling_edit.text()) if scaling_edit.text() else 1.0
-            offset = float(offset_edit.text()) if offset_edit.text() else 0.0
+            value = float(value_text)
+            if offset_text.startswith("-"):
+                float_offset = float(offset_text.lstrip("-"))
+                offset = -1 * float_offset
+            else:
+                offset = float(offset_text)
+            if scaling_text.startswith("-"):
+                float_scaling = float(scaling_text.lstrip("-"))
+                scaling = -1 * float_scaling
+            else:
+                scaling = float(scaling_text)
             scaled_value = (scaling * value) + offset
-            scaled_value_edit.setText(f"{scaled_value:.2f}")
-        except ValueError as e:
-            logging.error(f"Error updating scaled value: {e}")
-            scaled_value_edit.setText("0.00")
+            scaled_value_var.setText("{:.2f}".format(scaled_value))
+        except Exception as e:
+            logging.error(e)
+            self.handle_error(f"Error update Scaled Value: {e}")
 
     def plot_data_update(self):
         """Updates the data for plotting."""
@@ -1687,12 +1698,12 @@ class X2cscopeGui(QMainWindow):
 
         # Connect scaling and offset fields to recalculate the scaled value
         scaling_edit.editingFinished.connect(
-            lambda: self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit))
+            lambda: self.update_scaled_value_tab3(value_edit, scaling_edit, offset_edit, scaled_value_edit))
         offset_edit.editingFinished.connect(
-            lambda: self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit))
+            lambda: self.update_scaled_value_tab3(value_edit, scaling_edit, offset_edit, scaled_value_edit))
 
         # Calculate and show the scaled value immediately using the default scaling and offset
-        self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit)
+        self.update_scaled_value_tab3(value_edit, scaling_edit, offset_edit, scaled_value_edit)
 
         # Add widgets to the lists for tracking
         self.live_tab3.append(live_checkbox)
@@ -1785,8 +1796,27 @@ class X2cscopeGui(QMainWindow):
                 self.handle_variable_getram(variable_name, value_edit)
 
                 # Update the scaled value in real-time based on the raw value, scaling, and offset
-                self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit)
+                self.update_scaled_value_tab3(value_edit, scaling_edit, offset_edit, scaled_value_edit)
 
+    @pyqtSlot()
+    def update_scaled_value_tab3(self, value_edit, scaling_edit, offset_edit, scaled_value_edit):
+        """Updates the scaled value in both Tab 1 and Tab 3 based on the provided scaling factor and offset.
+
+        Args:
+            value_edit : Input field for the raw value.
+            scaling_edit : Input field for the scaling factor.
+            offset_edit : Input field for the offset.
+            scaled_value_edit : Output field for the scaled value.
+        """
+        try:
+            value = float(value_edit.text())
+            scaling = float(scaling_edit.text()) if scaling_edit.text() else 1.0
+            offset = float(offset_edit.text()) if offset_edit.text() else 0.0
+            scaled_value = (scaling * value) + offset
+            scaled_value_edit.setText(f"{scaled_value:.2f}")
+        except ValueError as e:
+            logging.error(f"Error updating scaled value: {e}")
+            scaled_value_edit.setText("0.00")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
