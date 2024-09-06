@@ -54,6 +54,7 @@ class VariableSelectionDialog(QDialog):
         super().__init__(parent)
         self.variables = variables
         self.selected_variable = None
+
         self.init_ui()
 
     def init_ui(self):
@@ -104,6 +105,9 @@ class X2cscopeGui(QMainWindow):
     def initialize_variables(self):
         """Initialize instance variables."""
         self.sampling_active = False
+        self.scaling_edits_tab3 = []  # Track scaling fields for Tab 3
+        self.offset_edits_tab3 = []  # Track offset fields for Tab 3
+        self.scaled_value_edits_tab3 = []  # Track scaled value fields for Tab 3
         self.offset_boxes = None
         self.plot_checkboxes = None
         self.scaled_value_boxes = None
@@ -820,35 +824,24 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Live Variable: {e}")
 
     @pyqtSlot()
-    def update_scaled_value(self, scaling_var, value_var, scaled_value_var, offset_var):
-        """Updates the scaled value based on the provided scaling factor and offset.
+    def update_scaled_value(self, value_edit, scaling_edit, offset_edit, scaled_value_edit):
+        """Updates the scaled value in both Tab 1 and Tab 3 based on the provided scaling factor and offset.
 
         Args:
-            scaling_var : Input field for the scaling factor.
-            value_var : Input field for the raw value.
-            scaled_value_var : Input field for the scaled value.
-            offset_var : Input field for the offset.
+            value_edit : Input field for the raw value.
+            scaling_edit : Input field for the scaling factor.
+            offset_edit : Input field for the offset.
+            scaled_value_edit : Output field for the scaled value.
         """
-        scaling_text = scaling_var.text()
-        value_text = value_var.text()
-        offset_text = offset_var.text()
         try:
-            value = float(value_text)
-            if offset_text.startswith("-"):
-                float_offset = float(offset_text.lstrip("-"))
-                offset = -1 * float_offset
-            else:
-                offset = float(offset_text)
-            if scaling_text.startswith("-"):
-                float_scaling = float(scaling_text.lstrip("-"))
-                scaling = -1 * float_scaling
-            else:
-                scaling = float(scaling_text)
+            value = float(value_edit.text())
+            scaling = float(scaling_edit.text()) if scaling_edit.text() else 1.0
+            offset = float(offset_edit.text()) if offset_edit.text() else 0.0
             scaled_value = (scaling * value) + offset
-            scaled_value_var.setText("{:.2f}".format(scaled_value))
-        except Exception as e:
-            logging.error(e)
-            self.handle_error(f"Error update Scaled Value: {e}")
+            scaled_value_edit.setText(f"{scaled_value:.2f}")
+        except ValueError as e:
+            logging.error(f"Error updating scaled value: {e}")
+            scaled_value_edit.setText("0.00")
 
     def plot_data_update(self):
         """Updates the data for plotting."""
@@ -1229,7 +1222,7 @@ class X2cscopeGui(QMainWindow):
 
             self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
             self.ser = self.x2cscope.interface
-            print(self.x2cscope.get_device_info())
+            #print(self.x2cscope.get_device_info())
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:
                 self.VariableList.insert(0, "None")
@@ -1610,6 +1603,11 @@ class X2cscopeGui(QMainWindow):
         self.variable_line_edits.append(variable_edit)
         self.value_line_edits.append(value_edit)
 
+        # Track scaling and offset for live updates in Tab 3
+        self.scaling_edits_tab3.append(scaling_edit)
+        self.offset_edits_tab3.append(offset_edit)
+        self.scaled_value_edits_tab3.append(scaled_value_edit)
+
         # Track the row widgets to remove them easily
         self.row_widgets.append((live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit,
                                  unit_edit, remove_button))
@@ -1629,6 +1627,11 @@ class X2cscopeGui(QMainWindow):
         self.live_tab3.remove(live_checkbox)
         self.variable_line_edits.remove(variable_edit)
         self.value_line_edits.remove(value_edit)
+        self.scaling_edits_tab3.remove(scaling_edit)  # Remove from scaling list
+        self.offset_edits_tab3.remove(offset_edit)  # Remove from offset list
+        self.scaled_value_edits_tab3.remove(scaled_value_edit)  # Remove from scaled value list
+
+        # Remove the widget references from the row widgets tracking
         self.row_widgets.remove((live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit,
                                  unit_edit, remove_button))
 
@@ -1676,14 +1679,17 @@ class X2cscopeGui(QMainWindow):
 
     def update_live_variables(self):
         """Update the values of variables in real-time if live checkbox is checked."""
-        for checkbox, variable_edit, value_edit in zip(self.live_tab3, self.variable_line_edits,
-                                                       self.value_line_edits):
+        for checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit in zip(
+                self.live_tab3, self.variable_line_edits, self.value_line_edits,
+                self.scaling_edits_tab3, self.offset_edits_tab3, self.scaled_value_edits_tab3):
+
             if checkbox.isChecked() and variable_edit.text():
                 # Fetch the variable value from the microcontroller
                 variable_name = variable_edit.text()
                 self.handle_variable_getram(variable_name, value_edit)
 
-
+                # Update the scaled value in real-time based on the raw value, scaling, and offset
+                self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit)
 
 
 if __name__ == "__main__":
