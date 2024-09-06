@@ -1420,22 +1420,6 @@ class X2cscopeGui(QMainWindow):
             logging.error(error_message)
             self.handle_error(error_message)
 
-    def eventFilter(self, source, event):
-        """Event filter to handle line edit click events."""
-        if event.type() == QtCore.QEvent.MouseButtonPress:
-            if isinstance(source, QLineEdit):
-                dialog = VariableSelectionDialog(self.VariableList, self)
-                if dialog.exec_() == QDialog.Accepted:
-                    selected_variable = dialog.selected_variable
-                    if selected_variable:
-                        source.setText(selected_variable)
-                        try:
-                            self.handle_variable_getram(selected_variable, self.Value_var_boxes[self.line_edit_boxes.index(source)])
-                        except Exception as e:
-                            print(e)
-
-        return super().eventFilter(source, event)
-
     def save_config(self):
         """Save the current configuration to a file."""
         config = {
@@ -1542,6 +1526,7 @@ class X2cscopeGui(QMainWindow):
         self.live_checkboxes = []
         self.variable_line_edits = []
         self.value_line_edits = []
+        self.row_widgets = []
 
     @pyqtSlot()
     def add_variable_row(self):
@@ -1575,34 +1560,66 @@ class X2cscopeGui(QMainWindow):
         self.watchview_grid.addWidget(remove_button, row, 7)
 
         # Connect remove button to function to remove the row
-        remove_button.clicked.connect(lambda: self.remove_variable_row(row))
+        remove_button.clicked.connect(
+            lambda: self.remove_variable_row(live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit,
+                                             scaled_value_edit, unit_edit, remove_button))
 
         # Connect the variable search to the dialog
         variable_edit.installEventFilter(self)
 
-        # Connect value editing to set value using putram when Enter is pressed
+        # Connect value editing to set value using handle_putram when Enter is pressed
         value_edit.editingFinished.connect(lambda: self.handle_variable_putram(variable_edit.text(), value_edit))
 
-        # Add live checkbox to the list
+        # Add widgets to the lists for tracking
         self.live_checkboxes.append(live_checkbox)
         self.variable_line_edits.append(variable_edit)
         self.value_line_edits.append(value_edit)
 
+        # Track the row widgets to remove them easily
+        self.row_widgets.append((live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit,
+                                 unit_edit, remove_button))
+
         # Increment the current row counter
         self.current_row += 1
 
-    def remove_variable_row(self, row):
+    def remove_variable_row(self, live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit,
+                            scaled_value_edit, unit_edit, remove_button):
         """Remove a specific row in the WatchView Only tab."""
-        # Loop through each column in the row and remove the widgets
-        for col in range(8):  # Number of columns
-            widget = self.watchview_grid.itemAtPosition(row, col).widget()
-            if widget:
-                widget.deleteLater()
+        # Remove the widgets from the grid layout
+        for widget in [live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit,
+                       unit_edit, remove_button]:
+            widget.deleteLater()
 
-        # Remove from live checkboxes and other lists
-        self.live_checkboxes = self.live_checkboxes[:row - 1] + self.live_checkboxes[row:]
-        self.variable_line_edits = self.variable_line_edits[:row - 1] + self.variable_line_edits[row:]
-        self.value_line_edits = self.value_line_edits[:row - 1] + self.value_line_edits[row:]
+        # Remove the corresponding widgets from the tracking lists
+        self.live_checkboxes.remove(live_checkbox)
+        self.variable_line_edits.remove(variable_edit)
+        self.value_line_edits.remove(value_edit)
+        self.row_widgets.remove((live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit,
+                                 unit_edit, remove_button))
+
+        # Decrement the row count
+        self.current_row -= 1
+
+        # Adjust the layout for remaining rows
+        self.rearrange_grid()
+
+    def rearrange_grid(self):
+        """Rearrange the grid layout after a row has been removed."""
+        # Clear the entire grid layout
+        for i in reversed(range(self.watchview_grid.count())):
+            widget = self.watchview_grid.itemAt(i).widget()
+            if widget is not None:
+                widget.setParent(None)
+
+        # Add the headers again
+        headers = ["Live", "Variable", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
+        for i, header in enumerate(headers):
+            self.watchview_grid.addWidget(QLabel(header), 0, i)
+
+        # Add the remaining rows back to the grid
+        for row, widgets in enumerate(self.row_widgets, start=1):
+            for col, widget in enumerate(widgets):
+                self.watchview_grid.addWidget(widget, row, col)
 
     def eventFilter(self, source, event):
         """Event filter to handle line edit click events for variable selection."""
@@ -1632,10 +1649,6 @@ class X2cscopeGui(QMainWindow):
                 self.handle_variable_getram(variable_name, value_edit)
 
 
-
-    def get_current_variables(self):
-        """Get a list of currently selected variables in WatchView Only."""
-        return [self.variable_list_widget.item(i).text() for i in range(self.variable_list_widget.count())]
 
 
 if __name__ == "__main__":
