@@ -652,8 +652,8 @@ class X2cscopeGui(QMainWindow):
 
             self.grid_layout.addWidget(value_var, display_row, 2)
             self.grid_layout.addWidget(scaling_var, display_row, 3)
-            self.grid_layout.addWidget(offset_var, display_row, 5)
-            self.grid_layout.addWidget(scaled_value_var, display_row, 4)
+            self.grid_layout.addWidget(offset_var, display_row, 4)
+            self.grid_layout.addWidget(scaled_value_var, display_row, 5)
             self.grid_layout.addWidget(unit_var, display_row, 6)
             self.grid_layout.addWidget(plot_checkbox, display_row, 7)
             plot_checkbox.stateChanged.connect(lambda state, x=row_index - 1: self.update_watch_plot())
@@ -1673,30 +1673,7 @@ class X2cscopeGui(QMainWindow):
                 variable_name = variable_edit.text()
                 self.handle_variable_getram(variable_name, value_edit)
 
-                # After fetching the raw value, update the scaled value as well
-                row_index = self.value_line_edits.index(value_edit)
-                scaling_edit = self.watchview_grid.itemAtPosition(row_index + 1, 3).widget()
-                offset_edit = self.watchview_grid.itemAtPosition(row_index + 1, 4).widget()
-                scaled_value_edit = self.watchview_grid.itemAtPosition(row_index + 1, 5).widget()
 
-                # Update the scaled value
-                self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit)
-
-    @pyqtSlot()
-    def update_scaled_value(self, value_edit, scaling_edit, offset_edit, scaled_value_edit):
-        """Update the scaled value based on the value, scaling, and offset."""
-        try:
-            value = float(value_edit.text()) if value_edit.text() else 0
-            scaling = float(scaling_edit.text()) if scaling_edit.text() else 1
-            offset = float(offset_edit.text()) if offset_edit.text() else 0
-
-            # Calculate the scaled value
-            scaled_value = (value * scaling) + offset
-
-            # Set the scaled value in the scaled_value_edit field
-            scaled_value_edit.setText(f"{scaled_value:.2f}")  # Format to 2 decimal places
-        except ValueError:
-            scaled_value_edit.setText("Error")  # Display "Error" if conversion fails
 
 
 if __name__ == "__main__":
