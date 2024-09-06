@@ -1523,7 +1523,7 @@ class X2cscopeGui(QMainWindow):
         self.live_update_timer.start(500)  # Set the update interval (500 ms)
 
         # Store references to live checkboxes and variables
-        self.live_checkboxes = []
+        self.live_tab3 = []
         self.variable_line_edits = []
         self.value_line_edits = []
         self.row_widgets = []
@@ -1596,7 +1596,7 @@ class X2cscopeGui(QMainWindow):
         self.update_scaled_value(value_edit, scaling_edit, offset_edit, scaled_value_edit)
 
         # Add widgets to the lists for tracking
-        self.live_checkboxes.append(live_checkbox)
+        self.live_tab3.append(live_checkbox)
         self.variable_line_edits.append(variable_edit)
         self.value_line_edits.append(value_edit)
 
@@ -1616,7 +1616,7 @@ class X2cscopeGui(QMainWindow):
             widget.deleteLater()
 
         # Remove the corresponding widgets from the tracking lists
-        self.live_checkboxes.remove(live_checkbox)
+        self.live_tab3.remove(live_checkbox)
         self.variable_line_edits.remove(variable_edit)
         self.value_line_edits.remove(value_edit)
         self.row_widgets.remove((live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit,
@@ -1666,7 +1666,7 @@ class X2cscopeGui(QMainWindow):
 
     def update_live_variables(self):
         """Update the values of variables in real-time if live checkbox is checked."""
-        for checkbox, variable_edit, value_edit in zip(self.live_checkboxes, self.variable_line_edits,
+        for checkbox, variable_edit, value_edit in zip(self.live_tab3, self.variable_line_edits,
                                                        self.value_line_edits):
             if checkbox.isChecked() and variable_edit.text():
                 # Fetch the variable value from the microcontroller
