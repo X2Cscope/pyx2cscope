@@ -192,13 +192,16 @@ class X2cscopeGui(QMainWindow):
         """Create tabs for the main window."""
         self.tab1 = QWidget()
         self.tab2 = QWidget()
+        self.tab3 = QWidget()  # New tab for WatchView Only
         self.tab_widget.addTab(self.tab1, "WatchView")
         self.tab_widget.addTab(self.tab2, "ScopeView")
+        self.tab_widget.addTab(self.tab3, "WatchView Only")  # Add third tab
 
     def setup_tabs(self):
         """Set up the contents of each tab."""
         self.setup_tab1()
         self.setup_tab2()
+        self.setup_tab3()  # Setup for the third tab
 
     def setup_window_properties(self):
         """Set up the main window properties."""
@@ -1216,6 +1219,7 @@ class X2cscopeGui(QMainWindow):
 
             self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
             self.ser = self.x2cscope.interface
+            print(self.x2cscope.get_device_info())
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:
                 self.VariableList.insert(0, "None")
@@ -1502,6 +1506,137 @@ class X2cscopeGui(QMainWindow):
             self.trigger_mode_combo.setCurrentText(scope_view.get("trigger_mode", ""))
             self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
             self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
+
+    def setup_tab3(self):
+        """Set up the third tab (WatchView Only) with Add/Remove Variable buttons and live functionality."""
+        self.tab3.layout = QVBoxLayout()
+        self.tab3.setLayout(self.tab3.layout)
+
+        self.variable_list_layout = QVBoxLayout()  # Layout for variable list and buttons
+
+        # Create grid layout for adding rows similar to WatchView
+        self.watchview_grid = QGridLayout()
+        self.tab3.layout.addLayout(self.watchview_grid)
+
+        # Add header row for the grid
+        headers = ["Live", "Variable", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
+        for i, header in enumerate(headers):
+            self.watchview_grid.addWidget(QLabel(header), 0, i)
+
+        # Add buttons for adding and removing variables
+        self.add_variable_button = QPushButton("Add Variable")
+        self.variable_list_layout.addWidget(self.add_variable_button)
+        self.add_variable_button.clicked.connect(self.add_variable_row)
+
+        self.tab3.layout.addLayout(self.variable_list_layout)
+
+        # Keep track of the current row count
+        self.current_row = 1
+
+        # Timer for updating live variables
+        self.live_update_timer = QTimer()
+        self.live_update_timer.timeout.connect(self.update_live_variables)
+        self.live_update_timer.start(500)  # Set the update interval (500 ms)
+
+        # Store references to live checkboxes and variables
+        self.live_checkboxes = []
+        self.variable_line_edits = []
+        self.value_line_edits = []
+
+    @pyqtSlot()
+    def add_variable_row(self):
+        """Add a row of widgets to represent a variable in the WatchView Only tab with live functionality."""
+        row = self.current_row
+
+        # Create widgets for the row
+        live_checkbox = QCheckBox(self)
+        variable_edit = QLineEdit(self)
+        value_edit = QLineEdit(self)
+        scaling_edit = QLineEdit(self)
+        offset_edit = QLineEdit(self)
+        scaled_value_edit = QLineEdit(self)
+        unit_edit = QLineEdit(self)
+        remove_button = QPushButton("Remove", self)
+
+        # Set placeholder text for variable search (like in WatchView)
+        variable_edit.setPlaceholderText("Search Variable")
+
+        # Make scaled value read-only
+        scaled_value_edit.setReadOnly(True)
+
+        # Add the widgets to the grid layout
+        self.watchview_grid.addWidget(live_checkbox, row, 0)
+        self.watchview_grid.addWidget(variable_edit, row, 1)
+        self.watchview_grid.addWidget(value_edit, row, 2)
+        self.watchview_grid.addWidget(scaling_edit, row, 3)
+        self.watchview_grid.addWidget(offset_edit, row, 4)
+        self.watchview_grid.addWidget(scaled_value_edit, row, 5)
+        self.watchview_grid.addWidget(unit_edit, row, 6)
+        self.watchview_grid.addWidget(remove_button, row, 7)
+
+        # Connect remove button to function to remove the row
+        remove_button.clicked.connect(lambda: self.remove_variable_row(row))
+
+        # Connect the variable search to the dialog
+        variable_edit.installEventFilter(self)
+
+        # Connect value editing to set value using putram when Enter is pressed
+        value_edit.editingFinished.connect(lambda: self.handle_variable_putram(variable_edit.text(), value_edit))
+
+        # Add live checkbox to the list
+        self.live_checkboxes.append(live_checkbox)
+        self.variable_line_edits.append(variable_edit)
+        self.value_line_edits.append(value_edit)
+
+        # Increment the current row counter
+        self.current_row += 1
+
+    def remove_variable_row(self, row):
+        """Remove a specific row in the WatchView Only tab."""
+        # Loop through each column in the row and remove the widgets
+        for col in range(8):  # Number of columns
+            widget = self.watchview_grid.itemAtPosition(row, col).widget()
+            if widget:
+                widget.deleteLater()
+
+        # Remove from live checkboxes and other lists
+        self.live_checkboxes = self.live_checkboxes[:row - 1] + self.live_checkboxes[row:]
+        self.variable_line_edits = self.variable_line_edits[:row - 1] + self.variable_line_edits[row:]
+        self.value_line_edits = self.value_line_edits[:row - 1] + self.value_line_edits[row:]
+
+    def eventFilter(self, source, event):
+        """Event filter to handle line edit click events for variable selection."""
+        if event.type() == QtCore.QEvent.MouseButtonPress:
+            if isinstance(source, QLineEdit):
+                dialog = VariableSelectionDialog(self.VariableList, self)
+                if dialog.exec_() == QDialog.Accepted:
+                    selected_variable = dialog.selected_variable
+                    if selected_variable:
+                        source.setText(selected_variable)
+                        # Get the initial value from the microcontroller (if applicable)
+                        try:
+                            self.handle_variable_getram(selected_variable,
+                                                        self.value_line_edits[self.variable_line_edits.index(source)])
+                        except Exception as e:
+                            print(e)
+
+        return super().eventFilter(source, event)
+
+    def update_live_variables(self):
+        """Update the values of variables in real-time if live checkbox is checked."""
+        for checkbox, variable_edit, value_edit in zip(self.live_checkboxes, self.variable_line_edits,
+                                                       self.value_line_edits):
+            if checkbox.isChecked() and variable_edit.text():
+                # Fetch the variable value from the microcontroller
+                variable_name = variable_edit.text()
+                self.handle_variable_getram(variable_name, value_edit)
+
+
+
+    def get_current_variables(self):
+        """Get a list of currently selected variables in WatchView Only."""
+        return [self.variable_list_widget.item(i).text() for i in range(self.variable_list_widget.count())]
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
