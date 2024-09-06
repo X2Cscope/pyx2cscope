@@ -634,7 +634,11 @@ class X2cscopeGui(QMainWindow):
         ):
             live_var.setEnabled(False)
             line_edit.setEnabled(False)
+
+            # Set size policy for variable name (line_edit) and value field to expand
             line_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            value_var.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
             value_var.setText("0")
             value_var.setValidator(self.decimal_validator)
             scaling_var.setText("1")
@@ -659,6 +663,14 @@ class X2cscopeGui(QMainWindow):
             plot_checkbox.stateChanged.connect(lambda state, x=row_index - 1: self.update_watch_plot())
 
         layout.addLayout(self.grid_layout, 5, 0)
+
+        # Adjust the column stretch factors to ensure proper resizing
+        self.grid_layout.setColumnStretch(1, 5)  # Variable column expands more
+        self.grid_layout.setColumnStretch(2, 2)  # Value column
+        self.grid_layout.setColumnStretch(3, 1)  # Scaling column
+        self.grid_layout.setColumnStretch(4, 1)  # Offset column
+        self.grid_layout.setColumnStretch(5, 2)  # Scaled Value column
+        self.grid_layout.setColumnStretch(6, 1)  # Unit column
 
         # Add the plot widget for watch view
         self.watch_plot_widget = pg.PlotWidget(title="Watch Plot")
@@ -874,27 +886,25 @@ class X2cscopeGui(QMainWindow):
             if not self.plot_data:
                 return
 
+            # Clear the plot and remove old labels
+            self.watch_plot_widget.clear()
+
             data = np.array(self.plot_data, dtype=object).T
             time_diffs = np.array(data[1], dtype=float)
             values = [np.array(data[i], dtype=float) for i in range(2, 7)]
 
-            # Keep the last plot lines to avoid clearing and recreate them
-            plot_lines = {}
-            for item in self.watch_plot_widget.plotItem.items:
-                if isinstance(item, pg.PlotDataItem):
-                    plot_lines[item.name()] = item
-
+            # Keep track of plot lines to avoid clearing and recreating them unnecessarily
             for i, (value, line_edit, plot_var) in enumerate(zip(values, self.line_edit_boxes, self.plot_checkboxes)):
+                # Check if the variable should be plotted and is not empty
                 if plot_var.isChecked() and line_edit.text() != "":
-                    if line_edit.text() in plot_lines:
-                        plot_line = plot_lines[line_edit.text()]
-                        plot_line.setData(np.cumsum(time_diffs), value)
-                    else:
-                        self.watch_plot_widget.plot(np.cumsum(time_diffs), value,
-                                                    pen=pg.mkPen(color=self.plot_colors[i], width=2),
-                                                    # Thicker plot line
-                                                    name=line_edit.text())
+                    self.watch_plot_widget.plot(
+                        np.cumsum(time_diffs),
+                        value,
+                        pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
+                        name=line_edit.text()
+                    )
 
+            # Reset plot labels
             self.watch_plot_widget.setLabel('left', 'Value')
             self.watch_plot_widget.setLabel('bottom', 'Time', units='ms')
             self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
