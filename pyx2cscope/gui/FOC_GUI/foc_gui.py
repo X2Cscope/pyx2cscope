@@ -38,6 +38,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QListWidget,
     QDialogButtonBox,
+    QScrollArea
 )
 
 from pyx2cscope.gui import img as img_src
@@ -1424,17 +1425,20 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(error_message)
 
     def save_config(self):
-        """Save the current configuration to a file."""
-        config = {
-            "watch_view": {
+        """Save the current configuration for WatchView, ScopeView, and WatchView Only (Tab 3)."""
+        try:
+            # Store WatchView (Tab 1) configuration
+            watch_config = {
                 "variables": [le.text() for le in self.line_edit_boxes],
                 "values": [ve.text() for ve in self.Value_var_boxes],
                 "scaling": [sc.text() for sc in self.scaling_boxes],
                 "offsets": [off.text() for off in self.offset_boxes],
                 "visible": [cb.isChecked() for cb in self.plot_checkboxes],
                 "live": [cb.isChecked() for cb in self.live_checkboxes],
-            },
-            "scope_view": {
+            }
+
+            # Store ScopeView (Tab 2) configuration
+            scope_config = {
                 "variables": [le.text() for le in self.scope_var_lines],
                 "trigger": [cb.isChecked() for cb in self.trigger_var_checkbox],
                 "scale": [sc.text() for sc in self.scope_scaling_boxes],
@@ -1447,75 +1451,138 @@ class X2cscopeGui(QMainWindow):
                 "sample_time_factor": self.sample_time_factor.text(),
                 "single_shot": self.single_shot_checkbox.isChecked(),
             }
-        }
 
-        file_path, _ = QFileDialog.getSaveFileName(self, "Save Configuration", "", "JSON Files (*.json)")
-        if file_path:
-            with open(file_path, "w") as file:
-                json.dump(config, file, indent=4)
+            # Store WatchView Only (Tab 3) configuration
+            tab3_config = {
+                "variables": [le.text() for le in self.variable_line_edits],
+                "values": [ve.text() for ve in self.value_line_edits],
+                "scaling": [sc.text() for sc in self.scaling_edits_tab3],
+                "offsets": [off.text() for off in self.offset_edits_tab3],
+                "live": [cb.isChecked() for cb in self.live_tab3],
+            }
+
+            # Combine all configurations into a single dictionary
+            config = {
+                "watch_view": watch_config,
+                "scope_view": scope_config,
+                "tab3_view": tab3_config,
+            }
+
+            # Save the configuration to a JSON file
+            file_path, _ = QFileDialog.getSaveFileName(self, "Save Configuration", "", "JSON Files (*.json)")
+            if file_path:
+                with open(file_path, "w") as file:
+                    json.dump(config, file, indent=4)
+                logging.info(f"Configuration saved to {file_path}")
+        except Exception as e:
+            logging.error(f"Error saving configuration: {e}")
+            self.handle_error(f"Error saving configuration: {e}")
 
     def load_config(self):
-        """Load the configuration from a file."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
-        if file_path:
-            with open(file_path, "r") as file:
-                config = json.load(file)
+        """Load the configuration for WatchView, ScopeView, and WatchView Only (Tab 3) from a file."""
+        try:
+            # Load the configuration from a JSON file
+            file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
+            if file_path:
+                with open(file_path, "r") as file:
+                    config = json.load(file)
 
-            watch_view = config.get("watch_view", {})
-            scope_view = config.get("scope_view", {})
+                # WatchView (Tab 1) configuration
+                watch_view = config.get("watch_view", {})
+                for le, var in zip(self.line_edit_boxes, watch_view.get("variables", [])):
+                    le.setText(var)
+                for ve, val in zip(self.Value_var_boxes, watch_view.get("values", [])):
+                    ve.setText(val)
+                for sc, scale in zip(self.scaling_boxes, watch_view.get("scaling", [])):
+                    sc.setText(scale)
+                for off, offset in zip(self.offset_boxes, watch_view.get("offsets", [])):
+                    off.setText(offset)
+                for cb, visible in zip(self.plot_checkboxes, watch_view.get("visible", [])):
+                    cb.setChecked(visible)
+                for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
+                    cb.setChecked(live)
 
-            for le, var in zip(self.line_edit_boxes, watch_view.get("variables", [])):
-                le.setText(var)
-            for ve, val in zip(self.Value_var_boxes, watch_view.get("values", [])):
-                ve.setText(val)
-            for sc, scale in zip(self.scaling_boxes, watch_view.get("scaling", [])):
-                sc.setText(scale)
-            for off, offset in zip(self.offset_boxes, watch_view.get("offsets", [])):
-                off.setText(offset)
-            for cb, plot in zip(self.plot_checkboxes, watch_view.get("Visible", [])):
-                cb.setChecked(plot)
-            for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
-                cb.setChecked(live)
+                # ScopeView (Tab 2) configuration
+                scope_view = config.get("scope_view", {})
+                for le, var in zip(self.scope_var_lines, scope_view.get("variables", [])):
+                    le.setText(var)
+                for cb, trigger in zip(self.trigger_var_checkbox, scope_view.get("trigger", [])):
+                    cb.setChecked(trigger)
+                for sc, scale in zip(self.scope_scaling_boxes, scope_view.get("scale", [])):
+                    sc.setText(scale)
+                for cb, show in zip(self.scope_channel_checkboxes, scope_view.get("show", [])):
+                    cb.setChecked(show)
+                self.triggerVariable = scope_view.get("trigger_variable", "")
+                self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
+                self.trigger_delay_edit.setText(scope_view.get("trigger_delay", ""))
+                self.trigger_edge_combo.setCurrentText(scope_view.get("trigger_edge", ""))
+                self.trigger_mode_combo.setCurrentText(scope_view.get("trigger_mode", ""))
+                self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
+                self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
 
-            for le, var in zip(self.scope_var_lines, scope_view.get("variables", [])):
-                le.setText(var)
-            for cb, trigger in zip(self.trigger_var_checkbox, scope_view.get("trigger", [])):
-                cb.setChecked(trigger)
-            for sc, scale in zip(self.scope_scaling_boxes, scope_view.get("scale", [])):
-                sc.setText(scale)
-            for cb, show in zip(self.scope_channel_checkboxes, scope_view.get("show", [])):
-                cb.setChecked(show)
+                # WatchView Only (Tab 3) configuration
+                tab3_view = config.get("tab3_view", {})
+                self.clear_tab3()  # Clear the current Tab 3 state before loading
+                variables = tab3_view.get("variables", [])
+                values = tab3_view.get("values", [])
+                scaling = tab3_view.get("scaling", [])
+                offsets = tab3_view.get("offsets", [])
+                live = tab3_view.get("live", [])
 
-            self.triggerVariable = scope_view.get("trigger_variable", "")
-            self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
-            self.trigger_delay_edit.setText(scope_view.get("trigger_delay", ""))
-            self.trigger_edge_combo.setCurrentText(scope_view.get("trigger_edge", ""))
-            self.trigger_mode_combo.setCurrentText(scope_view.get("trigger_mode", ""))
-            self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
-            self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
+                for var, val, sc, off, lv in zip(variables, values, scaling, offsets, live):
+                    self.add_variable_row()  # Add a new row for each variable
+                    self.variable_line_edits[-1].setText(var)
+                    self.value_line_edits[-1].setText(val)
+                    self.scaling_edits_tab3[-1].setText(sc)
+                    self.offset_edits_tab3[-1].setText(off)
+                    self.live_tab3[-1].setChecked(lv)
+
+                logging.info(f"Configuration loaded from {file_path}")
+        except Exception as e:
+            logging.error(f"Error loading configuration: {e}")
+            self.handle_error(f"Error loading configuration: {e}")
 
     def setup_tab3(self):
         """Set up the third tab (WatchView Only) with Add/Remove Variable buttons and live functionality."""
         self.tab3.layout = QVBoxLayout()
         self.tab3.setLayout(self.tab3.layout)
 
-        self.variable_list_layout = QVBoxLayout()  # Layout for variable list and buttons
+        # Add a scroll area to the layout
+        scroll_area = QScrollArea()
+        scroll_area_widget = QWidget()  # Widget to hold the scroll area content
+        self.tab3.layout.addWidget(scroll_area)
+
+        # Create a vertical layout inside the scroll area
+        scroll_area_layout = QVBoxLayout(scroll_area_widget)
+        scroll_area_widget.setLayout(scroll_area_layout)
+
+        scroll_area.setWidget(scroll_area_widget)
+        scroll_area.setWidgetResizable(True)  # Make the scroll area resizable
 
         # Create grid layout for adding rows similar to WatchView
         self.watchview_grid = QGridLayout()
-        self.tab3.layout.addLayout(self.watchview_grid)
+        scroll_area_layout.addLayout(self.watchview_grid)
 
-        # Add header row for the grid
+        # Set margins and spacing to remove excess gaps
+        self.watchview_grid.setContentsMargins(0, 0, 0, 0)  # Remove margins
+        self.watchview_grid.setVerticalSpacing(2)  # Reduce vertical spacing between rows
+        self.watchview_grid.setHorizontalSpacing(5)  # Reduce horizontal spacing between columns
+
+        # Add header row for the grid with proper alignment and size policy
         headers = ["Live", "Variable", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
         for i, header in enumerate(headers):
-            self.watchview_grid.addWidget(QLabel(header), 0, i)
+            label = QLabel(header)
+            label.setAlignment(Qt.AlignCenter)  # Center align the headers
+            label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)  # Prevent labels from stretching vertically
+            self.watchview_grid.addWidget(label, 0, i)
 
-        # Add buttons for adding and removing variables
-        self.add_variable_button = QPushButton("Add Variable")
-        self.variable_list_layout.addWidget(self.add_variable_button)
-        self.add_variable_button.clicked.connect(self.add_variable_row)
-
-        self.tab3.layout.addLayout(self.variable_list_layout)
+        # Set column stretch to allow the variable field to resize
+        self.watchview_grid.setColumnStretch(1, 5)  # Column for 'Variable'
+        self.watchview_grid.setColumnStretch(2, 2)  # Column for 'Value'
+        self.watchview_grid.setColumnStretch(3, 1)  # Column for 'Scaling'
+        self.watchview_grid.setColumnStretch(4, 1)  # Column for 'Offset'
+        self.watchview_grid.setColumnStretch(5, 1)  # Column for 'Scaled Value'
+        self.watchview_grid.setColumnStretch(6, 1)  # Column for 'Unit'
 
         # Keep track of the current row count
         self.current_row = 1
@@ -1530,6 +1597,35 @@ class X2cscopeGui(QMainWindow):
         self.variable_line_edits = []
         self.value_line_edits = []
         self.row_widgets = []
+
+        # Add button to add more variables at the bottom
+        self.add_variable_button = QPushButton("Add Variable")
+        scroll_area_layout.addWidget(self.add_variable_button, alignment=Qt.AlignBottom)
+        self.add_variable_button.clicked.connect(self.add_variable_row)
+
+        # Add Load and Save Config buttons
+        self.save_button_tab3 = QPushButton("Save Config")
+        self.load_button_tab3 = QPushButton("Load Config")
+        self.save_button_tab3.setFixedSize(100, 30)
+        self.load_button_tab3.setFixedSize(100, 30)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.save_button_tab3)
+        button_layout.addWidget(self.load_button_tab3)
+        scroll_area_layout.addLayout(button_layout)
+
+        # Connect buttons to their functions
+        self.save_button_tab3.clicked.connect(self.save_config)
+        self.load_button_tab3.clicked.connect(self.load_config)
+
+        # Adjust the scroll area margins to remove any additional gaps
+        scroll_area_layout.setContentsMargins(0, 0, 0, 0)
+
+    def clear_tab3(self):
+        """Clear the current state of Tab 3."""
+        while self.current_row > 1:
+            # Remove all the rows
+            row_widgets = self.row_widgets[-1]
+            self.remove_variable_row(*row_widgets)
 
     @pyqtSlot()
     def add_variable_row(self):
