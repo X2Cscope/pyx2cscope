@@ -198,9 +198,9 @@ class X2cscopeGui(QMainWindow):
         self.tab1 = QWidget()
         self.tab2 = QWidget()
         self.tab3 = QWidget()  # New tab for WatchView Only
-        self.tab_widget.addTab(self.tab1, "WatchView")
+        self.tab_widget.addTab(self.tab1, "WatchPlot")
         self.tab_widget.addTab(self.tab2, "ScopeView")
-        self.tab_widget.addTab(self.tab3, "WatchView Only")  # Add third tab
+        self.tab_widget.addTab(self.tab3, "WatchView")  # Add third tab
 
     def setup_tabs(self):
         """Set up the contents of each tab."""
