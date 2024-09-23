@@ -98,10 +98,20 @@ class X2cscopeGui(QMainWindow):
     def __init__(self):
         """Initializing all the elements required."""
         super().__init__()
-
+        self.x2cscope = None  # Ensures it is initialized to None at start
+        self.x2cscope_initialized = False  # Flag to ensure error message is shown only once
+        self.last_error_time = None  # Attribute to track the last time an error was shown
         self.triggerVariable = None
         self.initialize_variables()
         self.init_ui()
+
+    def check_x2cscope_initialization(self):
+        if self.x2cscope is None:
+            if not self.x2cscope_initialized:
+                self.handle_error("x2cscope is not initialized. Please connect to the device first.")
+                self.x2cscope_initialized = True  # Set the flag after showing the message once
+            return False
+        return True
 
     def initialize_variables(self):
         """Initialize instance variables."""
@@ -931,16 +941,14 @@ class X2cscopeGui(QMainWindow):
 
             self.scope_plot_widget.clear()
 
-            # Use the scope sample time set by the user
-            scope_sample_time_us = self.real_sampletime
-
             for i, (channel, data) in enumerate(data_storage.items()):
                 checkbox_state = self.scope_channel_checkboxes[i].isChecked()
                 logging.debug(f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}")
                 if checkbox_state:  # Check if the checkbox is checked
                     scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                     #time_values = self.real_sampletime  # Generate time values in ms
-                    start = self.real_sampletime / len(data)
+                    #start = self.real_sampletime / len(data)
+                    start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
                     data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(time_values, data, pen=pg.mkPen(color=self.plot_colors[i], width=2),
@@ -971,16 +979,15 @@ class X2cscopeGui(QMainWindow):
             logging.error(e)
 
     def handle_error(self, error_message: str):
-        """Displays an error message in a message box.
-
-        Args:
-            error_message (str): The error message to display.
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("Error")
-        msg_box.setText(error_message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec_()
+        """Displays an error message in a message box with a cooldown period."""
+        current_time = time.time()
+        if self.last_error_time is None or (current_time - self.last_error_time > 5):  # Cooldown period of 5 seconds
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("Error")
+            msg_box.setText(error_message)
+            msg_box.setStandardButtons(QMessageBox.Ok)
+            msg_box.exec_()
+            self.last_error_time = current_time  # Update the last error time
 
     def sampletime_edit(self):
         """Handles the editing of the sample time value."""
@@ -1087,19 +1094,11 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def select_elf_file(self):
-        """Open a file dialog to select an ELF file.
-
-        This method opens a file dialog for the user to select an ELF file.
-        The selected file path is then stored in settings for later use.
-        """
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("ELF Files (*.elf)")
         file_dialog.setFileMode(QFileDialog.ExistingFile)
-        fileinfo = QFileInfo(self.file_path)
-        self.select_file_button.setText(fileinfo.fileName())
-
         if self.file_path:
-            file_dialog.setDirectory(self.file_path)
+            file_dialog.setDirectory(os.path.dirname(self.file_path))
         if file_dialog.exec_():
             selected_files = file_dialog.selectedFiles()
             if selected_files:
@@ -1234,6 +1233,7 @@ class X2cscopeGui(QMainWindow):
 
             self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
             self.ser = self.x2cscope.interface
+
             #print(self.x2cscope.get_device_info())
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:
@@ -1271,7 +1271,7 @@ class X2cscopeGui(QMainWindow):
             self.plot_update_timer.start(self.timerValue)  # Start the continuous plot update
 
             self.restore_selected_variables()  # Restore the selections after reconnecting
-
+            self.x2cscope_initialized = False  # Reset the flag upon successful connection
         except Exception as e:
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
@@ -1321,6 +1321,7 @@ class X2cscopeGui(QMainWindow):
                 # Set the scope sample time from the user input in microseconds
                 scope_sample_time_us = int(self.scope_sampletime_edit.text())
                 self.real_sampletime = self.x2cscope.scope_sample_time(scope_sample_time_us)
+                print(f"Real sample time: {self.real_sampletime} µs")  # Check this value
 
                 # Update the Total Time display
                 self.total_time_value.setText(str(self.real_sampletime))
@@ -1353,7 +1354,7 @@ class X2cscopeGui(QMainWindow):
                     trigger_level = 0
                 else:
                     try:
-                        trigger_level = float(trigger_level_text)
+                        trigger_level = int(trigger_level_text) # YA
                         print(trigger_level)
                     except ValueError:
                         logging.error(f"Invalid trigger level value: {trigger_level_text}")
@@ -1402,7 +1403,8 @@ class X2cscopeGui(QMainWindow):
                     for i, (channel, data) in enumerate(data_storage.items()):
                         if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
                             scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
-                            start = self.real_sampletime / len(data)
+                            #start = self.real_sampletime / len(data)
+                            start = 0
                             time_values = np.linspace(start, self.real_sampletime, len(data))
                             print("timevalue",len(time_values))
                             print(self.real_sampletime)
@@ -1436,50 +1438,39 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(error_message)
 
     def save_config(self):
-        """Save the current configuration for WatchView, ScopeView, and WatchView Only (Tab 3)."""
         try:
-            # Store WatchView (Tab 1) configuration
-            watch_config = {
-                "variables": [le.text() for le in self.line_edit_boxes],
-                "values": [ve.text() for ve in self.Value_var_boxes],
-                "scaling": [sc.text() for sc in self.scaling_boxes],
-                "offsets": [off.text() for off in self.offset_boxes],
-                "visible": [cb.isChecked() for cb in self.plot_checkboxes],
-                "live": [cb.isChecked() for cb in self.live_checkboxes],
-            }
-
-            # Store ScopeView (Tab 2) configuration
-            scope_config = {
-                "variables": [le.text() for le in self.scope_var_lines],
-                "trigger": [cb.isChecked() for cb in self.trigger_var_checkbox],
-                "scale": [sc.text() for sc in self.scope_scaling_boxes],
-                "show": [cb.isChecked() for cb in self.scope_channel_checkboxes],
-                "trigger_variable": self.triggerVariable,
-                "trigger_level": self.trigger_level_edit.text(),
-                "trigger_delay": self.trigger_delay_edit.text(),
-                "trigger_edge": self.trigger_edge_combo.currentText(),
-                "trigger_mode": self.trigger_mode_combo.currentText(),
-                "sample_time_factor": self.sample_time_factor.text(),
-                "single_shot": self.single_shot_checkbox.isChecked(),
-            }
-
-            # Store WatchView Only (Tab 3) configuration
-            tab3_config = {
-                "variables": [le.text() for le in self.variable_line_edits],
-                "values": [ve.text() for ve in self.value_line_edits],
-                "scaling": [sc.text() for sc in self.scaling_edits_tab3],
-                "offsets": [off.text() for off in self.offset_edits_tab3],
-                "live": [cb.isChecked() for cb in self.live_tab3],
-            }
-
-            # Combine all configurations into a single dictionary
+            # Configuration dictionary includes the path to the ELF file
             config = {
-                "watch_view": watch_config,
-                "scope_view": scope_config,
-                "tab3_view": tab3_config,
+                "elf_file": self.file_path,  # Store the current ELF file path
+                "watch_view": {
+                    "variables": [le.text() for le in self.line_edit_boxes],
+                    "values": [ve.text() for ve in self.Value_var_boxes],
+                    "scaling": [sc.text() for sc in self.scaling_boxes],
+                    "offsets": [off.text() for off in self.offset_boxes],
+                    "visible": [cb.isChecked() for cb in self.plot_checkboxes],
+                    "live": [cb.isChecked() for cb in self.live_checkboxes],
+                },
+                "scope_view": {
+                    "variables": [le.text() for le in self.scope_var_lines],
+                    "trigger": [cb.isChecked() for cb in self.trigger_var_checkbox],
+                    "scale": [sc.text() for sc in self.scope_scaling_boxes],
+                    "show": [cb.isChecked() for cb in self.scope_channel_checkboxes],
+                    "trigger_variable": self.triggerVariable,
+                    "trigger_level": self.trigger_level_edit.text(),
+                    "trigger_delay": self.trigger_delay_edit.text(),
+                    "trigger_edge": self.trigger_edge_combo.currentText(),
+                    "trigger_mode": self.trigger_mode_combo.currentText(),
+                    "sample_time_factor": self.sample_time_factor.text(),
+                    "single_shot": self.single_shot_checkbox.isChecked(),
+                },
+                "tab3_view": {
+                    "variables": [le.text() for le in self.variable_line_edits],
+                    "values": [ve.text() for ve in self.value_line_edits],
+                    "scaling": [sc.text() for sc in self.scaling_edits_tab3],
+                    "offsets": [off.text() for off in self.offset_edits_tab3],
+                    "live": [cb.isChecked() for cb in self.live_tab3],
+                }
             }
-
-            # Save the configuration to a JSON file
             file_path, _ = QFileDialog.getSaveFileName(self, "Save Configuration", "", "JSON Files (*.json)")
             if file_path:
                 with open(file_path, "w") as file:
@@ -1490,15 +1481,23 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Error saving configuration: {e}")
 
     def load_config(self):
-        """Load the configuration for WatchView, ScopeView, and WatchView Only (Tab 3) from a file."""
         try:
-            # Load the configuration from a JSON file
             file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
             if file_path:
                 with open(file_path, "r") as file:
                     config = json.load(file)
 
-                # WatchView (Tab 1) configuration
+                elf_file_path = config.get("elf_file", "")
+                if os.path.exists(elf_file_path):
+                    self.file_path = elf_file_path
+                else:
+                    QMessageBox.warning(self, "File Not Found", f"The ELF file {elf_file_path} does not exist.")
+                    self.select_elf_file()  # Prompt to select a new ELF file if not found
+
+                self.select_file_button.setText(QFileInfo(self.file_path).fileName())
+                self.settings.setValue("file_path", self.file_path)
+
+                # Load WatchView configuration
                 watch_view = config.get("watch_view", {})
                 for le, var in zip(self.line_edit_boxes, watch_view.get("variables", [])):
                     le.setText(var)
@@ -1513,16 +1512,12 @@ class X2cscopeGui(QMainWindow):
                 for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
                     cb.setChecked(live)
 
-                # ScopeView (Tab 2) configuration
+                # Load ScopeView configuration
                 scope_view = config.get("scope_view", {})
                 for le, var in zip(self.scope_var_lines, scope_view.get("variables", [])):
                     le.setText(var)
                 for cb, trigger in zip(self.trigger_var_checkbox, scope_view.get("trigger", [])):
                     cb.setChecked(trigger)
-                for sc, scale in zip(self.scope_scaling_boxes, scope_view.get("scale", [])):
-                    sc.setText(scale)
-                for cb, show in zip(self.scope_channel_checkboxes, scope_view.get("show", [])):
-                    cb.setChecked(show)
                 self.triggerVariable = scope_view.get("trigger_variable", "")
                 self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
                 self.trigger_delay_edit.setText(scope_view.get("trigger_delay", ""))
@@ -1530,23 +1525,6 @@ class X2cscopeGui(QMainWindow):
                 self.trigger_mode_combo.setCurrentText(scope_view.get("trigger_mode", ""))
                 self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
                 self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
-
-                # WatchView Only (Tab 3) configuration
-                tab3_view = config.get("tab3_view", {})
-                self.clear_tab3()  # Clear the current Tab 3 state before loading
-                variables = tab3_view.get("variables", [])
-                values = tab3_view.get("values", [])
-                scaling = tab3_view.get("scaling", [])
-                offsets = tab3_view.get("offsets", [])
-                live = tab3_view.get("live", [])
-
-                for var, val, sc, off, lv in zip(variables, values, scaling, offsets, live):
-                    self.add_variable_row()  # Add a new row for each variable
-                    self.variable_line_edits[-1].setText(var)
-                    self.value_line_edits[-1].setText(val)
-                    self.scaling_edits_tab3[-1].setText(sc)
-                    self.offset_edits_tab3[-1].setText(off)
-                    self.live_tab3[-1].setChecked(lv)
 
                 logging.info(f"Configuration loaded from {file_path}")
         except Exception as e:
