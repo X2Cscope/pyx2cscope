@@ -5,6 +5,7 @@ It focuses on extracting structure members and variable information from DWARF d
 import logging
 from elftools.elf.elffile import ELFFile
 from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
+from elftools.elf.sections import SymbolTableSection
 
 class Elf32Parser(ElfParser):
     """Class for parsing ELF files compatible with 32-bit architectures."""
@@ -22,11 +23,16 @@ class Elf32Parser(ElfParser):
 
     def _load_elf_file(self):
         try:
-            with open(self.elf_path, "rb") as stream:
-                self.elf_file = ELFFile(stream)
-                self.dwarf_info = self.elf_file.get_dwarf_info()
+            self.stream = open(self.elf_path, "rb")
+            self.elf_file = ELFFile(self.stream)
+            self.dwarf_info = self.elf_file.get_dwarf_info()
         except IOError:
             raise Exception(f"Error loading ELF file: {self.elf_path}")
+
+    def close_elf_file(self):
+        """Closes the ELF file stream."""
+        if self.stream:
+            self.stream.close()
 
     def _map_variables(self) -> dict[str, VariableInfo]:
         self.variable_map.clear()
@@ -118,23 +124,28 @@ class Elf32Parser(ElfParser):
             self._process_base_type(end_die)
 
     def _extract_address(self, die_variable):
-        """Extracts the address of the current variable."""
+        """Extracts the address of the current variable or fetches it from the symbol table if not found."""
         try:
-            if die_variable.attributes.get("DW_AT_location"):
+            if "DW_AT_location" in die_variable.attributes:
                 data = list(die_variable.attributes["DW_AT_location"].value)[1:]
                 self.address = int.from_bytes(bytes(data), byteorder="little")
-            elif die_variable.attributes.get("DW_AT_external"):
-                actual_die = self._find_actual_declaration(die_variable)
-                if actual_die and actual_die.attributes.get("DW_AT_location"):
-                    data = list(actual_die.attributes["DW_AT_location"].value)[1:]
-                    self.address = int.from_bytes(bytes(data), byteorder="little")
-                else:
-                    self.address = None
             else:
-                self.address = None
+                self.address = self._fetch_address_from_symtab(
+                    die_variable.attributes.get("DW_AT_name").value.decode('utf-8'))
         except Exception as e:
             logging.error(e)
             self.address = None
+
+    def _fetch_address_from_symtab(self, variable_name):
+        """Fetches the address of a variable from the .symtab section."""
+        for section in self.elf_file.iter_sections():
+            if isinstance(section, SymbolTableSection):
+
+                for symbol in section.iter_symbols():
+                    if symbol.name == variable_name and symbol['st_info']['type'] == 'STT_OBJECT':
+
+                        return symbol['st_value']
+        return None
 
     def _find_actual_declaration(self, die_variable):
         """Find the actual declaration of an extern variable."""
@@ -298,18 +309,26 @@ class Elf32Parser(ElfParser):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
-    elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
+    #logging.basicConfig(level=logging.DEBUG)
+    #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
+    #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
+    elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(variable_map)
 
+
     print("'''''''''''''''''''''''''''''''''''''''' ")
+    counter = 0
     for var_name, var_info in variable_map.items():
 
-        if var_info.address ==None and var_info.array_size !=0:
-            if var_info.array_size!=0:
-                print(var_name)
-            print(f"Variable Name: {var_name}, Info: {var_info}")
+        #if var_info.address ==None and var_info.array_size !=0:
+            #if var_info.array_size!=0:
+            #    print(var_name)
+            #print(f"Variable Name: {var_name}, Info: {var_info}")
 
+        if var_info.address ==None:
+            print(f"Variable Name: {var_name}, Info: {var_info}")
+            counter+=1
+    print("Number of variable without address",counter)
+    print("Number of variable in total", len(variable_map.items()))
