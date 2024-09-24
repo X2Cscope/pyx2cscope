@@ -56,6 +56,7 @@ class VariableSelectionDialog(QDialog):
         self.variables = variables
         self.selected_variable = None
 
+
         self.init_ui()
 
     def init_ui(self):
@@ -102,8 +103,11 @@ class X2cscopeGui(QMainWindow):
         self.x2cscope_initialized = False  # Flag to ensure error message is shown only once
         self.last_error_time = None  # Attribute to track the last time an error was shown
         self.triggerVariable = None
+        self.elf_file_loaded = False
+        self.config_file_loaded = False
         self.initialize_variables()
         self.init_ui()
+
 
     def check_x2cscope_initialization(self):
         if self.x2cscope is None:
@@ -1105,6 +1109,8 @@ class X2cscopeGui(QMainWindow):
                 self.file_path = selected_files[0]
                 self.settings.setValue("file_path", self.file_path)
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
+                self.elf_file_loaded = True
+                self.attempt_connection()
 
     def refresh_line_edit(self):
         """Refresh the contents of the variable selection line edits.
@@ -1159,10 +1165,20 @@ class X2cscopeGui(QMainWindow):
                     timer.stop()
             self.plot_data.clear()
             self.save_selected_variables()  # Save the current selections before disconnecting
-            self.connect_serial()
+            try:
+                self.connect_serial()
+            except Exception as e:
+                self.handle_failed_connection()
         else:
             self.disconnect_serial()
 
+    def handle_failed_connection(self):
+        choice = QMessageBox.question(self, 'Connection Failed',
+                                      "Failed to connect with the current settings. Would you like to adjust the settings?",
+                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if choice == QMessageBox.Yes:
+            # Optionally, bring up settings dialog or similar
+            self.show_connection_settings()
     def save_selected_variables(self):
         """Save the current selections of variables in WatchView and ScopeView."""
         self.previous_selected_variables = {
@@ -1216,6 +1232,10 @@ class X2cscopeGui(QMainWindow):
             error_message = f"Error while disconnecting: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
+
+        if self.ser and self.ser.is_open:
+            self.ser.close()
+            self.Connect_button.setText("Connect")
 
     def connect_serial(self):
         """Establish a serial connection based on the current UI settings.
@@ -1276,6 +1296,17 @@ class X2cscopeGui(QMainWindow):
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
+        if not self.ser:
+            # Establish new connection
+            try:
+                port = self.port_combo.currentText()
+                baud_rate = int(self.baud_combo.currentText())
+                self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
+                self.ser = self.x2cscope.interface
+                # Additional logic...
+                self.Connect_button.setText("Disconnect")
+            except Exception as e:
+                self.handle_error(f"Connection failed: {str(e)}")
 
     def close_plot_window(self):
         """Close the plot window if it is open.
@@ -1441,6 +1472,8 @@ class X2cscopeGui(QMainWindow):
             # Configuration dictionary includes the path to the ELF file
             config = {
                 "elf_file": self.file_path,  # Store the current ELF file path
+                "com_port": self.port_combo.currentText(),
+                "baud_rate": self.baud_combo.currentText(),
                 "watch_view": {
                     "variables": [le.text() for le in self.line_edit_boxes],
                     "values": [ve.text() for ve in self.Value_var_boxes],
@@ -1486,14 +1519,20 @@ class X2cscopeGui(QMainWindow):
             if file_path:
                 with open(file_path, "r") as file:
                     config = json.load(file)
+                    self.config_file_loaded = True
+                    self.port_combo.setCurrentText(config.get("com_port", ""))
+                    self.baud_combo.setCurrentText(config.get("baud_rate", ""))
 
                 elf_file_path = config.get("elf_file", "")
                 if os.path.exists(elf_file_path):
                     self.file_path = elf_file_path
+                    self.elf_file_loaded = True
                 else:
                     QMessageBox.warning(self, "File Not Found", f"The ELF file {elf_file_path} does not exist.")
                     self.select_elf_file()  # Prompt to select a new ELF file if not found
 
+
+                self.attempt_connection()
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
                 self.settings.setValue("file_path", self.file_path)
 
@@ -1545,6 +1584,10 @@ class X2cscopeGui(QMainWindow):
             logging.error(f"Error loading configuration: {e}")
             self.handle_error(f"Error loading configuration: {e}")
 
+    def attempt_connection(self):
+        # Ensure both config and ELF file are loaded
+        if self.elf_file_loaded and self.config_file_loaded:
+            self.toggle_connection()
     def clear_tab3(self):
         """Remove all variable rows in Tab 3 efficiently."""
         if not self.row_widgets:  # Check if there's anything to clear
