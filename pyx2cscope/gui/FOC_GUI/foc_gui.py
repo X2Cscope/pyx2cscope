@@ -1403,7 +1403,6 @@ class X2cscopeGui(QMainWindow):
                     for i, (channel, data) in enumerate(data_storage.items()):
                         if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
                             scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
-                            #start = self.real_sampletime / len(data)
                             start = 0
                             time_values = np.linspace(start, self.real_sampletime, len(data))
                             print("timevalue",len(time_values))
@@ -1468,6 +1467,7 @@ class X2cscopeGui(QMainWindow):
                     "values": [ve.text() for ve in self.value_line_edits],
                     "scaling": [sc.text() for sc in self.scaling_edits_tab3],
                     "offsets": [off.text() for off in self.offset_edits_tab3],
+                    "scaled_values": [sv.text() for sv in self.scaled_value_edits_tab3],
                     "live": [cb.isChecked() for cb in self.live_tab3],
                 }
             }
@@ -1497,7 +1497,7 @@ class X2cscopeGui(QMainWindow):
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
                 self.settings.setValue("file_path", self.file_path)
 
-                # Load WatchView configuration
+                # Load WatchPlot configuration
                 watch_view = config.get("watch_view", {})
                 for le, var in zip(self.line_edit_boxes, watch_view.get("variables", [])):
                     le.setText(var)
@@ -1526,10 +1526,43 @@ class X2cscopeGui(QMainWindow):
                 self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
                 self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
 
-                logging.info(f"Configuration loaded from {file_path}")
+                self.clear_tab3()  # Assumed function to clear Tab 3
+                # Load configuration for Tab 3 WatchView
+                tab3_view = config.get("tab3_view", {})
+                for var, val, sc, off, sv, live in zip(tab3_view.get("variables", []), tab3_view.get("values", []),
+                                                       tab3_view.get("scaling", []), tab3_view.get("offsets", []),
+                                                       tab3_view.get("scaled_values", []), tab3_view.get("live", [])):
+                    self.add_variable_row()  # Add a new row
+                    self.variable_line_edits[-1].setText(var)
+                    self.value_line_edits[-1].setText(val)
+                    self.scaling_edits_tab3[-1].setText(sc)
+                    self.offset_edits_tab3[-1].setText(off)
+                    self.scaled_value_edits_tab3[-1].setText(sv)
+                    self.live_tab3[-1].setChecked(live)
+
+            logging.info(f"Configuration loaded from {file_path}")
         except Exception as e:
             logging.error(f"Error loading configuration: {e}")
             self.handle_error(f"Error loading configuration: {e}")
+
+    def clear_tab3(self):
+        """Remove all variable rows in Tab 3 efficiently."""
+        if not self.row_widgets:  # Check if there's anything to clear
+            return  # Skip clearing if already empty
+
+        # Block updates to the GUI while making changes
+        self.tab3.layout().blockSignals(True)
+        try:
+            while self.row_widgets:
+                for widget in self.row_widgets.pop():
+                    widget.setVisible(False)  # Hide widget to improve performance
+                    self.watchview_grid.removeWidget(widget)  # Remove widget from grid
+                    widget.deleteLater()  # Schedule widget for deletion
+
+            self.current_row = 1  # Reset the row count
+        finally:
+            self.tab3.layout().blockSignals(False)  # Ensure signals are re-enabled
+            self.tab3.layout().update()  # Force an update to the layout
 
     def setup_tab3(self):
         """Set up the third tab (WatchView Only) with Add/Remove Variable buttons and live functionality."""
