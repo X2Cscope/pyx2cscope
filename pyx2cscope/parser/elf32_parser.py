@@ -14,12 +14,14 @@ class Elf32Parser(ElfParser):
         """Initialize the Elf32Parser with the given ELF file path."""
         self.elf_path = elf_path
         self.variable_map = {}
+        self.symbol_table = {}  # Ensure this initialization is included
         self.address = None
         self.var_name = None
         self.die_variable = None
         self.elf_file = None
         self.dwarf_info = None
         self._load_elf_file()
+        self._load_symbol_table()  # Load symbol table entries into a dictionary
 
     def _load_elf_file(self):
         try:
@@ -136,16 +138,18 @@ class Elf32Parser(ElfParser):
             logging.error(e)
             self.address = None
 
-    def _fetch_address_from_symtab(self, variable_name):
-        """Fetches the address of a variable from the .symtab section."""
+    def _load_symbol_table(self):
+        """Loads symbol table entries into a dictionary for fast access."""
         for section in self.elf_file.iter_sections():
             if isinstance(section, SymbolTableSection):
-
                 for symbol in section.iter_symbols():
-                    if symbol.name == variable_name and symbol['st_info']['type'] == 'STT_OBJECT':
+                    if symbol['st_info'].type == 'STT_OBJECT':
+                        self.symbol_table[symbol.name] = symbol['st_value']
 
-                        return symbol['st_value']
-        return None
+    def _fetch_address_from_symtab(self, variable_name):
+        """Fetches the address of a variable from the preloaded symbol table."""
+        return self.symbol_table.get(variable_name, None)
+
 
     def _find_actual_declaration(self, die_variable):
         """Find the actual declaration of an extern variable."""
