@@ -482,26 +482,12 @@ class Elf16Parser(ElfParser):
                     return die
         return None
 
-    def _load_symbol_table(self):
-        """Load the symbol table from the ELF file."""
-        try:
-            # Command to read the symbol table
-            command = [self.xc16_read_elf_path, "-s", self.elf_path]
-            # Execute the command and capture the output
-            output = subprocess.check_output(command, universal_newlines=True)
-            self.symbol_table = {}
-            for line in output.splitlines():
-                parts = line.split()
-                if len(parts) > 7 and parts[0].isdigit():
-                    # Assuming the format of the readelf symbol table output is standard
-                    # Index, Value, Size, Type, Bind, Vis, Ndx, Name
-                    symbol_address = int(parts[1], 16)
-                    symbol_name = parts[7]
-                    self.symbol_table[symbol_name] = symbol_address
-        except subprocess.CalledProcessError:
-            logging.error("Failed to load symbol table from ELF file.")
-
     def _map_variables(self) -> dict[str, VariableInfo]:
+        """Map variables from the DWARF information.
+
+        Returns:
+            dict: A dictionary mapping variable names to their information.
+        """
         self.variable_map.clear()
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
@@ -534,9 +520,8 @@ class Elf16Parser(ElfParser):
 
 if __name__ == "__main__":
     # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ZSMT-42BLF02-MCLV2-33ck256mp508.X\dist\default\production\ZSMT-42BLF02-MCLV2-33ck256mp508.X.production.elf"
-    #elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
+    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
     #logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
-    elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
     print(variable_map)
