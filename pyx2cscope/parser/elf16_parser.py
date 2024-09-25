@@ -57,6 +57,7 @@ class Elf16Parser(ElfParser):
         super().__init__(elf_path)
         self.tree_string = None
         self.next_line = None
+        self._load_symbol_table()  # Load symbol table after basic initialization
 
     def _parse_cu_attributes(self):
         """Parse the attributes of a compilation unit from the ELF file.
@@ -481,22 +482,45 @@ class Elf16Parser(ElfParser):
                     return die
         return None
 
-    def _map_variables(self) -> dict[str, VariableInfo]:
-        """Map variables from the DWARF information.
+    def _load_symbol_table(self):
+        """Load the symbol table from the ELF file."""
+        try:
+            # Command to read the symbol table
+            command = [self.xc16_read_elf_path, "-s", self.elf_path]
+            # Execute the command and capture the output
+            output = subprocess.check_output(command, universal_newlines=True)
+            self.symbol_table = {}
+            for line in output.splitlines():
+                parts = line.split()
+                if len(parts) > 7 and parts[0].isdigit():
+                    # Assuming the format of the readelf symbol table output is standard
+                    # Index, Value, Size, Type, Bind, Vis, Ndx, Name
+                    symbol_address = int(parts[1], 16)
+                    symbol_name = parts[7]
+                    self.symbol_table[symbol_name] = symbol_address
+        except subprocess.CalledProcessError:
+            logging.error("Failed to load symbol table from ELF file.")
 
-        Returns:
-            dict: A dictionary mapping variable names to their information.
-        """
+    def _map_variables(self) -> dict[str, VariableInfo]:
         self.variable_map.clear()
         for cu_offset, cu in self.dwarf_info.items():
             for die_offset, die in cu["elements"].items():
                 end_die = self._locate_tag_variable_end_die(die)
                 if end_die is None:
                     continue
-                address = self._get_address_location(die.get("DW_AT_location"))
-                if not self._check_for_pointer_tag(
-                    die, end_die, address
-                ) and not self._check_for_structure_tag(die, end_die, address):
+                address = None
+                if "DW_AT_location" in die:
+                    address = self._get_address_location(die.get("DW_AT_location"))
+                else:
+                    # Check symbol table if DW_AT_location is not present
+                    address = self.symbol_table.get(die["DW_AT_name"], None)
+
+                if address is None:
+                    continue  # Skip variables without an address
+
+                if not self._check_for_pointer_tag(die, end_die, address) and not self._check_for_structure_tag(die,
+                                                                                                                end_die,
+                                                                                                                address):
                     variable_data = VariableInfo(
                         name=die["DW_AT_name"],
                         byte_size=end_die["DW_AT_byte_size"],
@@ -510,8 +534,9 @@ class Elf16Parser(ElfParser):
 
 if __name__ == "__main__":
     # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ZSMT-42BLF02-MCLV2-33ck256mp508.X\dist\default\production\ZSMT-42BLF02-MCLV2-33ck256mp508.X.production.elf"
-    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-    logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
+    #elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
+    #logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
+    elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
     print(variable_map)
