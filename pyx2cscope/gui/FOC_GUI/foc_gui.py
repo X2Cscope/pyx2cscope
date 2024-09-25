@@ -471,6 +471,8 @@ class X2cscopeGui(QMainWindow):
         self.scope_plot_widget.setBackground('w')
         self.scope_plot_widget.addLegend()  # Add legend to the plot widget
         self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
+        # Change to 1-button zoom mode
+        self.scope_plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
         self.tab2.layout.addWidget(self.scope_plot_widget)
 
         # Add Save and Load buttons
@@ -696,6 +698,8 @@ class X2cscopeGui(QMainWindow):
         self.watch_plot_widget.setBackground('w')
         self.watch_plot_widget.addLegend()  # Add legend to the plot widget
         self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
+        # Change to 1-button zoom mode
+        self.watch_plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
         self.tab1.layout.addWidget(self.watch_plot_widget)
 
     def setup_connections(self):
