@@ -1,0 +1,158 @@
+{
+    "watch_view": {
+        "variables": [
+            "motor.apiData.velocityReference",
+            "motor.apiData.velocityMeasured",
+            "",
+            "",
+            ""
+        ],
+        "values": [
+            "5143",
+            "5132",
+            "0",
+            "0",
+            "0"
+        ],
+        "scaling": [
+            "1",
+            "1",
+            "1",
+            "1",
+            "1"
+        ],
+        "offsets": [
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "visible": [
+            true,
+            true,
+            false,
+            false,
+            false
+        ],
+        "live": [
+            true,
+            true,
+            false,
+            false,
+            false
+        ]
+    },
+    "scope_view": {
+        "variables": [
+            "motor.iabc.a",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+        "trigger": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+        ],
+        "scale": [
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1"
+        ],
+        "show": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+        ],
+        "trigger_variable": null,
+        "trigger_level": "0",
+        "trigger_delay": "0",
+        "trigger_edge": "Rising",
+        "trigger_mode": "Auto",
+        "sample_time_factor": "1",
+        "single_shot": false
+    },
+    "tab3_view": {
+        "variables": [
+            "motor.apiData.velocityMeasured",
+            "",
+            "",
+            "",
+            "",
+            "motor.apiData.velocityReference",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+        "values": [
+            "5169",
+            "",
+            "",
+            "",
+            "",
+            "5143",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+        "scaling": [
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1",
+            "1"
+        ],
+        "offsets": [
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
+        "live": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false
+        ]
+    }
+}
