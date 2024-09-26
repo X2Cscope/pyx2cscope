@@ -1,8 +1,8 @@
 """X2CScope module for interfacing with the X2C firmware enabled embedded systems.
 
 The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers. It
-is utilising LNET protocol to communicate with the firmware. LNET protocoll is implemented in the mchplnet package.
-The package provides an interface to connect to the firmware, set up scope channels, request data, and process
+is utilising LNET protocol to communicate with the firmware. LNET protocol is implemented in the mchplnet package.
+The package provides an interface to connect to the firmware, set up scope channels, request data, and a process
 received data."""
 
 import logging
@@ -50,7 +50,7 @@ class TriggerConfig:
 
     Attributes:
         variable (Variable): The variable to use as the trigger source.
-        trigger_level (int): The trigger level value for specified channel.
+        trigger_level (int): The trigger level value for a specified channel.
         trigger_mode (int): 0 Auto, 1 Triggered (default) .
         trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
         trigger_edge (int): Rising 0, falling 1.
@@ -213,7 +213,7 @@ class X2CScope:
         """Define a pre-scaler for sampling mode.
 
         This can be used to extend total sampling time at the cost of resolution.
-        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
+        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
 
         Args:
             sample_time (int): The sample time factor.
@@ -426,3 +426,14 @@ class X2CScope:
 
         logging.info(f"Total time for the scope functionality: {total_time_milliseconds} ms")
         return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
+
+    def get_device_info(self):
+        device_info = self.variable_factory.device_info
+        return {
+            "processor_id": device_info.processor_id,
+            "uc_width": device_info.uc_width,
+            "date": device_info.appDate,
+            "time": device_info.appTime,
+            "AppVer": device_info.appVer,
+            "dsp_state": device_info.dsp_state
+        }
