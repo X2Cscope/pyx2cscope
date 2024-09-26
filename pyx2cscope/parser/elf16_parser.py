@@ -57,7 +57,6 @@ class Elf16Parser(ElfParser):
         super().__init__(elf_path)
         self.tree_string = None
         self.next_line = None
-        self._load_symbol_table()  # Load symbol table after basic initialization
 
     def _parse_cu_attributes(self):
         """Parse the attributes of a compilation unit from the ELF file.
@@ -497,9 +496,9 @@ class Elf16Parser(ElfParser):
                 address = None
                 if "DW_AT_location" in die:
                     address = self._get_address_location(die.get("DW_AT_location"))
-                else:
-                    # Check symbol table if DW_AT_location is not present
-                    address = self.symbol_table.get(die["DW_AT_name"], None)
+                # else:
+                #     # Check symbol table if DW_AT_location is not present
+                #     address = self.symbol_table.get(die["DW_AT_name"], None)
 
                 if address is None:
                     continue  # Skip variables without an address

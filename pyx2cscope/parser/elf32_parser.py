@@ -317,7 +317,8 @@ if __name__ == "__main__":
     #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
-    elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
+    #elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
+    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf" # 16bit-ELF
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(variable_map)
@@ -332,8 +333,8 @@ if __name__ == "__main__":
             #    print(var_name)
             #print(f"Variable Name: {var_name}, Info: {var_info}")
 
-        if var_info.address ==None:
+        # if var_info.address ==None:
+        #     print(f"Variable Name: {var_name}, Info: {var_info}")
+        #     counter+=1
+        if var_info.array_size != 0:
             print(f"Variable Name: {var_name}, Info: {var_info}")
-            counter+=1
-    print("Number of variable without address",counter)
-    print("Number of variable in total", len(variable_map.items()))
