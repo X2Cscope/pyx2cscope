@@ -4,17 +4,18 @@
 
 # pyX2Cscope
 - pyX2Cscope is the Python implementation of the X2Cscope plugin from MPLABX.
-- This will let the user use the functionality of X2Cscope even outside mplabx enviroment / Standalone.
+- This will let the user use the functionality of X2Cscope even outside mplabx environment / Standalone.
 - It allows user to:
   - Automated Unit Tests (TDD) using pytest
   - BDD(behaviour driven development), Framework: "Cucumber"
   - Different user interface
   - Data collection for machine learning and training models
   - Run-Time data analysis
-  - Use of Real Time AI model
+  - Use of a Real Time AI model
   - HiL(Hardware in the loop) testing and tuning
 
-Dor detailed documentation is hosted at github.io: [https://x2cscope.github.io/pyx2cscope/](https://x2cscope.github.io/pyx2cscope/)
+Dor detailed documentation is hosted at GitHub.io:
+[https://x2cscope.github.io/pyx2cscope/](https://x2cscope.github.io/pyx2cscope/)
 
 ## Install
 
@@ -92,7 +93,7 @@ x2cScope.add_scope_channel(variable2)
 ```
 x2cScope.remove_scope_channel(variable2)
 ```
-3. Up to 8 channels can be added. 
+3. Up to eight channels can be added. 
 4. To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
 ```
 x2cscope.set_scope_trigger(variable: Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
@@ -110,36 +111,56 @@ Trigger_Edge: Rising (1) or Falling (0)
 x2cScope.set_scope_trigger(variable3, trigger_level=500, trigger_mode=1, trigger_delay=50, trigger_edge=1)
 ```
 
-6. ##### **clear_trigger()**: Clears and diable trigger
+6. ##### **clear_trigger()**: Clears and disable trigger
 ```
 x2cscope.clear_trigger()
 ```
-7. #### **set_sample_time(sample_time: int)**: This paramater defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution. 0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
+7. #### **set_sample_time(sample_time: int)**: This parameter defines a pre-scaler when the scope is in the sampling mode. This can be used to extend total sampling time at cost of resolution. 0 = every sample, 1 = every second sample, 2 = every third sample …
 ```
 x2cScope.set_sample_time(2)
 ```
-8. #### is_scope_data_ready(self) -> bool: Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.  
+8. #### is_scope_data_ready(self) → bool: Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.  
 ```
 while not x2cScope.is_scope_data_ready():
     time.sleep(0.1)
 ```
-9. #### get_scope_channel_data(valid_data=False) -> Dict[str, List[Number]]: Once sampling is completed, this function could be used to get the sampled data.
+9. #### get_scope_channel_data(valid_data=False) → Dict[str, List[Number]]: Once sampling is completed, this function could be used to get the sampled data.
 ```
 data = x2cScope.get_scope_channel_data()
 ```
 10. #### This data now could be used according to the preference. 
 
 ## Getting Started with pyX2Cscope reference GUI
-
+## Tab: WatchPlot
+![WatchPlot](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/feat-elfparser32-array/pyx2cscope/gui/img/NewGui.jpg)
 1. pyX2Cscope-GUI is based on Serial interface.
 2. The Firmware of the microcontroller should have the X2Cscope library/Peripheral enabled.
+3. in Tab WatchPlot, five channels values can be viewed, modified and can be plotted in the plot window.
 2. Select the COM Port, Baud Rate from the drop-down menus and the ELF file of the project, the microcontroller programmed with. <br>
-
-    ![COM-port](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/develop/pyx2cscope/gui/img/Setting.jpg?token=GHSAT0AAAAAACGXT7TO3SXCYEGFM35GEU52ZHIPW5Q)
-3. Sample time can be changed during run time as well, by default its set to 500ms.
+3. Sample time can be changed during run time as well, by default its set to 500 ms.
 4. Press on **Connect**
 5. Once the connection between pyX2Cscope and Microcontroller takes place, the buttons will be enabled.
 
+## Tab: ScopeView
+![ScopeView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/feat-elfparser32-array/pyx2cscope/gui/img/NewGui2.jpg)
+
+1. ScopeView supports upto 8 pwm resolution channels.
+2. all the trigger settings could be done write in the window, check the trigger checkbox to enable trigger for the respective variable. 
+3. once made any modification during the sampling phase, stop sample and click on sample again to update the modification.
+4. from the plot window, the plot could be exported in CSV format, Image format, Matplotlib Window, Scalable vector graphics(SVG)...
+5. By left-clicking on the watch, drag on the side you want to zoom, to go back to original view, right-click and select **View all**
+
+## Tab: WatchView
+![WatchView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/feat-elfparser32-array/pyx2cscope/gui/img/NewGui3.jpg)
+
+1. WatchView allows user to add variable as per requirement also removes the respective variable just by clicking on Remove. 
+2. Allows user to visualize variable in live mode with the update rate of 500-ms, default setting, couldn't be changed.
+3. Allows user to select, view, and modify all the Global variables in the run-time mode.
+
+## Save and Load Config. 
+
+1. These buttons, located at the bottom of the interface, allow users to save and load the entire configuration, which includes the COM Port, Baud Rate, ELF file path, and all other selected variables across different tabs, ensuring consistency and ease of use regardless of the active tab.
+2. as soon as the pre saved config file is loaded, this will attempt to load elf file and connect, if the elf file is not available on the path, select the elf path manually.
 
 ## Contribute
 If you discover a bug or have an idea for an improvement, we encourage you to contribute! You can do so by following these steps:
