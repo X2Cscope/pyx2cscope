@@ -3,7 +3,6 @@
 here data acquisition is based on different speed, with a desired step.
 """
 
-
 import logging
 import queue
 import threading
@@ -12,8 +11,8 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib import animation
-from pyx2cscope.utils import get_com_port, get_elf_file_path
 
+from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
 
 # Configure logging

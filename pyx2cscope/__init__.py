@@ -2,11 +2,18 @@
 
 Version: 0.2.1
 """
+
 import logging
 
 __version__ = "0.2.1"
 
-def set_logger(level: int = logging.ERROR, filename: str = __name__, console: bool = False, mode: str = 'a'):
+
+def set_logger(
+    level: int = logging.ERROR,
+    filename: str = __name__,
+    console: bool = False,
+    mode: str = "a",
+):
     """Call the logging basicConfig.
 
     Call set_logger on every file that could be run as standalone. A filename.log file will be created on the local
@@ -20,15 +27,17 @@ def set_logger(level: int = logging.ERROR, filename: str = __name__, console: bo
          mode (bool): 'w' create a new file for every run, 'a' (default) append the messages to the file.
     """
     logging.basicConfig(
-        level=level,
-        filename=filename.split(".")[-1] + ".log",
-        filemode=mode
+        level=level, filename=filename.split(".")[-1] + ".log", filemode=mode
     )
 
     # add console only if not yet added
     if console:
-        if not any([type(handler) is logging.StreamHandler for handler in logging.root.handlers]):
+        if not any(
+            [
+                type(handler) is logging.StreamHandler
+                for handler in logging.root.handlers
+            ]
+        ):
             ch = logging.StreamHandler()
             ch.setLevel(level)
             logging.root.addHandler(ch)
-

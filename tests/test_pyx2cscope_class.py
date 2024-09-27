@@ -1,4 +1,5 @@
 """Unit tests and integration tests related to the PyX2CScope class."""
+
 import os
 
 import pytest
@@ -10,7 +11,10 @@ from tests.utils.serial_stub import fake_serial
 
 class TestPyX2CScope:
     """Tests related to the PyX2CScope class."""
-    elf_file = os.path.join(os.path.abspath(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf")
+
+    elf_file = os.path.join(
+        os.path.abspath(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
+    )
 
     def test_missing_elf_file_16(self, mocker):
         """Check if the corresponding exception is raised in case of wrong 16 bit elf path."""
@@ -34,5 +38,7 @@ class TestPyX2CScope:
 
     def test_wrong_com_port(self):
         """Check handling of a non-existent COM-PORT input."""
-        with pytest.raises(RuntimeError, match=r"Failed to retrieve device information"):
+        with pytest.raises(
+            RuntimeError, match=r"Failed to retrieve device information"
+        ):
             X2CScope(elf_file=self.elf_file, port="COM0")

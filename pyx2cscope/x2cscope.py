@@ -15,6 +15,7 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
+
 from pyx2cscope.variable.variable import Variable
 from pyx2cscope.variable.variable_factory import VariableFactory
 
@@ -160,7 +161,9 @@ class X2CScope:
         Returns:
             None.
         """
-        variables = set(self.convert_list.keys())  # make a copy so we may delete inside the loop
+        variables = set(
+            self.convert_list.keys()
+        )  # make a copy so we may delete inside the loop
         for variable in variables:
             self.convert_list.pop(variable)
             self.scope_setup.remove_channel(variable)
@@ -248,8 +251,8 @@ class X2CScope:
         scope_data = self.lnet.load_parameters()
         logging.debug(scope_data)
         return (
-                scope_data.scope_state == 0
-                or scope_data.data_array_pointer == scope_data.data_array_used_length
+            scope_data.scope_state == 0
+            or scope_data.data_array_pointer == scope_data.data_array_used_length
         )
 
     def get_trigger_position(self) -> int:
@@ -260,7 +263,8 @@ class X2CScope:
         """
         scope_data: LoadScopeData = self.lnet.scope_data
         return int(
-            scope_data.trigger_event_position / (self.scope_setup.get_dataset_size() / self.ucwidth)
+            scope_data.trigger_event_position
+            / (self.scope_setup.get_dataset_size() / self.ucwidth)
         )
 
     def get_delay_trigger_position(self) -> int:
@@ -278,8 +282,8 @@ class X2CScope:
         Returns:
             int: The length of the used portion of the SDA.
         """
-        bytes_not_used = (
-                self.lnet.scope_data.data_array_size % (self.scope_setup.get_dataset_size() / self.ucwidth)
+        bytes_not_used = self.lnet.scope_data.data_array_size % (
+            self.scope_setup.get_dataset_size() / self.ucwidth
         )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
@@ -344,7 +348,7 @@ class X2CScope:
         dataset_size = self.scope_setup.get_dataset_size()
 
         for i in range(0, len(data), dataset_size):
-            dataset = data[i: i + dataset_size]
+            dataset = data[i : i + dataset_size]
             if len(dataset) != dataset_size:
                 continue  # Skip this dataset if it's not the complete expected size
 
@@ -359,7 +363,7 @@ class X2CScope:
         return channels
 
     def _filter_channels(
-            self, channels: Dict[str, List[Number]]
+        self, channels: Dict[str, List[Number]]
     ) -> Dict[str, List[Number]]:
         """Filter the channels to include only valid data.
 
@@ -381,7 +385,7 @@ class X2CScope:
         return channels
 
     def get_scope_channel_data(
-            self, valid_data: bool = True
+        self, valid_data: bool = True
     ) -> Dict[str, List[Number]]:
         """Get the sorted and optionally filtered scope channel data.
 
@@ -398,7 +402,9 @@ class X2CScope:
             return self._filter_channels(channels) if valid_data else channels
         return {}
 
-    def scope_sample_time(self, time_microseconds: float) -> float:  #TODO testing and implementing the time axis.
+    def scope_sample_time(
+        self, time_microseconds: float
+    ) -> float:  # TODO testing and implementing the time axis.
         """Evaluate the scope sample time based on user-provided time value.
 
         Args:
@@ -424,7 +430,9 @@ class X2CScope:
         # Convert the total time to milliseconds
         total_time_milliseconds = total_time_microseconds / 1000
 
-        logging.info(f"Total time for the scope functionality: {total_time_milliseconds} ms")
+        logging.info(
+            f"Total time for the scope functionality: {total_time_milliseconds} ms"
+        )
         return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
 
     def get_device_info(self):
@@ -435,5 +443,5 @@ class X2CScope:
             "date": device_info.appDate,
             "time": device_info.appTime,
             "AppVer": device_info.appVer,
-            "dsp_state": device_info.dsp_state
+            "dsp_state": device_info.dsp_state,
         }

@@ -1,3 +1,9 @@
+"""Main entry point for the X2Cscope application.
+
+This module initializes the logging configuration based on a command-line argument,
+sets up the PyQt5 application, and launches the X2Cscope GUI.
+"""
+
 import logging
 import argparse
 
@@ -19,27 +25,57 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="pyX2Cscope",
         description="Microchip python implementation of X2Cscope and LNet protocol.",
-        epilog="For documentation visit https://x2cscope.github.io/pyx2cscope/.")
+        epilog="For documentation visit https://x2cscope.github.io/pyx2cscope/.",
+    )
 
-    parser.add_argument("-l", "--log-level", default="ERROR", type=str,
-                        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-                        help="Configure the logging level, INFO is the default value.")
-    parser.add_argument("-c", "--log-console", action="store_true",
-                        help="Output log to the console.")
-    parser.add_argument("-e", "--elf",
-                        help="Path to elf-file, i.e. -e my_elf.elf. Use together with -s")
-    parser.add_argument("-p", "--port",
-                        help="The serial COM port to be used. Use together with -e")
-    parser.add_argument("-q", "--qt", action="store_false",
-                        help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.")
-    parser.add_argument("-w", "--web", action="store_true",
-                        help="Start the Web user interface, pyx2cscope.gui.web.app.")
-    parser.add_argument("-wp", "--web-port", type=int, default="5000",
-                        help="Configure the Web Server port. Use together with -w")
-    parser.add_argument("--host", type=str, default="localhost",
-                        help="Configure the Web Server address. Use together with -w")
-    parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s ' + pyx2cscope.__version__)
+    parser.add_argument(
+        "-l",
+        "--log-level",
+        default="ERROR",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Configure the logging level, INFO is the default value.",
+    )
+    parser.add_argument(
+        "-c", "--log-console", action="store_true", help="Output log to the console."
+    )
+    parser.add_argument(
+        "-e", "--elf", help="Path to elf-file, i.e. -e my_elf.elf. Use together with -s"
+    )
+    parser.add_argument(
+        "-p", "--port", help="The serial COM port to be used. Use together with -e"
+    )
+    parser.add_argument(
+        "-q",
+        "--qt",
+        action="store_false",
+        help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.",
+    )
+    parser.add_argument(
+        "-w",
+        "--web",
+        action="store_true",
+        help="Start the Web user interface, pyx2cscope.gui.web.app.",
+    )
+    parser.add_argument(
+        "-wp",
+        "--web-port",
+        type=int,
+        default="5000",
+        help="Configure the Web Server port. Use together with -w",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        help="Configure the Web Server address. Use together with -w",
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version="%(prog)s " + pyx2cscope.__version__,
+    )
 
     return parser.parse_known_args()
 
