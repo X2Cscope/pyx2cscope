@@ -115,6 +115,7 @@ class X2cscopeGui(QMainWindow):
         self.triggerVariable = None
         self.elf_file_loaded = False
         self.config_file_loaded = False
+        self.device_info_labels = {}  # Dictionary to hold the device info labels
         self.initialize_variables()
         self.init_ui()
 
@@ -150,6 +151,14 @@ class X2cscopeGui(QMainWindow):
         self.ser = None
         self.timerValue = 500
         self.port_combo = QComboBox()
+        self.device_info_labels = {
+            "processor_id": QLabel("Loading Processor ID ..."),
+            "uc_width": QLabel("Loading UC Width..."),
+            "date": QLabel("Loading Date..."),
+            "time": QLabel("Loading Time..."),
+            "appVer": QLabel("Loading App Version..."),
+            "dsp_state": QLabel("Loading DSP State..."),
+        }
         self.layout = None
         self.slider_var1 = QSlider(Qt.Horizontal)
         self.plot_button = QPushButton("Plot")
@@ -220,6 +229,7 @@ class X2cscopeGui(QMainWindow):
         self.create_tabs()
         self.setup_tabs()
         self.setup_window_properties()
+        #        self.setup_device_info_ui()  # Set up the device info section
         self.refresh_ports()
 
     def setup_application_style(self):
@@ -233,6 +243,19 @@ class X2cscopeGui(QMainWindow):
         self.layout = QVBoxLayout(central_widget)
         self.tab_widget = QTabWidget()
         self.layout.addWidget(self.tab_widget)
+
+    def update_device_info(self):
+        """Fetch device info from the connected device and update the labels."""
+        try:
+            device_info = self.x2cscope.get_device_info()
+            self.device_info_labels["processor_id"].setText(f" {device_info['processor_id']}")
+            self.device_info_labels["uc_width"].setText(f"{device_info['uc_width']}")
+            self.device_info_labels["date"].setText(f"{device_info['date']}")
+            self.device_info_labels["time"].setText(f"{device_info['time']}")
+            self.device_info_labels["appVer"].setText(f"{device_info['AppVer']}")
+            self.device_info_labels["dsp_state"].setText(f"{device_info['dsp_state']}")
+        except Exception as e:
+            self.handle_error(f"Error fetching device info: {e}")
 
     def create_tabs(self):
         """Create tabs for the main window."""
@@ -348,7 +371,7 @@ class X2cscopeGui(QMainWindow):
         self.tab1.layout.addLayout(grid_layout)
 
         self.setup_port_layout(grid_layout)
-        self.setup_baud_layout(grid_layout)
+        #        self.setup_baud_layout(grid_layout)
         self.setup_sampletime_layout(grid_layout)
         self.setup_variable_layout(grid_layout)
         self.setup_connections()
@@ -477,12 +500,12 @@ class X2cscopeGui(QMainWindow):
         grid_layout_variable.addWidget(show_label, 0, 3)
 
         for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
-            zip(
-                self.scope_var_lines,
-                self.trigger_var_checkbox,
-                self.scope_scaling_boxes,
-                self.scope_channel_checkboxes,
-            )
+                zip(
+                    self.scope_var_lines,
+                    self.trigger_var_checkbox,
+                    self.scope_scaling_boxes,
+                    self.scope_channel_checkboxes,
+                )
         ):
             line_edit.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
@@ -555,51 +578,96 @@ class X2cscopeGui(QMainWindow):
             self.triggerVariable = None
 
     def setup_port_layout(self, layout):
-        """Set up the port selection layout."""
-        port_layout = QGridLayout()  # Use QVBoxLayout to align items vertically
+        """Set up the port selection, baud rate, and device info layout in two sections."""
+
+        # Create the left layout for device info (QVBoxLayout)
+        left_layout = QVBoxLayout()
+
+        # Add device info labels to the left side
+        for label_key, label in self.device_info_labels.items():
+            info_label = QLabel(label_key.replace("_", " ").capitalize() + ":")
+            info_label.setAlignment(Qt.AlignLeft)
+
+            row = list(self.device_info_labels.keys()).index(label_key)  # Get the row index
+            device_info_layout = QGridLayout()  # Create a row layout for label and its value
+            device_info_layout.addWidget(info_label, row, 0, Qt.AlignLeft)
+            device_info_layout.addWidget(label, row, 1, alignment=Qt.AlignLeft)
+            left_layout.addLayout(device_info_layout)
+
+        # Create the right layout for COM port and settings (QGridLayout)
+        right_layout = QGridLayout()
+
+        # COM Port Selection
         port_label = QLabel("Select Port:")
         self.port_combo.setFixedSize(100, 25)  # Set fixed size for the port combo box
-
         refresh_button = QPushButton()
         refresh_button.setFixedSize(25, 25)
         refresh_button.clicked.connect(self.refresh_ports)
         refresh_img = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
         refresh_button.setIcon(QIcon(refresh_img))
 
-        self.select_file_button.setEnabled(True)
-        self.select_file_button.clicked.connect(self.select_elf_file)
+        # Add COM Port widgets to the right layout
+        right_layout.addWidget(port_label, 0, 0, alignment=Qt.AlignRight)
+        right_layout.addWidget(self.port_combo, 0, 1)
+        right_layout.addWidget(refresh_button, 0, 2)
 
-        port_layout.addWidget(port_label, 0, 0)
-        port_layout.addWidget(self.port_combo, 0, 2)
-        port_layout.addWidget(refresh_button, 0, 1)
-        port_layout.setAlignment(Qt.AlignLeft)  # Align all widgets to the left
-
-        layout.addLayout(port_layout, 1, 0)
-
-    def setup_baud_layout(self, layout):
-        """Set up the baud rate selection layout."""
-        baud_layout = QHBoxLayout()  # Use QVBoxLayout to align items vertically
+        # Baud Rate Selection
         baud_label = QLabel("Select Baud Rate:")
-        self.baud_combo.setFixedSize(100, 25)  # Set fixed size for the baud combo box
-
-        baud_layout.addWidget(baud_label)
-        baud_layout.addWidget(self.baud_combo)
-        baud_layout.setAlignment(Qt.AlignRight)  # Align all widgets to the left
-
+        self.baud_combo.setFixedSize(100, 25)
         self.baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
         default_baud_rate = "115200"
         index = self.baud_combo.findText(default_baud_rate, Qt.MatchFixedString)
         if index >= 0:
             self.baud_combo.setCurrentIndex(index)
 
-        layout.addLayout(baud_layout, 2, 0)
+        # Add Baud Rate widgets to the right layout
+        right_layout.addWidget(baud_label, 1, 0, alignment=Qt.AlignRight)
+        right_layout.addWidget(self.baud_combo, 1, 1)
+
+        # Add Connect button and Sample time
+        self.Connect_button.setFixedSize(100, 30)
+        self.Connect_button.clicked.connect(self.toggle_connection)
+        sampletime_label = QLabel("Sample Time:")
+        self.sampletime.setFixedSize(50, 25)
+        self.sampletime.setText("500")
+
+        # Add Connect and Sample Time widgets to the right layout
+        #right_layout.addWidget(sampletime_label, 2, 0, alignment= Qt.AlignLeft)
+        #right_layout.addWidget(self.sampletime, 2, 1, alignment= Qt.AlignLeft)
+        #right_layout.addWidget(QLabel("ms"), 2, 2, alignment= Qt.AlignLeft)
+        right_layout.addWidget(self.Connect_button, 3, 1, alignment=Qt.AlignBottom)
+
+        # Create a horizontal layout to contain both left and right sections
+        horizontal_layout = QHBoxLayout()
+
+        # Add left (device info) and right (settings) layouts to the horizontal layout
+        horizontal_layout.addLayout(left_layout)
+        horizontal_layout.addLayout(right_layout)
+
+        # Finally, add the horizontal layout to the grid at a specific row and column
+        layout.addLayout(horizontal_layout, 0, 0, 1, 2)  # Span 1 row and 2 columns
+
+    # def setup_baud_layout(self, layout):
+    #     """Set up the baud rate selection layout."""
+    #     baud_layout = QHBoxLayout()  # Use QVBoxLayout to align items vertically
+    #     baud_label = QLabel("Select Baud Rate:")
+    #     self.baud_combo.setFixedSize(100, 25)  # Set fixed size for the baud combo box
+    #
+    #     baud_layout.addWidget(baud_label)
+    #     baud_layout.addWidget(self.baud_combo)
+    #     baud_layout.setAlignment(Qt.AlignRight)  # Align all widgets to the left
+    #
+    #     self.baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
+    #     default_baud_rate = "115200"
+    #     index = self.baud_combo.findText(default_baud_rate, Qt.MatchFixedString)
+    #     if index >= 0:
+    #         self.baud_combo.setCurrentIndex(index)
+    #
+    #     layout.addLayout(baud_layout, 2, 0)
 
     def setup_sampletime_layout(self, layout):
         """Set up the sample time layout."""
         self.Connect_button.clicked.connect(self.toggle_connection)
-        self.Connect_button.setFixedSize(100, 30)
-        self.Connect_button.setMinimumHeight(30)
-
         self.sampletime.setText("500")
         self.sampletime.setValidator(self.decimal_validator)
         self.sampletime.editingFinished.connect(self.sampletime_edit)
@@ -610,9 +678,10 @@ class X2cscopeGui(QMainWindow):
         sampletime_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
         sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
         sampletime_layout.addStretch(1)
-        sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
+        #sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
         layout.addLayout(sampletime_layout, 3, 0)
+        #layout.addWidget(self.Connect_button,3, 0, alignment=Qt.AlignRight)
         layout.addWidget(self.select_file_button, 4, 0)
 
     def setup_variable_layout(self, layout):
@@ -686,14 +755,14 @@ class X2cscopeGui(QMainWindow):
         ]
 
         for row_index, (
-            live_var,
-            line_edit,
-            value_var,
-            scaling_var,
-            offset_var,
-            scaled_value_var,
-            unit_var,
-            plot_checkbox,
+                live_var,
+                line_edit,
+                value_var,
+                scaling_var,
+                offset_var,
+                scaled_value_var,
+                unit_var,
+                plot_checkbox,
         ) in enumerate(
             zip(
                 self.live_checkboxes,
@@ -763,7 +832,7 @@ class X2cscopeGui(QMainWindow):
         self.plot_button.clicked.connect(self.plot_data_plot)
 
         for timer, line_edit, value_var in zip(
-            self.timer_list, self.line_edit_boxes, self.Value_var_boxes
+                self.timer_list, self.line_edit_boxes, self.Value_var_boxes
         ):
             timer.timeout.connect(
                 lambda cb=line_edit, v_var=value_var: self.handle_var_update(
@@ -797,22 +866,21 @@ class X2cscopeGui(QMainWindow):
     def connect_editing_finished(self):
         """Connect editingFinished signals for value and scaling inputs."""
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_editing_finished(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_editing_finished():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -822,22 +890,21 @@ class X2cscopeGui(QMainWindow):
             value_var.editingFinished.connect(connect_editing_finished())
 
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_editing_finished(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_editing_finished():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -847,22 +914,21 @@ class X2cscopeGui(QMainWindow):
             scaling.editingFinished.connect(connect_editing_finished())
 
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_text_changed(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_text_changed():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -872,22 +938,21 @@ class X2cscopeGui(QMainWindow):
             value_var.textChanged.connect(connect_text_changed())
 
         for (
-            scaling,
-            value_var,
-            scaled_value,
-            offset,
+                scaling,
+                value_var,
+                scaled_value,
+                offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
-
             def connect_text_changed(
-                sc_edit=scaling,
-                v_edit=value_var,
-                scd_edit=scaled_value,
-                off_edit=offset,
+                    sc_edit=scaling,
+                    v_edit=value_var,
+                    scd_edit=scaled_value,
+                    off_edit=offset,
             ):
                 def on_text_changed():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -952,8 +1017,8 @@ class X2cscopeGui(QMainWindow):
             if len(self.plot_data) > 0:
                 last_timestamp = self.plot_data[-1][0]
                 time_diff = (
-                    timestamp - last_timestamp
-                ).total_seconds() * 1000  # to convert time in ms.
+                                    timestamp - last_timestamp
+                            ).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
 
@@ -992,7 +1057,7 @@ class X2cscopeGui(QMainWindow):
 
             # Keep track of plot lines to avoid clearing and recreating them unnecessarily
             for i, (value, line_edit, plot_var) in enumerate(
-                zip(values, self.line_edit_boxes, self.plot_checkboxes)
+                    zip(values, self.line_edit_boxes, self.plot_checkboxes)
             ):
                 # Check if the variable should be plotted and is not empty
                 if plot_var.isChecked() and line_edit.text() != "":
@@ -1041,7 +1106,7 @@ class X2cscopeGui(QMainWindow):
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
                     data = (
-                        np.array(data, dtype=float) * scale_factor
+                            np.array(data, dtype=float) * scale_factor
                     )  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
@@ -1080,7 +1145,7 @@ class X2cscopeGui(QMainWindow):
         """Displays an error message in a message box with a cooldown period."""
         current_time = time.time()
         if self.last_error_time is None or (
-            current_time - self.last_error_time > 5
+                current_time - self.last_error_time > 5
         ):  # Cooldown period of 5 seconds
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("Error")
@@ -1216,7 +1281,6 @@ class X2cscopeGui(QMainWindow):
 
                 # If Auto Connect is selected, attempt to auto-connect to the first available port
 
-
     def refresh_line_edit(self):
         """Refresh the contents of the variable selection line edits.
 
@@ -1266,6 +1330,8 @@ class X2cscopeGui(QMainWindow):
             return
 
         if self.ser is None or not self.ser.is_open:
+            for label in self.device_info_labels.values():
+                label.setText("Loading...")
             for timer in self.timer_list:
                 if timer.isActive():
                     timer.stop()
@@ -1273,6 +1339,9 @@ class X2cscopeGui(QMainWindow):
             self.save_selected_variables()  # Save the current selections before disconnecting
             try:
                 self.connect_serial()
+                if self.ser is not None and self.ser.is_open:
+                    # Fetch device info after connection
+                    self.update_device_info()
             except Exception as e:
                 logging.error(e)
         else:
@@ -1301,13 +1370,13 @@ class X2cscopeGui(QMainWindow):
         """Restore the previously selected variables in WatchView and ScopeView."""
         if "watch" in self.previous_selected_variables:
             for le, (var, _) in zip(
-                self.line_edit_boxes, self.previous_selected_variables["watch"]
+                    self.line_edit_boxes, self.previous_selected_variables["watch"]
             ):
                 le.setText(var)
 
         if "scope" in self.previous_selected_variables:
             for le, (var, _) in zip(
-                self.scope_var_lines, self.previous_selected_variables["scope"]
+                    self.scope_var_lines, self.previous_selected_variables["scope"]
             ):
                 le.setText(var)
 
@@ -1393,7 +1462,8 @@ class X2cscopeGui(QMainWindow):
                         continue
 
                 # If no ports were successfully connected
-                self.handle_error("Auto-connect failed to connect to any available COM ports, Please check your connection!")
+                self.handle_error(
+                    "Auto-connect failed to connect to any available COM ports, Please check your connection!")
                 raise Exception("Auto-connect failed to connect to any available COM ports.")
 
             else:
@@ -1621,7 +1691,7 @@ class X2cscopeGui(QMainWindow):
                             print(self.real_sampletime)
                             print(len(data))
                             data = (
-                                np.array(data, dtype=float) * scale_factor
+                                    np.array(data, dtype=float) * scale_factor
                             )  # Apply the scaling factor
                             self.scope_plot_widget.plot(
                                 time_values,
@@ -1751,7 +1821,7 @@ class X2cscopeGui(QMainWindow):
                 # Load WatchPlot configuration
                 watch_view = config.get("watch_view", {})
                 for le, var in zip(
-                    self.line_edit_boxes, watch_view.get("variables", [])
+                        self.line_edit_boxes, watch_view.get("variables", [])
                 ):
                     le.setText(var)
                 for ve, val in zip(self.Value_var_boxes, watch_view.get("values", [])):
@@ -1759,11 +1829,11 @@ class X2cscopeGui(QMainWindow):
                 for sc, scale in zip(self.scaling_boxes, watch_view.get("scaling", [])):
                     sc.setText(scale)
                 for off, offset in zip(
-                    self.offset_boxes, watch_view.get("offsets", [])
+                        self.offset_boxes, watch_view.get("offsets", [])
                 ):
                     off.setText(offset)
                 for cb, visible in zip(
-                    self.plot_checkboxes, watch_view.get("visible", [])
+                        self.plot_checkboxes, watch_view.get("visible", [])
                 ):
                     cb.setChecked(visible)
                 for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
@@ -1772,11 +1842,11 @@ class X2cscopeGui(QMainWindow):
                 # Load ScopeView configuration
                 scope_view = config.get("scope_view", {})
                 for le, var in zip(
-                    self.scope_var_lines, scope_view.get("variables", [])
+                        self.scope_var_lines, scope_view.get("variables", [])
                 ):
                     le.setText(var)
                 for cb, trigger in zip(
-                    self.trigger_var_checkbox, scope_view.get("trigger", [])
+                        self.trigger_var_checkbox, scope_view.get("trigger", [])
                 ):
                     cb.setChecked(trigger)
                 self.triggerVariable = scope_view.get("trigger_variable", "")
@@ -1799,12 +1869,12 @@ class X2cscopeGui(QMainWindow):
                 # Load configuration for Tab 3 WatchView
                 tab3_view = config.get("tab3_view", {})
                 for var, val, sc, off, sv, live in zip(
-                    tab3_view.get("variables", []),
-                    tab3_view.get("values", []),
-                    tab3_view.get("scaling", []),
-                    tab3_view.get("offsets", []),
-                    tab3_view.get("scaled_values", []),
-                    tab3_view.get("live", []),
+                        tab3_view.get("variables", []),
+                        tab3_view.get("values", []),
+                        tab3_view.get("scaling", []),
+                        tab3_view.get("offsets", []),
+                        tab3_view.get("scaled_values", []),
+                        tab3_view.get("live", []),
                 ):
                     self.add_variable_row()  # Add a new row
                     self.variable_line_edits[-1].setText(var)
@@ -2068,15 +2138,15 @@ class X2cscopeGui(QMainWindow):
         self.current_row += 1
 
     def remove_variable_row(
-        self,
-        live_checkbox,
-        variable_edit,
-        value_edit,
-        scaling_edit,
-        offset_edit,
-        scaled_value_edit,
-        unit_edit,
-        remove_button,
+            self,
+            live_checkbox,
+            variable_edit,
+            value_edit,
+            scaling_edit,
+            offset_edit,
+            scaled_value_edit,
+            unit_edit,
+            remove_button,
     ):
         """Remove a specific row in the WatchView Only tab."""
         # Remove the widgets from the grid layout
@@ -2174,12 +2244,12 @@ class X2cscopeGui(QMainWindow):
     def update_live_variables(self):
         """Update the values of variables in real-time if live checkbox is checked."""
         for (
-            checkbox,
-            variable_edit,
-            value_edit,
-            scaling_edit,
-            offset_edit,
-            scaled_value_edit,
+                checkbox,
+                variable_edit,
+                value_edit,
+                scaling_edit,
+                offset_edit,
+                scaled_value_edit,
         ) in zip(
             self.live_tab3,
             self.variable_line_edits,
@@ -2201,7 +2271,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def update_scaled_value_tab3(
-        self, value_edit, scaling_edit, offset_edit, scaled_value_edit
+            self, value_edit, scaling_edit, offset_edit, scaled_value_edit
     ):
         """Updates the scaled value in both Tab 1 and Tab 3 based on the provided scaling factor and offset.
 
