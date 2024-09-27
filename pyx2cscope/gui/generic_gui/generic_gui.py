@@ -1380,6 +1380,7 @@ class X2cscopeGui(QMainWindow):
                         self.ser = self.x2cscope.interface
                         # If connection is successful
                         logging.info(f"Connected to {port} successfully.")
+                        self.select_file_button.setText(QFileInfo(self.file_path).fileName())
                         self.port_combo.setCurrentText(port)  # Update combo box with the successful port
                         self.setup_connected_state()  # Call a helper function to handle UI updates after connection
                         return  # Exit function after successful connection
@@ -1392,7 +1393,9 @@ class X2cscopeGui(QMainWindow):
                         continue
 
                 # If no ports were successfully connected
+                self.handle_error("Auto-connect failed to connect to any available COM ports, Please check your connection!")
                 raise Exception("Auto-connect failed to connect to any available COM ports.")
+
             else:
                 # Manual port selection
                 port = self.port_combo.currentText()
@@ -1407,6 +1410,7 @@ class X2cscopeGui(QMainWindow):
                         self.ser = self.x2cscope.interface
                         # If connection is successful
                         logging.info(f"Connected to {port} successfully.")
+                        self.select_file_button.setText(QFileInfo(self.file_path).fileName())
                         self.setup_connected_state()  # Call a helper function to handle UI updates after connection
                         return  # Exit function after successful connection
                     except OSError as e:
