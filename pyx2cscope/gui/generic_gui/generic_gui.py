@@ -1110,6 +1110,9 @@ class X2cscopeGui(QMainWindow):
             counter: The variable to update.
             value_var (QLineEdit): The input field to display the updated value.
         """
+        if not self.is_connected():
+            logging.warning("Attempted to get variable, but device is not connected.")
+            return  # Do not proceed if the device is not connected
         try:
             if counter is not None:
                 counter = self.x2cscope.get_variable(counter)
@@ -1149,6 +1152,10 @@ class X2cscopeGui(QMainWindow):
             variable: The variable to retrieve the value for.
             value_var: The QLineEdit widget to display the retrieved value.
         """
+        if not self.is_connected():
+            logging.warning("Attempted to get variable, but device is not connected.")
+            return  # Do not proceed if the device is not connected
+
         try:
             current_variable = variable
 
@@ -1179,6 +1186,9 @@ class X2cscopeGui(QMainWindow):
             variable: The variable to write the value to.
             value_var: The QLineEdit widget to get the value from.
         """
+        if not self.is_connected():
+            logging.warning("Attempted to get variable, but device is not connected.")
+            return  # Do not proceed if the device is not connected
         try:
             current_variable = variable
             value = float(value_var.text())
@@ -1445,7 +1455,9 @@ class X2cscopeGui(QMainWindow):
 
     def start_sampling(self):
         """Start the sampling process."""
-
+        if not self.is_connected():
+            logging.warning("Attempted to get variable, but device is not connected.")
+            return  # Do not proceed if the device is not connected
         try:
             a = time.time()
             if self.sampling_active:
@@ -1493,6 +1505,9 @@ class X2cscopeGui(QMainWindow):
 
     def configure_trigger(self):
         """Configure the trigger settings."""
+        if not self.is_connected():
+            logging.warning("Attempted to get variable, but device is not connected.")
+            return  # Do not proceed if the device is not connected
         try:
             if self.triggerVariable is not None:
                 variable_name = self.triggerVariable
@@ -1667,7 +1682,7 @@ class X2cscopeGui(QMainWindow):
                 with open(file_path, "r") as file:
                     config = json.load(file)
                     self.config_file_loaded = True
-                    self.port_combo.setCurrentText(config.get("com_port", ""))
+                    config_port = config.get("com_port", "")
                     self.baud_combo.setCurrentText(config.get("baud_rate", ""))
 
                 elf_file_path = config.get("elf_file", "")
@@ -1682,7 +1697,27 @@ class X2cscopeGui(QMainWindow):
                     )
                     self.select_elf_file()  # Prompt to select a new ELF file if not found
 
-                self.attempt_connection()
+                # Attempt to connect to the specified port in the configuration
+                if config_port in [port.device for port in serial.tools.list_ports.comports()]:
+                    self.port_combo.setCurrentText(config_port)
+                    if self.attempt_connection():
+                        logging.info(f"Connected to the specified port: {config_port}")
+                        return  # Stop if connection is successful
+
+                # If the specified port is not available or connection fails, try other ports
+                available_ports = [port.device for port in serial.tools.list_ports.comports()]
+                for port in available_ports:
+                    self.port_combo.setCurrentText(port)
+                    if self.attempt_connection():
+                        logging.info(f"Connected to an alternative port: {port}")
+                        break
+                else:
+                    # If all attempts fail, show a message to check connection
+                    QMessageBox.warning(
+                        self,
+                        "Connection Failed",
+                        "Could not connect to any available ports. Please check your connection.",
+                    )
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
                 self.settings.setValue("file_path", self.file_path)
 
@@ -1758,9 +1793,19 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Error loading configuration: {e}")
 
     def attempt_connection(self):
-        # Ensure both config and ELF file are loaded
+        """Attempt to connect to the selected port and elf file."""
         if self.elf_file_loaded and self.config_file_loaded:
-            self.toggle_connection()
+            try:
+                self.toggle_connection()  # Try to connect
+                if self.ser and self.ser.is_open:  # Check if the connection was successful
+                    return True
+            except Exception as e:
+                logging.error(f"Connection failed: {e}")
+        return False
+
+    def is_connected(self):
+        """Check if the serial connection is established and the device is connected."""
+        return self.ser is not None and self.ser.is_open
 
     def clear_tab3(self):
         """Remove all variable rows in Tab 3 efficiently."""
