@@ -1806,7 +1806,6 @@ class X2cscopeGui(QMainWindow):
                     self.port_combo.setCurrentText(config_port)
                     if self.attempt_connection():
                         logging.info(f"Connected to the specified port: {config_port}")
-                        return  # Stop if connection is successful
 
                 # If the specified port is not available or connection fails, try other ports
                 available_ports = [port.device for port in serial.tools.list_ports.comports()]
