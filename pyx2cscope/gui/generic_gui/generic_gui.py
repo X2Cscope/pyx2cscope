@@ -1111,7 +1111,6 @@ class X2cscopeGui(QMainWindow):
             value_var (QLineEdit): The input field to display the updated value.
         """
         if not self.is_connected():
-            logging.warning("Attempted to get variable, but device is not connected.")
             return  # Do not proceed if the device is not connected
         try:
             if counter is not None:
@@ -1153,7 +1152,6 @@ class X2cscopeGui(QMainWindow):
             value_var: The QLineEdit widget to display the retrieved value.
         """
         if not self.is_connected():
-            logging.warning("Attempted to get variable, but device is not connected.")
             return  # Do not proceed if the device is not connected
 
         try:
@@ -1187,7 +1185,6 @@ class X2cscopeGui(QMainWindow):
             value_var: The QLineEdit widget to get the value from.
         """
         if not self.is_connected():
-            logging.warning("Attempted to get variable, but device is not connected.")
             return  # Do not proceed if the device is not connected
         try:
             current_variable = variable
@@ -1274,7 +1271,7 @@ class X2cscopeGui(QMainWindow):
             try:
                 self.connect_serial()
             except Exception as e:
-                self.handle_failed_connection()
+                logging.error(e)
         else:
             self.disconnect_serial()
 
@@ -1416,7 +1413,6 @@ class X2cscopeGui(QMainWindow):
         except Exception as e:
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
-            self.handle_error(error_message)
         if not self.ser:
             # Establish new connection
             try:
@@ -1429,7 +1425,8 @@ class X2cscopeGui(QMainWindow):
                 # Additional logic...
                 self.Connect_button.setText("Disconnect")
             except Exception as e:
-                self.handle_error(f"Connection failed: {str(e)}")
+                logging.error(e)
+                #self.handle_error(f"Connection failed: {str(e)}")
 
     def close_plot_window(self):
         """Close the plot window if it is open.
@@ -1456,7 +1453,6 @@ class X2cscopeGui(QMainWindow):
     def start_sampling(self):
         """Start the sampling process."""
         if not self.is_connected():
-            logging.warning("Attempted to get variable, but device is not connected.")
             return  # Do not proceed if the device is not connected
         try:
             a = time.time()
@@ -1506,7 +1502,6 @@ class X2cscopeGui(QMainWindow):
     def configure_trigger(self):
         """Configure the trigger settings."""
         if not self.is_connected():
-            logging.warning("Attempted to get variable, but device is not connected.")
             return  # Do not proceed if the device is not connected
         try:
             if self.triggerVariable is not None:
