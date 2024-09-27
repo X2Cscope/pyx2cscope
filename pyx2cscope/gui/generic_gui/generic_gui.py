@@ -667,7 +667,8 @@ class X2cscopeGui(QMainWindow):
 
     def setup_sampletime_layout(self, layout):
         """Set up the sample time layout."""
-        self.Connect_button.clicked.connect(self.toggle_connection)
+        #self.Connect_button.clicked.connect(self.toggle_connection)
+        self.select_file_button.clicked.connect(self.select_elf_file)
         self.sampletime.setText("500")
         self.sampletime.setValidator(self.decimal_validator)
         self.sampletime.editingFinished.connect(self.sampletime_edit)
@@ -1329,23 +1330,29 @@ class X2cscopeGui(QMainWindow):
             self.select_elf_file()
             return
 
-        if self.ser is None or not self.ser.is_open:
+        # Check if already connected
+        if self.ser is not None and self.ser.is_open:
+            # Call the disconnect function if already connected
+            logging.info("Already connected, disconnecting now.")
+            self.disconnect_serial()
+        else:
+            # Handle connection logic if not connected
             for label in self.device_info_labels.values():
                 label.setText("Loading...")
             for timer in self.timer_list:
                 if timer.isActive():
                     timer.stop()
             self.plot_data.clear()
-            self.save_selected_variables()  # Save the current selections before disconnecting
+            self.save_selected_variables()  # Save the current selections before connecting
+
             try:
-                self.connect_serial()
+                self.connect_serial()  # Attempt to connect
                 if self.ser is not None and self.ser.is_open:
-                    # Fetch device info after connection
+                    # Fetch device info after successful connection
                     self.update_device_info()
             except Exception as e:
                 logging.error(e)
-        else:
-            self.disconnect_serial()
+                self.handle_error(f"Error connecting: {e}")
 
     def handle_failed_connection(self):
         choice = QMessageBox.question(
