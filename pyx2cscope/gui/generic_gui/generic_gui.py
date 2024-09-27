@@ -1213,7 +1213,9 @@ class X2cscopeGui(QMainWindow):
                 self.settings.setValue("file_path", self.file_path)
                 self.select_file_button.setText(QFileInfo(self.file_path).fileName())
                 self.elf_file_loaded = True
-                self.attempt_connection()
+
+                # If Auto Connect is selected, attempt to auto-connect to the first available port
+
 
     def refresh_line_edit(self):
         """Refresh the contents of the variable selection line edits.
@@ -1248,6 +1250,7 @@ class X2cscopeGui(QMainWindow):
         """
         available_ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combo.clear()
+        self.port_combo.addItem("Auto Connect")  # Add Auto Connect option
         self.port_combo.addItems(available_ports)
 
     @pyqtSlot()
@@ -1353,80 +1356,105 @@ class X2cscopeGui(QMainWindow):
         """Establish a serial connection based on the current UI settings.
 
         This method sets up a serial connection using the selected port and
-        baud rate. It also initializes the variable factory and updates the
-        UI to reflect the connection state.
+        baud rate. It attempts to connect to the first available COM port if 'Auto Connect' is selected.
         """
         try:
+            # Disconnect if already connected
             if self.ser is not None and self.ser.is_open:
                 self.disconnect_serial()
 
-            port = self.port_combo.currentText()
+            # Get baud rate
             baud_rate = int(self.baud_combo.currentText())
 
-            self.x2cscope = X2CScope(
-                port=port, elf_file=self.file_path, baud_rate=baud_rate
-            )
-            self.ser = self.x2cscope.interface
+            # If Auto Connect is selected, try each available port until successful connection
 
-            # print(self.x2cscope.get_device_info())
-            self.VariableList = self.x2cscope.list_variables()
-            if self.VariableList:
-                self.VariableList.insert(0, "None")
+            if self.port_combo.currentText() == "Auto Connect":
+                available_ports = [port.device for port in serial.tools.list_ports.comports()]
+                # Iterate through available ports
+                for port in available_ports:
+                    try:
+                        logging.info(f"Trying to connect to {port}...")
+                        self.x2cscope = X2CScope(
+                            port=port, elf_file=self.file_path, baud_rate=baud_rate
+                        )
+                        self.ser = self.x2cscope.interface
+                        # If connection is successful
+                        logging.info(f"Connected to {port} successfully.")
+                        self.port_combo.setCurrentText(port)  # Update combo box with the successful port
+                        self.setup_connected_state()  # Call a helper function to handle UI updates after connection
+                        return  # Exit function after successful connection
+                    except OSError as e:
+                        logging.error(f"Failed to connect to {port}: {e}")
+                        # Retry logic: wait for a short time before trying again
+                        continue  # Try the next available port if the connection fails
+                    except Exception as e:
+                        logging.error(f"Unexpected error connecting to {port}: {e}")
+                        continue
+
+                # If no ports were successfully connected
+                raise Exception("Auto-connect failed to connect to any available COM ports.")
             else:
-                return
-            self.refresh_line_edit()
-            logging.info("Serial Port Configuration:")
-            logging.info(f"Port: {port}")
-            logging.info(f"Baud Rate: {baud_rate}")
+                # Manual port selection
+                port = self.port_combo.currentText()
+                logging.info(f"Trying to connect to {port} manually.")
 
-            self.Connect_button.setText("Disconnect")
-            self.Connect_button.setEnabled(True)
+                # Retry mechanism: try to connect twice if the first attempt fails
+                for attempt in range(2):
+                    try:
+                        self.x2cscope = X2CScope(
+                            port=port, elf_file=self.file_path, baud_rate=baud_rate
+                        )
+                        self.ser = self.x2cscope.interface
+                        # If connection is successful
+                        logging.info(f"Connected to {port} successfully.")
+                        self.setup_connected_state()  # Call a helper function to handle UI updates after connection
+                        return  # Exit function after successful connection
+                    except OSError as e:
+                        logging.error(f"Could not open port '{port}': {e}")
+                        if attempt == 1:  # If it's the second attempt, raise an error
+                            raise Exception(f"Failed to connect to {port} after multiple attempts.")
+                        time.sleep(1)  # Wait 1 second before retrying the connection
+                    except Exception as e:
+                        logging.error(f"Unexpected error connecting to {port}: {e}")
+                        break  # Exit the loop on unexpected errors
 
-            widget_list = [self.port_combo, self.baud_combo, self.select_file_button]
-
-            for widget in widget_list:
-                widget.setEnabled(False)
-
-            for line_edit in self.line_edit_boxes:
-                line_edit.setEnabled(True)
-            self.slider_var1.setEnabled(True)
-
-            for live_var in self.live_checkboxes:
-                live_var.setEnabled(True)
-
-            timer_list = []
-            for i in range(len(self.live_checkboxes)):
-                timer_list.append((self.live_checkboxes[i], self.timer_list[i]))
-
-            for live_var, timer in timer_list:
-                if live_var.isChecked():
-                    timer.start(self.timerValue)
-
-            self.plot_update_timer.start(
-                self.timerValue
-            )  # Start the continuous plot update
-
-            self.restore_selected_variables()  # Restore the selections after reconnecting
-            self.x2cscope_initialized = (
-                False  # Reset the flag upon successful connection
-            )
         except Exception as e:
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
-        if not self.ser:
-            # Establish new connection
-            try:
-                port = self.port_combo.currentText()
-                baud_rate = int(self.baud_combo.currentText())
-                self.x2cscope = X2CScope(
-                    port=port, elf_file=self.file_path, baud_rate=baud_rate
-                )
-                self.ser = self.x2cscope.interface
-                # Additional logic...
-                self.Connect_button.setText("Disconnect")
-            except Exception as e:
-                logging.error(e)
-                #self.handle_error(f"Connection failed: {str(e)}")
+
+    def setup_connected_state(self):
+        """Handle the UI updates and logic when a connection is successfully established."""
+        # Refresh the variable list from the device
+        self.VariableList = self.x2cscope.list_variables()
+        if self.VariableList:
+            self.VariableList.insert(0, "None")
+        self.refresh_line_edit()
+
+        # Update the UI elements
+        self.Connect_button.setText("Disconnect")
+        self.Connect_button.setEnabled(True)
+
+        widget_list = [self.port_combo, self.baud_combo, self.select_file_button]
+        for widget in widget_list:
+            widget.setEnabled(False)
+
+        for line_edit in self.line_edit_boxes:
+            line_edit.setEnabled(True)
+        self.slider_var1.setEnabled(True)
+
+        for live_var in self.live_checkboxes:
+            live_var.setEnabled(True)
+
+        # Start any live variable timers
+        for timer, live_var in zip(self.timer_list, self.live_checkboxes):
+            if live_var.isChecked():
+                timer.start(self.timerValue)
+
+        # Start the continuous plot update
+        self.plot_update_timer.start(self.timerValue)
+
+        # Restore any selected variables that were saved before disconnecting
+        self.restore_selected_variables()
 
     def close_plot_window(self):
         """Close the plot window if it is open.
@@ -1788,14 +1816,15 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Error loading configuration: {e}")
 
     def attempt_connection(self):
-        """Attempt to connect to the selected port and elf file."""
-        if self.elf_file_loaded and self.config_file_loaded:
+        """Attempt to connect to the selected port and ELF file."""
+        if self.elf_file_loaded:
             try:
-                self.toggle_connection()  # Try to connect
-                if self.ser and self.ser.is_open:  # Check if the connection was successful
+                self.toggle_connection()  # Trigger connection
+                if self.ser and self.ser.is_open:
                     return True
             except Exception as e:
                 logging.error(f"Connection failed: {e}")
+                self.handle_error(f"Connection failed: {e}")
         return False
 
     def is_connected(self):
