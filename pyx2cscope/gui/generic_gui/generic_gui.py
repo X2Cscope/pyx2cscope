@@ -627,14 +627,16 @@ class X2cscopeGui(QMainWindow):
         # Add Connect button and Sample time
         self.Connect_button.setFixedSize(100, 30)
         self.Connect_button.clicked.connect(self.toggle_connection)
-        sampletime_label = QLabel("Sample Time:")
-        self.sampletime.setFixedSize(50, 25)
+        sampletime_label = QLabel("Sample Time WatchPlot:")
+        self.sampletime.setFixedSize(100, 30)
         self.sampletime.setText("500")
 
         # Add Connect and Sample Time widgets to the right layout
-        #right_layout.addWidget(sampletime_label, 2, 0, alignment= Qt.AlignLeft)
-        #right_layout.addWidget(self.sampletime, 2, 1, alignment= Qt.AlignLeft)
-        #right_layout.addWidget(QLabel("ms"), 2, 2, alignment= Qt.AlignLeft)
+        self.sampletime.setValidator(self.decimal_validator)
+        self.sampletime.editingFinished.connect(self.sampletime_edit)
+        right_layout.addWidget(sampletime_label, 2, 0, alignment= Qt.AlignRight)
+        right_layout.addWidget(self.sampletime, 2, 1, alignment= Qt.AlignLeft)
+        right_layout.addWidget(QLabel("ms"), 2, 2, alignment= Qt.AlignLeft)
         right_layout.addWidget(self.Connect_button, 3, 1, alignment=Qt.AlignBottom)
 
         # Create a horizontal layout to contain both left and right sections
@@ -669,19 +671,19 @@ class X2cscopeGui(QMainWindow):
         """Set up the sample time layout."""
         #self.Connect_button.clicked.connect(self.toggle_connection)
         self.select_file_button.clicked.connect(self.select_elf_file)
-        self.sampletime.setText("500")
-        self.sampletime.setValidator(self.decimal_validator)
-        self.sampletime.editingFinished.connect(self.sampletime_edit)
-        self.sampletime.setFixedSize(50, 20)
-
-        sampletime_layout = QHBoxLayout()
-        sampletime_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
-        sampletime_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
-        sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
-        sampletime_layout.addStretch(1)
+        # self.sampletime.setText("500")
+        # self.sampletime.setValidator(self.decimal_validator)
+        #
+        # self.sampletime.setFixedSize(50, 20)
+        #
+        # sampletime_layout = QHBoxLayout()
+        # sampletime_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
+        # sampletime_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
+        # sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
+        # sampletime_layout.addStretch(1)
         #sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
-        layout.addLayout(sampletime_layout, 3, 0)
+        #layout.addLayout(sampletime_layout, 3, 0)
         #layout.addWidget(self.Connect_button,3, 0, alignment=Qt.AlignRight)
         layout.addWidget(self.select_file_button, 4, 0)
 
@@ -1802,27 +1804,28 @@ class X2cscopeGui(QMainWindow):
                     self.select_elf_file()  # Prompt to select a new ELF file if not found
 
                 # Attempt to connect to the specified port in the configuration
-                if config_port in [port.device for port in serial.tools.list_ports.comports()]:
-                    self.port_combo.setCurrentText(config_port)
-                    if self.attempt_connection():
-                        logging.info(f"Connected to the specified port: {config_port}")
+                if not self.is_connected():
+                    if config_port in [port.device for port in serial.tools.list_ports.comports()]:
+                        self.port_combo.setCurrentText(config_port)
+                        if self.attempt_connection():
+                            logging.info(f"Connected to the specified port: {config_port}")
 
-                # If the specified port is not available or connection fails, try other ports
-                available_ports = [port.device for port in serial.tools.list_ports.comports()]
-                for port in available_ports:
-                    self.port_combo.setCurrentText(port)
-                    if self.attempt_connection():
-                        logging.info(f"Connected to an alternative port: {port}")
-                        break
-                else:
-                    # If all attempts fail, show a message to check connection
-                    QMessageBox.warning(
-                        self,
-                        "Connection Failed",
-                        "Could not connect to any available ports. Please check your connection.",
-                    )
-                self.select_file_button.setText(QFileInfo(self.file_path).fileName())
-                self.settings.setValue("file_path", self.file_path)
+                    # If the specified port is not available or connection fails, try other ports
+                    available_ports = [port.device for port in serial.tools.list_ports.comports()]
+                    for port in available_ports:
+                        self.port_combo.setCurrentText(port)
+                        if self.attempt_connection():
+                            logging.info(f"Connected to an alternative port: {port}")
+                            break
+                    else:
+                        # If all attempts fail, show a message to check connection
+                        QMessageBox.warning(
+                            self,
+                            "Connection Failed",
+                            "Could not connect to any available ports. Please check your connection.",
+                        )
+                    self.select_file_button.setText(QFileInfo(self.file_path).fileName())
+                    self.settings.setValue("file_path", self.file_path)
 
                 # Load WatchPlot configuration
                 watch_view = config.get("watch_view", {})
