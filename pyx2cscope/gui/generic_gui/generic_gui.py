@@ -581,7 +581,7 @@ class X2cscopeGui(QMainWindow):
         """Set up the port selection, baud rate, and device info layout in two sections."""
 
         # Create the left layout for device info (QVBoxLayout)
-        left_layout = QVBoxLayout()
+        left_layout = QGridLayout()
 
         # Add device info labels to the left side
         for label_key, label in self.device_info_labels.items():
@@ -592,7 +592,7 @@ class X2cscopeGui(QMainWindow):
             device_info_layout = QGridLayout()  # Create a row layout for label and its value
             device_info_layout.addWidget(info_label, row, 0, Qt.AlignLeft)
             device_info_layout.addWidget(label, row, 1, alignment=Qt.AlignLeft)
-            left_layout.addLayout(device_info_layout)
+            left_layout.addLayout(device_info_layout,row,0, Qt.AlignLeft)
 
         # Create the right layout for COM port and settings (QGridLayout)
         right_layout = QGridLayout()
@@ -649,42 +649,10 @@ class X2cscopeGui(QMainWindow):
         # Finally, add the horizontal layout to the grid at a specific row and column
         layout.addLayout(horizontal_layout, 0, 0, 1, 2)  # Span 1 row and 2 columns
 
-    # def setup_baud_layout(self, layout):
-    #     """Set up the baud rate selection layout."""
-    #     baud_layout = QHBoxLayout()  # Use QVBoxLayout to align items vertically
-    #     baud_label = QLabel("Select Baud Rate:")
-    #     self.baud_combo.setFixedSize(100, 25)  # Set fixed size for the baud combo box
-    #
-    #     baud_layout.addWidget(baud_label)
-    #     baud_layout.addWidget(self.baud_combo)
-    #     baud_layout.setAlignment(Qt.AlignRight)  # Align all widgets to the left
-    #
-    #     self.baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
-    #     default_baud_rate = "115200"
-    #     index = self.baud_combo.findText(default_baud_rate, Qt.MatchFixedString)
-    #     if index >= 0:
-    #         self.baud_combo.setCurrentIndex(index)
-    #
-    #     layout.addLayout(baud_layout, 2, 0)
-
     def setup_sampletime_layout(self, layout):
         """Set up the sample time layout."""
         #self.Connect_button.clicked.connect(self.toggle_connection)
         self.select_file_button.clicked.connect(self.select_elf_file)
-        # self.sampletime.setText("500")
-        # self.sampletime.setValidator(self.decimal_validator)
-        #
-        # self.sampletime.setFixedSize(50, 20)
-        #
-        # sampletime_layout = QHBoxLayout()
-        # sampletime_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
-        # sampletime_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
-        # sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
-        # sampletime_layout.addStretch(1)
-        #sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
-
-        #layout.addLayout(sampletime_layout, 3, 0)
-        #layout.addWidget(self.Connect_button,3, 0, alignment=Qt.AlignRight)
         layout.addWidget(self.select_file_button, 4, 0)
 
     def setup_variable_layout(self, layout):
@@ -1499,7 +1467,9 @@ class X2cscopeGui(QMainWindow):
                         time.sleep(1)  # Wait 1 second before retrying the connection
                     except Exception as e:
                         logging.error(f"Unexpected error connecting to {port}: {e}")
+                        self.handle_error(f"Failed to connect manually to port {port}, Please check your connection or select the correct COM-Port!")
                         break  # Exit the loop on unexpected errors
+
 
         except Exception as e:
             error_message = f"Error while connecting: {e}"
