@@ -14,7 +14,7 @@ def execute_qt(*args, **kwargs):
 
     from PyQt5.QtWidgets import QApplication
 
-    from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
+    from pyx2cscope.gui.generic_gui.generic_gui import X2cscopeGui
 
     # QApplication expects the first argument to be the program name.
     qt_args = sys.argv[:1] + args[0]

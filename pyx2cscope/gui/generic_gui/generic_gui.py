@@ -102,7 +102,7 @@ class VariableSelectionDialog(QDialog):
 class X2cscopeGui(QMainWindow):
     """Main GUI class for the pyX2Cscope application."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Initializing all the elements required."""
         super().__init__()
         self.x2cscope = None  # Ensures it is initialized to None at start
