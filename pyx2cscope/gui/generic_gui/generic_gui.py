@@ -1644,62 +1644,69 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(error_message)
 
     def sample_scope_data(self, single_shot=False):
-        """Sample the scope data."""
+        """Sample the scope data using QTimer for non-blocking updates."""
         try:
-            while self.sampling_active:
-                if self.x2cscope.is_scope_data_ready():
-                    logging.info("Scope data is ready.")
+            if not self.is_connected():
+                return  # Do not proceed if the device is not connected
 
-                    data_storage = {}
-                    for channel, data in self.x2cscope.get_scope_channel_data().items():
-                        data_storage[channel] = data
+            self.sampling_active = True
+            self.scope_sample_button.setText("Stop")  # Update button text
 
-                    self.scope_plot_widget.clear()
-                    for i, (channel, data) in enumerate(data_storage.items()):
-                        if self.scope_channel_checkboxes[
-                            i
-                        ].isChecked():  # Check if the channel is enabled
-                            scale_factor = float(
-                                self.scope_scaling_boxes[i].text()
-                            )  # Get the scaling factor
-                            start = 0
-                            time_values = np.linspace(
-                                start, self.real_sampletime, len(data)
-                            )
-                            print("timevalue", len(time_values))
-                            print(self.real_sampletime)
-                            print(len(data))
-                            data = (
-                                    np.array(data, dtype=float) * scale_factor
-                            )  # Apply the scaling factor
-                            self.scope_plot_widget.plot(
-                                time_values,
-                                data,
-                                pen=pg.mkPen(color=self.plot_colors[i], width=2),
-                                # Thicker plot line
-                                name=f"Channel {channel}",
-                            )
+            # Create a QTimer for periodic scope data requests
+            self.scope_timer = QTimer()
+            self.scope_timer.timeout.connect(lambda: self._sample_scope_data_timer(single_shot))
+            self.scope_timer.start(100)  # Adjust interval (milliseconds) as needed
 
-                    self.scope_plot_widget.setLabel("left", "Value")
-                    self.scope_plot_widget.setLabel("bottom", "Time", units="ms")
-                    self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
+            # If it's a single shot, stop the timer after first run
+            if single_shot:
+                self.scope_timer.singleShot(100, lambda: self.scope_timer.stop())
 
-                    if single_shot:
-                        break
+        except Exception as e:
+            error_message = f"Error starting sampling: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
 
-                    self.x2cscope.request_scope_data()
+    def _sample_scope_data_timer(self, single_shot):
+        """Function that QTimer calls periodically to handle scope data sampling."""
+        try:
+            if not self.x2cscope.is_scope_data_ready():
+                return  # No new data, exit the function
 
-                QApplication.processEvents()  # Keep the GUI responsive
+            logging.info("Scope data is ready.")
+            data_storage = {}
+            for channel, data in self.x2cscope.get_scope_channel_data().items():
+                data_storage[channel] = data
 
-                time.sleep(0.1)
+            self.scope_plot_widget.clear()
+            for i, (channel, data) in enumerate(data_storage.items()):
+                if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
+                    scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
+                    start = 0
+                    time_values = np.linspace(start, self.real_sampletime, len(data))
+                    data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
+                    self.scope_plot_widget.plot(
+                        time_values,
+                        data,
+                        pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
+                        name=f"Channel {channel}",
+                    )
 
-            self.sampling_active = False
-            self.scope_sample_button.setText("Sample")
-            logging.info("Data collection complete.")
+            self.scope_plot_widget.setLabel("left", "Value")
+            self.scope_plot_widget.setLabel("bottom", "Time", units="ms")
+            self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
+
+            if single_shot:
+                self.scope_timer.stop()  # Stop the timer if it was a single shot
+
+            self.x2cscope.request_scope_data()  # Request new data for next timer tick
+
         except Exception as e:
             error_message = f"Error sampling scope data: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
+            self.scope_timer.stop()  # Stop timer on error
+            self.sampling_active = False
+            self.scope_sample_button.setText("Sample")  # Update button text
 
     def save_config(self):
         try:
