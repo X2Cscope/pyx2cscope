@@ -459,7 +459,7 @@ class X2cscopeGui(QMainWindow):
         variable_group.setLayout(variable_layout)
         # Samplescope Time for real time x-axis
         # self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
-        # self.scope_sampletime_edit.setValidator(self.decimal_validator)  # Only allow numeric input
+        # self.scope_sampletime_edit.setValidator(self.decimal_validator) # Only allow numeric input
         # grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 6, 0)
         # grid_layout_trigger.addWidget(self.scope_sampletime_edit, 6, 1)
 
@@ -590,8 +590,8 @@ class X2cscopeGui(QMainWindow):
 
             row = list(self.device_info_labels.keys()).index(label_key)  # Get the row index
             device_info_layout = QGridLayout()  # Create a row layout for label and its value
-            device_info_layout.addWidget(info_label, row, 0, Qt.AlignLeft)
-            device_info_layout.addWidget(label, row, 1, alignment=Qt.AlignLeft)
+            device_info_layout.addWidget(info_label, row, 0, Qt.AlignRight)
+            device_info_layout.addWidget(label, row, 1, alignment=Qt.AlignRight)
             left_layout.addLayout(device_info_layout,row,0, Qt.AlignLeft)
 
         # Create the right layout for COM port and settings (QGridLayout)
@@ -934,7 +934,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def var_live(self, live_var, timer):
-        """Handles the state change of live variable checkboxes.
+        """handles the state change of live variable checkboxes.
 
         Args:
             live_var (QCheckBox): The checkbox representing a live variable.
@@ -1140,7 +1140,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def handle_var_update(self, counter, value_var):
-        """Handles the update of variable values from the microcontroller.
+        """handles the update of variable values from the microcontroller.
 
         Args:
             counter: The variable to update.
@@ -1285,7 +1285,7 @@ class X2cscopeGui(QMainWindow):
         """
         available_ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_combo.clear()
-        self.port_combo.addItem("Auto Connect")  # Add Auto Connect option
+        self.port_combo.addItem("Auto Connect")  # Add an Auto Connect option
         self.port_combo.addItems(available_ports)
 
     @pyqtSlot()
@@ -1512,7 +1512,7 @@ class X2cscopeGui(QMainWindow):
     def close_plot_window(self):
         """Close the plot window if it is open.
 
-        This method stops the animation and closes the plot window, if it is open.
+        This method stops the animation and closes the plot window if it is open.
         """
         self.plot_window_open = False
 
@@ -2145,11 +2145,11 @@ class X2cscopeGui(QMainWindow):
         self.live_tab3.remove(live_checkbox)
         self.variable_line_edits.remove(variable_edit)
         self.value_line_edits.remove(value_edit)
-        self.scaling_edits_tab3.remove(scaling_edit)  # Remove from scaling list
+        self.scaling_edits_tab3.remove(scaling_edit)  # Remove from a scaling list
         self.offset_edits_tab3.remove(offset_edit)  # Remove from offset list
         self.scaled_value_edits_tab3.remove(
             scaled_value_edit
-        )  # Remove from scaled value list
+        )  # Remove from a scaled value list
 
         # Remove the widget references from the row widgets tracking
         self.row_widgets.remove(
