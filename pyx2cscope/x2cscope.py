@@ -437,11 +437,15 @@ class X2CScope:
 
     def get_device_info(self):
         device_info = self.variable_factory.device_info
+        if device_info.uc_width == 2:
+            uc_width_value = "16-bit"
+        elif device_info.uc_width == 4:
+            uc_width_value = "32-bit"
         return {
             "processor_id": device_info.processor_id,
-            "uc_width": device_info.uc_width,
-            "date": device_info.appDate,
-            "time": device_info.appTime,
+            "uc_width": uc_width_value,
+            "date": device_info.monitorDate, ##TODO Change to APP date once implemented
+            "time": device_info.monitorTime, #TODO Change to APP time once implemented
             "AppVer": device_info.appVer,
             "dsp_state": device_info.dsp_state,
         }
