@@ -21,6 +21,9 @@ homepage = "https://x2cscope.github.io/"
 documentation = "https://x2cscope.github.io/pyx2cscope"
 repository = "https://github.com/X2Cscope/pyx2cscope"
 
+[tool.poetry.scripts]
+pyx2cscope = 'pyx2cscope.__main__:main'
+
 [tool.poetry.dependencies]
 pyserial = "^3.5"
 pyelftools = "^0.29"
