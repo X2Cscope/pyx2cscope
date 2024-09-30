@@ -1541,6 +1541,12 @@ class X2cscopeGui(QMainWindow):
                 self.sampling_active = False
                 self.scope_sample_button.setText("Sample")
                 logging.info("Stopped sampling.")
+
+                # Stop sampling and timers
+                if self.scope_timer.isActive():
+                    self.scope_timer.stop()  # Stop the periodic sampling
+
+                self.x2cscope.clear_all_scope_channel()  # Clears channels and stops requests
             else:
                 self.x2cscope.clear_all_scope_channel()
                 for line_edit in self.scope_var_lines:
@@ -1558,9 +1564,7 @@ class X2cscopeGui(QMainWindow):
                 self.real_sampletime = self.x2cscope.scope_sample_time(
                     scope_sample_time_us
                 )
-                print(
-                    f"Real sample time: {self.real_sampletime} µs"
-                )  # Check this value
+                print(f"Real sample time: {self.real_sampletime} µs")  # Check this value
 
                 # Update the Total Time display
                 self.total_time_value.setText(str(self.real_sampletime))
