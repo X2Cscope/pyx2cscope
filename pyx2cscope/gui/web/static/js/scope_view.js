@@ -74,11 +74,6 @@ function setScopeTableListeners(){
             && (e.which < 48 || e.which > 57)) {
             return false;
         }
-//        const regex = /[+-]?([0-9]{1,}[.])[0-9]+/;
-//        if(!regex.test($(this).val()))
-//        {
-//            return false;
-//        }
     });
 }
 
