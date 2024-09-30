@@ -33,11 +33,11 @@ def parse_arguments():
     parser.add_argument("-c", "--log-console", action="store_true",
                         help="Output log to the console.")
     parser.add_argument("-e", "--elf",
-                        help="Path to elf-file, i.e. -e my_elf.elf. Use together with -s")
+                        help="Path to elf-file, i.e. -e my_elf.elf.")
     parser.add_argument("-p", "--port",
                         help="The serial COM port to be used. Use together with -e")
     parser.add_argument("-q", "--qt", action="store_false",
-                        help="Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.")
+                        help="Start the Qt user interface, pyx2cscope.gui.generic_gui.generic_gui.X2Cscope")
     parser.add_argument("-w", "--web", action="store_true",
                         help="Start the Web user interface, pyx2cscope.gui.web.app.")
     parser.add_argument("-wp", "--web-port", type=int, default="5000",
