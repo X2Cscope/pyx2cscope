@@ -45,28 +45,28 @@ Create a virtual environment and install pyx2cscope using the following commands
 
 It is highly recommended to install python libraries underneath a virtual environment.
 
-Nevertheless, to install at system level, execute the following lines:
+Nevertheless, to install at system level, we advise to install it on user area. (Global insallation may not work.) 
+Execute the following lines:
 
 .. code-block:: python
    
-   pip install pyx2cscope
-   pip install PyQt5 --user --ignore-installed
+   pip install pyx2cscope --user
 
 .. code-block:: python
 
    pip install --upgrade pyx2cscope
 
-To check the current pyx2cscope version, in a terminal, run the following command:
+After install you may check the current pyx2cscope version, in a terminal, run the following command:
 
 .. code-block:: python
 
-   python -m pyx2cscope --version
+   pyx2cscope --version
 
 For help or additional command line options, type:
 
 .. code-block:: bash
 
-   python -m pyx2cscope --help
+   pyx2cscope --help
 
 The log level used by pyX2Cscope is ERROR by default, possible values are
 DEBUG, INFO, WARNING, ERROR, and  CRITICAL. To set a different log level start
@@ -74,7 +74,7 @@ pyX2Cscope with argument **-l** or **--log-level**
 
 .. code-block:: bash
 
-   python -m pyx2cscope --log-level DEBUG
+   pyx2cscope --log-level DEBUG
 
 Usage
 -----
@@ -92,13 +92,13 @@ To execute Qt version, type:
 
 .. code-block:: bash
    
-   python -m pyx2cscope
+   pyx2cscope
 
 To execute the Browser based version type:
 
 .. code-block:: bash
 
-   python -m pyx2cscope -w
+   pyx2cscope -w
 
 
 The API interface
@@ -119,7 +119,7 @@ See the section examples to check some of the usages you may get by pyX2Cscope.
    :caption: Contents:
 
    how_to
-   HW_Support
+   FW_Support
    example
 
 Indices and tables

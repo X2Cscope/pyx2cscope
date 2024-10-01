@@ -51,6 +51,11 @@ class VariableFactory:
             if self.device_info.uc_width == DeviceInfo.MACHINE_16
             else Elf32Parser
         )
+        if (
+            self.device_info.processor_id == "__GENERIC_MICROCHIP_DSPIC__"
+        ):  # TODO implement it better for future cores.
+            self.device_info.uc_width = 2
+
         self.parser = parser(elf_path)
 
     def get_var_list(self) -> list[str]:
@@ -114,9 +119,11 @@ class VariableFactory:
             "long long": VariableInt64,
             "long long unsigned int": VariableUint64,
             "long unsigned int": VariableUint32,
-            "pointer": VariableUint16
-            if self.device_info.uc_width == self.device_info.MACHINE_16
-            else VariableUint32,  # TODO v 0.2.0
+            "pointer": (
+                VariableUint16
+                if self.device_info.uc_width == self.device_info.MACHINE_16
+                else VariableUint32
+            ),  # TODO v 0.2.0
             "short": VariableInt16,
             "short int": VariableInt16,
             "short unsigned int": VariableUint16,

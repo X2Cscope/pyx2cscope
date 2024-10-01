@@ -1,8 +1,9 @@
 """X2CScope module for interfacing with the X2C firmware enabled embedded systems.
 
-The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers.
-It is utilising LNET protocol to communicate with the firmware. LNET protocoll is implemented in the mchplnet package.
-The package provides an interface to connect to the firmware, set up scope channels, request data, and process received data.
+The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers. It
+is utilising LNET protocol to communicate with the firmware. LNET protocol is implemented in the mchplnet package.
+The package provides an interface to connect to the firmware, set up scope channels, request data, and a process
+received data.
 """
 
 import logging
@@ -23,6 +24,10 @@ logging.basicConfig(
     level=logging.DEBUG,
     filename=__name__ + ".log",
 )
+
+# Define constants for magic values
+UC_WIDTH_16BIT = 2
+UC_WIDTH_32BIT = 4
 
 
 def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
@@ -50,7 +55,7 @@ class TriggerConfig:
 
     Attributes:
         variable (Variable): The variable to use as the trigger source.
-        trigger_level (int): The trigger level value for specified channel.
+        trigger_level (int): The trigger level value for a specified channel.
         trigger_mode (int): 0 Auto, 1 Triggered (default) .
         trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
         trigger_edge (int): Rising 0, falling 1.
@@ -78,13 +83,12 @@ class X2CScope:
         convert_list (dict): Dictionary to store variable conversion functions.
     """
 
-    def __init__(self, elf_file: str, interface: InterfaceABC = None, *args, **kwargs):
+    def __init__(self, elf_file: str, interface: InterfaceABC = None, **kwargs):
         """Initialize the X2CScope instance.
 
         Args:
             elf_file (str): Path to the ELF file.
             interface (InterfaceABC): Communication interface to be used, defaults to None.
-            *args: Arguments without key passed during the initialization.
             **kwargs: Key defined arguments.
         """
         i_type = interface if interface is not None else InterfaceType.SERIAL
@@ -94,6 +98,7 @@ class X2CScope:
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
+        self.ucwidth = self.variable_factory.device_info.uc_width
 
     def set_interface(self, interface: InterfaceABC):
         """Set the communication interface for the scope.
@@ -154,13 +159,15 @@ class X2CScope:
         self.convert_list[variable.name] = variable.bytes_to_value
         return self.scope_setup.add_channel(scope_channel, trigger)
 
-    def clear_scope_channel(self):
+    def clear_all_scope_channel(self):
         """Remove all variables from the scope channel and reset any trigger.
 
         Returns:
             None.
         """
-        variables = set(self.convert_list.keys()) # make a copy so we may delete inside the loop
+        variables = set(
+            self.convert_list.keys()
+        )  # make a copy so we may delete inside the loop
         for variable in variables:
             self.convert_list.pop(variable)
             self.scope_setup.remove_channel(variable)
@@ -213,7 +220,7 @@ class X2CScope:
         """Define a pre-scaler for sampling mode.
 
         This can be used to extend total sampling time at the cost of resolution.
-        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
+        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
 
         Args:
             sample_time (int): The sample time factor.
@@ -260,7 +267,8 @@ class X2CScope:
         """
         scope_data: LoadScopeData = self.lnet.scope_data
         return int(
-            scope_data.trigger_event_position / self.scope_setup.get_dataset_size()
+            scope_data.trigger_event_position
+            / (self.scope_setup.get_dataset_size() / self.ucwidth)
         )
 
     def get_delay_trigger_position(self) -> int:
@@ -278,8 +286,8 @@ class X2CScope:
         Returns:
             int: The length of the used portion of the SDA.
         """
-        bytes_not_used = (
-            self.lnet.scope_data.data_array_size % self.scope_setup.get_dataset_size()
+        bytes_not_used = self.lnet.scope_data.data_array_size % (
+            self.scope_setup.get_dataset_size() / self.ucwidth
         )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
@@ -297,22 +305,22 @@ class X2CScope:
         num_chunks = self._calc_sda_used_length() // chunk_size
         chunk_rest = self._calc_sda_used_length() % chunk_size
         loop = num_chunks if chunk_rest == 0 else num_chunks + 1
-        for i in range(loop):
+        for i in range(int(loop)):
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             try:
                 # Read the chunk of data
-                data_size = chunk_size if i < num_chunks else chunk_rest
+                data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
                 data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
+
                 logging.error(f"Error reading chunk {i}: {str(e)}")
         return chunk_data
 
-    def read_array(self, address: int, data_type: int) -> List[bytearray]:
+    def read_array(self, data_type: int) -> List[bytearray]:
         """Read an array from the specified address in the MCU memory.
 
         Args:
-            address (int): The address to read from.
             data_type (int): The type of data to read.
 
         Returns:
@@ -342,11 +350,17 @@ class X2CScope:
         """
         channels = {channel: [] for channel in self.scope_setup.list_channels()}
         dataset_size = self.scope_setup.get_dataset_size()
+
         for i in range(0, len(data), dataset_size):
             dataset = data[i : i + dataset_size]
+            if len(dataset) != dataset_size:
+                continue  # Skip this dataset if it's not the complete expected size
+
             j = 0
             for name, channel in self.scope_setup.list_channels().items():
                 k = channel.data_type_size + j
+                if k > len(dataset):  # Ensure the data chunk is complete
+                    break
                 value = self.convert_list[name](dataset[j:k])
                 channels[name].append(value)
                 j = k
@@ -391,3 +405,52 @@ class X2CScope:
             channels = self._sort_channel_data(data)
             return self._filter_channels(channels) if valid_data else channels
         return {}
+
+    def scope_sample_time(
+        self, time_microseconds: float
+    ) -> float:  # TODO testing and implementing the time axis.
+        """Evaluate the scope sample time based on user-provided time value.
+
+        Args:
+            time_microseconds (float): The time value in microseconds for evaluating one scope sample.
+
+        Returns:
+            float: The real-time duration for the scope functionality in milliseconds.
+        """
+        # - `self.scope_setup.channels`: a dictionary of all configured scope channels
+        # - `self.scope_setup.get_dataset_size()`: returns the total size of one dataset in bytes
+        # - `self.lnet.scope_data.data_array_size`: the total size of the data array in bytes
+
+        # Get the total number of channels and the dataset size
+        dataset_size = self.scope_setup.get_dataset_size()
+        buffer_size = self.lnet.scope_data.data_array_size
+
+        # Calculate the number of samples that fit in the buffer
+        samples_in_buffer = buffer_size // dataset_size
+
+        # Calculate the total time duration for the samples in the buffer
+        total_time_microseconds = time_microseconds * samples_in_buffer
+
+        # Convert the total time to milliseconds
+        total_time_milliseconds = total_time_microseconds / 1000
+
+        logging.info(
+            f"Total time for the scope functionality: {total_time_milliseconds} ms"
+        )
+        return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
+
+    def get_device_info(self):
+        """Returns the device information as a dictionary."""
+        device_info = self.variable_factory.device_info
+        if device_info.uc_width == UC_WIDTH_16BIT:
+            uc_width_value = "16-bit"
+        elif device_info.uc_width == UC_WIDTH_32BIT:
+            uc_width_value = "32-bit"
+        return {
+            "processor_id": device_info.processor_id,
+            "uc_width": uc_width_value,
+            "date": device_info.monitorDate,  ##TODO Change to APP date once implemented
+            "time": device_info.monitorTime,  # TODO Change to APP time once implemented
+            "AppVer": device_info.appVer,
+            "dsp_state": device_info.dsp_state,
+        }

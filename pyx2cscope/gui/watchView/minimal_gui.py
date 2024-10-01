@@ -33,10 +33,11 @@ from PyQt5.QtWidgets import (
 
 from pyx2cscope import set_logger
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 set_logger(logging.INFO, __name__)
 matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
+
 
 class X2cscopeGui(QMainWindow):
     """Main GUI class for the pyX2Cscope application.
@@ -45,7 +46,7 @@ class X2cscopeGui(QMainWindow):
     to connect to a microcontroller, select variables for monitoring, and plot their values.
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Initializing all the elements required."""
         super().__init__()
         self.initialize_variables()
@@ -123,6 +124,7 @@ class X2cscopeGui(QMainWindow):
         self.combo_box3 = QComboBox()
         self.combo_box2 = QComboBox()
         self.combo_box1 = QComboBox()
+
     def scaled_value(self):
         """Initializing Scaled variable."""
         self.ScaledValue_var1 = QLineEdit(self)
@@ -130,6 +132,7 @@ class X2cscopeGui(QMainWindow):
         self.ScaledValue_var3 = QLineEdit(self)
         self.ScaledValue_var4 = QLineEdit(self)
         self.ScaledValue_var5 = QLineEdit(self)
+
     def live_var(self):
         """Initializing live variable."""
         self.Live_var1 = QCheckBox(self)
@@ -137,7 +140,6 @@ class X2cscopeGui(QMainWindow):
         self.Live_var3 = QCheckBox(self)
         self.Live_var4 = QCheckBox(self)
         self.Live_var5 = QCheckBox(self)
-
 
     def value_var(self):
         """Initializing value variable."""
@@ -154,6 +156,7 @@ class X2cscopeGui(QMainWindow):
         self.timer3 = QTimer()
         self.timer2 = QTimer()
         self.timer1 = QTimer()
+
     def offset_var(self):
         """Initializing Offset Variable."""
         self.offset_var1 = QLineEdit()
@@ -161,6 +164,7 @@ class X2cscopeGui(QMainWindow):
         self.offset_var3 = QLineEdit()
         self.offset_var4 = QLineEdit()
         self.offset_var5 = QLineEdit()
+
     def plot_var_check(self):
         """Initializing plot variable check boxes."""
         self.plot_var5_checkbox = QCheckBox()
@@ -168,6 +172,7 @@ class X2cscopeGui(QMainWindow):
         self.plot_var4_checkbox = QCheckBox()
         self.plot_var3_checkbox = QCheckBox()
         self.plot_var1_checkbox = QCheckBox()
+
     def scailing_var(self):
         """Initializing Scaling variable."""
         self.Scaling_var1 = QLineEdit(self)
@@ -183,6 +188,7 @@ class X2cscopeGui(QMainWindow):
         self.Unit_var3 = QLineEdit(self)
         self.Unit_var4 = QLineEdit(self)
         self.Unit_var5 = QLineEdit(self)
+
     # noinspection PyUnresolvedReferences
     def init_ui(self):
         """Initializing all the required for GUI."""
@@ -383,18 +389,34 @@ class X2cscopeGui(QMainWindow):
         """Set up connections for various widgets."""
         self.plot_button.clicked.connect(self.plot_data_plot)
 
-        for timer, combo_box, value_var in zip(self.timer_list, self.combo_boxes, self.Value_var_boxes):
-            timer.timeout.connect(lambda cb=combo_box, v_var=value_var: self.handle_var_update(cb.currentText(), v_var))
+        for timer, combo_box, value_var in zip(
+            self.timer_list, self.combo_boxes, self.Value_var_boxes
+        ):
+            timer.timeout.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_var_update(
+                    cb.currentText(), v_var
+                )
+            )
 
         for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
             combo_box.currentIndexChanged.connect(
-                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(self.VariableList[cb], v_var)
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(
+                    self.VariableList[cb], v_var
+                )
+            )
+        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+            value_var.editingFinished.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_putram(
+                    cb.currentText(), v_var
+                )
             )
 
         self.connect_editing_finished()
 
         for timer, live_var in zip(self.timer_list, self.live_checkboxes):
-            live_var.stateChanged.connect(lambda state, lv=live_var, tm=timer: self.var_live(lv, tm))
+            live_var.stateChanged.connect(
+                lambda state, lv=live_var, tm=timer: self.var_live(lv, tm)
+            )
 
         self.slider_var1.setMinimum(-32768)
         self.slider_var1.setMaximum(32767)
@@ -558,7 +580,9 @@ class X2cscopeGui(QMainWindow):
             timestamp = datetime.now()
             if len(self.plot_data) > 0:
                 last_timestamp = self.plot_data[-1][0]
-                time_diff = (timestamp - last_timestamp).total_seconds() * 1000  # to convert time in ms.
+                time_diff = (
+                    timestamp - last_timestamp
+                ).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
             self.plot_data.append(
@@ -591,9 +615,13 @@ class X2cscopeGui(QMainWindow):
             self.ax.clear()
             start = time.time()
 
-            for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
+            for value, combo_box, plot_var in zip(
+                values, self.combo_boxes, self.plot_checkboxes
+            ):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.ax.plot(np.cumsum(time_diffs), value, label=combo_box.currentText())
+                    self.ax.plot(
+                        np.cumsum(time_diffs), value, label=combo_box.currentText()
+                    )
 
             self.ax.set_xlabel("Time (ms)")
             self.ax.set_ylabel("Value")
@@ -615,13 +643,23 @@ class X2cscopeGui(QMainWindow):
             def initialize_plot():
                 self.fig, self.ax = plt.subplots()
 
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1, cache_frame_data=False)
+                self.ani = FuncAnimation(
+                    self.fig, self.update_plot, interval=1, cache_frame_data=False
+                )
                 logging.debug(self.ani)
                 plt.xticks(rotation=45)
-                self.ax.axhline(0, color="black", linewidth=0.5)  # Reference line at y=0
-                self.ax.axvline(0, color="black", linewidth=0.5)  # Reference line at x=0
-                plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
-                plt.show(block=False)  # Use block=False to prevent the GUI from freezing
+                self.ax.axhline(
+                    0, color="black", linewidth=0.5
+                )  # Reference line at y=0
+                self.ax.axvline(
+                    0, color="black", linewidth=0.5
+                )  # Reference line at x=0
+                plt.subplots_adjust(
+                    bottom=0.15, left=0.15
+                )  # Adjust plot window position
+                plt.show(
+                    block=False
+                )  # Use block=False to prevent the GUI from freezing
 
             if self.plot_window_open:
                 if self.fig is not None and plt.fignum_exists(self.fig.number):
@@ -874,7 +912,9 @@ class X2cscopeGui(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
+            self.x2cscope = X2CScope(
+                port=port, elf_file=self.file_path, baud_rate=baud_rate
+            )
             self.ser = self.x2cscope.interface
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:
