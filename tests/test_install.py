@@ -1,6 +1,6 @@
 """Integration test to check if after install, PyX2CScope outputs the expected behavior."""
 import os
-
+import pyx2cscope
 from mchplnet.services.frame_device_info import DeviceInfo
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from pyx2cscope.x2cscope import X2CScope
@@ -35,6 +35,12 @@ def test_x2cscope_install_serial_32(mocker):
     scope_data: LoadScopeData = pyx2cscope.lnet.scope_data
     assert scope_data.scope_state == 0, "wrong scope state value"
     assert scope_data.data_array_size == 8192, "wrong scope array size" # noqa: PLR2004
+
+
+def test_x2cscope_install_script_bin():
+    """Test if the script scripts/pyx2cscope executable is installed correctly."""
+    result = os.popen("pyx2cscope -v").read().split(" ")[1].strip("\n")
+    assert result == pyx2cscope.__version__, "x2cscope script not working"
 
 
 # def test_web_x2cscope_install():
