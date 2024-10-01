@@ -62,7 +62,7 @@ In case of unexpected issues executing pyx2cscope try to reinstall manually:
    
    pip uninstall pyx2cscope
    pip cache purge
-   pip install pyx2cscope --user 
+   pip install --user pyx2cscope 
 
 
 After install you may check the current pyx2cscope version, in a terminal, run the following command:

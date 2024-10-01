@@ -45,7 +45,7 @@ In case of unexpected issues executing pyx2cscope try to reinstall manually:
 ```
 pip uninstall pyx2cscope
 pip cache purge
-pip install pyx2cscope --user 
+pip install --user pyx2cscope
 ```
 
 ## Start GUI
