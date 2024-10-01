@@ -25,6 +25,7 @@ repository = "https://github.com/X2Cscope/pyx2cscope"
 pyx2cscope = 'pyx2cscope.__main__:main'
 
 [tool.poetry.dependencies]
+python = "^3.10"
 pyserial = "^3.5"
 pyelftools = "^0.29"
 numpy = "^1.25.1"
