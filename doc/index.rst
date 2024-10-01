@@ -50,7 +50,7 @@ Execute the following lines:
 
 .. code-block:: python
    
-   pip install pyx2cscope --user
+   pip install --user pyx2cscope
 
 .. code-block:: python
 
