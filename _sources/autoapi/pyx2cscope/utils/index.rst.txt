@@ -1,0 +1,61 @@
+:py:mod:`pyx2cscope.utils`
+==========================
+
+.. py:module:: pyx2cscope.utils
+
+.. autoapi-nested-parse::
+
+   This module provides utility functions for handling configuration settings.
+
+   Functions:
+       get_config_file() -> ConfigParser: Retrieves the configuration file.
+       get_elf_file_path(key="path") -> str: Gets the path to the ELF file from the configuration.
+       get_com_port(key="com_port") -> str: Gets the COM port from the configuration.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.utils.get_config_file
+   pyx2cscope.utils.get_elf_file_path
+   pyx2cscope.utils.get_com_port
+
+
+
+.. py:function:: get_config_file() -> configparser.ConfigParser
+
+   Retrieves the configuration file. If the configuration file does not exist, it creates one with default values.
+
+   Returns:
+       ConfigParser: The configuration parser object.
+
+
+.. py:function:: get_elf_file_path(key='path') -> str
+
+   Gets the path to the ELF file from the configuration.
+
+   Args:
+       key (str): The key for the ELF file path in the configuration. Default is "path".
+
+   Returns:
+       str: The path to the ELF file.
+
+
+.. py:function:: get_com_port(key='com_port') -> str
+
+   Gets the COM port from the configuration.
+
+   Args:
+       key (str): The key for the COM port in the configuration. Default is "com_port".
+
+   Returns:
+       str: The COM port.
+
+

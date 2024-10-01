@@ -23,7 +23,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="pyx2cscope.xc2scope" href="../xc2scope/index.html" />
+    <link rel="next" title="pyx2cscope.utils" href="../utils/index.html" />
     <link rel="prev" title="pyx2cscope.variable.variable_factory" href="../variable/variable_factory/index.html" /> 
 </head>
 
@@ -52,14 +52,15 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../how_to.html">How-To</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope</span></code></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.__main__</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../xc2scope/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.xc2scope</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.utils</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../x2cscope/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.x2cscope</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
@@ -109,11 +110,8 @@ sets up the PyQt5 application, and launches the X2Cscope GUI.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.parse_arguments" title="pyx2cscope.__main__.parse_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_arguments</span></code></a>()</p></td>
 <td><p>Forward the received arguments to ArgParse and parse them.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.__main__.execute_qt" title="pyx2cscope.__main__.execute_qt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_qt</span></code></a>(args)</p></td>
-<td><p>Execute the GUI Qt implementation.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.execute_web" title="pyx2cscope.__main__.execute_web"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_web</span></code></a>(*args, **kwargs)</p></td>
-<td><p>Start the web server.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.__main__._args_check" title="pyx2cscope.__main__._args_check"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_args_check</span></code></a>(k_args)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -134,30 +132,9 @@ sets up the PyQt5 application, and launches the X2Cscope GUI.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pyx2cscope.__main__.execute_qt">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">execute_qt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#execute_qt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.execute_qt" title="Link to this definition"></a></dt>
-<dd><p>Execute the GUI Qt implementation.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>args: non-keyed arguments for Qt App.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pyx2cscope.__main__.execute_web">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">execute_web</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#execute_web"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.execute_web" title="Link to this definition"></a></dt>
-<dd><p>Start the web server.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p><a href="#id1"><span class="problematic" id="id2">*</span></a>args: non-keyed arguments
-<a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs: keyed arguments related to the web server. See parse_arguments function documentations.</p>
-</dd>
-</dl>
-</dd></dl>
+<dt class="sig sig-object py" id="pyx2cscope.__main__._args_check">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">_args_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">argparse.Namespace</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#_args_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__._args_check" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 </section>
@@ -168,7 +145,7 @@ sets up the PyQt5 application, and launches the X2Cscope GUI.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../variable/variable_factory/index.html" class="btn btn-neutral float-left" title="pyx2cscope.variable.variable_factory" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../xc2scope/index.html" class="btn btn-neutral float-right" title="pyx2cscope.xc2scope" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../utils/index.html" class="btn btn-neutral float-right" title="pyx2cscope.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

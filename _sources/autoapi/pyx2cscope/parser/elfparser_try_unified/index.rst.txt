@@ -1,0 +1,42 @@
+:py:mod:`pyx2cscope.parser.elfparser_try_unified`
+=================================================
+
+.. py:module:: pyx2cscope.parser.elfparser_try_unified
+
+.. autoapi-nested-parse::
+
+   Unified parser solution for ELF files.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.elfparser_try_unified.process_file
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.elfparser_try_unified.elf_file
+
+
+.. py:function:: process_file(filename)
+
+   Process the ELF file and print symbols' information.
+
+
+.. py:data:: elf_file
+   :value: 'C:\\Users\\m67250\\Microchip Technology Inc\\Mark Wendler - M18034 - Masters_2024_MC3\\elfparser...'
+
+   
+

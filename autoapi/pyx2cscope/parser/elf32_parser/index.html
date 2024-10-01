@@ -52,7 +52,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../../how_to.html">How-To</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope</span></code></a><ul class="current">
@@ -123,61 +123,9 @@
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf32_parser.</span></span><span class="sig-name descname"><span class="pre">Elf32Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf32_parser.</span></span><span class="sig-name descname"><span class="pre">Elf32Parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser" title="pyx2cscope.parser.elf_parser.ElfParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pyx2cscope.parser.elf_parser.ElfParser</span></code></a></p>
 <p>Class for parsing ELF files compatible with 32-bit architectures.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members_recursive">
-<span class="sig-name descname"><span class="pre">_get_structure_members_recursive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_address_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_structure_members_recursive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members_recursive" title="Link to this definition"></a></dt>
-<dd><p>Recursively gets structure members from a DWARF DIE.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>type_die: The DIE representing the type.
-die: The DIE representing the structure.
-parent_name (str): Name of the parent structure.
-prev_address_offset (int): Address offset from the parent.</p>
-</dd>
-<dt>Returns:</dt><dd><p>Tuple[dict, int]: Dictionary of members and their offset.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members">
-<span class="sig-name descname"><span class="pre">_get_structure_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structure_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_structure_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members" title="Link to this definition"></a></dt>
-<dd><p>Retrieves structure members from a DWARF DIE.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>type_die: The DIE representing the type.
-structure_die: The DIE representing the structure.
-var_name (str): Name of the variable.</p>
-</dd>
-<dt>Returns:</dt><dd><p>dict: Dictionary of structure members.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die">
-<span class="sig-name descname"><span class="pre">_processing_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._processing_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die" title="Link to this definition"></a></dt>
-<dd><p>Processes the end DIE of a tag to extract variable information.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>type_die: The DIE representing the type.
-end_die: The end DIE of the tag.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_array_length">
-<span class="sig-name descname"><span class="pre">_get_array_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_array_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_array_length" title="Link to this definition"></a></dt>
-<dd><p>Gets the length of an array type.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>type_die: The DIE representing the array type.</p>
-</dd>
-<dt>Returns:</dt><dd><p>int: Length of the array.</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._load_elf_file">
 <span class="sig-name descname"><span class="pre">_load_elf_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._load_elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._load_elf_file" title="Link to this definition"></a></dt>
@@ -186,39 +134,9 @@ end_die: The end DIE of the tag.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_dwarf_die_by_offset">
-<span class="sig-name descname"><span class="pre">_get_dwarf_die_by_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_dwarf_die_by_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_dwarf_die_by_offset" title="Link to this definition"></a></dt>
-<dd><p>Retrieve a DWARF DIE given its offset.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>offset (int): Offset of the DIE.</p>
-</dd>
-<dt>Returns:</dt><dd><p>DIE: The DWARF DIE corresponding to the offset.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_end_die">
-<span class="sig-name descname"><span class="pre">_get_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_end_die" title="Link to this definition"></a></dt>
-<dd><p>Find the end DIE of a type.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>current_die (elftools.dwarf.die.DIE): The starting DIE.</p>
-</dd>
-<dt>Returns:</dt><dd><p>elftools.dwarf.die.DIE: The end DIE of the type.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_member_type">
-<span class="sig-name descname"><span class="pre">_get_member_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_member_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_member_type" title="Link to this definition"></a></dt>
-<dd><p>Retrieve the type information from DWARF given a type offset.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>type_offset (int): Offset of the type DIE.</p>
-</dd>
-<dt>Returns:</dt><dd><p>dict or None: Dictionary containing the name and byte size of the type, or None if not found.</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser.close_elf_file">
+<span class="sig-name descname"><span class="pre">close_elf_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser.close_elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser.close_elf_file" title="Link to this definition"></a></dt>
+<dd><p>Closes the ELF file stream.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -232,11 +150,107 @@ end_die: The end DIE of the tag.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._process_variable_die">
+<span class="sig-name descname"><span class="pre">_process_variable_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._process_variable_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._process_variable_die" title="Link to this definition"></a></dt>
+<dd><p>Process an individual variable DIE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_end_die">
+<span class="sig-name descname"><span class="pre">_get_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_end_die" title="Link to this definition"></a></dt>
+<dd><p>Find the end DIE of a type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die">
+<span class="sig-name descname"><span class="pre">_processing_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._processing_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die" title="Link to this definition"></a></dt>
+<dd><p>Processes the end DIE of a tag to extract variable information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._extract_address">
+<span class="sig-name descname"><span class="pre">_extract_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._extract_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._extract_address" title="Link to this definition"></a></dt>
+<dd><p>Extracts the address of the current variable or fetches it from the symbol table if not found.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._load_symbol_table">
+<span class="sig-name descname"><span class="pre">_load_symbol_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._load_symbol_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._load_symbol_table" title="Link to this definition"></a></dt>
+<dd><p>Loads symbol table entries into a dictionary for fast access.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._fetch_address_from_symtab">
+<span class="sig-name descname"><span class="pre">_fetch_address_from_symtab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._fetch_address_from_symtab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._fetch_address_from_symtab" title="Link to this definition"></a></dt>
+<dd><p>Fetches the address of a variable from the preloaded symbol table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._find_actual_declaration">
+<span class="sig-name descname"><span class="pre">_find_actual_declaration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._find_actual_declaration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._find_actual_declaration" title="Link to this definition"></a></dt>
+<dd><p>Find the actual declaration of an extern variable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._process_pointer_type">
+<span class="sig-name descname"><span class="pre">_process_pointer_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._process_pointer_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._process_pointer_type" title="Link to this definition"></a></dt>
+<dd><p>Process a pointer type variable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._process_structure_type">
+<span class="sig-name descname"><span class="pre">_process_structure_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._process_structure_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._process_structure_type" title="Link to this definition"></a></dt>
+<dd><p>Process a structure type variable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._process_array_type">
+<span class="sig-name descname"><span class="pre">_process_array_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._process_array_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._process_array_type" title="Link to this definition"></a></dt>
+<dd><p>Process an array type variable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._process_base_type">
+<span class="sig-name descname"><span class="pre">_process_base_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._process_base_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._process_base_type" title="Link to this definition"></a></dt>
+<dd><p>Process a base type variable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members_recursive">
+<span class="sig-name descname"><span class="pre">_get_structure_members_recursive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_address_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_structure_members_recursive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members_recursive" title="Link to this definition"></a></dt>
+<dd><p>Recursively gets structure members from a DWARF DIE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members">
+<span class="sig-name descname"><span class="pre">_get_structure_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_structure_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_structure_members" title="Link to this definition"></a></dt>
+<dd><p>Retrieves structure members from a DWARF DIE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_array_length">
+<span class="sig-name descname"><span class="pre">_get_array_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_array_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_array_length" title="Link to this definition"></a></dt>
+<dd><p>Gets the length of an array type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_member_type">
+<span class="sig-name descname"><span class="pre">_get_member_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_member_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_member_type" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the type information from DWARF given a type offset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.Elf32Parser._get_dwarf_die_by_offset">
+<span class="sig-name descname"><span class="pre">_get_dwarf_die_by_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#Elf32Parser._get_dwarf_die_by_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.Elf32Parser._get_dwarf_die_by_offset" title="Link to this definition"></a></dt>
+<dd><p>Retrieve a DWARF DIE given its offset.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf32_parser.elf_file">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf32_parser.</span></span><span class="sig-name descname"><span class="pre">elf_file</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'C:\\Users\\m67250\\Downloads\\mclv2_sam_e54_pim.X.production.elf'</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.elf_file" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf32_parser.</span></span><span class="sig-name descname"><span class="pre">elf_file</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'C:\\Users\\m67250\\Downloads\\pmsm_foc_zsmt_hybrid_sam_e54\\pmsm_foc_zsmt_hybrid_sam_e54\\firmware\\qspi...'</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf32_parser.html#elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf32_parser.elf_file" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </section>

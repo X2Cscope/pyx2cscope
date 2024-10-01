@@ -1,15 +1,16 @@
-:py:mod:`pyx2cscope.xc2scope`
+:py:mod:`pyx2cscope.x2cscope`
 =============================
 
-.. py:module:: pyx2cscope.xc2scope
+.. py:module:: pyx2cscope.x2cscope
 
 .. autoapi-nested-parse::
 
    X2CScope module for interfacing with the X2C firmware enabled embedded systems.
 
-   The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers.
-   It is utilising LNET protocol to communicate with the firmware. LNET protocoll is implemented in the mchplnet package.
-   The package provides an interface to connect to the firmware, set up scope channels, request data, and process received data.
+   The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers. It
+   is utilising LNET protocol to communicate with the firmware. LNET protocol is implemented in the mchplnet package.
+   The package provides an interface to connect to the firmware, set up scope channels, request data, and a process
+   received data.
 
 
 
@@ -21,8 +22,8 @@ Classes
 
 .. autoapisummary::
 
-   pyx2cscope.xc2scope.TriggerConfig
-   pyx2cscope.xc2scope.X2CScope
+   pyx2cscope.x2cscope.TriggerConfig
+   pyx2cscope.x2cscope.X2CScope
 
 
 
@@ -31,9 +32,28 @@ Functions
 
 .. autoapisummary::
 
-   pyx2cscope.xc2scope.get_variable_as_scope_channel
+   pyx2cscope.x2cscope.get_variable_as_scope_channel
 
 
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.x2cscope.UC_WIDTH_16BIT
+   pyx2cscope.x2cscope.UC_WIDTH_32BIT
+
+
+.. py:data:: UC_WIDTH_16BIT
+   :value: 2
+
+   
+
+.. py:data:: UC_WIDTH_32BIT
+   :value: 4
+
+   
 
 .. py:function:: get_variable_as_scope_channel(variable: pyx2cscope.variable.variable.Variable) -> mchplnet.services.scope.ScopeChannel
 
@@ -53,7 +73,7 @@ Functions
 
    Attributes:
        variable (Variable): The variable to use as the trigger source.
-       trigger_level (int): The trigger level value for specified channel.
+       trigger_level (int): The trigger level value for a specified channel.
        trigger_mode (int): 0 Auto, 1 Triggered (default) .
        trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
        trigger_edge (int): Rising 0, falling 1.
@@ -88,7 +108,7 @@ Functions
       
 
 
-.. py:class:: X2CScope(elf_file: str, interface: mchplnet.interfaces.abstract_interface.InterfaceABC = None, *args, **kwargs)
+.. py:class:: X2CScope(elf_file: str, interface: mchplnet.interfaces.abstract_interface.InterfaceABC = None, **kwargs)
 
 
    X2CScope class for interfacing with the X2C Scope tool.
@@ -161,7 +181,7 @@ Functions
           int: The ID of the added scope channel.
 
 
-   .. py:method:: clear_scope_channel()
+   .. py:method:: clear_all_scope_channel()
 
       Remove all variables from the scope channel and reset any trigger.
 
@@ -211,7 +231,7 @@ Functions
       Define a pre-scaler for sampling mode.
 
       This can be used to extend total sampling time at the cost of resolution.
-      0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample .....
+      0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
 
       Args:
           sample_time (int): The sample time factor.
@@ -276,12 +296,11 @@ Functions
           List[bytearray]: A list containing the chunk data.
 
 
-   .. py:method:: read_array(address: int, data_type: int) -> List[bytearray]
+   .. py:method:: read_array(data_type: int) -> List[bytearray]
 
       Read an array from the specified address in the MCU memory.
 
       Args:
-          address (int): The address to read from.
           data_type (int): The type of data to read.
 
       Returns:
@@ -319,6 +338,22 @@ Functions
 
       Returns:
           Dict[str, List[Number]]: A dictionary with channel names as keys and data lists as values.
+
+
+   .. py:method:: scope_sample_time(time_microseconds: float) -> float
+
+      Evaluate the scope sample time based on user-provided time value.
+
+      Args:
+          time_microseconds (float): The time value in microseconds for evaluating one scope sample.
+
+      Returns:
+          float: The real-time duration for the scope functionality in milliseconds.
+
+
+   .. py:method:: get_device_info()
+
+      Returns the device information as a dictionary.
 
 
 

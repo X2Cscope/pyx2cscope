@@ -49,7 +49,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="how_to.html">How-To</a></li>
-<li class="toctree-l1"><a class="reference internal" href="HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
 </ul>
@@ -96,6 +96,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#X"><strong>X</strong></a>
  
@@ -113,7 +114,9 @@
 </li>
       <li><a href="autoapi/pyx2cscope/index.html#pyx2cscope.__version__">__version__ (in module pyx2cscope)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope._calc_sda_used_length">_calc_sda_used_length() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._args_check">_args_check() (in module pyx2cscope.__main__)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._calc_sda_used_length">_calc_sda_used_length() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._check_for_pointer_tag">_check_for_pointer_tag() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
 </li>
@@ -121,7 +124,13 @@
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._check_value_range">_check_value_range() (pyx2cscope.variable.variable.Variable method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope._filter_channels">_filter_channels() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._extract_address">_extract_address() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._fetch_address_from_symtab">_fetch_address_from_symtab() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._filter_channels">_filter_channels() (pyx2cscope.x2cscope.X2CScope method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._find_actual_declaration">_find_actual_declaration() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._get_address_check">_get_address_check() (pyx2cscope.parser.elf16_parser.Elf16Parser static method)</a>
 </li>
@@ -195,6 +204,8 @@
         <li><a href="autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser._load_elf_file">(pyx2cscope.parser.elf_parser.ElfParser method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._load_symbol_table">_load_symbol_table() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._locate_cu_in_dwarf">_locate_cu_in_dwarf() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._locate_tag_variable_end_die">_locate_tag_variable_end_die() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
@@ -219,13 +230,23 @@
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._parse_tree">_parse_tree() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
 </li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._process_array_type">_process_array_type() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._process_base_type">_process_base_type() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._process_pointer_type">_process_pointer_type() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._process_structure_type">_process_structure_type() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._process_variable_die">_process_variable_die() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
       <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser._processing_end_die">_processing_end_die() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope._read_array_chunks">_read_array_chunks() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._read_array_chunks">_read_array_chunks() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._set_value_raw">_set_value_raw() (pyx2cscope.variable.variable.Variable method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope._sort_channel_data">_sort_channel_data() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._sort_channel_data">_sort_channel_data() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -233,7 +254,7 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.add_scope_channel">add_scope_channel() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.add_scope_channel">add_scope_channel() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.VariableInfo.address">address (pyx2cscope.parser.elf_parser.VariableInfo attribute)</a>
 </li>
@@ -285,13 +306,15 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser.calculate_array_size">calculate_array_size() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.clear_scope_channel">clear_scope_channel() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.clear_all_scope_channel">clear_all_scope_channel() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.clear_trigger">clear_trigger() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.clear_trigger">clear_trigger() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.connect">connect() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.Elf32Parser.close_elf_file">close_elf_file() (pyx2cscope.parser.elf32_parser.Elf32Parser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.connect">connect() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -299,7 +322,7 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.disconnect">disconnect() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.disconnect">disconnect() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -316,14 +339,12 @@
       <ul>
         <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#pyx2cscope.parser.elf32_parser.elf_file">(in module pyx2cscope.parser.elf32_parser)</a>
 </li>
+        <li><a href="autoapi/pyx2cscope/parser/elfparser_try_unified/index.html#pyx2cscope.parser.elfparser_try_unified.elf_file">(in module pyx2cscope.parser.elfparser_try_unified)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser">ElfParser (class in pyx2cscope.parser.elf_parser)</a>
-</li>
-      <li><a href="autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.execute_qt">execute_qt() (in module pyx2cscope.__main__)</a>
-</li>
-      <li><a href="autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.execute_web">execute_web() (in module pyx2cscope.__main__)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -331,13 +352,21 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.get_delay_trigger_position">get_delay_trigger_position() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_com_port">get_com_port() (in module pyx2cscope.utils)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.get_scope_channel_data">get_scope_channel_data() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_config_file">get_config_file() (in module pyx2cscope.utils)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.get_scope_channel_list">get_scope_channel_list() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_delay_trigger_position">get_delay_trigger_position() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.get_trigger_position">get_trigger_position() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_device_info">get_device_info() (pyx2cscope.x2cscope.X2CScope method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_elf_file_path">get_elf_file_path() (in module pyx2cscope.utils)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_channel_data">get_scope_channel_data() (pyx2cscope.x2cscope.X2CScope method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_channel_list">get_scope_channel_list() (pyx2cscope.x2cscope.X2CScope method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_trigger_position">get_trigger_position() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.get_value">get_value() (pyx2cscope.variable.variable.Variable method)</a>
 </li>
@@ -349,15 +378,15 @@
         <li><a href="autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_var_list">(pyx2cscope.variable.variable_factory.VariableFactory method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_variable">get_variable() (pyx2cscope.variable.variable_factory.VariableFactory method)</a>
 
       <ul>
-        <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.get_variable">(pyx2cscope.xc2scope.X2CScope method)</a>
+        <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_variable">(pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.get_variable_as_scope_channel">get_variable_as_scope_channel() (in module pyx2cscope.xc2scope)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.get_variable_as_scope_channel">get_variable_as_scope_channel() (in module pyx2cscope.x2cscope)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.get_width">get_width() (pyx2cscope.variable.variable.Variable method)</a>
 
@@ -413,7 +442,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.is_scope_data_ready">is_scope_data_ready() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.is_scope_data_ready">is_scope_data_ready() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.is_signed">is_signed() (pyx2cscope.variable.variable.Variable method)</a>
 
@@ -443,7 +472,7 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.list_variables">list_variables() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.list_variables">list_variables() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -469,13 +498,17 @@
 </li>
         <li><a href="autoapi/pyx2cscope/parser/elf_parser/index.html#module-pyx2cscope.parser.elf_parser">pyx2cscope.parser.elf_parser</a>
 </li>
+        <li><a href="autoapi/pyx2cscope/parser/elfparser_try_unified/index.html#module-pyx2cscope.parser.elfparser_try_unified">pyx2cscope.parser.elfparser_try_unified</a>
+</li>
+        <li><a href="autoapi/pyx2cscope/utils/index.html#module-pyx2cscope.utils">pyx2cscope.utils</a>
+</li>
         <li><a href="autoapi/pyx2cscope/variable/index.html#module-pyx2cscope.variable">pyx2cscope.variable</a>
 </li>
         <li><a href="autoapi/pyx2cscope/variable/variable/index.html#module-pyx2cscope.variable.variable">pyx2cscope.variable.variable</a>
 </li>
         <li><a href="autoapi/pyx2cscope/variable/variable_factory/index.html#module-pyx2cscope.variable.variable_factory">pyx2cscope.variable.variable_factory</a>
 </li>
-        <li><a href="autoapi/pyx2cscope/xc2scope/index.html#module-pyx2cscope.xc2scope">pyx2cscope.xc2scope</a>
+        <li><a href="autoapi/pyx2cscope/x2cscope/index.html#module-pyx2cscope.x2cscope">pyx2cscope.x2cscope</a>
 </li>
       </ul></li>
   </ul></td>
@@ -493,6 +526,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.parse_arguments">parse_arguments() (in module pyx2cscope.__main__)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/elfparser_try_unified/index.html#pyx2cscope.parser.elfparser_try_unified.process_file">process_file() (in module pyx2cscope.parser.elfparser_try_unified)</a>
 </li>
       <li>
     pyx2cscope
@@ -529,13 +564,27 @@
         <li><a href="autoapi/pyx2cscope/parser/elf32_parser/index.html#module-pyx2cscope.parser.elf32_parser">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     pyx2cscope.parser.elf_parser
 
       <ul>
         <li><a href="autoapi/pyx2cscope/parser/elf_parser/index.html#module-pyx2cscope.parser.elf_parser">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    pyx2cscope.parser.elfparser_try_unified
+
+      <ul>
+        <li><a href="autoapi/pyx2cscope/parser/elfparser_try_unified/index.html#module-pyx2cscope.parser.elfparser_try_unified">module</a>
+</li>
+      </ul></li>
+      <li>
+    pyx2cscope.utils
+
+      <ul>
+        <li><a href="autoapi/pyx2cscope/utils/index.html#module-pyx2cscope.utils">module</a>
 </li>
       </ul></li>
       <li>
@@ -560,10 +609,10 @@
 </li>
       </ul></li>
       <li>
-    pyx2cscope.xc2scope
+    pyx2cscope.x2cscope
 
       <ul>
-        <li><a href="autoapi/pyx2cscope/xc2scope/index.html#module-pyx2cscope.xc2scope">module</a>
+        <li><a href="autoapi/pyx2cscope/x2cscope/index.html#module-pyx2cscope.x2cscope">module</a>
 </li>
       </ul></li>
   </ul></td>
@@ -572,15 +621,15 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.read_array">read_array() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.read_array">read_array() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.remove_scope_channel">remove_scope_channel() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.remove_scope_channel">remove_scope_channel() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.request_scope_data">request_scope_data() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.request_scope_data">request_scope_data() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.reset_scope_trigger">reset_scope_trigger() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.reset_scope_trigger">reset_scope_trigger() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -588,17 +637,19 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.set_elf_file">set_elf_file() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.scope_sample_time">scope_sample_time() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.set_interface">set_interface() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_elf_file">set_elf_file() (pyx2cscope.x2cscope.X2CScope method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_interface">set_interface() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/index.html#pyx2cscope.set_logger">set_logger() (in module pyx2cscope)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.set_sample_time">set_sample_time() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_sample_time">set_sample_time() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.set_scope_state">set_scope_state() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_scope_state">set_scope_state() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope.set_scope_trigger">set_scope_trigger() (pyx2cscope.xc2scope.X2CScope method)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_scope_trigger">set_scope_trigger() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.set_value">set_value() (pyx2cscope.variable.variable.Variable method)</a>
 
@@ -628,19 +679,31 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.TriggerConfig.trigger_delay">trigger_delay (pyx2cscope.xc2scope.TriggerConfig attribute)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.trigger_delay">trigger_delay (pyx2cscope.x2cscope.TriggerConfig attribute)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.TriggerConfig.trigger_edge">trigger_edge (pyx2cscope.xc2scope.TriggerConfig attribute)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.trigger_edge">trigger_edge (pyx2cscope.x2cscope.TriggerConfig attribute)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.TriggerConfig.trigger_level">trigger_level (pyx2cscope.xc2scope.TriggerConfig attribute)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.trigger_level">trigger_level (pyx2cscope.x2cscope.TriggerConfig attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.TriggerConfig.trigger_mode">trigger_mode (pyx2cscope.xc2scope.TriggerConfig attribute)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.trigger_mode">trigger_mode (pyx2cscope.x2cscope.TriggerConfig attribute)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.TriggerConfig">TriggerConfig (class in pyx2cscope.xc2scope)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig">TriggerConfig (class in pyx2cscope.x2cscope)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.VariableInfo.type">type (pyx2cscope.parser.elf_parser.VariableInfo attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.UC_WIDTH_16BIT">UC_WIDTH_16BIT (in module pyx2cscope.x2cscope)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.UC_WIDTH_32BIT">UC_WIDTH_32BIT (in module pyx2cscope.x2cscope)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -650,7 +713,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable">Variable (class in pyx2cscope.variable.variable)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.TriggerConfig.variable">variable (pyx2cscope.xc2scope.TriggerConfig attribute)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.variable">variable (pyx2cscope.x2cscope.TriggerConfig attribute)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory">VariableFactory (class in pyx2cscope.variable.variable_factory)</a>
 </li>
@@ -682,7 +745,7 @@
 <h2 id="X">X</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/pyx2cscope/xc2scope/index.html#pyx2cscope.xc2scope.X2CScope">X2CScope (class in pyx2cscope.xc2scope)</a>
+      <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope">X2CScope (class in pyx2cscope.x2cscope)</a>
 </li>
   </ul></td>
 </tr></table>

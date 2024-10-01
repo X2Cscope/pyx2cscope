@@ -22,8 +22,7 @@ Functions
 .. autoapisummary::
 
    pyx2cscope.__main__.parse_arguments
-   pyx2cscope.__main__.execute_qt
-   pyx2cscope.__main__.execute_web
+   pyx2cscope.__main__._args_check
 
 
 
@@ -39,21 +38,6 @@ Functions
      | For a complete list of arguments, execute python -m pyx2cscope --help
 
 
-.. py:function:: execute_qt(args)
-
-   Execute the GUI Qt implementation.
-
-   Args:
-       args: non-keyed arguments for Qt App.
-   :return:
-
-
-.. py:function:: execute_web(*args, **kwargs)
-
-   Start the web server.
-
-   Args:
-       *args: non-keyed arguments
-       **kwargs: keyed arguments related to the web server. See parse_arguments function documentations.
+.. py:function:: _args_check(k_args: argparse.Namespace)
 
 

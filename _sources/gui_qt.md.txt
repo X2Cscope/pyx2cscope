@@ -1,7 +1,7 @@
 # GUI Qt
 
 The Graphic User Interface implemented on Qt is an App built over pyX2Cscope.
-The aim of this application is to serve as an example on how to make a desktop
+The aim of this application is to serve as an example of how to make a desktop
 application.
 
 ## Starting the GUI Qt
@@ -15,7 +15,9 @@ python -m pyx2cscope
 It can also be executed over argument -q
 
 ```
-python -m pyx2cscope 
+python -m pyx2cscope -q
 ``` 
+
+
 
 Additional information you may find on the API documentation

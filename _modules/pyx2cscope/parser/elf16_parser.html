@@ -49,7 +49,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../how_to.html">How-To</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
 </ul>
@@ -91,7 +91,6 @@
 <span class="sd">    print(variable_map)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os.path</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
@@ -129,13 +128,26 @@
 <span class="sd">        elf_path (str): Path to the input ELF file.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">        ValueError: If the XC16 compiler is not found on the system path.</span>
+<span class="sd">        ValueError: If the XC16 compiler is not found in the local directory or on the system path.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="s2">&quot;xc16-readelf&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;XC16 compiler not found. Is it listed on PATH?&quot;</span><span class="p">)</span>
+        <span class="c1"># Check if the xc16-readelf executable exists in the current directory</span>
+        <span class="n">local_readelf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="s2">&quot;xc16-readelf&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Checking if the xc16-readelf executable exists in the same directory as the script or executable</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">local_readelf</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span> <span class="o">=</span> <span class="n">local_readelf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback to checking if xc16-readelf is on the system path</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span> <span class="o">=</span> <span class="n">which</span><span class="p">(</span><span class="s2">&quot;xc16-readelf&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">xc16_read_elf_path</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;XC16 compiler not found. Ensure xc16-readelf is in the same folder or listed on PATH.&quot;</span>
+                <span class="p">)</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">elf_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tree_string</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="kc">None</span>
@@ -637,7 +649,16 @@
                 <span class="n">end_die</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locate_tag_variable_end_die</span><span class="p">(</span><span class="n">die</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">end_die</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_address_location</span><span class="p">(</span><span class="n">die</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_location&quot;</span><span class="p">))</span>
+                <span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="s2">&quot;DW_AT_location&quot;</span> <span class="ow">in</span> <span class="n">die</span><span class="p">:</span>
+                    <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_address_location</span><span class="p">(</span><span class="n">die</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_location&quot;</span><span class="p">))</span>
+                <span class="c1"># else:</span>
+                <span class="c1">#     # Check symbol table if DW_AT_location is not present</span>
+                <span class="c1">#     address = self.symbol_table.get(die[&quot;DW_AT_name&quot;], None)</span>
+
+                <span class="k">if</span> <span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># Skip variables without an address</span>
+
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_pointer_tag</span><span class="p">(</span>
                     <span class="n">die</span><span class="p">,</span> <span class="n">end_die</span><span class="p">,</span> <span class="n">address</span>
                 <span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_structure_tag</span><span class="p">(</span><span class="n">die</span><span class="p">,</span> <span class="n">end_die</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
@@ -660,7 +681,7 @@
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.elf_file">[docs]</a>
     <span class="n">elf_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf&quot;</span></div>
 
-    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>  <span class="c1"># Set the desired logging level and stream</span>
+    <span class="c1"># logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream</span>
     <span class="n">elf_reader</span> <span class="o">=</span> <span class="n">Elf16Parser</span><span class="p">(</span><span class="n">elf_file</span><span class="p">)</span>
     <span class="n">variable_map</span> <span class="o">=</span> <span class="n">elf_reader</span><span class="o">.</span><span class="n">map_variables</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">variable_map</span><span class="p">)</span>

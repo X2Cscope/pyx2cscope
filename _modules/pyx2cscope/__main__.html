@@ -49,7 +49,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../how_to.html">How-To</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
 </ul>
@@ -85,18 +85,15 @@
 <span class="sd">This module initializes the logging configuration based on a command-line argument,</span>
 <span class="sd">sets up the PyQt5 application, and launches the X2Cscope GUI.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-
-<span class="kn">from</span> <span class="nn">PyQt5.QtWidgets</span> <span class="kn">import</span> <span class="n">QApplication</span>
 
 <span class="kn">import</span> <span class="nn">pyx2cscope</span>
-<span class="kn">from</span> <span class="nn">pyx2cscope.gui.watchView.minimal_gui</span> <span class="kn">import</span> <span class="n">X2cscopeGui</span>
-<span class="kn">from</span> <span class="nn">pyx2cscope.gui.web</span> <span class="kn">import</span> <span class="n">app</span>
+<span class="kn">from</span> <span class="nn">pyx2cscope</span> <span class="kn">import</span> <span class="n">gui</span><span class="p">,</span> <span class="n">utils</span>
 
 
 <div class="viewcode-block" id="parse_arguments">
@@ -114,72 +111,98 @@
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;pyX2Cscope&quot;</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Microchip python implementation of X2Cscope and LNet protocol.&quot;</span><span class="p">,</span>
-        <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;For documentation visit https://x2cscope.github.io/pyx2cscope/.&quot;</span><span class="p">)</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;For documentation visit https://x2cscope.github.io/pyx2cscope/.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-l&quot;</span><span class="p">,</span> <span class="s2">&quot;--log-level&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;CRITICAL&quot;</span><span class="p">],</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the logging level, INFO is the default value.&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;--log-console&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output log to the console.&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-q&quot;</span><span class="p">,</span> <span class="s2">&quot;--qt&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start the Qt user interface, pyx2cscope.gui.watch_view.minimal_gui.&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-w&quot;</span><span class="p">,</span> <span class="s2">&quot;--web&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start the Web user interface, pyx2cscope.gui.web.app.&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;--port&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;5000&quot;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the Web Server port. Use together with -w&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--host&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the Web Server address. Use together with -w&quot;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="s1">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;version&#39;</span><span class="p">,</span>
-                        <span class="n">version</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(prog)s</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-l&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--log-level&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;CRITICAL&quot;</span><span class="p">],</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the logging level, INFO is the default value.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;--log-console&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Output log to the console.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-e&quot;</span><span class="p">,</span> <span class="s2">&quot;--elf&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to elf-file, i.e. -e my_elf.elf.&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;--port&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The serial COM port to be used. Use together with -e&quot;</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-q&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--qt&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start the Qt user interface, pyx2cscope.gui.generic_gui.generic_gui.X2Cscope&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-w&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--web&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start the Web user interface, pyx2cscope.gui.web.app.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-wp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--web-port&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;5000&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the Web Server port. Use together with -w&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--host&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Configure the Web Server address. Use together with -w&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-v&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(prog)s</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="execute_qt">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.execute_qt">[docs]</a>
-<span class="k">def</span> <span class="nf">execute_qt</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute the GUI Qt implementation.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        args: non-keyed arguments for Qt App.</span>
-<span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># QApplication expects the first argument to be the program name.</span>
-    <span class="n">qt_args</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span>
-    <span class="c1"># Initialize a PyQt5 application</span>
-    <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">qt_args</span><span class="p">)</span>
-    <span class="c1"># Create an instance of the X2Cscope_GUI</span>
-    <span class="n">ex</span> <span class="o">=</span> <span class="n">X2cscopeGui</span><span class="p">()</span>
-    <span class="c1"># Display the GUI</span>
-    <span class="n">ex</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-    <span class="c1"># Start the PyQt5 application event loop</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span></div>
+<div class="viewcode-block" id="_args_check">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._args_check">[docs]</a>
+<span class="k">def</span> <span class="nf">_args_check</span><span class="p">(</span><span class="n">k_args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">):</span>
+    <span class="c1"># if both elf and port are not supplied, check if there is a valid config file</span>
+    <span class="k">if</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_elf_file_path</span><span class="p">()</span>
+        <span class="n">com_port</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_com_port</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">com_port</span><span class="p">:</span>
+            <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="o">=</span> <span class="n">path</span>
+            <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">com_port</span>
+    <span class="c1"># if we supplied and elf but no port</span>
+    <span class="k">elif</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+        <span class="n">com_port</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_com_port</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">com_port</span><span class="p">:</span>
+            <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">com_port</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A communication port must be supplied!&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">and</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_elf_file_path</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;An elf-file path must be supplied!&quot;</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="execute_web">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.execute_web">[docs]</a>
-<span class="k">def</span> <span class="nf">execute_web</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the web server.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        *args: non-keyed arguments</span>
-<span class="sd">        **kwargs: keyed arguments related to the web server. See parse_arguments function documentations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 <span class="n">known_args</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">()</span>
+<span class="c1"># if arguments logic is correct,</span>
+<span class="n">_args_check</span><span class="p">(</span><span class="n">known_args</span><span class="p">)</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">console</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_console</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">qt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
-    <span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">)</span>
+    <span class="n">gui</span><span class="o">.</span><span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">,</span> <span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
-    <span class="n">execute_web</span><span class="p">(</span><span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-
-
+    <span class="n">gui</span><span class="o">.</span><span class="n">execute_web</span><span class="p">(</span><span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 </pre></div>
 
            </div>

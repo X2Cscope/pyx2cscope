@@ -18,5 +18,6 @@ Submodules
    elf16_parser/index.rst
    elf32_parser/index.rst
    elf_parser/index.rst
+   elfparser_try_unified/index.rst
 
 

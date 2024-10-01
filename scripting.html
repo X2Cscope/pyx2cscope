@@ -73,7 +73,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gui_web.html">GUI Web</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="HW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
 </ul>
@@ -135,7 +135,7 @@ will be flashed on the microcontroller and the .elf file, which contains the des
 and addresses included into your program. X2Cscope needs this file to locate variables and its values inside
 the running memory of the microcontroller. The elf file may be found under your MPLABX project folder at
 dist &gt; production &gt; your_elf_file.elf.</p>
-<ol class="arabic simple" start="2">
+<ol class="arabic simple">
 <li><p>Once defined the desired comm port and elf file path, instantiate X2CScope:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;your_path_to_elf_file/elf_file.elf&quot;</span><span class="p">)</span>
@@ -149,7 +149,7 @@ dist &gt; production &gt; your_elf_file.elf.</p>
 The next step is to get a variable object that will represent the variable inside the microcontroller.
 Use the method <code class="docutils literal notranslate"><span class="pre">get_variable</span></code> to link to a desired variable. The only parameter needed for that method
 is a string containing the variable name.</p>
-<ol class="arabic simple" start="3">
+<ol class="arabic simple">
 <li><p>Create a Variable object for the variable you want to monitor:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">&#39;variable_name&#39;</span><span class="p">)</span>
@@ -161,14 +161,14 @@ objects as required. To get variables that are underneath a struct, use the “d
 link to a structure directly, only to its members.</p>
 <section id="reading-values">
 <h3>Reading values<a class="headerlink" href="#reading-values" title="Link to this heading"></a></h3>
-<ol class="arabic simple" start="4">
+<ol class="arabic simple">
 <li><p>Once you have gone through these steps, you can use the method <strong>get_value()</strong> to retrieve the actual
 value of the variable:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> 
 </pre></div>
 </div>
-<ol class="arabic simple" start="5">
+<ol class="arabic simple">
 <li><p>To set the value for the respective variable use the method <strong>set_value()</strong>:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -182,7 +182,7 @@ value of the variable:</p></li>
 a variable, collect the values during a time frame, triggering according some trigger values or not,
 and return and array that could be plotted with any available python graphic framework as matplotlib,
 seaborn, etc.</p>
-<ol class="arabic simple" start="6">
+<ol class="arabic simple">
 <li><p>To use the scope functionality, first you need to link a variable as previously explained, and
 add this variable to the scope by means of the method: <strong>add_scope_channel(variable: Variable)</strong> :</p></li>
 </ol>
@@ -193,15 +193,15 @@ add this variable to the scope by means of the method: <strong>add_scope_channel
 <span class="n">x2cScope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="7">
+<ol class="arabic simple">
 <li><p>To remove a variable from the scope: <strong>remove_scope_channel(variable: Variable)</strong>, to clear all
-variables and reset the scope use instead: <strong>clear_scope_channel()</strong></p></li>
+variables and reset the scope use instead: <strong>clear_all_scope_channel()</strong></p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span><span class="o">.</span><span class="n">remove_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span><span class="o">.</span><span class="n">clear_scope_channel</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2cScope</span><span class="o">.</span><span class="n">clear_all_scope_channel</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Up to 8 channels can be added. Each time you add or remove a variable, the number of channels present
@@ -220,13 +220,13 @@ on the channel are returned.</p>
 <li><p>After handling the data, start from the beginning requesting new data.</p></li>
 </ul>
 <p>Step-by-step you need:</p>
-<ol class="arabic simple" start="8">
+<ol class="arabic simple">
 <li><p>Request to X2CScope to collect data for the variables registered on the scope channels.</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="9">
+<ol class="arabic simple">
 <li><p>Check if the data is ready:
 Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.</p></li>
 </ol>
@@ -234,7 +234,7 @@ Returns Scope sampling state. Returns: true if sampling has completed, false if 
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="10">
+<ol class="arabic simple">
 <li><p>Get the scope data once sampling is completed</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">x2cScope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span>
