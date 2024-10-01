@@ -36,7 +36,7 @@ from PyQt5.QtWidgets import (
 )
 
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.xc2scope import TriggerConfig, X2CScope
+from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
 logging.basicConfig(level=logging.DEBUG)
 
