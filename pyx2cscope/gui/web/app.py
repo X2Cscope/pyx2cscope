@@ -144,6 +144,8 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
     if new:
         Timer(1, open_browser, None, {"web_port": web_port}).start()
     print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(web_port))
+    if host == "0.0.0.0":
+        print("Server is open for external requests!")
     app.run(debug=False, host=host, port=web_port)
 
 if __name__ == '__main__':
