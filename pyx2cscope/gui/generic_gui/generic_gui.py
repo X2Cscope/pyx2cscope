@@ -137,7 +137,7 @@ class X2cscopeGui(QMainWindow):
 
     def initialize_variables(self):
         """Initialize instance variables."""
-        self.timeout= 5
+        self.timeout = 5
         self.sampling_active = False
         self.scaling_edits_tab3 = []  # Track scaling fields for Tab 3
         self.offset_edits_tab3 = []  # Track offset fields for Tab 3
@@ -257,7 +257,9 @@ class X2cscopeGui(QMainWindow):
         """Fetch device information from the connected device and update the labels."""
         try:
             device_info = self.x2cscope.get_device_info()
-            self.device_info_labels["processor_id"].setText(f" {device_info['processor_id']}")
+            self.device_info_labels["processor_id"].setText(
+                f" {device_info['processor_id']}"
+            )
             self.device_info_labels["uc_width"].setText(f"{device_info['uc_width']}")
             self.device_info_labels["date"].setText(f"{device_info['date']}")
             self.device_info_labels["time"].setText(f"{device_info['time']}")
@@ -447,7 +449,9 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
-        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        self.scope_sampletime_edit = QLineEdit(
+            "50"
+        )  # Default sample time in microseconds
         self.scope_sampletime_edit.setValidator(self.decimal_validator)
 
         # Total Time
@@ -508,8 +512,13 @@ class X2cscopeGui(QMainWindow):
         grid_layout_variable.addWidget(QLabel("Visible"), 0, 3)
 
         for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
-                zip(self.scope_var_lines, self.trigger_var_checkbox, self.scope_scaling_boxes,
-                    self.scope_channel_checkboxes)):
+            zip(
+                self.scope_var_lines,
+                self.trigger_var_checkbox,
+                self.scope_scaling_boxes,
+                self.scope_channel_checkboxes,
+            )
+        ):
             line_edit.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
             show_checkbox.setMinimumHeight(20)
@@ -523,7 +532,9 @@ class X2cscopeGui(QMainWindow):
             grid_layout_variable.addWidget(scale_box, i + 1, 2)
             grid_layout_variable.addWidget(show_checkbox, i + 1, 3)
 
-            trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
+            trigger_checkbox.stateChanged.connect(
+                lambda state, x=i: self.handle_scope_checkbox_change(state, x)
+            )
             scale_box.editingFinished.connect(self.update_scope_plot)
             show_checkbox.stateChanged.connect(self.update_scope_plot)
 
@@ -575,8 +586,12 @@ class X2cscopeGui(QMainWindow):
             info_label = QLabel(label_key.replace("_", " ").capitalize() + ":")
             info_label.setAlignment(Qt.AlignLeft)
 
-            row = list(self.device_info_labels.keys()).index(label_key)  # Get the row index
-            device_info_layout = QGridLayout()  # Create a row layout for label and its value
+            row = list(self.device_info_labels.keys()).index(
+                label_key
+            )  # Get the row index
+            device_info_layout = (
+                QGridLayout()
+            )  # Create a row layout for label and its value
             device_info_layout.addWidget(info_label, row, 0, Qt.AlignRight)
             device_info_layout.addWidget(label, row, 1, alignment=Qt.AlignRight)
             left_layout.addLayout(device_info_layout, row, 0, Qt.AlignLeft)
@@ -638,7 +653,7 @@ class X2cscopeGui(QMainWindow):
 
     def setup_sampletime_layout(self, layout):
         """Set up the sample time layout."""
-        #self.Connect_button.clicked.connect(self.toggle_connection)
+        # self.Connect_button.clicked.connect(self.toggle_connection)
         self.select_file_button.clicked.connect(self.select_elf_file)
         layout.addWidget(self.select_file_button, 4, 0)
 
@@ -713,14 +728,14 @@ class X2cscopeGui(QMainWindow):
         ]
 
         for row_index, (
-                live_var,
-                line_edit,
-                value_var,
-                scaling_var,
-                offset_var,
-                scaled_value_var,
-                unit_var,
-                plot_checkbox,
+            live_var,
+            line_edit,
+            value_var,
+            scaling_var,
+            offset_var,
+            scaled_value_var,
+            unit_var,
+            plot_checkbox,
         ) in enumerate(
             zip(
                 self.live_checkboxes,
@@ -790,7 +805,7 @@ class X2cscopeGui(QMainWindow):
         self.plot_button.clicked.connect(self.plot_data_plot)
 
         for timer, line_edit, value_var in zip(
-                self.timer_list, self.line_edit_boxes, self.Value_var_boxes
+            self.timer_list, self.line_edit_boxes, self.Value_var_boxes
         ):
             timer.timeout.connect(
                 lambda cb=line_edit, v_var=value_var: self.handle_var_update(
@@ -824,21 +839,22 @@ class X2cscopeGui(QMainWindow):
     def connect_editing_finished(self):
         """Connect editingFinished signals for value and scaling inputs."""
         for (
-                scaling,
-                value_var,
-                scaled_value,
-                offset,
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
+
             def connect_editing_finished(
-                    sc_edit=scaling,
-                    v_edit=value_var,
-                    scd_edit=scaled_value,
-                    off_edit=offset,
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
             ):
                 def on_editing_finished():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -848,21 +864,22 @@ class X2cscopeGui(QMainWindow):
             value_var.editingFinished.connect(connect_editing_finished())
 
         for (
-                scaling,
-                value_var,
-                scaled_value,
-                offset,
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
+
             def connect_editing_finished(
-                    sc_edit=scaling,
-                    v_edit=value_var,
-                    scd_edit=scaled_value,
-                    off_edit=offset,
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
             ):
                 def on_editing_finished():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -872,21 +889,22 @@ class X2cscopeGui(QMainWindow):
             scaling.editingFinished.connect(connect_editing_finished())
 
         for (
-                scaling,
-                value_var,
-                scaled_value,
-                offset,
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
+
             def connect_text_changed(
-                    sc_edit=scaling,
-                    v_edit=value_var,
-                    scd_edit=scaled_value,
-                    off_edit=offset,
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
             ):
                 def on_text_changed():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -896,21 +914,22 @@ class X2cscopeGui(QMainWindow):
             value_var.textChanged.connect(connect_text_changed())
 
         for (
-                scaling,
-                value_var,
-                scaled_value,
-                offset,
+            scaling,
+            value_var,
+            scaled_value,
+            offset,
         ) in zip(
             self.scaling_boxes,
             self.Value_var_boxes,
             self.scaled_value_boxes,
             self.offset_boxes,
         ):
+
             def connect_text_changed(
-                    sc_edit=scaling,
-                    v_edit=value_var,
-                    scd_edit=scaled_value,
-                    off_edit=offset,
+                sc_edit=scaling,
+                v_edit=value_var,
+                scd_edit=scaled_value,
+                off_edit=offset,
             ):
                 def on_text_changed():
                     self.update_scaled_value(sc_edit, v_edit, scd_edit, off_edit)
@@ -975,8 +994,8 @@ class X2cscopeGui(QMainWindow):
             if len(self.plot_data) > 0:
                 last_timestamp = self.plot_data[-1][0]
                 time_diff = (
-                                    timestamp - last_timestamp
-                            ).total_seconds() * 1000  # to convert time in ms.
+                    timestamp - last_timestamp
+                ).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
 
@@ -1015,7 +1034,7 @@ class X2cscopeGui(QMainWindow):
 
             # Keep track of plot lines to avoid clearing and recreating them unnecessarily
             for i, (value, line_edit, plot_var) in enumerate(
-                    zip(values, self.line_edit_boxes, self.plot_checkboxes)
+                zip(values, self.line_edit_boxes, self.plot_checkboxes)
             ):
                 # Check if the variable should be plotted and is not empty
                 if plot_var.isChecked() and line_edit.text() != "":
@@ -1064,7 +1083,7 @@ class X2cscopeGui(QMainWindow):
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
                     data_scaled = (
-                            np.array(data, dtype=float) * scale_factor
+                        np.array(data, dtype=float) * scale_factor
                     )  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
@@ -1103,7 +1122,7 @@ class X2cscopeGui(QMainWindow):
         """Displays an error message in a message box with a cooldown period."""
         current_time = time.time()
         if self.last_error_time is None or (
-                current_time - self.last_error_time >  self.timeout
+            current_time - self.last_error_time > self.timeout
         ):  # Cooldown period of 5 seconds
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("Error")
@@ -1336,13 +1355,13 @@ class X2cscopeGui(QMainWindow):
         """Restore the previously selected variables in WatchView and ScopeView."""
         if "watch" in self.previous_selected_variables:
             for le, (var, _) in zip(
-                    self.line_edit_boxes, self.previous_selected_variables["watch"]
+                self.line_edit_boxes, self.previous_selected_variables["watch"]
             ):
                 le.setText(var)
 
         if "scope" in self.previous_selected_variables:
             for le, (var, _) in zip(
-                    self.scope_var_lines, self.previous_selected_variables["scope"]
+                self.scope_var_lines, self.previous_selected_variables["scope"]
             ):
                 le.setText(var)
 
@@ -1417,7 +1436,9 @@ class X2cscopeGui(QMainWindow):
                 return  # Exit once a connection is established
 
         # If no ports were successfully connected
-        self.handle_error("Auto-connect failed to connect to any available COM ports. Please check your connection!")
+        self.handle_error(
+            "Auto-connect failed to connect to any available COM ports. Please check your connection!"
+        )
         raise Exception("Auto-connect failed to connect to any available COM ports.")
 
     def manual_connect_serial(self, baud_rate):
@@ -1437,13 +1458,17 @@ class X2cscopeGui(QMainWindow):
         """Attempt to establish a connection to the specified port."""
         try:
             logging.info(f"Trying to connect to {port}...")
-            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
+            self.x2cscope = X2CScope(
+                port=port, elf_file=self.file_path, baud_rate=baud_rate
+            )
             self.ser = self.x2cscope.interface
 
             # If connection is successful
             logging.info(f"Connected to {port} successfully.")
             self.select_file_button.setText(QFileInfo(self.file_path).fileName())
-            self.port_combo.setCurrentText(port)  # Update combo box with the successful port
+            self.port_combo.setCurrentText(
+                port
+            )  # Update combo box with the successful port
             self.setup_connected_state()  # Handle UI updates after connection
             return True
         except OSError as e:
@@ -1542,7 +1567,9 @@ class X2cscopeGui(QMainWindow):
                 self.real_sampletime = self.x2cscope.scope_sample_time(
                     scope_sample_time_us
                 )
-                print(f"Real sample time: {self.real_sampletime} µs")  # Check this value
+                print(
+                    f"Real sample time: {self.real_sampletime} µs"
+                )  # Check this value
 
                 # Update the Total Time display
                 self.total_time_value.setText(str(self.real_sampletime))
@@ -1636,7 +1663,9 @@ class X2cscopeGui(QMainWindow):
 
             # Create a QTimer for periodic scope data requests
             self.scope_timer = QTimer()
-            self.scope_timer.timeout.connect(lambda: self._sample_scope_data_timer(single_shot))
+            self.scope_timer.timeout.connect(
+                lambda: self._sample_scope_data_timer(single_shot)
+            )
             self.scope_timer.start(100)  # Adjust interval (milliseconds) as needed
 
             # If it is a single shot, stop the timer after the first run
@@ -1661,15 +1690,23 @@ class X2cscopeGui(QMainWindow):
 
             self.scope_plot_widget.clear()
             for i, (channel, data) in enumerate(data_storage.items()):
-                if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
-                    scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
+                if self.scope_channel_checkboxes[
+                    i
+                ].isChecked():  # Check if the channel is enabled
+                    scale_factor = float(
+                        self.scope_scaling_boxes[i].text()
+                    )  # Get the scaling factor
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
-                    data_scaled = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
+                    data_scaled = (
+                        np.array(data, dtype=float) * scale_factor
+                    )  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
                         data_scaled,
-                        pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
+                        pen=pg.mkPen(
+                            color=self.plot_colors[i], width=2
+                        ),  # Thicker plot line
                         name=f"Channel {channel}",
                     )
 
@@ -1765,7 +1802,9 @@ class X2cscopeGui(QMainWindow):
 
         :return: The file path selected by the user, or None if no file was selected.
         """
-        file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Load Configuration", "", "JSON Files (*.json)"
+        )
         return file_path if file_path else None
 
     def load_json_file(self, file_path):
@@ -1806,7 +1845,9 @@ class X2cscopeGui(QMainWindow):
 
         :param elf_file_path: The path to the ELF file that was not found.
         """
-        QMessageBox.warning(self, "File Not Found", f"The ELF file {elf_file_path} does not exist.")
+        QMessageBox.warning(
+            self, "File Not Found", f"The ELF file {elf_file_path} does not exist."
+        )
 
     def handle_connection(self, config_port):
         """Attempts to connect to the specified COM port or any available port.
@@ -1817,7 +1858,9 @@ class X2cscopeGui(QMainWindow):
         :param config_port: The port specified in the configuration file.
         """
         if not self.is_connected():
-            available_ports = [port.device for port in serial.tools.list_ports.comports()]
+            available_ports = [
+                port.device for port in serial.tools.list_ports.comports()
+            ]
             if config_port in available_ports and self.attempt_connection():
                 logging.info(f"Connected to the specified port: {config_port}")
             else:
@@ -1834,8 +1877,11 @@ class X2cscopeGui(QMainWindow):
                 logging.info(f"Connected to an alternative port: {port}")
                 break
         else:
-            QMessageBox.warning(self, "Connection Failed",
-                                "Could not connect to any available ports. Please check your connection.")
+            QMessageBox.warning(
+                self,
+                "Connection Failed",
+                "Could not connect to any available ports. Please check your connection.",
+            )
 
     def load_watch_view(self, watch_view):
         """Loads the WatchView settings from the configuration file.
@@ -1866,7 +1912,9 @@ class X2cscopeGui(QMainWindow):
         """
         for le, var in zip(self.scope_var_lines, scope_view.get("variables", [])):
             le.setText(var)
-        for cb, trigger in zip(self.trigger_var_checkbox, scope_view.get("trigger", [])):
+        for cb, trigger in zip(
+            self.trigger_var_checkbox, scope_view.get("trigger", [])
+        ):
             cb.setChecked(trigger)
         self.triggerVariable = scope_view.get("trigger_variable", "")
         self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
@@ -1885,12 +1933,12 @@ class X2cscopeGui(QMainWindow):
         """
         self.clear_tab3()
         for var, val, sc, off, sv, live in zip(
-                tab3_view.get("variables", []),
-                tab3_view.get("values", []),
-                tab3_view.get("scaling", []),
-                tab3_view.get("offsets", []),
-                tab3_view.get("scaled_values", []),
-                tab3_view.get("live", []),
+            tab3_view.get("variables", []),
+            tab3_view.get("values", []),
+            tab3_view.get("scaling", []),
+            tab3_view.get("offsets", []),
+            tab3_view.get("scaled_values", []),
+            tab3_view.get("live", []),
         ):
             self.add_variable_row()
             self.variable_line_edits[-1].setText(var)
@@ -2142,15 +2190,15 @@ class X2cscopeGui(QMainWindow):
         self.current_row += 1
 
     def remove_variable_row(
-            self,
-            live_checkbox,
-            variable_edit,
-            value_edit,
-            scaling_edit,
-            offset_edit,
-            scaled_value_edit,
-            unit_edit,
-            remove_button,
+        self,
+        live_checkbox,
+        variable_edit,
+        value_edit,
+        scaling_edit,
+        offset_edit,
+        scaled_value_edit,
+        unit_edit,
+        remove_button,
     ):
         """Remove a specific row in the WatchView Only tab."""
         # Remove the widgets from the grid layout
@@ -2248,12 +2296,12 @@ class X2cscopeGui(QMainWindow):
     def update_live_variables(self):
         """Update the values of variables in real-time if live checkbox is checked."""
         for (
-                checkbox,
-                variable_edit,
-                value_edit,
-                scaling_edit,
-                offset_edit,
-                scaled_value_edit,
+            checkbox,
+            variable_edit,
+            value_edit,
+            scaling_edit,
+            offset_edit,
+            scaled_value_edit,
         ) in zip(
             self.live_tab3,
             self.variable_line_edits,
@@ -2275,7 +2323,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def update_scaled_value_tab3(
-            self, value_edit, scaling_edit, offset_edit, scaled_value_edit
+        self, value_edit, scaling_edit, offset_edit, scaled_value_edit
     ):
         """Updates the scaled value in both Tab 1 and Tab 3 based on the provided scaling factor and offset.
 

@@ -16,7 +16,6 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
-
 from pyx2cscope.variable.variable import Variable
 from pyx2cscope.variable.variable_factory import VariableFactory
 
@@ -29,6 +28,8 @@ logging.basicConfig(
 # Define constants for magic values
 UC_WIDTH_16BIT = 2
 UC_WIDTH_32BIT = 4
+
+
 def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
     """Converts a Variable object to a ScopeChannel object.
 
@@ -448,8 +449,8 @@ class X2CScope:
         return {
             "processor_id": device_info.processor_id,
             "uc_width": uc_width_value,
-            "date": device_info.monitorDate, ##TODO Change to APP date once implemented
-            "time": device_info.monitorTime, #TODO Change to APP time once implemented
+            "date": device_info.monitorDate,  ##TODO Change to APP date once implemented
+            "time": device_info.monitorTime,  # TODO Change to APP time once implemented
             "AppVer": device_info.appVer,
             "dsp_state": device_info.dsp_state,
         }

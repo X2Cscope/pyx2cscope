@@ -1,4 +1,5 @@
 """Detachable genenric GUI for X2Cscope."""
+
 import logging
 import os
 import sys
@@ -100,6 +101,7 @@ class X2cscopeGui(QMainWindow):
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
         self.initi_variables()
+
     def initi_variables(self):
         """Some extra variables define."""
         self.selected_var_indices = [
@@ -311,7 +313,9 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
-        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        self.scope_sampletime_edit = QLineEdit(
+            "50"
+        )  # Default sample time in microseconds
         self.scope_sampletime_edit.setValidator(self.decimal_validator)
 
         # Total Time
@@ -372,8 +376,13 @@ class X2cscopeGui(QMainWindow):
         grid_layout_variable.addWidget(QLabel("Visible"), 0, 3)
 
         for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
-                zip(self.scope_var_lines, self.trigger_var_checkbox, self.scope_scaling_boxes,
-                    self.scope_channel_checkboxes)):
+            zip(
+                self.scope_var_lines,
+                self.trigger_var_checkbox,
+                self.scope_scaling_boxes,
+                self.scope_channel_checkboxes,
+            )
+        ):
             line_edit.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
             show_checkbox.setMinimumHeight(20)
@@ -387,7 +396,9 @@ class X2cscopeGui(QMainWindow):
             grid_layout_variable.addWidget(scale_box, i + 1, 2)
             grid_layout_variable.addWidget(show_checkbox, i + 1, 3)
 
-            trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
+            trigger_checkbox.stateChanged.connect(
+                lambda state, x=i: self.handle_scope_checkbox_change(state, x)
+            )
             scale_box.editingFinished.connect(self.update_scope_plot)
             show_checkbox.stateChanged.connect(self.update_scope_plot)
 
@@ -409,7 +420,6 @@ class X2cscopeGui(QMainWindow):
         self.load_button_scope = QPushButton("Load Config")
         self.save_button_scope.setFixedSize(100, 30)
         self.load_button_scope.setFixedSize(100, 30)
-
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.save_button_scope)
@@ -919,7 +929,7 @@ class X2cscopeGui(QMainWindow):
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
                     data_scaled = (
-                            np.array(data, dtype=float) * scale_factor
+                        np.array(data, dtype=float) * scale_factor
                     )  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,

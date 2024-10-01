@@ -1,4 +1,5 @@
 """Unified parser solution for ELF files."""
+
 from __future__ import print_function
 
 import os
