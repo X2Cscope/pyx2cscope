@@ -74,11 +74,6 @@ function setScopeTableListeners(){
             && (e.which < 48 || e.which > 57)) {
             return false;
         }
-//        const regex = /[+-]?([0-9]{1,}[.])[0-9]+/;
-//        if(!regex.test($(this).val()))
-//        {
-//            return false;
-//        }
     });
 }
 
@@ -178,6 +173,7 @@ function initScopeChart() {
             },
             plugins: {
                 zoom: zoomOptions,
+                legend: false,
             }
         }
     });
@@ -300,9 +296,10 @@ $(document).ready(function () {
         searching: false,
         paging: false,
         info: false,
+        responsive: false,
         columns: [
-            {data: 'trigger', render: sv_checkbox},
-            {data: 'enable', render: sv_checkbox},
+            {data: 'trigger', render: sv_checkbox, orderable: false},
+            {data: 'enable', render: sv_checkbox, orderable: false},
             {data: 'variable'},
             {data: 'color', render: sv_color, orderable: false},
             {data: 'gain', orderable: false},
@@ -311,7 +308,7 @@ $(document).ready(function () {
         ],
         columnDefs: [
             {
-                targets: [, 4, 5],
+                targets: [4, 5],
                 "createdCell": function (td, cellData, rowData, row, col) {
                     $(td).attr('contenteditable', 'true');
                 }

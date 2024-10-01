@@ -9,7 +9,7 @@ from flask import Blueprint, Response, jsonify, render_template, request
 
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web import get_x2c
-from pyx2cscope.xc2scope import TriggerConfig
+from pyx2cscope.x2cscope import TriggerConfig
 
 sv = Blueprint('scope_view', __name__, template_folder='templates')
 

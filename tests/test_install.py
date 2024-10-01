@@ -3,7 +3,7 @@ import os
 
 from mchplnet.services.frame_device_info import DeviceInfo
 from mchplnet.services.frame_load_parameter import LoadScopeData
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 from tests import data
 from tests.utils.serial_stub import fake_serial
 

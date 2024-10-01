@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope import set_logger
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 set_logger(logging.INFO, )# This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
 logging.basicConfig(

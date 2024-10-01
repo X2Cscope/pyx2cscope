@@ -1,7 +1,7 @@
 """Execute unit tests related to the parser class for 16 and 32 bits."""
 import os
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 from tests import data
 from tests.utils.serial_stub import fake_serial
 

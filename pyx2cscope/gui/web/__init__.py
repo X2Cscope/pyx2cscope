@@ -6,7 +6,7 @@ pyX2Cscope states.
 """
 from flask import Flask
 
-from pyx2cscope.xc2scope import X2CScope
+from pyx2cscope.x2cscope import X2CScope
 
 x2c_scope : X2CScope
 x2c_scope_init = False
