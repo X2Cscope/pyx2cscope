@@ -27,11 +27,11 @@ pip install pyx2cscope
 
 It is highly recommended to install python libraries underneath a virtual environment.
 
-Nevertheless, to install at system level, execute the following lines:
+Nevertheless, to install at system level, we advise to install it on user area. (Global insallation may not work.) 
+Execute the following lines:
 
 ```
-pip install pyx2cscope
-pip install PyQt5 --user --ignore-installed
+pip install pyx2cscope --user
 ```
 
 In case you already have installed pyx2cscope, you only need to update the package to the
@@ -39,7 +39,22 @@ new version typing:
 ```
 pip install --upgrade pyx2cscope
 ```
+## Start GUI
 
+The GUI interface
+
+There are currently two implementations, one based on Qt and one Browser based. These GUIs are more examples
+on how to implement your own custom interfaces than an official user interface.
+
+To execute Qt version, type:
+```
+   pyx2cscope
+```
+To execute the Browser based version type:
+
+```
+   pyx2cscope -w
+```
 
 ## Getting Started with Scripting
 
