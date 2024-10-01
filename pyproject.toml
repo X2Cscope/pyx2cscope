@@ -31,7 +31,7 @@ pyelftools = "^0.29"
 numpy = "^1.25.1"
 matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
-pyqtgraph~=0.13.7
+pyqtgraph= "^0.13.7"
 mchplnet = "0.2.1"
 flask = "^3.0.3"
 
