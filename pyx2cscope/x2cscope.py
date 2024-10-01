@@ -3,7 +3,8 @@
 The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers. It
 is utilising LNET protocol to communicate with the firmware. LNET protocol is implemented in the mchplnet package.
 The package provides an interface to connect to the firmware, set up scope channels, request data, and a process
-received data."""
+received data.
+"""
 
 import logging
 from dataclasses import dataclass
@@ -25,7 +26,9 @@ logging.basicConfig(
     filename=__name__ + ".log",
 )
 
-
+# Define constants for magic values
+UC_WIDTH_16BIT = 2
+UC_WIDTH_32BIT = 4
 def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
     """Converts a Variable object to a ScopeChannel object.
 
@@ -436,10 +439,11 @@ class X2CScope:
         return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
 
     def get_device_info(self):
+        """Returns the device information as a dictionary."""
         device_info = self.variable_factory.device_info
-        if device_info.uc_width == 2:
+        if device_info.uc_width == UC_WIDTH_16BIT:
             uc_width_value = "16-bit"
-        elif device_info.uc_width == 4:
+        elif device_info.uc_width == UC_WIDTH_32BIT:
             uc_width_value = "32-bit"
         return {
             "processor_id": device_info.processor_id,

@@ -1,3 +1,4 @@
+"""Detachable genenric GUI for X2Cscope."""
 import logging
 import os
 import sys
@@ -29,7 +30,6 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QSlider,
     QStyleFactory,
-    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -1271,10 +1271,10 @@ class X2cscopeGui(QMainWindow):
                             time_values = np.array(
                                 [j * 0.001 for j in range(len(data))], dtype=float
                             )  # milliseconds
-                            data = np.array(data, dtype=float)
+                            data_scaled = np.array(data, dtype=float)
                             self.scope_plot_widget.plot(
                                 time_values,
-                                data,
+                                data_scaled,
                                 pen=pg.mkPen(color=self.plot_colors[i], width=2),
                                 name=f"Channel {channel}",
                             )

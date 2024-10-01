@@ -28,7 +28,7 @@ and addresses included into your program. X2Cscope needs this file to locate var
 the running memory of the microcontroller. The elf file may be found under your MPLABX project folder at 
 dist > production > your_elf_file.elf.
 
-2. Once defined the desired comm port and elf file path, instantiate X2CScope:
+1. Once defined the desired comm port and elf file path, instantiate X2CScope:
 
 ```
 x2cScope = X2CScope(port="COM16", elf_file="your_path_to_elf_file/elf_file.elf")
@@ -41,7 +41,7 @@ The next step is to get a variable object that will represent the variable insid
 Use the method `get_variable` to link to a desired variable. The only parameter needed for that method
 is a string containing the variable name. 
 
-3. Create a Variable object for the variable you want to monitor:
+1. Create a Variable object for the variable you want to monitor:
 ```
 variable = x2cScope.get_variable('variable_name')
 ```
@@ -52,12 +52,12 @@ link to a structure directly, only to its members.
 
 ### Reading values
 
-4. Once you have gone through these steps, you can use the method **get_value()** to retrieve the actual 
+1. Once you have gone through these steps, you can use the method **get_value()** to retrieve the actual 
 value of the variable:
 ``` 
 variable.get_value() 
 ```
-5. To set the value for the respective variable use the method **set_value()**:
+1. To set the value for the respective variable use the method **set_value()**:
 ```
 variable.set_value(value)
 ```
@@ -68,7 +68,7 @@ a variable, collect the values during a time frame, triggering according some tr
 and return and array that could be plotted with any available python graphic framework as matplotlib,
 seaborn, etc.  
  
-6. To use the scope functionality, first you need to link a variable as previously explained, and 
+1. To use the scope functionality, first you need to link a variable as previously explained, and 
 add this variable to the scope by means of the method: **add_scope_channel(variable: Variable)** : 
 ```
 variable1 = x2cScope.get_variable("variable1")
@@ -78,7 +78,7 @@ x2cScope.add_scope_channel(variable1)
 x2cScope.add_scope_channel(variable2)
 ```
 
-7. To remove a variable from the scope: **remove_scope_channel(variable: Variable)**, to clear all
+1. To remove a variable from the scope: **remove_scope_channel(variable: Variable)**, to clear all
 variables and reset the scope use instead: **clear_all_scope_channel()**
 ```
 x2cScope.remove_scope_channel(variable2)
@@ -103,18 +103,18 @@ To get data from scope channel you need to follow this sequence:
 
 Step-by-step you need:
 
-8. Request to X2CScope to collect data for the variables registered on the scope channels.  
+1. Request to X2CScope to collect data for the variables registered on the scope channels.  
 ```
 x2c_scope.request_scope_data()
 ```
 
-9. Check if the data is ready: 
+1. Check if the data is ready: 
 Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.  
 ```
 while not x2cScope.is_scope_data_ready():
     time.sleep(0.1)
 ```
-10. Get the scope data once sampling is completed
+1. Get the scope data once sampling is completed
 ```
 data = x2cScope.get_scope_channel_data()
 ```

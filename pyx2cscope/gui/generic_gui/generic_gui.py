@@ -578,7 +578,7 @@ class X2cscopeGui(QMainWindow):
             device_info_layout = QGridLayout()  # Create a row layout for label and its value
             device_info_layout.addWidget(info_label, row, 0, Qt.AlignRight)
             device_info_layout.addWidget(label, row, 1, alignment=Qt.AlignRight)
-            left_layout.addLayout(device_info_layout,row,0, Qt.AlignLeft)
+            left_layout.addLayout(device_info_layout, row, 0, Qt.AlignLeft)
 
         # Create the right layout for COM port and settings (QGridLayout)
         right_layout = QGridLayout()
@@ -620,9 +620,9 @@ class X2cscopeGui(QMainWindow):
         # Add Connect and Sample Time widgets to the right layout
         self.sampletime.setValidator(self.decimal_validator)
         self.sampletime.editingFinished.connect(self.sampletime_edit)
-        right_layout.addWidget(sampletime_label, 2, 0, alignment= Qt.AlignRight)
-        right_layout.addWidget(self.sampletime, 2, 1, alignment= Qt.AlignLeft)
-        right_layout.addWidget(QLabel("ms"), 2, 2, alignment= Qt.AlignLeft)
+        right_layout.addWidget(sampletime_label, 2, 0, alignment=Qt.AlignRight)
+        right_layout.addWidget(self.sampletime, 2, 1, alignment=Qt.AlignLeft)
+        right_layout.addWidget(QLabel("ms"), 2, 2, alignment=Qt.AlignLeft)
         right_layout.addWidget(self.Connect_button, 3, 1, alignment=Qt.AlignBottom)
 
         # Create a horizontal layout to contain both left and right sections
@@ -2109,7 +2109,7 @@ class X2cscopeGui(QMainWindow):
             scaled_value_edit,
             unit_edit,
             remove_button,
-    ):
+    ):  #  noqa: PLR0913
         """Remove a specific row in the WatchView Only tab."""
         # Remove the widgets from the grid layout
         for widget in [
@@ -2181,7 +2181,7 @@ class X2cscopeGui(QMainWindow):
             for col, widget in enumerate(widgets):
                 self.watchview_grid.addWidget(widget, row, col)
 
-    def eventFilter(self, source, event):
+    def eventFilter(self, source, event):  # noqa: N802 #Overriding 3rd party function.
         """Event filter to handle line edit click events for variable selection."""
         if event.type() == QtCore.QEvent.MouseButtonPress:
             if isinstance(source, QLineEdit):

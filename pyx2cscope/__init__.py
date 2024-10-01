@@ -16,9 +16,9 @@ def set_logger(
 ):
     """Call the logging basicConfig.
 
-    Call set_logger on every file that could be run as standalone. A filename.log file will be created on the local
-    folder where the program is running. This function calls BasicConfig and BasicConfig only executes when called
-    by the first time. Multiple calls of basicConfig have no effect.
+    call set_logger on every file that could be run as standalone. a filename.log file will be created on the local
+    folder where the program is running. this function calls BasicConfig and BasicConfig only executes when called
+    by the first time. multiple calls of basicConfig have no effect.
 
     Args:
          level (int): the log level logging.(WARNING, DEBUG, INFO, ERROR, CRITICAL, etc.)

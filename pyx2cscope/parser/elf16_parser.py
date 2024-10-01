@@ -9,7 +9,6 @@ Usage:
     print(variable_map)
 """
 
-import logging
 import os.path
 import re
 import subprocess
