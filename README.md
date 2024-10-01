@@ -32,7 +32,7 @@ Nevertheless, to install at system level, we advise to install it on user area. 
 Execute the following lines:
 
 ```
-pip install pyx2cscope --user
+pip install --user pyx2cscope
 ```
 
 In case you already have installed pyx2cscope, you only need to update the package to the
