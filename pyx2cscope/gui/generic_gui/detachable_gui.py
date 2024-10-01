@@ -1,4 +1,4 @@
-"""This is the scope_gui to test the pyx2cscope scope functionality."""
+"""Detachable genenric GUI for X2Cscope."""
 
 import logging
 import os
@@ -8,10 +8,9 @@ from collections import deque
 from datetime import datetime
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
+import pyqtgraph as pg
 import serial.tools.list_ports
-from matplotlib.animation import FuncAnimation
 from PyQt5 import QtGui
 from PyQt5.QtCore import QFileInfo, QMutex, QRegExp, QSettings, Qt, QTimer, pyqtSlot
 from PyQt5.QtGui import QIcon, QRegExpValidator
@@ -19,6 +18,7 @@ from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QDockWidget,
     QFileDialog,
     QGridLayout,
     QGroupBox,
@@ -28,39 +28,35 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QSlider,
-    QTabWidget,
+    QStyleFactory,
     QVBoxLayout,
     QWidget,
 )
 
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.x2cscope import TriggerConfig, X2CScope
+from pyx2cscope.xc2scope import TriggerConfig, X2CScope
 
 logging.basicConfig(level=logging.DEBUG)
 
-matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
+matplotlib.use("QtAgg")
 
 
 class X2cscopeGui(QMainWindow):
-    """Main GUI class for the pyX2Cscope application.
-
-    This class creates and manages the GUI for pyX2Cscope, providing an interface
-    to connect to a microcontroller, select variables for monitoring, and plot their values.
-    """
+    """Main GUI class for the pyX2Cscope application."""
 
     def __init__(self):
         """Initializing all the elements required."""
         super().__init__()
 
+        self.triggerVariable = None
         self.initialize_variables()
         self.init_ui()
 
     def initialize_variables(self):
         """Initialize instance variables."""
         self.sampling_active = False
-        self.fig = None
-        self.ax = None
         self.offset_boxes = None
         self.plot_checkboxes = None
         self.scaled_value_boxes = None
@@ -70,7 +66,7 @@ class X2cscopeGui(QMainWindow):
         self.live_checkboxes = None
         self.timer_list = None
         self.VariableList = []
-        self.old_Variablelist = []
+        self.old_Variable_list = []
         self.var_factory = None
         self.ser = None
         self.timerValue = 500
@@ -81,6 +77,12 @@ class X2cscopeGui(QMainWindow):
         self.mutex = QMutex()
         self.grid_layout = QGridLayout()
         self.box_layout = QHBoxLayout()
+        self.timer1 = QTimer()
+        self.timer2 = QTimer()
+        self.timer3 = QTimer()
+        self.timer4 = QTimer()
+        self.timer5 = QTimer()
+        self.plot_update_timer = QTimer()  # Timer for continuous plot update
         self.timer()
         self.offset_var()
         self.plot_var_check()
@@ -98,6 +100,10 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
+        self.initi_variables()
+
+    def initi_variables(self):
+        """Some extra variables define."""
         self.selected_var_indices = [
             0,
             0,
@@ -109,9 +115,16 @@ class X2cscopeGui(QMainWindow):
         decimal_regex = QRegExp("-?[0-9]+(\\.[0-9]+)?")
         self.decimal_validator = QRegExpValidator(decimal_regex)
 
-        self.plot_data = deque(maxlen=250)  # Store plot data for all variable.
-        self.fig, self.ax = None, None
-        self.ani = None
+        self.plot_data = deque(maxlen=250)  # Store plot data for all variables
+        self.plot_colors = [
+            "b",
+            "g",
+            "r",
+            "c",
+            "m",
+            "y",
+            "k",
+        ]  # colours for different plot
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -124,6 +137,47 @@ class X2cscopeGui(QMainWindow):
             "Plot",
         ]
 
+    def init_ui(self):
+        """Initialize the user interface."""
+        self.setup_application_style()
+        self.create_central_widget()
+        self.create_dockable_tabs()
+        self.setup_window_properties()
+        self.refresh_ports()
+
+    def setup_application_style(self):
+        """Set the application style."""
+        QApplication.setStyle(QStyleFactory.create("Fusion"))
+
+    def create_central_widget(self):
+        """Create the central widget."""
+        central_widget = QWidget(self)
+        self.setCentralWidget(central_widget)
+        self.layout = QVBoxLayout(central_widget)
+
+    def create_dockable_tabs(self):
+        """Create dockable tabs for the main window."""
+        self.watch_view_dock = QDockWidget("WatchView", self)
+        self.scope_view_dock = QDockWidget("ScopeView", self)
+
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+
+        self.watch_view_dock.setWidget(self.tab1)
+        self.scope_view_dock.setWidget(self.tab2)
+
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.watch_view_dock)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.scope_view_dock)
+
+        self.setup_tab1()
+        self.setup_tab2()
+
+    def setup_window_properties(self):
+        """Set up the main window properties."""
+        self.setWindowTitle("pyX2Cscope")
+        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
+        self.setWindowIcon(QtGui.QIcon(mchp_img))
+
     def combo_box(self):
         """Initializing combo boxes."""
         self.combo_box5 = QComboBox()
@@ -131,6 +185,7 @@ class X2cscopeGui(QMainWindow):
         self.combo_box3 = QComboBox()
         self.combo_box2 = QComboBox()
         self.combo_box1 = QComboBox()
+
     def scaled_value(self):
         """Initializing Scaled variable."""
         self.ScaledValue_var1 = QLineEdit(self)
@@ -138,6 +193,7 @@ class X2cscopeGui(QMainWindow):
         self.ScaledValue_var3 = QLineEdit(self)
         self.ScaledValue_var4 = QLineEdit(self)
         self.ScaledValue_var5 = QLineEdit(self)
+
     def live_var(self):
         """Initializing live variable."""
         self.Live_var1 = QCheckBox(self)
@@ -145,7 +201,6 @@ class X2cscopeGui(QMainWindow):
         self.Live_var3 = QCheckBox(self)
         self.Live_var4 = QCheckBox(self)
         self.Live_var5 = QCheckBox(self)
-
 
     def value_var(self):
         """Initializing value variable."""
@@ -162,6 +217,7 @@ class X2cscopeGui(QMainWindow):
         self.timer3 = QTimer()
         self.timer2 = QTimer()
         self.timer1 = QTimer()
+
     def offset_var(self):
         """Initializing Offset Variable."""
         self.offset_var1 = QLineEdit()
@@ -169,6 +225,7 @@ class X2cscopeGui(QMainWindow):
         self.offset_var3 = QLineEdit()
         self.offset_var4 = QLineEdit()
         self.offset_var5 = QLineEdit()
+
     def plot_var_check(self):
         """Initializing plot variable check boxes."""
         self.plot_var5_checkbox = QCheckBox()
@@ -176,6 +233,7 @@ class X2cscopeGui(QMainWindow):
         self.plot_var4_checkbox = QCheckBox()
         self.plot_var3_checkbox = QCheckBox()
         self.plot_var1_checkbox = QCheckBox()
+
     def scaling_var(self):
         """Initializing Scaling variable."""
         self.Scaling_var1 = QLineEdit(self)
@@ -191,29 +249,6 @@ class X2cscopeGui(QMainWindow):
         self.Unit_var3 = QLineEdit(self)
         self.Unit_var4 = QLineEdit(self)
         self.Unit_var5 = QLineEdit(self)
-    # noinspection PyUnresolvedReferences
-    def init_ui(self):
-        """Initializing all the required for GUI."""
-        central_widget = QWidget(self)
-        self.tab_widget = QTabWidget()
-        self.layout = QVBoxLayout(central_widget)
-        self.layout.addWidget(self.tab_widget)
-
-        self.tab1 = QWidget()
-        self.tab2 = QWidget()
-
-        self.tab_widget.addTab(self.tab1, "WatchView")
-        self.tab_widget.addTab(self.tab2, "ScopeView")
-
-        self.setup_tab1()
-        self.setup_tab2()
-
-        self.setCentralWidget(central_widget)
-        self.setWindowTitle("pyX2Cscope")
-        mchp_img = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
-        self.setWindowIcon(QtGui.QIcon(mchp_img))
-
-        self.refresh_ports()
 
     def setup_tab1(self):
         """Set up the first tab with the original functionality."""
@@ -237,59 +272,11 @@ class X2cscopeGui(QMainWindow):
         main_grid_layout = QGridLayout()
         self.tab2.layout.addLayout(main_grid_layout)
 
-        # Trigger Configuration Group Box
-        trigger_group = QGroupBox("Trigger Configuration")
-        trigger_layout = QVBoxLayout()
-        trigger_group.setLayout(trigger_layout)
-
-        grid_layout_trigger = QGridLayout()
-        trigger_layout.addLayout(grid_layout_trigger)
-
-        self.single_shot_checkbox = QCheckBox("Single Shot")  # Add Single Shot checkbox
-        self.sample_time_factor = QLineEdit("1")
-        self.sample_time_factor.setValidator(self.decimal_validator)
-        self.trigger_mode_combo = QComboBox()
-        self.trigger_mode_combo.addItems(["Auto", "Triggered"])
-        self.trigger_edge_combo = QComboBox()
-        self.trigger_edge_combo.addItems(["Rising", "Falling"])
-        self.trigger_level_edit = QLineEdit()
-        self.trigger_level_edit.setValidator(self.decimal_validator)
-        self.trigger_delay_edit = QLineEdit()
-        self.trigger_delay_edit.setValidator(self.decimal_validator)
-        self.scope_trigger_button = QPushButton("Configure Trigger")
-        self.scope_trigger_button.clicked.connect(self.configure_trigger)
-
-        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1,
-                                      2)  # Add the Single Shot checkbox to the layout
-        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
-        grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
-        grid_layout_trigger.addWidget(self.trigger_mode_combo, 2, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 3, 0)
-        grid_layout_trigger.addWidget(self.trigger_edge_combo, 3, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 4, 0)
-        grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
-        grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
-        grid_layout_trigger.addWidget(self.scope_trigger_button, 6, 0, 1, 2)
-
-        # Variable Selection Group Box
-        variable_group = QGroupBox("Variable Selection")
-        variable_layout = QVBoxLayout()
-        variable_group.setLayout(variable_layout)
-
-        grid_layout_variable = QGridLayout()
-        variable_layout.addLayout(grid_layout_variable)
-
-        self.scope_var_combos = [QComboBox() for _ in range(7)]
-        self.scope_sample_button = QPushButton("Sample")
-        self.scope_sample_button.clicked.connect(self.start_sampling)
-
-        grid_layout_variable.addWidget(QLabel("Select Variable:"), 0, 0)
-        for i, combo in enumerate(self.scope_var_combos):
-            grid_layout_variable.addWidget(combo, i + 1, 0)
-
-        grid_layout_variable.addWidget(self.scope_sample_button, 8, 0)
+        # Set up individual components
+        trigger_group = self.create_trigger_configuration_group()
+        variable_group = self.create_variable_selection_group()
+        self.scope_plot_widget = self.create_scope_plot_widget()
+        button_layout = self.create_save_load_buttons()
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -299,13 +286,164 @@ class X2cscopeGui(QMainWindow):
         main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
         main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
 
+        # Add the plot widget for scope view
+        self.tab2.layout.addWidget(self.scope_plot_widget)
+
+        # Add Save and Load buttons
+        self.tab2.layout.addLayout(button_layout)
+
+    def create_trigger_configuration_group(self):
+        """Create the trigger configuration group box."""
+        trigger_group = QGroupBox("Trigger Configuration")
+        trigger_layout = QVBoxLayout()
+        trigger_group.setLayout(trigger_layout)
+
+        grid_layout_trigger = QGridLayout()
+        trigger_layout.addLayout(grid_layout_trigger)
+
+        self.single_shot_checkbox = QCheckBox("Single Shot")
+        self.sample_time_factor = QLineEdit("1")
+        self.sample_time_factor.setValidator(self.decimal_validator)
+        self.trigger_mode_combo = QComboBox()
+        self.trigger_mode_combo.addItems(["Auto", "Triggered"])
+        self.trigger_edge_combo = QComboBox()
+        self.trigger_edge_combo.addItems(["Rising", "Falling"])
+        self.trigger_level_edit = QLineEdit("0")
+        self.trigger_level_edit.setValidator(self.decimal_validator)
+        self.trigger_delay_edit = QLineEdit("0")
+        self.trigger_delay_edit.setValidator(self.decimal_validator)
+
+        self.scope_sampletime_edit = QLineEdit(
+            "50"
+        )  # Default sample time in microseconds
+        self.scope_sampletime_edit.setValidator(self.decimal_validator)
+
+        # Total Time
+        self.total_time_label = QLabel("Total Time (ms):")
+        self.total_time_value = QLineEdit("0")
+        self.total_time_value.setReadOnly(True)
+
+        self.scope_sample_button = QPushButton("Sample")
+        self.scope_sample_button.setFixedSize(100, 30)
+        self.scope_sample_button.clicked.connect(self.start_sampling)
+
+        # Arrange widgets in grid layout
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1, 2)
+        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
+        grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
+        grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 2, 0)
+        grid_layout_trigger.addWidget(self.scope_sampletime_edit, 2, 1)
+        grid_layout_trigger.addWidget(self.total_time_label, 3, 0)
+        grid_layout_trigger.addWidget(self.total_time_value, 3, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 4, 0)
+        grid_layout_trigger.addWidget(self.trigger_mode_combo, 4, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 5, 0)
+        grid_layout_trigger.addWidget(self.trigger_edge_combo, 5, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 6, 0)
+        grid_layout_trigger.addWidget(self.trigger_level_edit, 6, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 7, 0)
+        grid_layout_trigger.addWidget(self.trigger_delay_edit, 7, 1)
+        grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0, 1, 2)
+
+        return trigger_group
+
+    def create_variable_selection_group(self):
+        """Create the variable selection group box."""
+        variable_group = QGroupBox("Variable Selection")
+        variable_layout = QVBoxLayout()
+        variable_group.setLayout(variable_layout)
+
+        grid_layout_variable = QGridLayout()
+        variable_layout.addLayout(grid_layout_variable)
+
+        self.scope_var_lines = [QLineEdit() for _ in range(7)]
+        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]
+
+        for checkbox in self.scope_channel_checkboxes:
+            checkbox.setChecked(True)
+
+        for line_edit in self.scope_var_lines:
+            line_edit.setReadOnly(True)
+            line_edit.setPlaceholderText("Search Variable")
+            line_edit.installEventFilter(self)
+
+        # Add "Search Variable" label
+        grid_layout_variable.addWidget(QLabel("Search Variable"), 0, 1)
+        grid_layout_variable.addWidget(QLabel("Trigger"), 0, 0)
+        grid_layout_variable.addWidget(QLabel("Gain"), 0, 2)
+        grid_layout_variable.addWidget(QLabel("Visible"), 0, 3)
+
+        for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
+            zip(
+                self.scope_var_lines,
+                self.trigger_var_checkbox,
+                self.scope_scaling_boxes,
+                self.scope_channel_checkboxes,
+            )
+        ):
+            line_edit.setMinimumHeight(20)
+            trigger_checkbox.setMinimumHeight(20)
+            show_checkbox.setMinimumHeight(20)
+            scale_box.setMinimumHeight(20)
+            scale_box.setFixedSize(50, 20)
+            scale_box.setValidator(self.decimal_validator)
+
+            line_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
+            grid_layout_variable.addWidget(line_edit, i + 1, 1)
+            grid_layout_variable.addWidget(scale_box, i + 1, 2)
+            grid_layout_variable.addWidget(show_checkbox, i + 1, 3)
+
+            trigger_checkbox.stateChanged.connect(
+                lambda state, x=i: self.handle_scope_checkbox_change(state, x)
+            )
+            scale_box.editingFinished.connect(self.update_scope_plot)
+            show_checkbox.stateChanged.connect(self.update_scope_plot)
+
+        return variable_group
+
+    def create_scope_plot_widget(self):
+        """Create the scope plot widget."""
+        scope_plot_widget = pg.PlotWidget(title="Scope Plot")
+        scope_plot_widget.setBackground("w")
+        scope_plot_widget.addLegend()
+        scope_plot_widget.showGrid(x=True, y=True)
+        scope_plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
+
+        return scope_plot_widget
+
+    def create_save_load_buttons(self):
+        """Create the save and load buttons."""
+        self.save_button_scope = QPushButton("Save Config")
+        self.load_button_scope = QPushButton("Load Config")
+        self.save_button_scope.setFixedSize(100, 30)
+        self.load_button_scope.setFixedSize(100, 30)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.save_button_scope)
+        button_layout.addWidget(self.load_button_scope)
+
+        return button_layout
+
+    def handle_scope_checkbox_change(self, state, index):
+        """Handle the change in the state of the scope view checkboxes."""
+        if state == Qt.Checked:
+            for i, checkbox in enumerate(self.trigger_var_checkbox):
+                if i != index:
+                    checkbox.setChecked(False)
+            self.triggerVariable = self.scope_var_combos[index].currentText()
+            print(f"Checked variable: {self.scope_var_combos[index].currentText()}")
+        else:
+            self.triggerVariable = None
+
     def setup_port_layout(self, layout):
         """Set up the port selection layout."""
         port_layout = QGridLayout()
         port_label = QLabel("Select Port:")
 
         refresh_button = QPushButton()
-        refresh_button.setFixedHeight(10)
         refresh_button.setFixedSize(25, 25)
         refresh_button.clicked.connect(self.refresh_ports)
         refresh_img = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
@@ -339,20 +477,22 @@ class X2cscopeGui(QMainWindow):
         """Set up the sample time layout."""
         self.Connect_button.clicked.connect(self.toggle_connection)
         self.Connect_button.setFixedSize(100, 30)
+        self.Connect_button.setMinimumHeight(30)
 
         self.sampletime.setText("500")
         self.sampletime.setValidator(self.decimal_validator)
         self.sampletime.editingFinished.connect(self.sampletime_edit)
-        self.sampletime.setFixedSize(30, 20)
+        self.sampletime.setFixedSize(50, 20)
 
-        self.box_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
-        self.box_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
-        self.box_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
-        self.box_layout.addStretch(1)
-        self.box_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
+        sampletime_layout = QHBoxLayout()
+        sampletime_layout.addWidget(QLabel("Sampletime"), alignment=Qt.AlignLeft)
+        sampletime_layout.addWidget(self.sampletime, alignment=Qt.AlignLeft)
+        sampletime_layout.addWidget(QLabel("ms"), alignment=Qt.AlignLeft)
+        sampletime_layout.addStretch(1)
+        sampletime_layout.addWidget(self.Connect_button, alignment=Qt.AlignRight)
 
-        layout.addWidget(self.select_file_button, 3, 0)
-        layout.addLayout(self.box_layout, 4, 0)
+        layout.addLayout(sampletime_layout, 3, 0)
+        layout.addWidget(self.select_file_button, 4, 0)
 
     def setup_variable_layout(self, layout):
         """Set up the variable selection layout."""
@@ -448,7 +588,7 @@ class X2cscopeGui(QMainWindow):
         ):
             live_var.setEnabled(False)
             combo_box.setEnabled(False)
-            combo_box.setFixedWidth(350)
+            combo_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             value_var.setText("0")
             value_var.setValidator(self.decimal_validator)
             scaling_var.setText("1")
@@ -470,31 +610,60 @@ class X2cscopeGui(QMainWindow):
             self.grid_layout.addWidget(scaled_value_var, display_row, 5)
             self.grid_layout.addWidget(unit_var, display_row, 6)
             self.grid_layout.addWidget(plot_checkbox, display_row, 7)
+            plot_checkbox.stateChanged.connect(
+                lambda state, x=row_index - 1: self.update_watch_plot()
+            )
 
         layout.addLayout(self.grid_layout, 5, 0)
-        layout.addWidget(self.plot_button, 6, 0)
+
+        # Add the plot widget for watch view
+        self.watch_plot_widget = pg.PlotWidget(title="Watch Plot")
+        self.watch_plot_widget.setBackground("w")
+        self.watch_plot_widget.addLegend()  # Add legend to the plot widget
+        self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
+        self.tab1.layout.addWidget(self.watch_plot_widget)
 
     def setup_connections(self):
         """Set up connections for various widgets."""
         self.plot_button.clicked.connect(self.plot_data_plot)
 
-        for timer, combo_box, value_var in zip(self.timer_list, self.combo_boxes, self.Value_var_boxes):
-            timer.timeout.connect(lambda cb=combo_box, v_var=value_var: self.handle_var_update(cb.currentText(), v_var))
+        for timer, combo_box, value_var in zip(
+            self.timer_list, self.combo_boxes, self.Value_var_boxes
+        ):
+            timer.timeout.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_var_update(
+                    cb.currentText(), v_var
+                )
+            )
 
         for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
             combo_box.currentIndexChanged.connect(
-                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(self.VariableList[cb], v_var)
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_getram(
+                    self.VariableList[cb], v_var
+                )
+            )
+        for combo_box, value_var in zip(self.combo_boxes, self.Value_var_boxes):
+            value_var.editingFinished.connect(
+                lambda cb=combo_box, v_var=value_var: self.handle_variable_putram(
+                    cb.currentText(), v_var
+                )
             )
 
         self.connect_editing_finished()
 
         for timer, live_var in zip(self.timer_list, self.live_checkboxes):
-            live_var.stateChanged.connect(lambda state, lv=live_var, tm=timer: self.var_live(lv, tm))
+            live_var.stateChanged.connect(
+                lambda state, lv=live_var, tm=timer: self.var_live(lv, tm)
+            )
 
         self.slider_var1.setMinimum(-32768)
         self.slider_var1.setMaximum(32767)
         self.slider_var1.setEnabled(False)
         self.slider_var1.valueChanged.connect(self.slider_var1_changed)
+
+        self.plot_update_timer.timeout.connect(
+            self.update_watch_plot
+        )  # Connect the QTimer to the update method
 
     def connect_editing_finished(self):
         """Connect editingFinished signals for value and scaling inputs."""
@@ -653,51 +822,67 @@ class X2cscopeGui(QMainWindow):
             timestamp = datetime.now()
             if len(self.plot_data) > 0:
                 last_timestamp = self.plot_data[-1][0]
-                time_diff = (timestamp - last_timestamp).total_seconds() * 1000  # to convert time in ms.
+                time_diff = (
+                    timestamp - last_timestamp
+                ).total_seconds() * 1000  # to convert time in ms.
             else:
                 time_diff = 0
+
+            def safe_float(value):
+                try:
+                    return float(value)
+                except ValueError:
+                    return 0.0
+
             self.plot_data.append(
                 (
                     timestamp,
                     time_diff,
-                    float(self.ScaledValue_var1.text()),
-                    float(self.ScaledValue_var2.text()),
-                    float(self.ScaledValue_var3.text()),
-                    float(self.ScaledValue_var4.text()),
-                    float(self.ScaledValue_var5.text()),
+                    safe_float(self.ScaledValue_var1.text()),
+                    safe_float(self.ScaledValue_var2.text()),
+                    safe_float(self.ScaledValue_var3.text()),
+                    safe_float(self.ScaledValue_var4.text()),
+                    safe_float(self.ScaledValue_var5.text()),
                 )
             )
         except Exception as e:
             logging.error(e)
 
-    def update_plot(self, frame):
-        """Updates the plot with new data.
-
-        Args:
-            frame: The current frame for the FuncAnimation.
-        """
+    def update_watch_plot(self):
+        """Updates the plot in the WatchView tab with new data."""
         try:
             if not self.plot_data:
                 return
 
-            data = np.array(self.plot_data).T
-            time_diffs = data[1]
-            values = data[2:7]
-            self.ax.clear()
-            start = time.time()
+            data = np.array(self.plot_data, dtype=object).T
+            time_diffs = np.array(data[1], dtype=float)
+            values = [np.array(data[i], dtype=float) for i in range(2, 7)]
 
-            for value, combo_box, plot_var in zip(values, self.combo_boxes, self.plot_checkboxes):
+            # Keep the last plot lines to avoid clearing and recreate them
+            plot_lines = {}
+            for item in self.watch_plot_widget.plotItem.items:
+                if isinstance(item, pg.PlotDataItem):
+                    plot_lines[item.name()] = item
+
+            for i, (value, combo_box, plot_var) in enumerate(
+                zip(values, self.combo_boxes, self.plot_checkboxes)
+            ):
                 if plot_var.isChecked() and combo_box.currentIndex() != 0:
-                    self.ax.plot(np.cumsum(time_diffs), value, label=combo_box.currentText())
+                    if combo_box.currentText() in plot_lines:
+                        plot_line = plot_lines[combo_box.currentText()]
+                        plot_line.setData(np.cumsum(time_diffs), value)
+                    else:
+                        self.watch_plot_widget.plot(
+                            np.cumsum(time_diffs),
+                            value,
+                            pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                            # Thicker plot line
+                            name=combo_box.currentText(),
+                        )
 
-            self.ax.set_xlabel("Time (ms)")
-            self.ax.set_ylabel("Value")
-            self.ax.set_title("Live Plot")
-            self.ax.legend(loc="upper right")
-            end = time.time()
-            logging.debug(end - start)
-            self.fig.canvas.draw()
-            self.fig.canvas.flush_events()
+            self.watch_plot_widget.setLabel("left", "Value")
+            self.watch_plot_widget.setLabel("bottom", "Time", units="ms")
+            self.watch_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         except Exception as e:
             logging.error(e)
 
@@ -707,29 +892,63 @@ class X2cscopeGui(QMainWindow):
             if not self.plot_data:
                 return
 
-            def initialize_plot():
-                self.fig, self.ax = plt.subplots()
+            self.update_watch_plot()
+            self.update_scope_plot()
 
-                self.ani = FuncAnimation(self.fig, self.update_plot, interval=1, cache_frame_data=False)
-                logging.debug(self.ani)
-                plt.xticks(rotation=45)
-                self.ax.axhline(0, color="black", linewidth=0.5)  # Reference line at y=0
-                self.ax.axvline(0, color="black", linewidth=0.5)  # Reference line at x=0
-                plt.subplots_adjust(bottom=0.15, left=0.15)  # Adjust plot window position
-                plt.show(block=False)  # Use block=False to prevent the GUI from freezing
-
-            if self.plot_window_open:
-                if self.fig is not None and plt.fignum_exists(self.fig.number):
-                    self.update_plot(0)
-                    self.ani.event_source.stop()
-                    self.ani.event_source.start(self.timerValue)
-                else:
-                    initialize_plot()
-            else:
-                initialize_plot()
+            if not self.plot_window_open:
                 self.plot_window_open = True
         except Exception as e:
             logging.error(e)
+
+    def update_scope_plot(self):
+        """Updates the plot in the ScopeView tab with new data and scaling."""
+        try:
+            if not self.sampling_active:
+                return
+
+            if not self.x2cscope.is_scope_data_ready():
+                return
+
+            data_storage = {}
+            for channel, data in self.x2cscope.get_scope_channel_data().items():
+                data_storage[channel] = data
+
+            self.scope_plot_widget.clear()
+
+            for i, (channel, data) in enumerate(data_storage.items()):
+                checkbox_state = self.scope_channel_checkboxes[i].isChecked()
+                logging.debug(
+                    f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}"
+                )
+                if checkbox_state:  # Check if the checkbox is checked
+                    scale_factor = float(
+                        self.scope_scaling_boxes[i].text()
+                    )  # Get the scaling factor
+                    # time_values = self.real_sampletime  # Generate time values in ms
+                    # start = self.real_sampletime / len(data)
+                    start = 0
+                    time_values = np.linspace(start, self.real_sampletime, len(data))
+                    data_scaled = (
+                        np.array(data, dtype=float) * scale_factor
+                    )  # Apply the scaling factor
+                    self.scope_plot_widget.plot(
+                        time_values,
+                        data_scaled,
+                        pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                        name=f"Channel {channel}",
+                    )
+                    logging.debug(
+                        f"Plotting channel {channel} with color {self.plot_colors[i]}"
+                    )
+                else:
+                    logging.debug(f"Not plotting channel {channel}")
+            self.scope_plot_widget.setLabel("left", "Value")
+            self.scope_plot_widget.setLabel("bottom", "Time", units="ms")
+            self.scope_plot_widget.showGrid(x=True, y=True)
+        except Exception as e:
+            error_message = f"Error updating scope plot: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
 
     def handle_error(self, error_message: str):
         """Displays an error message in a message box.
@@ -954,6 +1173,8 @@ class X2cscopeGui(QMainWindow):
                 if timer.isActive():
                     timer.stop()
 
+            self.plot_update_timer.stop()  # Stop the continuous plot update
+
         except Exception as e:
             error_message = f"Error while disconnecting: {e}"
             logging.error(error_message)
@@ -973,7 +1194,9 @@ class X2cscopeGui(QMainWindow):
             port = self.port_combo.currentText()
             baud_rate = int(self.baud_combo.currentText())
 
-            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
+            self.x2cscope = X2CScope(
+                port=port, elf_file=self.file_path, baud_rate=baud_rate
+            )
             self.ser = self.x2cscope.interface
             self.VariableList = self.x2cscope.list_variables()
             if self.VariableList:
@@ -1008,6 +1231,10 @@ class X2cscopeGui(QMainWindow):
                 if live_var.isChecked():
                     timer.start(self.timerValue)
 
+            self.plot_update_timer.start(
+                self.timerValue
+            )  # Start the continuous plot update
+
         except Exception as e:
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
@@ -1018,9 +1245,6 @@ class X2cscopeGui(QMainWindow):
 
         This method stops the animation and closes the plot window, if it is open.
         """
-        if self.ani is not None:
-            self.ani.event_source.stop()
-        plt.close(self.fig)
         self.plot_window_open = False
 
     def close_event(self, event):
@@ -1034,8 +1258,6 @@ class X2cscopeGui(QMainWindow):
         """
         if self.sampling_active:
             self.sampling_active = False
-        if self.fig:
-            plt.close(self.fig)
         if self.ser:
             self.disconnect_serial()
         event.accept()
@@ -1046,23 +1268,26 @@ class X2cscopeGui(QMainWindow):
             if self.sampling_active:
                 self.sampling_active = False
                 self.scope_sample_button.setText("Sample")
-                if self.fig:
-                    plt.close(self.fig)
                 logging.info("Stopped sampling.")
             else:
-
+                self.x2cscope.clear_all_scope_channel()
                 for combo in self.scope_var_combos:
                     variable_name = combo.currentText()
                     if variable_name and variable_name != "None":
                         variable = self.x2cscope.get_variable(variable_name)
                         self.x2cscope.add_scope_channel(variable)
-                self.x2cscope.set_sample_time(int(self.sample_time_factor.text()))  # set sample time factor
-                self.configure_trigger()  # trigger configuration
+
+                self.x2cscope.set_sample_time(
+                    int(self.sample_time_factor.text())
+                )  # set sample time factor
                 self.sampling_active = True
+                self.configure_trigger()
                 self.scope_sample_button.setText("Stop")
                 logging.info("Started sampling.")
                 self.x2cscope.request_scope_data()
-                self.sample_scope_data(single_shot=self.single_shot_checkbox.isChecked())
+                self.sample_scope_data(
+                    single_shot=self.single_shot_checkbox.isChecked()
+                )
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
@@ -1071,45 +1296,59 @@ class X2cscopeGui(QMainWindow):
     def configure_trigger(self):
         """Configure the trigger settings."""
         try:
-            variable_name = self.scope_var_combos[0].currentText()
-            variable = self.x2cscope.get_variable(variable_name)
+            if self.triggerVariable is not None:
+                variable_name = self.triggerVariable
+                variable = self.x2cscope.get_variable(variable_name)
 
-            # Handle empty string for trigger level and delay
-            trigger_level_text = self.trigger_level_edit.text().strip()
-            trigger_delay_text = self.trigger_delay_edit.text().strip()
+                # Handle empty string for trigger level and delay
+                trigger_level_text = self.trigger_level_edit.text().strip()
+                trigger_delay_text = self.trigger_delay_edit.text().strip()
 
-            if not trigger_level_text:
-                trigger_level = 0
-            else:
-                try:
-                    trigger_level = float(trigger_level_text)
-                except ValueError:
-                    logging.error(f"Invalid trigger level value: {trigger_level_text}")
-                    self.handle_error(f"Invalid trigger level value: {trigger_level_text}")
-                    return
+                if not trigger_level_text:
+                    trigger_level = 0
+                else:
+                    try:
+                        trigger_level = float(trigger_level_text)
+                        print(trigger_level)
+                    except ValueError:
+                        logging.error(
+                            f"Invalid trigger level value: {trigger_level_text}"
+                        )
+                        self.handle_error(
+                            f"Invalid trigger level value: {trigger_level_text}"
+                        )
+                        return
 
-            if not trigger_delay_text:
-                trigger_delay = 0
-            else:
-                try:
-                    trigger_delay = int(trigger_delay_text)
-                except ValueError:
-                    logging.error(f"Invalid trigger delay value: {trigger_delay_text}")
-                    self.handle_error(f"Invalid trigger delay value: {trigger_delay_text}")
-                    return
+                if not trigger_delay_text:
+                    trigger_delay = 0
+                else:
+                    try:
+                        trigger_delay = int(trigger_delay_text)
+                    except ValueError:
+                        logging.error(
+                            f"Invalid trigger delay value: {trigger_delay_text}"
+                        )
+                        self.handle_error(
+                            f"Invalid trigger delay value: {trigger_delay_text}"
+                        )
+                        return
 
-            trigger_edge = 0 if self.trigger_edge_combo.currentText() == "Rising" else 1
-            trigger_mode = 0 if self.trigger_mode_combo.currentText() == "Auto" else 1
+                trigger_edge = (
+                    0 if self.trigger_edge_combo.currentText() == "Rising" else 1
+                )
+                trigger_mode = (
+                    0 if self.trigger_mode_combo.currentText() == "Auto" else 1
+                )
 
-            trigger_config = TriggerConfig(
-                variable=variable,
-                trigger_level=trigger_level,
-                trigger_mode=trigger_mode,
-                trigger_delay=trigger_delay,
-                trigger_edge=trigger_edge,
-            )
-            self.x2cscope.set_scope_trigger(trigger_config)
-            logging.info("Trigger configured.")
+                trigger_config = TriggerConfig(
+                    variable=variable,
+                    trigger_level=trigger_level,
+                    trigger_mode=trigger_mode,
+                    trigger_delay=trigger_delay,
+                    trigger_edge=trigger_edge,
+                )
+                self.x2cscope.set_scope_trigger(trigger_config)
+                logging.info("Trigger configured.")
         except Exception as e:
             error_message = f"Error configuring trigger: {e}"
             logging.error(error_message)
@@ -1118,41 +1357,45 @@ class X2cscopeGui(QMainWindow):
     def sample_scope_data(self, single_shot=False):
         """Sample the scope data."""
         try:
-            plt.ion()  # Turn on interactive mode
-            self.fig, self.ax = plt.subplots()
-
             while self.sampling_active:
                 if self.x2cscope.is_scope_data_ready():
                     logging.info("Scope data is ready.")
 
                     data_storage = {}
-                    for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
+                    for channel, data in self.x2cscope.get_scope_channel_data(
+                        valid_data=False
+                    ).items():
                         data_storage[channel] = data
 
-                    self.ax.clear()
-                    for channel, data in data_storage.items():
-                        time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
-                        self.ax.plot(time_values, data, label=f"Channel {channel}")
+                    self.scope_plot_widget.clear()
+                    for i, (channel, data) in enumerate(data_storage.items()):
+                        if self.scope_channel_checkboxes[
+                            i
+                        ].isChecked():  # Check if the channel is enabled
+                            time_values = np.array(
+                                [j * 0.001 for j in range(len(data))], dtype=float
+                            )  # milliseconds
+                            data_scaled = np.array(data, dtype=float)
+                            self.scope_plot_widget.plot(
+                                time_values,
+                                data_scaled,
+                                pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                                name=f"Channel {channel}",
+                            )
 
-                    self.ax.set_xlabel("Time (ms)")
-                    self.ax.set_ylabel("Value")
-                    self.ax.set_title("Live Plot of Scope Data")
-                    self.ax.legend()
-
-                    plt.pause(0.001)  # Add a short pause to update the plot
+                    self.scope_plot_widget.setLabel("left", "Value")
+                    self.scope_plot_widget.setLabel("bottom", "Time", units="ms")
+                    self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
 
                     if single_shot:
                         break
 
                     self.x2cscope.request_scope_data()
+                    logging.debug("Requested next scope data.")
 
-                if not plt.fignum_exists(self.fig.number):
-                    break
+                QApplication.processEvents()  # Keep the GUI responsive
 
                 time.sleep(0.1)
-
-            plt.ioff()  # Turn off interactive mode after the loop
-            plt.show()
 
             self.sampling_active = False
             self.scope_sample_button.setText("Sample")

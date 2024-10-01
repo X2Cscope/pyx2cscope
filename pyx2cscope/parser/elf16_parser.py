@@ -9,7 +9,6 @@ Usage:
     print(variable_map)
 """
 
-import logging
 import os.path
 import re
 import subprocess
@@ -39,13 +38,26 @@ class Elf16Parser(ElfParser):
         elf_path (str): Path to the input ELF file.
 
         Raises:
-        ValueError: If the XC16 compiler is not found on the system path.
+        ValueError: If the XC16 compiler is not found in the local directory or on the system path.
         """
-        self.xc16_read_elf_path = which("xc16-readelf")
-        if self.xc16_read_elf_path is None or not os.path.exists(
-            self.xc16_read_elf_path
-        ):
-            raise ValueError("XC16 compiler not found. Is it listed on PATH?")
+        # Check if the xc16-readelf executable exists in the current directory
+        local_readelf = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "xc16-readelf"
+        )
+
+        # Checking if the xc16-readelf executable exists in the same directory as the script or executable
+        if os.path.exists(local_readelf):
+            self.xc16_read_elf_path = local_readelf
+        else:
+            # Fallback to checking if xc16-readelf is on the system path
+            self.xc16_read_elf_path = which("xc16-readelf")
+            if self.xc16_read_elf_path is None or not os.path.exists(
+                self.xc16_read_elf_path
+            ):
+                raise ValueError(
+                    "XC16 compiler not found. Ensure xc16-readelf is in the same folder or listed on PATH."
+                )
+
         super().__init__(elf_path)
         self.tree_string = None
         self.next_line = None
@@ -485,7 +497,16 @@ class Elf16Parser(ElfParser):
                 end_die = self._locate_tag_variable_end_die(die)
                 if end_die is None:
                     continue
-                address = self._get_address_location(die.get("DW_AT_location"))
+                address = None
+                if "DW_AT_location" in die:
+                    address = self._get_address_location(die.get("DW_AT_location"))
+                # else:
+                #     # Check symbol table if DW_AT_location is not present
+                #     address = self.symbol_table.get(die["DW_AT_name"], None)
+
+                if address is None:
+                    continue  # Skip variables without an address
+
                 if not self._check_for_pointer_tag(
                     die, end_die, address
                 ) and not self._check_for_structure_tag(die, end_die, address):
@@ -503,7 +524,7 @@ class Elf16Parser(ElfParser):
 if __name__ == "__main__":
     # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ZSMT-42BLF02-MCLV2-33ck256mp508.X\dist\default\production\ZSMT-42BLF02-MCLV2-33ck256mp508.X.production.elf"
     elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-    logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
+    # logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
     print(variable_map)

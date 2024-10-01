@@ -11,6 +11,7 @@ BIT_LENGTH_32 = 32
 
 class SerialStub:
     """Fakes a serial connection for 16 and 32 bit devices."""
+
     def __init__(self):
         """Constructor of the SerialStub class.
 
@@ -86,4 +87,6 @@ def fake_serial(mocker, uc_width=BIT_LENGTH_16):
     elif uc_width == BIT_LENGTH_32:
         mocker.patch.object(LNetSerial, "read", serial_stub.lnet_serial_read32)
     else:
-        raise ValueError("Mocker fake_serial: wrong uC width! should be either 16 or 32 bits")
+        raise ValueError(
+            "Mocker fake_serial: wrong uC width! should be either 16 or 32 bits"
+        )

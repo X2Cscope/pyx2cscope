@@ -1,5 +1,6 @@
 """This module is for all the different GUI."""
 
+
 def execute_qt(*args, **kwargs):
     """Execute the default Qt GUI interface.
 
@@ -10,8 +11,10 @@ def execute_qt(*args, **kwargs):
     :return:
     """
     import sys
+
     from PyQt5.QtWidgets import QApplication
-    from pyx2cscope.gui.watchView.minimal_gui import X2cscopeGui
+
+    from pyx2cscope.gui.generic_gui.generic_gui import X2cscopeGui
 
     # QApplication expects the first argument to be the program name.
     qt_args = sys.argv[:1] + args[0]
@@ -33,4 +36,5 @@ def execute_web(*args, **kwargs):
         **kwargs: keyed arguments related to the web server. See parse_arguments function documentations.
     """
     from pyx2cscope.gui.web import app
+
     app.main(*args, **kwargs)

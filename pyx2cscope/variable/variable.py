@@ -129,7 +129,7 @@ class Variable:
             i += size_to_read
         # split chunk_data into data_type sized groups
         chunk_data = [
-            chunk_data[j: j + data_type] for j in range(0, len(chunk_data), data_type)
+            chunk_data[j : j + data_type] for j in range(0, len(chunk_data), data_type)
         ]
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
@@ -490,6 +490,7 @@ class VariableInt16(Variable):
 
 class VariableUint16(Variable):
     """Represents a 16-bit unsigned integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 16-bit unsigned integer.
 
@@ -555,6 +556,7 @@ class VariableUint16(Variable):
 
 class VariableInt32(Variable):
     """Represents a 32-bit signed integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 32-bit signed integer.
 
@@ -620,6 +622,7 @@ class VariableInt32(Variable):
 
 class VariableUint32(Variable):
     """Represents a 32-bit unsigned integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 32-bit unsigned integer.
 
@@ -682,6 +685,7 @@ class VariableUint32(Variable):
 
 class VariableUint64(Variable):
     """Represents a 64-bit unsigned integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 64-bit unsigned integer.
 
@@ -743,6 +747,7 @@ class VariableUint64(Variable):
 
 class VariableInt64(Variable):
     """Represents a 64-bit signed integer variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 64-bit signed integer.
 
@@ -807,6 +812,7 @@ class VariableInt64(Variable):
 
 class VariableFloat(Variable):
     """Represents a 32-bit floating point variable in the MCU data memory."""
+
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 32-bit floating point.
 
@@ -861,4 +867,5 @@ class VariableFloat(Variable):
         Returns:
             Number: The 32-bit floating point value.
         """
-        return struct.unpack("f", data)[0]
+        data = bytearray(data)
+        return struct.unpack("<f", data)[0]

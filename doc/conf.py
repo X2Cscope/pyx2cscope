@@ -6,6 +6,7 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 -- Project information -----------------------------------------------------
 https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 """
+
 import os
 import sys
 
@@ -42,7 +43,9 @@ autoapi_ignore = [
     "*/gui/*",  # For now, we ignore this, TODO: fix this
 ]
 
-suppress_warnings = ["autoapi.python_import_resolution"]  # Suppress warnings about unresolved imports TODO: fix this
+suppress_warnings = [
+    "autoapi.python_import_resolution"
+]  # Suppress warnings about unresolved imports TODO: fix this
 
 nitpick_ignore = [
     ("py:class", "numbers.Number"),
@@ -77,4 +80,3 @@ autosummary_generate = True
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
-

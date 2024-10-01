@@ -4,7 +4,6 @@ import logging
 import time
 
 from pyx2cscope.utils import get_com_port, get_elf_file_path
-
 from pyx2cscope.x2cscope import X2CScope
 
 # Configuration for serial port communication

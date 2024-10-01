@@ -23,7 +23,7 @@ set_logger(logging.INFO)
 
 def index():
     """Web X2CScope url entry point. Calling the page {url_server} will render the web X2CScope view page."""
-    return render_template('index.html', title="pyX2Cscope")
+    return render_template("index.html", title="pyX2Cscope")
 
 
 def list_serial_ports():
@@ -40,9 +40,9 @@ def connect():
 
     call {server_url}/connect to execute.
     """
-    uart = request.form.get('uart')
-    elf_file = request.files.get('elfFile')
-    if "default" not in uart and elf_file and elf_file.filename.endswith('.elf'):
+    uart = request.form.get("uart")
+    elf_file = request.files.get("elfFile")
+    if "default" not in uart and elf_file and elf_file.filename.endswith(".elf"):
         web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
         if not os.path.exists(web_lib_path):
             os.makedirs(web_lib_path)
@@ -81,9 +81,13 @@ def variables_autocomplete():
     Receiving at least 3 letters, the function will search on pyX2Cscope parsed variables to find similar matches,
     returning a list of possible candidates. Access this function over {server_url}/variables.
     """
-    query = request.args.get('q', '')
+    query = request.args.get("q", "")
     x2c = get_x2c()
-    items = [{"id": var, "text": var} for var in x2c.list_variables() if query.lower() in var.lower()]
+    items = [
+        {"id": var, "text": var}
+        for var in x2c.list_variables()
+        if query.lower() in var.lower()
+    ]
     return jsonify({"items": items})
 
 
@@ -119,16 +123,18 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
         **kwargs: additional keyed arguments supplied on program call.
     """
     app = create_app()
-    app.register_blueprint(watch_view, url_prefix='/watch-view')
-    app.register_blueprint(scope_view, url_prefix='/scope-view')
+    app.register_blueprint(watch_view, url_prefix="/watch-view")
+    app.register_blueprint(scope_view, url_prefix="/scope-view")
 
-    app.add_url_rule('/', view_func=index)
-    app.add_url_rule('/serial-ports', view_func=list_serial_ports)
-    app.add_url_rule('/connect', view_func=connect, methods=['POST'])
-    app.add_url_rule('/disconnect', view_func=disconnect)
-    app.add_url_rule('/is-connected', view_func=is_connected)
-    app.add_url_rule('/variables', view_func=variables_autocomplete, methods=["POST", "GET"])
-    app.add_url_rule('/variables/all', get_variables, methods=["POST", "GET"])
+    app.add_url_rule("/", view_func=index)
+    app.add_url_rule("/serial-ports", view_func=list_serial_ports)
+    app.add_url_rule("/connect", view_func=connect, methods=["POST"])
+    app.add_url_rule("/disconnect", view_func=disconnect)
+    app.add_url_rule("/is-connected", view_func=is_connected)
+    app.add_url_rule(
+        "/variables", view_func=variables_autocomplete, methods=["POST", "GET"]
+    )
+    app.add_url_rule("/variables/all", get_variables, methods=["POST", "GET"])
 
     log_level = kwargs["log_level"] if "log_level" in kwargs else "ERROR"
     app.logger.setLevel(log_level)
@@ -143,11 +149,16 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
 
     if new:
         Timer(1, open_browser, None, {"web_port": web_port}).start()
-    print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(web_port))
+    print(
+        "Listening at http://"
+        + ("localhost" if host == "0.0.0.0" else host)
+        + ":"
+        + str(web_port)
+    )
     if host == "0.0.0.0":
         print("Server is open for external requests!")
     app.run(debug=False, host=host, port=web_port)
 
-if __name__ == '__main__':
-    main(new=True, host="0.0.0.0")
 
+if __name__ == "__main__":
+    main(new=True, host="0.0.0.0")

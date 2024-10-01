@@ -9,12 +9,14 @@ import logging
 import time
 
 import matplotlib.pyplot as plt
-from pyx2cscope.utils import get_com_port, get_elf_file_path
-from pyx2cscope import set_logger
 
+from pyx2cscope import set_logger
+from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
 
-set_logger(logging.INFO, )# This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
+set_logger(
+    logging.INFO,
+)  # This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
 logging.basicConfig(
     level=logging.INFO,
     filename=__file__ + ".log",
@@ -103,9 +105,9 @@ with open(csv_file_path, mode="w", newline="") as file:
     writer.writeheader()
     for i in range(max_length):
         row = {
-            channel: data_storage[channel][i]
-            if i < len(data_storage[channel])
-            else None
+            channel: (
+                data_storage[channel][i] if i < len(data_storage[channel]) else None
+            )
             for channel in data_storage
         }
         writer.writerow(row)

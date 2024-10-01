@@ -119,7 +119,7 @@ See the section examples to check some of the usages you may get by pyX2Cscope.
    :caption: Contents:
 
    how_to
-   HW_Support
+   FW_Support
    example
 
 Indices and tables
