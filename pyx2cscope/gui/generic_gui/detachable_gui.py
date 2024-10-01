@@ -99,6 +99,9 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
+        self.initi_variables()
+    def initi_variables(self):
+        """Some extra variables define."""
         self.selected_var_indices = [
             0,
             0,
@@ -262,101 +265,16 @@ class X2cscopeGui(QMainWindow):
     def setup_tab2(self):
         """Set up the second tab with the scope functionality."""
         self.tab2.layout = QVBoxLayout()
-
         self.tab2.setLayout(self.tab2.layout)
 
         main_grid_layout = QGridLayout()
         self.tab2.layout.addLayout(main_grid_layout)
 
-        # Trigger Configuration Group Box
-        trigger_group = QGroupBox("Trigger Configuration")
-        trigger_layout = QVBoxLayout()
-        trigger_group.setLayout(trigger_layout)
-
-        grid_layout_trigger = QGridLayout()
-        trigger_layout.addLayout(grid_layout_trigger)
-
-        self.single_shot_checkbox = QCheckBox("Single Shot")  # Add Single Shot checkbox
-        self.sample_time_factor = QLineEdit("1")
-        self.sample_time_factor.setValidator(self.decimal_validator)
-        self.trigger_mode_combo = QComboBox()
-        self.trigger_mode_combo.addItems(["Auto", "Triggered"])
-        self.trigger_edge_combo = QComboBox()
-        self.trigger_edge_combo.addItems(["Rising", "Falling"])
-        self.trigger_level_edit = QLineEdit()
-        self.trigger_level_edit.setValidator(self.decimal_validator)
-        self.trigger_delay_edit = QLineEdit()
-        self.trigger_delay_edit.setValidator(self.decimal_validator)
-
-        self.scope_sample_button = QPushButton("Sample")
-        self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
-        self.scope_sample_button.clicked.connect(self.start_sampling)
-
-        grid_layout_trigger.addWidget(
-            self.single_shot_checkbox, 0, 0, 1, 2
-        )  # Add the Single Shot checkbox to the layout
-        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
-        grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 2, 0)
-        grid_layout_trigger.addWidget(self.trigger_mode_combo, 2, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 3, 0)
-        grid_layout_trigger.addWidget(self.trigger_edge_combo, 3, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 4, 0)
-        grid_layout_trigger.addWidget(self.trigger_level_edit, 4, 1)
-        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 5, 0)
-        grid_layout_trigger.addWidget(self.trigger_delay_edit, 5, 1)
-        grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0)
-
-        # Variable Selection Group Box
-        variable_group = QGroupBox("Variable Selection")
-        variable_layout = QVBoxLayout()
-        variable_group.setLayout(variable_layout)
-
-        grid_layout_variable = QGridLayout()
-        variable_layout.addLayout(grid_layout_variable)
-
-        self.scope_var_combos = [QComboBox() for _ in range(7)]
-        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
-        self.scope_channel_checkboxes = [
-            QCheckBox() for _ in range(7)
-        ]  # Add checkboxes for each channel
-
-        for checkbox in self.scope_channel_checkboxes:
-            checkbox.setChecked(True)  # Check all checkboxes by default
-
-        # Add "Select Variable" label
-        grid_layout_variable.addWidget(QLabel("Select Variable"), 0, 1)
-
-        # Add "Trigger" and "Show" labels spanning across multiple columns
-        trigger_label = QLabel("Trigger")
-        trigger_label.setAlignment(Qt.AlignCenter)  # Center align the label
-        grid_layout_variable.addWidget(trigger_label, 0, 0)
-
-        show_label = QLabel("Show")
-        show_label.setAlignment(Qt.AlignCenter)  # Center align the label
-        grid_layout_variable.addWidget(show_label, 0, 2)
-
-        for i, (combo, trigger_checkbox, show_checkbox) in enumerate(
-            zip(
-                self.scope_var_combos,
-                self.trigger_var_checkbox,
-                self.scope_channel_checkboxes,
-            )
-        ):
-            combo.setMinimumHeight(20)
-            trigger_checkbox.setMinimumHeight(20)
-            show_checkbox.setMinimumHeight(
-                20
-            )  # Set minimum height for channel checkboxes
-            combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
-            grid_layout_variable.addWidget(combo, i + 1, 1)
-            grid_layout_variable.addWidget(
-                show_checkbox, i + 1, 2
-            )  # Add channel checkboxes to layout
-            trigger_checkbox.stateChanged.connect(
-                lambda state, x=i: self.handle_scope_checkbox_change(state, x)
-            )
+        # Set up individual components
+        trigger_group = self.create_trigger_configuration_group()
+        variable_group = self.create_variable_selection_group()
+        self.scope_plot_widget = self.create_scope_plot_widget()
+        button_layout = self.create_save_load_buttons()
 
         # Add the group boxes to the main layout with stretch factors
         main_grid_layout.addWidget(trigger_group, 0, 0)
@@ -367,11 +285,137 @@ class X2cscopeGui(QMainWindow):
         main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
 
         # Add the plot widget for scope view
-        self.scope_plot_widget = pg.PlotWidget(title="Scope Plot")
-        self.scope_plot_widget.setBackground("w")
-        self.scope_plot_widget.addLegend()  # Add legend to the plot widget
-        self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
         self.tab2.layout.addWidget(self.scope_plot_widget)
+
+        # Add Save and Load buttons
+        self.tab2.layout.addLayout(button_layout)
+
+    def create_trigger_configuration_group(self):
+        """Create the trigger configuration group box."""
+        trigger_group = QGroupBox("Trigger Configuration")
+        trigger_layout = QVBoxLayout()
+        trigger_group.setLayout(trigger_layout)
+
+        grid_layout_trigger = QGridLayout()
+        trigger_layout.addLayout(grid_layout_trigger)
+
+        self.single_shot_checkbox = QCheckBox("Single Shot")
+        self.sample_time_factor = QLineEdit("1")
+        self.sample_time_factor.setValidator(self.decimal_validator)
+        self.trigger_mode_combo = QComboBox()
+        self.trigger_mode_combo.addItems(["Auto", "Triggered"])
+        self.trigger_edge_combo = QComboBox()
+        self.trigger_edge_combo.addItems(["Rising", "Falling"])
+        self.trigger_level_edit = QLineEdit("0")
+        self.trigger_level_edit.setValidator(self.decimal_validator)
+        self.trigger_delay_edit = QLineEdit("0")
+        self.trigger_delay_edit.setValidator(self.decimal_validator)
+
+        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        self.scope_sampletime_edit.setValidator(self.decimal_validator)
+
+        # Total Time
+        self.total_time_label = QLabel("Total Time (ms):")
+        self.total_time_value = QLineEdit("0")
+        self.total_time_value.setReadOnly(True)
+
+        self.scope_sample_button = QPushButton("Sample")
+        self.scope_sample_button.setFixedSize(100, 30)
+        self.scope_sample_button.clicked.connect(self.start_sampling)
+
+        # Arrange widgets in grid layout
+        grid_layout_trigger.addWidget(self.single_shot_checkbox, 0, 0, 1, 2)
+        grid_layout_trigger.addWidget(QLabel("Sample Time Factor"), 1, 0)
+        grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
+        grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 2, 0)
+        grid_layout_trigger.addWidget(self.scope_sampletime_edit, 2, 1)
+        grid_layout_trigger.addWidget(self.total_time_label, 3, 0)
+        grid_layout_trigger.addWidget(self.total_time_value, 3, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 4, 0)
+        grid_layout_trigger.addWidget(self.trigger_mode_combo, 4, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Edge:"), 5, 0)
+        grid_layout_trigger.addWidget(self.trigger_edge_combo, 5, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Level:"), 6, 0)
+        grid_layout_trigger.addWidget(self.trigger_level_edit, 6, 1)
+        grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 7, 0)
+        grid_layout_trigger.addWidget(self.trigger_delay_edit, 7, 1)
+        grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0, 1, 2)
+
+        return trigger_group
+
+    def create_variable_selection_group(self):
+        """Create the variable selection group box."""
+        variable_group = QGroupBox("Variable Selection")
+        variable_layout = QVBoxLayout()
+        variable_group.setLayout(variable_layout)
+
+        grid_layout_variable = QGridLayout()
+        variable_layout.addLayout(grid_layout_variable)
+
+        self.scope_var_lines = [QLineEdit() for _ in range(7)]
+        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]
+
+        for checkbox in self.scope_channel_checkboxes:
+            checkbox.setChecked(True)
+
+        for line_edit in self.scope_var_lines:
+            line_edit.setReadOnly(True)
+            line_edit.setPlaceholderText("Search Variable")
+            line_edit.installEventFilter(self)
+
+        # Add "Search Variable" label
+        grid_layout_variable.addWidget(QLabel("Search Variable"), 0, 1)
+        grid_layout_variable.addWidget(QLabel("Trigger"), 0, 0)
+        grid_layout_variable.addWidget(QLabel("Gain"), 0, 2)
+        grid_layout_variable.addWidget(QLabel("Visible"), 0, 3)
+
+        for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
+                zip(self.scope_var_lines, self.trigger_var_checkbox, self.scope_scaling_boxes,
+                    self.scope_channel_checkboxes)):
+            line_edit.setMinimumHeight(20)
+            trigger_checkbox.setMinimumHeight(20)
+            show_checkbox.setMinimumHeight(20)
+            scale_box.setMinimumHeight(20)
+            scale_box.setFixedSize(50, 20)
+            scale_box.setValidator(self.decimal_validator)
+
+            line_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
+            grid_layout_variable.addWidget(line_edit, i + 1, 1)
+            grid_layout_variable.addWidget(scale_box, i + 1, 2)
+            grid_layout_variable.addWidget(show_checkbox, i + 1, 3)
+
+            trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
+            scale_box.editingFinished.connect(self.update_scope_plot)
+            show_checkbox.stateChanged.connect(self.update_scope_plot)
+
+        return variable_group
+
+    def create_scope_plot_widget(self):
+        """Create the scope plot widget."""
+        scope_plot_widget = pg.PlotWidget(title="Scope Plot")
+        scope_plot_widget.setBackground("w")
+        scope_plot_widget.addLegend()
+        scope_plot_widget.showGrid(x=True, y=True)
+        scope_plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
+
+        return scope_plot_widget
+
+    def create_save_load_buttons(self):
+        """Create the save and load buttons."""
+        self.save_button_scope = QPushButton("Save Config")
+        self.load_button_scope = QPushButton("Load Config")
+        self.save_button_scope.setFixedSize(100, 30)
+        self.load_button_scope.setFixedSize(100, 30)
+
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.save_button_scope)
+        button_layout.addWidget(self.load_button_scope)
+
+        return button_layout
 
     def handle_scope_checkbox_change(self, state, index):
         """Handle the change in the state of the scope view checkboxes."""
@@ -845,6 +889,56 @@ class X2cscopeGui(QMainWindow):
                 self.plot_window_open = True
         except Exception as e:
             logging.error(e)
+
+    def update_scope_plot(self):
+        """Updates the plot in the ScopeView tab with new data and scaling."""
+        try:
+            if not self.sampling_active:
+                return
+
+            if not self.x2cscope.is_scope_data_ready():
+                return
+
+            data_storage = {}
+            for channel, data in self.x2cscope.get_scope_channel_data().items():
+                data_storage[channel] = data
+
+            self.scope_plot_widget.clear()
+
+            for i, (channel, data) in enumerate(data_storage.items()):
+                checkbox_state = self.scope_channel_checkboxes[i].isChecked()
+                logging.debug(
+                    f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}"
+                )
+                if checkbox_state:  # Check if the checkbox is checked
+                    scale_factor = float(
+                        self.scope_scaling_boxes[i].text()
+                    )  # Get the scaling factor
+                    # time_values = self.real_sampletime  # Generate time values in ms
+                    # start = self.real_sampletime / len(data)
+                    start = 0
+                    time_values = np.linspace(start, self.real_sampletime, len(data))
+                    data_scaled = (
+                            np.array(data, dtype=float) * scale_factor
+                    )  # Apply the scaling factor
+                    self.scope_plot_widget.plot(
+                        time_values,
+                        data_scaled,
+                        pen=pg.mkPen(color=self.plot_colors[i], width=2),
+                        name=f"Channel {channel}",
+                    )
+                    logging.debug(
+                        f"Plotting channel {channel} with color {self.plot_colors[i]}"
+                    )
+                else:
+                    logging.debug(f"Not plotting channel {channel}")
+            self.scope_plot_widget.setLabel("left", "Value")
+            self.scope_plot_widget.setLabel("bottom", "Time", units="ms")
+            self.scope_plot_widget.showGrid(x=True, y=True)
+        except Exception as e:
+            error_message = f"Error updating scope plot: {e}"
+            logging.error(error_message)
+            self.handle_error(error_message)
 
     def handle_error(self, error_message: str):
         """Displays an error message in a message box.

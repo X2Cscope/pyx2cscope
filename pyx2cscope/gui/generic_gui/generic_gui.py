@@ -51,10 +51,15 @@ matplotlib.use("QtAgg")  # This sets the backend to Qt for Matplotlib
 
 
 class VariableSelectionDialog(QDialog):
-    """Dialog for selecting a variable from a list with search functionality."""
+    """Initialize the variable selection dialog.
+
+    Args:
+        variables (list): A list of available variables to select from.
+        parent (QWidget): The parent widget.
+    """
 
     def __init__(self, variables, parent=None):
-        """Initialising variable selection dialog."""
+        """Set up the user interface components for the variable selection dialog."""
         super().__init__(parent)
         self.variables = variables
         self.selected_variable = None
@@ -88,7 +93,11 @@ class VariableSelectionDialog(QDialog):
         self.setLayout(self.layout)
 
     def filter_variables(self, text):
-        """Setting variable alphabetical."""
+        """Filter the variables based on user input in the search bar.
+
+        Args:
+            text (str): The input text to filter variables.
+        """
         self.variable_list.clear()
         filtered_variables = [
             var for var in self.variables if text.lower() in var.lower()
@@ -96,7 +105,10 @@ class VariableSelectionDialog(QDialog):
         self.variable_list.addItems(filtered_variables)
 
     def accept_selection(self):
-        """Once selected by the user, the variable will be set to the respective combo box."""
+        """Accept the selection when a variable is chosen from the list.
+
+        The selected variable is set as the `selected_variable` and the dialog is accepted.
+        """
         selected_items = self.variable_list.selectedItems()
         if selected_items:
             self.selected_variable = selected_items[0].text()
@@ -125,6 +137,7 @@ class X2cscopeGui(QMainWindow):
 
     def initialize_variables(self):
         """Initialize instance variables."""
+        self.timeout= 5
         self.sampling_active = False
         self.scaling_edits_tab3 = []  # Track scaling fields for Tab 3
         self.offset_edits_tab3 = []  # Track offset fields for Tab 3
@@ -143,14 +156,6 @@ class X2cscopeGui(QMainWindow):
         self.ser = None
         self.timerValue = 500
         self.port_combo = QComboBox()
-        self.device_info_labels = {
-            "processor_id": QLabel("Loading Processor ID ..."),
-            "uc_width": QLabel("Loading UC Width..."),
-            "date": QLabel("Loading Date..."),
-            "time": QLabel("Loading Time..."),
-            "appVer": QLabel("Loading App Version..."),
-            "dsp_state": QLabel("Loading DSP State..."),
-        }
         self.layout = None
         self.slider_var1 = QSlider(Qt.Horizontal)
         self.plot_button = QPushButton("Plot")
@@ -180,6 +185,18 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
+        self.initi_variables()
+
+    def initi_variables(self):
+        """Some variable initialisation."""
+        self.device_info_labels = {
+            "processor_id": QLabel("Loading Processor ID ..."),
+            "uc_width": QLabel("Loading UC Width..."),
+            "date": QLabel("Loading Date..."),
+            "time": QLabel("Loading Time..."),
+            "appVer": QLabel("Loading App Version..."),
+            "dsp_state": QLabel("Loading DSP State..."),
+        }
         self.selected_var_indices = [
             0,
             0,
@@ -389,7 +406,28 @@ class X2cscopeGui(QMainWindow):
         main_grid_layout = QGridLayout()
         self.tab2.layout.addLayout(main_grid_layout)
 
-        # Trigger Configuration Group Box
+        # Set up individual components
+        trigger_group = self.create_trigger_configuration_group()
+        variable_group = self.create_variable_selection_group()
+        self.scope_plot_widget = self.create_scope_plot_widget()
+        button_layout = self.create_save_load_buttons()
+
+        # Add the group boxes to the main layout with stretch factors
+        main_grid_layout.addWidget(trigger_group, 0, 0)
+        main_grid_layout.addWidget(variable_group, 0, 1)
+
+        # Set the column stretch factors to make the variable group larger
+        main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
+        main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
+
+        # Add the plot widget for scope view
+        self.tab2.layout.addWidget(self.scope_plot_widget)
+
+        # Add Save and Load buttons
+        self.tab2.layout.addLayout(button_layout)
+
+    def create_trigger_configuration_group(self):
+        """Create the trigger configuration group box."""
         trigger_group = QGroupBox("Trigger Configuration")
         trigger_layout = QVBoxLayout()
         trigger_group.setLayout(trigger_layout)
@@ -397,7 +435,7 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger = QGridLayout()
         trigger_layout.addLayout(grid_layout_trigger)
 
-        self.single_shot_checkbox = QCheckBox("Single Shot")  # Add Single Shot checkbox
+        self.single_shot_checkbox = QCheckBox("Single Shot")
         self.sample_time_factor = QLineEdit("1")
         self.sample_time_factor.setValidator(self.decimal_validator)
         self.trigger_mode_combo = QComboBox()
@@ -409,20 +447,16 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
-        self.scope_sampletime_edit = QLineEdit(
-            "50"
-        )  # Default sample time in microseconds
-        self.scope_sampletime_edit.setValidator(
-            self.decimal_validator
-        )  # Only allow numeric input
+        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
+        self.scope_sampletime_edit.setValidator(self.decimal_validator)
 
-        # Add a new label and line edit for Total Time
+        # Total Time
         self.total_time_label = QLabel("Total Time (ms):")
         self.total_time_value = QLineEdit("0")
         self.total_time_value.setReadOnly(True)
 
         self.scope_sample_button = QPushButton("Sample")
-        self.scope_sample_button.setFixedSize(100, 30)  # Set the button size
+        self.scope_sample_button.setFixedSize(100, 30)
         self.scope_sample_button.clicked.connect(self.start_sampling)
 
         # Arrange widgets in grid layout
@@ -431,7 +465,6 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger.addWidget(self.sample_time_factor, 1, 1)
         grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 2, 0)
         grid_layout_trigger.addWidget(self.scope_sampletime_edit, 2, 1)
-        # Add Total Time label and value
         grid_layout_trigger.addWidget(self.total_time_label, 3, 0)
         grid_layout_trigger.addWidget(self.total_time_value, 3, 1)
         grid_layout_trigger.addWidget(QLabel("Trigger Mode:"), 4, 0)
@@ -442,10 +475,12 @@ class X2cscopeGui(QMainWindow):
         grid_layout_trigger.addWidget(self.trigger_level_edit, 6, 1)
         grid_layout_trigger.addWidget(QLabel("Trigger Delay:"), 7, 0)
         grid_layout_trigger.addWidget(self.trigger_delay_edit, 7, 1)
-
         grid_layout_trigger.addWidget(self.scope_sample_button, 8, 0, 1, 2)
 
-        # Variable Selection Group Box
+        return trigger_group
+
+    def create_variable_selection_group(self):
+        """Create the variable selection group box."""
         variable_group = QGroupBox("Variable Selection")
         variable_layout = QVBoxLayout()
         variable_group.setLayout(variable_layout)
@@ -455,15 +490,11 @@ class X2cscopeGui(QMainWindow):
 
         self.scope_var_lines = [QLineEdit() for _ in range(7)]
         self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
-        self.scope_channel_checkboxes = [
-            QCheckBox() for _ in range(7)
-        ]  # Add checkboxes for each channel
-        self.scope_scaling_boxes = [
-            QLineEdit("1") for _ in range(7)
-        ]  # Add scaling boxes
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]
 
         for checkbox in self.scope_channel_checkboxes:
-            checkbox.setChecked(True)  # Check all checkboxes by default
+            checkbox.setChecked(True)
 
         for line_edit in self.scope_var_lines:
             line_edit.setReadOnly(True)
@@ -472,75 +503,44 @@ class X2cscopeGui(QMainWindow):
 
         # Add "Search Variable" label
         grid_layout_variable.addWidget(QLabel("Search Variable"), 0, 1)
-
-        # Add "Trigger", "Scale", and "Show" labels spanning across multiple columns
-        trigger_label = QLabel("Trigger")
-        trigger_label.setAlignment(Qt.AlignCenter)  # Center align the label
-        grid_layout_variable.addWidget(trigger_label, 0, 0)
-
-        scale_label = QLabel("Gain")  # Add a label for scaling
-        scale_label.setAlignment(Qt.AlignCenter)
-        grid_layout_variable.addWidget(scale_label, 0, 2)
-
-        show_label = QLabel("Visible")
-        show_label.setAlignment(Qt.AlignCenter)  # Center align the label
-        grid_layout_variable.addWidget(show_label, 0, 3)
+        grid_layout_variable.addWidget(QLabel("Trigger"), 0, 0)
+        grid_layout_variable.addWidget(QLabel("Gain"), 0, 2)
+        grid_layout_variable.addWidget(QLabel("Visible"), 0, 3)
 
         for i, (line_edit, trigger_checkbox, scale_box, show_checkbox) in enumerate(
-                zip(
-                    self.scope_var_lines,
-                    self.trigger_var_checkbox,
-                    self.scope_scaling_boxes,
-                    self.scope_channel_checkboxes,
-                )
-        ):
+                zip(self.scope_var_lines, self.trigger_var_checkbox, self.scope_scaling_boxes,
+                    self.scope_channel_checkboxes)):
             line_edit.setMinimumHeight(20)
             trigger_checkbox.setMinimumHeight(20)
-            show_checkbox.setMinimumHeight(
-                20
-            )  # Set minimum height for channel checkboxes
-            scale_box.setMinimumHeight(20)  # Set minimum height for scaling boxes
-            scale_box.setFixedSize(50, 20)  # Set fixed size for scaling boxes
-            scale_box.setValidator(self.decimal_validator)  # Validate as float
+            show_checkbox.setMinimumHeight(20)
+            scale_box.setMinimumHeight(20)
+            scale_box.setFixedSize(50, 20)
+            scale_box.setValidator(self.decimal_validator)
 
             line_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             grid_layout_variable.addWidget(trigger_checkbox, i + 1, 0)
             grid_layout_variable.addWidget(line_edit, i + 1, 1)
-            grid_layout_variable.addWidget(
-                scale_box, i + 1, 2
-            )  # Add scaling boxes to layout
-            grid_layout_variable.addWidget(
-                show_checkbox, i + 1, 3
-            )  # Add channel checkboxes to layout
+            grid_layout_variable.addWidget(scale_box, i + 1, 2)
+            grid_layout_variable.addWidget(show_checkbox, i + 1, 3)
 
-            trigger_checkbox.stateChanged.connect(
-                lambda state, x=i: self.handle_scope_checkbox_change(state, x)
-            )
-            scale_box.editingFinished.connect(
-                self.update_scope_plot
-            )  # Connect scaling box change to plot update
-            show_checkbox.stateChanged.connect(
-                self.update_scope_plot
-            )  # Connect the state change to update_scope_plot
+            trigger_checkbox.stateChanged.connect(lambda state, x=i: self.handle_scope_checkbox_change(state, x))
+            scale_box.editingFinished.connect(self.update_scope_plot)
+            show_checkbox.stateChanged.connect(self.update_scope_plot)
 
-        # Add the group boxes to the main layout with stretch factors
-        main_grid_layout.addWidget(trigger_group, 0, 0)
-        main_grid_layout.addWidget(variable_group, 0, 1)
+        return variable_group
 
-        # Set the column stretch factors to make the variable group larger
-        main_grid_layout.setColumnStretch(0, 1)  # Trigger configuration box
-        main_grid_layout.setColumnStretch(1, 3)  # Variable selection box
+    def create_scope_plot_widget(self):
+        """Create the scope plot widget."""
+        scope_plot_widget = pg.PlotWidget(title="Scope Plot")
+        scope_plot_widget.setBackground("w")
+        scope_plot_widget.addLegend()
+        scope_plot_widget.showGrid(x=True, y=True)
+        scope_plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
 
-        # Add the plot widget for scope view
-        self.scope_plot_widget = pg.PlotWidget(title="Scope Plot")
-        self.scope_plot_widget.setBackground("w")
-        self.scope_plot_widget.addLegend()  # Add legend to the plot widget
-        self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
-        # Change to 1-button zoom mode
-        self.scope_plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
-        self.tab2.layout.addWidget(self.scope_plot_widget)
+        return scope_plot_widget
 
-        # Add Save and Load buttons
+    def create_save_load_buttons(self):
+        """Create the save and load buttons."""
         self.save_button_scope = QPushButton("Save Config")
         self.load_button_scope = QPushButton("Load Config")
         self.save_button_scope.setFixedSize(100, 30)
@@ -551,7 +551,8 @@ class X2cscopeGui(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.save_button_scope)
         button_layout.addWidget(self.load_button_scope)
-        self.tab2.layout.addLayout(button_layout)
+
+        return button_layout
 
     def handle_scope_checkbox_change(self, state, index):
         """Handle the change in the state of the scope view checkboxes."""
@@ -1102,7 +1103,7 @@ class X2cscopeGui(QMainWindow):
         """Displays an error message in a message box with a cooldown period."""
         current_time = time.time()
         if self.last_error_time is None or (
-                current_time - self.last_error_time > 5
+                current_time - self.last_error_time >  self.timeout
         ):  # Cooldown period of 5 seconds
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("Error")
@@ -1739,124 +1740,165 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Error saving configuration: {e}")
 
     def load_config(self):
-        """Helps user load the pre-saved/configured config file."""
+        """Loads a pre-saved/configured config file and applies its settings to the application.
+
+        The method first prompts the user to select a configuration file. If a valid file is selected,
+        it parses the JSON contents and loads settings related to the general application configuration,
+        WatchView, ScopeView, and Tab 3. If an ELF file path is missing or incorrect, the user is prompted
+        to reselect it. If connection to a COM port fails, it attempts to connect to available ports.
+        """
         try:
-            file_path, _ = QFileDialog.getOpenFileName(
-                self, "Load Configuration", "", "JSON Files (*.json)"
-            )
+            file_path = self.prompt_for_file()
             if file_path:
-                with open(file_path, "r") as file:
-                    config = json.load(file)
-                    self.config_file_loaded = True
-                    config_port = config.get("com_port", "")
-                    self.baud_combo.setCurrentText(config.get("baud_rate", ""))
-
-                elf_file_path = config.get("elf_file", "")
-                if os.path.exists(elf_file_path):
-                    self.file_path = elf_file_path
-                    self.elf_file_loaded = True
-                else:
-                    QMessageBox.warning(
-                        self,
-                        "File Not Found",
-                        f"The ELF file {elf_file_path} does not exist.",
-                    )
-                    self.select_elf_file()  # Prompt to select a new ELF file if not found
-
-                # Attempt to connect to the specified port in the configuration
-                if not self.is_connected():
-                    if config_port in [port.device for port in serial.tools.list_ports.comports()]:
-                        self.port_combo.setCurrentText(config_port)
-                        if self.attempt_connection():
-                            logging.info(f"Connected to the specified port: {config_port}")
-
-                    # If the specified port is not available or connection fails, try other ports
-                    available_ports = [port.device for port in serial.tools.list_ports.comports()]
-                    for port in available_ports:
-                        self.port_combo.setCurrentText(port)
-                        if self.attempt_connection():
-                            logging.info(f"Connected to an alternative port: {port}")
-                            break
-                    else:
-                        # If all attempts fail, show a message to check connection
-                        QMessageBox.warning(
-                            self,
-                            "Connection Failed",
-                            "Could not connect to any available ports. Please check your connection.",
-                        )
-                    self.select_file_button.setText(QFileInfo(self.file_path).fileName())
-                    self.settings.setValue("file_path", self.file_path)
-
-                # Load WatchPlot configuration
-                watch_view = config.get("watch_view", {})
-                for le, var in zip(
-                        self.line_edit_boxes, watch_view.get("variables", [])
-                ):
-                    le.setText(var)
-                for ve, val in zip(self.Value_var_boxes, watch_view.get("values", [])):
-                    ve.setText(val)
-                for sc, scale in zip(self.scaling_boxes, watch_view.get("scaling", [])):
-                    sc.setText(scale)
-                for off, offset in zip(
-                        self.offset_boxes, watch_view.get("offsets", [])
-                ):
-                    off.setText(offset)
-                for cb, visible in zip(
-                        self.plot_checkboxes, watch_view.get("visible", [])
-                ):
-                    cb.setChecked(visible)
-                for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
-                    cb.setChecked(live)
-
-                # Load ScopeView configuration
-                scope_view = config.get("scope_view", {})
-                for le, var in zip(
-                        self.scope_var_lines, scope_view.get("variables", [])
-                ):
-                    le.setText(var)
-                for cb, trigger in zip(
-                        self.trigger_var_checkbox, scope_view.get("trigger", [])
-                ):
-                    cb.setChecked(trigger)
-                self.triggerVariable = scope_view.get("trigger_variable", "")
-                self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
-                self.trigger_delay_edit.setText(scope_view.get("trigger_delay", ""))
-                self.trigger_edge_combo.setCurrentText(
-                    scope_view.get("trigger_edge", "")
-                )
-                self.trigger_mode_combo.setCurrentText(
-                    scope_view.get("trigger_mode", "")
-                )
-                self.sample_time_factor.setText(
-                    scope_view.get("sample_time_factor", "")
-                )
-                self.single_shot_checkbox.setChecked(
-                    scope_view.get("single_shot", False)
-                )
-
-                self.clear_tab3()  # Assumed function to clear Tab 3
-                # Load configuration for Tab 3 WatchView
-                tab3_view = config.get("tab3_view", {})
-                for var, val, sc, off, sv, live in zip(
-                        tab3_view.get("variables", []),
-                        tab3_view.get("values", []),
-                        tab3_view.get("scaling", []),
-                        tab3_view.get("offsets", []),
-                        tab3_view.get("scaled_values", []),
-                        tab3_view.get("live", []),
-                ):
-                    self.add_variable_row()  # Add a new row
-                    self.variable_line_edits[-1].setText(var)
-                    self.value_line_edits[-1].setText(val)
-                    self.scaling_edits_tab3[-1].setText(sc)
-                    self.offset_edits_tab3[-1].setText(off)
-                    self.scaled_value_edits_tab3[-1].setText(sv)
-                    self.live_tab3[-1].setChecked(live)
-
-            logging.info(f"Configuration loaded from {file_path}")
+                config = self.load_json_file(file_path)
+                self.load_general_settings(config)
+                self.load_watch_view(config.get("watch_view", {}))
+                self.load_scope_view(config.get("scope_view", {}))
+                self.load_tab3_view(config.get("tab3_view", {}))
+                logging.info(f"Configuration loaded from {file_path}")
         except Exception as e:
             logging.error(f"Error loading configuration: {e}")
             self.handle_error(f"Error loading configuration: {e}")
+
+    def prompt_for_file(self):
+        """Prompts the user to select a configuration file through a file dialog.
+
+        :return: The file path selected by the user, or None if no file was selected.
+        """
+        file_path, _ = QFileDialog.getOpenFileName(self, "Load Configuration", "", "JSON Files (*.json)")
+        return file_path if file_path else None
+
+    def load_json_file(self, file_path):
+        """Loads a JSON file from the specified file path.
+
+        :param file_path: The path to the JSON configuration file.
+        :return: Parsed JSON content as a dictionary.
+        """
+        with open(file_path, "r") as file:
+            return json.load(file)
+
+    def load_general_settings(self, config):
+        """Loads general configuration settings such as COM port, baud rate, and ELF file path.
+
+        If the ELF file does not exist, prompts the user to select a new one. Attempts to connect
+        to the specified COM port or other available ports if the connection fails.
+
+        :param config: A dictionary containing general configuration settings.
+        """
+        self.config_file_loaded = True
+        config_port = config.get("com_port", "")
+        self.baud_combo.setCurrentText(config.get("baud_rate", ""))
+
+        elf_file_path = config.get("elf_file", "")
+        if os.path.exists(elf_file_path):
+            self.file_path = elf_file_path
+            self.elf_file_loaded = True
+        else:
+            self.show_file_not_found_warning(elf_file_path)
+            self.select_elf_file()
+
+        self.handle_connection(config_port)
+        self.select_file_button.setText(QFileInfo(self.file_path).fileName())
+        self.settings.setValue("file_path", self.file_path)
+
+    def show_file_not_found_warning(self, elf_file_path):
+        """Shows a warning message if the specified ELF file does not exist.
+
+        :param elf_file_path: The path to the ELF file that was not found.
+        """
+        QMessageBox.warning(self, "File Not Found", f"The ELF file {elf_file_path} does not exist.")
+
+    def handle_connection(self, config_port):
+        """Attempts to connect to the specified COM port or any available port.
+
+        If the connection to the specified port fails, it tries to connect to other available ports.
+        If no port connection is successful, it shows a warning message.
+
+        :param config_port: The port specified in the configuration file.
+        """
+        if not self.is_connected():
+            available_ports = [port.device for port in serial.tools.list_ports.comports()]
+            if config_port in available_ports and self.attempt_connection():
+                logging.info(f"Connected to the specified port: {config_port}")
+            else:
+                self.try_other_ports(available_ports)
+
+    def try_other_ports(self, available_ports):
+        """Attempts to connect to other available COM ports if the specified port connection fails.
+
+        :param available_ports: A list of available COM ports.
+        """
+        for port in available_ports:
+            self.port_combo.setCurrentText(port)
+            if self.attempt_connection():
+                logging.info(f"Connected to an alternative port: {port}")
+                break
+        else:
+            QMessageBox.warning(self, "Connection Failed",
+                                "Could not connect to any available ports. Please check your connection.")
+
+    def load_watch_view(self, watch_view):
+        """Loads the WatchView settings from the configuration file.
+
+        This includes variables, values, scaling, offsets, plot visibility, and live status.
+
+        :param watch_view: A dictionary containing WatchView settings.
+        """
+        for le, var in zip(self.line_edit_boxes, watch_view.get("variables", [])):
+            le.setText(var)
+        for ve, val in zip(self.Value_var_boxes, watch_view.get("values", [])):
+            ve.setText(val)
+        for sc, scale in zip(self.scaling_boxes, watch_view.get("scaling", [])):
+            sc.setText(scale)
+        for off, offset in zip(self.offset_boxes, watch_view.get("offsets", [])):
+            off.setText(offset)
+        for cb, visible in zip(self.plot_checkboxes, watch_view.get("visible", [])):
+            cb.setChecked(visible)
+        for cb, live in zip(self.live_checkboxes, watch_view.get("live", [])):
+            cb.setChecked(live)
+
+    def load_scope_view(self, scope_view):
+        """Loads the ScopeView settings from the configuration file.
+
+        This includes variables, trigger settings, and sampling configuration.
+
+        :param scope_view: A dictionary containing ScopeView settings.
+        """
+        for le, var in zip(self.scope_var_lines, scope_view.get("variables", [])):
+            le.setText(var)
+        for cb, trigger in zip(self.trigger_var_checkbox, scope_view.get("trigger", [])):
+            cb.setChecked(trigger)
+        self.triggerVariable = scope_view.get("trigger_variable", "")
+        self.trigger_level_edit.setText(scope_view.get("trigger_level", ""))
+        self.trigger_delay_edit.setText(scope_view.get("trigger_delay", ""))
+        self.trigger_edge_combo.setCurrentText(scope_view.get("trigger_edge", ""))
+        self.trigger_mode_combo.setCurrentText(scope_view.get("trigger_mode", ""))
+        self.sample_time_factor.setText(scope_view.get("sample_time_factor", ""))
+        self.single_shot_checkbox.setChecked(scope_view.get("single_shot", False))
+
+    def load_tab3_view(self, tab3_view):
+        """Loads the configuration settings for Tab 3 (WatchView).
+
+        This includes variables, values, scaling, offsets, scaled values, and live status.
+
+        :param tab3_view: A dictionary containing Tab 3 settings.
+        """
+        self.clear_tab3()
+        for var, val, sc, off, sv, live in zip(
+                tab3_view.get("variables", []),
+                tab3_view.get("values", []),
+                tab3_view.get("scaling", []),
+                tab3_view.get("offsets", []),
+                tab3_view.get("scaled_values", []),
+                tab3_view.get("live", []),
+        ):
+            self.add_variable_row()
+            self.variable_line_edits[-1].setText(var)
+            self.value_line_edits[-1].setText(val)
+            self.scaling_edits_tab3[-1].setText(sc)
+            self.offset_edits_tab3[-1].setText(off)
+            self.scaled_value_edits_tab3[-1].setText(sv)
+            self.live_tab3[-1].setChecked(live)
 
     def attempt_connection(self):
         """Attempt to connect to the selected port and ELF file."""
@@ -2109,7 +2151,7 @@ class X2cscopeGui(QMainWindow):
             scaled_value_edit,
             unit_edit,
             remove_button,
-    ):  #  noqa: PLR0913
+    ):
         """Remove a specific row in the WatchView Only tab."""
         # Remove the widgets from the grid layout
         for widget in [
