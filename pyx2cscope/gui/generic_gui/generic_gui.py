@@ -54,6 +54,7 @@ class VariableSelectionDialog(QDialog):
     """Dialog for selecting a variable from a list with search functionality."""
 
     def __init__(self, variables, parent=None):
+        """Initialising variable selection dialog."""
         super().__init__(parent)
         self.variables = variables
         self.selected_variable = None
@@ -61,6 +62,7 @@ class VariableSelectionDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
+        """Initializing UI component."""
         self.setWindowTitle("Search Variable")
         self.setMinimumSize(300, 400)
 
@@ -86,6 +88,7 @@ class VariableSelectionDialog(QDialog):
         self.setLayout(self.layout)
 
     def filter_variables(self, text):
+        """Setting variable alphabetical."""
         self.variable_list.clear()
         filtered_variables = [
             var for var in self.variables if text.lower() in var.lower()
@@ -93,6 +96,7 @@ class VariableSelectionDialog(QDialog):
         self.variable_list.addItems(filtered_variables)
 
     def accept_selection(self):
+        """Once selected by the user, the variable will be set to the respective combo box."""
         selected_items = self.variable_list.selectedItems()
         if selected_items:
             self.selected_variable = selected_items[0].text()
@@ -115,21 +119,9 @@ class X2cscopeGui(QMainWindow):
         self.triggerVariable = None
         self.elf_file_loaded = False
         self.config_file_loaded = False
-        self.device_info_labels = {}  # Dictionary to hold the device info labels
+        self.device_info_labels = {}  # Dictionary to hold the device information labels
         self.initialize_variables()
         self.init_ui()
-
-    def check_x2cscope_initialization(self):
-        if self.x2cscope is None:
-            if not self.x2cscope_initialized:
-                self.handle_error(
-                    "x2cscope is not initialized. Please connect to the device first."
-                )
-                self.x2cscope_initialized = (
-                    True  # Set the flag after showing the message once
-                )
-            return False
-        return True
 
     def initialize_variables(self):
         """Initialize instance variables."""
@@ -229,7 +221,7 @@ class X2cscopeGui(QMainWindow):
         self.create_tabs()
         self.setup_tabs()
         self.setup_window_properties()
-        #        self.setup_device_info_ui()  # Set up the device info section
+        #        self.setup_device_info_ui()  # Set up the device information section
         self.refresh_ports()
 
     def setup_application_style(self):
@@ -245,7 +237,7 @@ class X2cscopeGui(QMainWindow):
         self.layout.addWidget(self.tab_widget)
 
     def update_device_info(self):
-        """Fetch device info from the connected device and update the labels."""
+        """Fetch device information from the connected device and update the labels."""
         try:
             device_info = self.x2cscope.get_device_info()
             self.device_info_labels["processor_id"].setText(f" {device_info['processor_id']}")
@@ -457,11 +449,6 @@ class X2cscopeGui(QMainWindow):
         variable_group = QGroupBox("Variable Selection")
         variable_layout = QVBoxLayout()
         variable_group.setLayout(variable_layout)
-        # Samplescope Time for real time x-axis
-        # self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
-        # self.scope_sampletime_edit.setValidator(self.decimal_validator) # Only allow numeric input
-        # grid_layout_trigger.addWidget(QLabel("Scope Sample Time (µs):"), 6, 0)
-        # grid_layout_trigger.addWidget(self.scope_sampletime_edit, 6, 1)
 
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
@@ -578,12 +565,11 @@ class X2cscopeGui(QMainWindow):
             self.triggerVariable = None
 
     def setup_port_layout(self, layout):
-        """Set up the port selection, baud rate, and device info layout in two sections."""
-
-        # Create the left layout for device info (QVBoxLayout)
+        """Set up the port selection, baud rate, and device information layout in two sections."""
+        # Create the left layout for device information (QVBoxLayout)
         left_layout = QGridLayout()
 
-        # Add device info labels to the left side
+        # Add device information labels to the left side
         for label_key, label in self.device_info_labels.items():
             info_label = QLabel(label_key.replace("_", " ").capitalize() + ":")
             info_label.setAlignment(Qt.AlignLeft)
@@ -642,7 +628,7 @@ class X2cscopeGui(QMainWindow):
         # Create a horizontal layout to contain both left and right sections
         horizontal_layout = QHBoxLayout()
 
-        # Add left (device info) and right (settings) layouts to the horizontal layout
+        # Add left (device information) and right (settings) layouts to the horizontal layout
         horizontal_layout.addLayout(left_layout)
         horizontal_layout.addLayout(right_layout)
 
@@ -934,7 +920,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def var_live(self, live_var, timer):
-        """handles the state change of live variable checkboxes.
+        """Handles the state change of live variable checkboxes.
 
         Args:
             live_var (QCheckBox): The checkbox representing a live variable.
@@ -1076,12 +1062,12 @@ class X2cscopeGui(QMainWindow):
                     # start = self.real_sampletime / len(data)
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
-                    data = (
+                    data_scaled = (
                             np.array(data, dtype=float) * scale_factor
                     )  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
-                        data,
+                        data_scaled,
                         pen=pg.mkPen(color=self.plot_colors[i], width=2),
                         name=f"Channel {channel}",
                     )
@@ -1140,7 +1126,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def handle_var_update(self, counter, value_var):
-        """handles the update of variable values from the microcontroller.
+        """Handles the update of variable values from the microcontroller.
 
         Args:
             counter: The variable to update.
@@ -1237,6 +1223,7 @@ class X2cscopeGui(QMainWindow):
 
     @pyqtSlot()
     def select_elf_file(self):
+        """Function to select elf file."""
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("ELF Files (*.elf)")
         file_dialog.setFileMode(QFileDialog.ExistingFile)
@@ -1318,13 +1305,14 @@ class X2cscopeGui(QMainWindow):
             try:
                 self.connect_serial()  # Attempt to connect
                 if self.ser is not None and self.ser.is_open:
-                    # Fetch device info after successful connection
+                    # Fetch device information after successful connection
                     self.update_device_info()
             except Exception as e:
                 logging.error(e)
                 self.handle_error(f"Error connecting: {e}")
 
     def handle_failed_connection(self):
+        """Popping up a window for the errors."""
         choice = QMessageBox.question(
             self,
             "Connection Failed",
@@ -1399,81 +1387,70 @@ class X2cscopeGui(QMainWindow):
             self.Connect_button.setText("Connect")
 
     def connect_serial(self):
-        """Establish a serial connection based on the current UI settings.
-
-        This method sets up a serial connection using the selected port and
-        baud rate. It attempts to connect to the first available COM port if 'Auto Connect' is selected.
-        """
+        """Establish a serial connection based on the current UI settings."""
         try:
             # Disconnect if already connected
             if self.ser is not None and self.ser.is_open:
                 self.disconnect_serial()
 
-            # Get baud rate
             baud_rate = int(self.baud_combo.currentText())
 
-            # If Auto Connect is selected, try each available port until successful connection
-
+            # Check if Auto Connect is selected
             if self.port_combo.currentText() == "Auto Connect":
-                available_ports = [port.device for port in serial.tools.list_ports.comports()]
-                # Iterate through available ports
-                for port in available_ports:
-                    try:
-                        logging.info(f"Trying to connect to {port}...")
-                        self.x2cscope = X2CScope(
-                            port=port, elf_file=self.file_path, baud_rate=baud_rate
-                        )
-                        self.ser = self.x2cscope.interface
-                        # If connection is successful
-                        logging.info(f"Connected to {port} successfully.")
-                        self.select_file_button.setText(QFileInfo(self.file_path).fileName())
-                        self.port_combo.setCurrentText(port)  # Update combo box with the successful port
-                        self.setup_connected_state()  # Call a helper function to handle UI updates after connection
-                        return  # Exit function after successful connection
-                    except OSError as e:
-                        logging.error(f"Failed to connect to {port}: {e}")
-                        # Retry logic: wait for a short time before trying again
-                        continue  # Try the next available port if the connection fails
-                    except Exception as e:
-                        logging.error(f"Unexpected error connecting to {port}: {e}")
-                        continue
-
-                # If no ports were successfully connected
-                self.handle_error(
-                    "Auto-connect failed to connect to any available COM ports, Please check your connection!")
-                raise Exception("Auto-connect failed to connect to any available COM ports.")
-
+                self.auto_connect_serial(baud_rate)
             else:
-                # Manual port selection
-                port = self.port_combo.currentText()
-                logging.info(f"Trying to connect to {port} manually.")
-
-                # Retry mechanism: try to connect twice if the first attempt fails
-                for attempt in range(2):
-                    try:
-                        self.x2cscope = X2CScope(
-                            port=port, elf_file=self.file_path, baud_rate=baud_rate
-                        )
-                        self.ser = self.x2cscope.interface
-                        # If connection is successful
-                        logging.info(f"Connected to {port} successfully.")
-                        self.select_file_button.setText(QFileInfo(self.file_path).fileName())
-                        self.setup_connected_state()  # Call a helper function to handle UI updates after connection
-                        return  # Exit function after successful connection
-                    except OSError as e:
-                        logging.error(f"Could not open port '{port}': {e}")
-                        if attempt == 1:  # If it's the second attempt, raise an error
-                            raise Exception(f"Failed to connect to {port} after multiple attempts.")
-                        time.sleep(1)  # Wait 1 second before retrying the connection
-                    except Exception as e:
-                        logging.error(f"Unexpected error connecting to {port}: {e}")
-                        self.handle_error(f"Failed to connect manually to port {port}, Please check your connection or select the correct COM-Port!")
-                        break  # Exit the loop on unexpected errors
-
+                self.manual_connect_serial(baud_rate)
 
         except Exception as e:
             error_message = f"Error while connecting: {e}"
             logging.error(error_message)
+            self.handle_error(error_message)
+
+    def auto_connect_serial(self, baud_rate):
+        """Attempt to auto-connect to available COM ports."""
+        available_ports = [port.device for port in serial.tools.list_ports.comports()]
+
+        # Iterate through available ports and attempt to connect
+        for port in available_ports:
+            if self.connect_to_port(port, baud_rate):
+                return  # Exit once a connection is established
+
+        # If no ports were successfully connected
+        self.handle_error("Auto-connect failed to connect to any available COM ports. Please check your connection!")
+        raise Exception("Auto-connect failed to connect to any available COM ports.")
+
+    def manual_connect_serial(self, baud_rate):
+        """Attempt to manually connect to the selected COM port."""
+        port = self.port_combo.currentText()
+        logging.info(f"Trying to connect to {port} manually.")
+
+        # Retry mechanism: try to connect twice if the first attempt fails
+        for attempt in range(2):
+            if self.connect_to_port(port, baud_rate):
+                return  # Exit once the connection is successful
+            logging.info(f"Retrying connection to {port} (Attempt {attempt + 1})")
+
+        raise Exception(f"Failed to connect to {port} after multiple attempts.")
+
+    def connect_to_port(self, port, baud_rate):
+        """Attempt to establish a connection to the specified port."""
+        try:
+            logging.info(f"Trying to connect to {port}...")
+            self.x2cscope = X2CScope(port=port, elf_file=self.file_path, baud_rate=baud_rate)
+            self.ser = self.x2cscope.interface
+
+            # If connection is successful
+            logging.info(f"Connected to {port} successfully.")
+            self.select_file_button.setText(QFileInfo(self.file_path).fileName())
+            self.port_combo.setCurrentText(port)  # Update combo box with the successful port
+            self.setup_connected_state()  # Handle UI updates after connection
+            return True
+        except OSError as e:
+            logging.error(f"Failed to connect to {port}: {e}")
+            return False
+        except Exception as e:
+            logging.error(f"Unexpected error connecting to {port}: {e}")
+            return False
 
     def setup_connected_state(self):
         """Handle the UI updates and logic when a connection is successfully established."""
@@ -1661,7 +1638,7 @@ class X2cscopeGui(QMainWindow):
             self.scope_timer.timeout.connect(lambda: self._sample_scope_data_timer(single_shot))
             self.scope_timer.start(100)  # Adjust interval (milliseconds) as needed
 
-            # If it's a single shot, stop the timer after first run
+            # If it is a single shot, stop the timer after the first run
             if single_shot:
                 self.scope_timer.singleShot(100, lambda: self.scope_timer.stop())
 
@@ -1687,10 +1664,10 @@ class X2cscopeGui(QMainWindow):
                     scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
-                    data = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
+                    data_scaled = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
-                        data,
+                        data_scaled,
                         pen=pg.mkPen(color=self.plot_colors[i], width=2),  # Thicker plot line
                         name=f"Channel {channel}",
                     )
@@ -1713,6 +1690,7 @@ class X2cscopeGui(QMainWindow):
             self.scope_sample_button.setText("Sample")  # Update button text
 
     def save_config(self):
+        """Save current working config."""
         try:
             # Configuration dictionary includes the path to the ELF file
             config = {
@@ -1761,6 +1739,7 @@ class X2cscopeGui(QMainWindow):
             self.handle_error(f"Error saving configuration: {e}")
 
     def load_config(self):
+        """Helps user load the pre-saved/configured config file."""
         try:
             file_path, _ = QFileDialog.getOpenFileName(
                 self, "Load Configuration", "", "JSON Files (*.json)"
@@ -1897,7 +1876,7 @@ class X2cscopeGui(QMainWindow):
 
     def clear_tab3(self):
         """Remove all variable rows in Tab 3 efficiently."""
-        if not self.row_widgets:  # Check if there's anything to clear
+        if not self.row_widgets:  # Check if there is anything to clear
             return  # Skip clearing if already empty
 
         # Block updates to the GUI while making changes
@@ -2006,13 +1985,6 @@ class X2cscopeGui(QMainWindow):
 
         # Adjust the scroll area margins to remove any additional gaps
         scroll_area_layout.setContentsMargins(0, 0, 0, 0)
-
-    def clear_tab3(self):
-        """Clear the current state of Tab 3."""
-        while self.current_row > 1:
-            # Remove all the rows
-            row_widgets = self.row_widgets[-1]
-            self.remove_variable_row(*row_widgets)
 
     @pyqtSlot()
     def add_variable_row(self):
