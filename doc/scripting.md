@@ -134,7 +134,7 @@ for channel, data in x2c_scope.get_scope_channel_data().items():
 ### Triggering 
 
 To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
-To set any trigger configuration, you need to pass a TriggerConfig imported from from pyx2cscope.xc2scope
+To set any trigger configuration, you need to pass a TriggerConfig imported from from pyx2cscope.x2cscope
 ```
 trigger_config = TriggerConfig(Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
 x2cscope.set_scope_trigger(trigger_config)

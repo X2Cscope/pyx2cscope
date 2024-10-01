@@ -56,6 +56,15 @@ Execute the following lines:
 
    pip install --upgrade pyx2cscope
 
+In case of unexpected issues executing pyx2cscope try to reinstall manually:
+
+.. code-block:: python
+   
+   pip uninstall pyx2cscope
+   pip cache purge
+   pip install pyx2cscope --user 
+
+
 After install you may check the current pyx2cscope version, in a terminal, run the following command:
 
 .. code-block:: python

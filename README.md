@@ -40,6 +40,14 @@ new version typing:
 ```
 pip install --upgrade pyx2cscope
 ```
+
+In case of unexpected issues executing pyx2cscope try to reinstall manually:
+```
+pip uninstall pyx2cscope
+pip cache purge
+pip install pyx2cscope --user 
+```
+
 ## Start GUI
 
 The GUI interface
@@ -63,7 +71,7 @@ To execute the Browser based version type:
 2. start with importing pyX2Cscope:  `import pyx2cscope`
 3. Choose the communication interface from the interfaces' module. Currently, **Only Serial** is supported: CAN and LIN coming in near future: <br> 
 ```
-from xc2scope import X2CScope
+from x2cscope import X2CScope
 ``` 
 1. Initiate the X2CScope and provide the desired COM port, by default baud rate is set to **_115200_**. . If there's a need to change the baud rate, include the baud_rate parameter with your preferred baud rate, In the same way other setting could be made:
 ```
