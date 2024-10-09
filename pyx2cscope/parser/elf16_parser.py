@@ -550,3 +550,9 @@ if __name__ == "__main__":
         variable_map.pop(var_name)
 
     print(variable_map)
+
+    # Remove the variables with no address from the map
+    for var_name in vars_to_remove:
+        variable_map.pop(var_name)
+
+    print(variable_map)
