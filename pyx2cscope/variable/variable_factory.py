@@ -46,11 +46,12 @@ class VariableFactory:
         """
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
-        parser = (
-            Elf16Parser
-            if self.device_info.uc_width == DeviceInfo.MACHINE_16
-            else Elf32Parser
-        )
+        # parser = (
+        #     Elf16Parser
+        #     if self.device_info.uc_width == DeviceInfo.MACHINE_16
+        #     else Elf32Parser
+        # )
+        parser = Elf32Parser
         if (
             self.device_info.processor_id == "__GENERIC_MICROCHIP_DSPIC__"
         ):  # TODO implement it better for future cores.

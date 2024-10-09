@@ -49,6 +49,12 @@ class Elf32Parser(ElfParser):
             for die_variable in tag_variables:
                 self._process_variable_die(die_variable)
 
+        vars_to_remove = [var_name for var_name, var_info in self.variable_map.items() if var_info.address is None]
+
+        # Remove the variables with no address from the map
+        for var_name in vars_to_remove:
+            self.variable_map.pop(var_name)
+
         return self.variable_map
 
     def _process_variable_die(self, die_variable):
@@ -376,24 +382,36 @@ if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
     # elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
-    elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
+    #elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
     # elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"  # 16bit-ELF
+   # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"  # 16bit-ELF
+    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
+
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
-    print(variable_map)
+    #print((variable_map))
+    # Collect variables with no address for removal
+    vars_to_remove = [var_name for var_name, var_info in variable_map.items() if var_info.address is None or var_info.address == 0]
 
+    # Remove the variables with no address from the map
+    for var_name in vars_to_remove:
+        variable_map.pop(var_name)
+    print(len(variable_map))
+    print(variable_map)
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
-    for var_name, var_info in variable_map.items():
+    # for var_name, var_info in variable_map.items():
 
-        # if var_info.address ==None and var_info.array_size !=0:
-        # if var_info.array_size!=0:
-        #    print(var_name)
-        # print(f"Variable Name: {var_name}, Info: {var_info}")
+       # # if var_info.address ==None and var_info.array_size !=0:
+       #  if var_info.array_size!=0:
+       #     print(var_name)
+       #  print(f"Variable Name: {var_name}, Info: {var_info}")
 
-        # if var_info.address ==None:
-        #     print(f"Variable Name: {var_name}, Info: {var_info}")
-        #     counter+=1
-        if var_info.array_size != 0:
-            print(f"Variable Name: {var_name}, Info: {var_info}")
+    #     if var_info.address !=None:
+    #         #print(f"Variable Name: {var_name}, Info: {var_info}")
+    #         counter+=1
+    #     if var_info.array_size != 0:
+    #        # print(f"Variable Name: {var_name}, Info: {var_info}")
+    # print(counter)
+    # print(len(variable_map))
+    # print(variable_map)

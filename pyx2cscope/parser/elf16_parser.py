@@ -528,3 +528,10 @@ if __name__ == "__main__":
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
     print(variable_map)
+    vars_to_remove = [var_name for var_name, var_info in variable_map.items() if var_info.address is None]
+
+    # Remove the variables with no address from the map
+    for var_name in vars_to_remove:
+        variable_map.pop(var_name)
+
+    print(variable_map)
