@@ -9,6 +9,9 @@ from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
 
 from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
+from elftools.construct.lib import ListContainer
+from elftools.common.construct_utils import ULEB128
+from io import BytesIO
 
 
 class Elf32Parser(ElfParser):
@@ -49,7 +52,11 @@ class Elf32Parser(ElfParser):
             for die_variable in tag_variables:
                 self._process_variable_die(die_variable)
 
-        vars_to_remove = [var_name for var_name, var_info in self.variable_map.items() if var_info.address is None]
+        vars_to_remove = [
+            var_name
+            for var_name, var_info in self.variable_map.items()
+            if var_info.address is None or var_info.address == 0
+        ]
 
         # Remove the variables with no address from the map
         for var_name in vars_to_remove:
@@ -59,6 +66,7 @@ class Elf32Parser(ElfParser):
 
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
+
         if "DW_AT_specification" in die_variable.attributes:
             spec_ref_addr = (
                 die_variable.attributes["DW_AT_specification"].value
@@ -102,6 +110,19 @@ class Elf32Parser(ElfParser):
 
         ref_addr = type_attr.value + self.die_variable.cu.cu_offset
         type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
+
+        # Handle enums specifically
+        if type_die.tag == "DW_TAG_enumeration_type":
+            self._process_enum_type(type_die)
+        else:
+            end_die = self._get_end_die(type_die)
+            if end_die is None:
+                logging.warning(
+                    f"Skipping variable {self.var_name} due to missing end DIE"
+                )
+                return
+            self._processing_end_die(end_die)
+
         if type_die.tag != "DW_TAG_volatile_type":
             end_die = self._get_end_die(type_die)
             if end_die is None:
@@ -119,6 +140,34 @@ class Elf32Parser(ElfParser):
                 )
                 return
             self._processing_end_die(end_die)
+
+    def _process_enum_type(self, enum_die):
+        """Process an enum type variable and map its members."""
+        enum_name_attr = enum_die.attributes.get("DW_AT_name")
+        enum_name = (
+            enum_name_attr.value.decode("utf-8") if enum_name_attr else "anonymous_enum"
+        )
+
+        # Dictionary to store enum member names and values
+        enum_members = {}
+        for child in enum_die.iter_children():
+            if child.tag == "DW_TAG_enumerator":
+                name_attr = child.attributes.get("DW_AT_name")
+                value_attr = child.attributes.get("DW_AT_const_value")
+                if name_attr and value_attr:
+                    member_name = name_attr.value.decode("utf-8")
+                    member_value = value_attr.value
+                    enum_members[member_name] = member_value
+
+        # Check if VariableInfo can accept 'members' or create a compatible entry
+        self.variable_map[self.var_name] = VariableInfo(
+            name=self.var_name,
+            byte_size=enum_die.attributes.get("DW_AT_byte_size", 0).value,
+            type=f"enum {enum_name}",
+            address=self.address,
+            array_size=0,
+            members=enum_members,  # Store enum members here
+        )
 
     def _get_end_die(self, current_die):
         """Find the end DIE of a type."""
@@ -258,6 +307,28 @@ class Elf32Parser(ElfParser):
     ):
         """Recursively gets structure members from a DWARF DIE."""
         members = {}
+
+        def member_offset(die) -> int | None:
+            """Extracts the offset for a structure member."""
+            assert die.tag == "DW_TAG_member"
+            data_member_location = die.attributes.get("DW_AT_data_member_location")
+            if data_member_location is None:
+                # bitfield may not have a data_member_location
+                return None
+            value = data_member_location.value
+            if isinstance(value, int):
+                # elf produced by linux-x64-gcc falls in this
+                return value
+            if isinstance(value, ListContainer):
+                DW_OP_plus_uconst = 35
+                if len(value) < 2 or value[0] != DW_OP_plus_uconst:
+                    print(f"Not implemented, value={value}")
+                    return None
+                b = BytesIO(bytes(value[1:]))
+                return ULEB128("")._parse(b, None)
+            print(f"Unknown data_member_location value={value} die={die}")
+            return None
+
         for child_die in die.iter_children():
             if child_die.tag in {
                 "DW_TAG_member",
@@ -265,21 +336,26 @@ class Elf32Parser(ElfParser):
                 "DW_TAG_array_type",
             }:
                 member = {}
+
+                # Get the offset of the member
+                offset_value = member_offset(child_die)
+                if offset_value is None:
+                    continue
+
                 member_name = parent_name
                 name_attr = child_die.attributes.get("DW_AT_name")
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
+
                 type_attr = child_die.attributes.get("DW_AT_type")
                 if type_attr:
                     type_offset = type_attr.value + child_die.cu.cu_offset
                     try:
                         member_type = self._get_member_type(type_offset)
-                        offset_value = child_die.attributes.get(
-                            "DW_AT_data_member_location"
-                        )
-                        offset_value = int(offset_value.value[1]) if offset_value else 0
+
                         nested_die = self._get_end_die(child_die)
                         if nested_die.tag == "DW_TAG_structure_type":
+                            # Recursive call for nested structures
                             nested_members, _ = self._get_structure_members_recursive(
                                 nested_die,
                                 member_name,
@@ -288,6 +364,7 @@ class Elf32Parser(ElfParser):
                             if nested_members:
                                 members.update(nested_members)
                         elif nested_die.tag == "DW_TAG_array_type":
+                            # Handle arrays
                             array_size = self._get_array_length(nested_die)
                             base_type_attr = nested_die.attributes.get("DW_AT_type")
                             if base_type_attr:
@@ -321,6 +398,7 @@ class Elf32Parser(ElfParser):
                                     member["array_size"] = array_size
                                     members[member_name] = member
                         else:
+                            # Handle normal members
                             member["type"] = member_type["name"]
                             member["byte_size"] = member_type["byte_size"]
                             member["address_offset"] = (
@@ -382,30 +460,30 @@ if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
     # elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
-    #elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
+    # elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
     # elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-   # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"  # 16bit-ELF
+    # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"  # 16bit-ELF
     elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-
+    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
     elf_reader = Elf32Parser(elf_file)
     variable_map = elf_reader._map_variables()
-    #print((variable_map))
+    # print((variable_map))
     # Collect variables with no address for removal
-    vars_to_remove = [var_name for var_name, var_info in variable_map.items() if var_info.address is None or var_info.address == 0]
+    # vars_to_remove = [var_name for var_name, var_info in variable_map.items() if var_info.address is None or var_info.address == 0]
 
     # Remove the variables with no address from the map
-    for var_name in vars_to_remove:
-        variable_map.pop(var_name)
+    # for var_name in vars_to_remove:
+    #     variable_map.pop(var_name)
     print(len(variable_map))
     print(variable_map)
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
     # for var_name, var_info in variable_map.items():
 
-       # # if var_info.address ==None and var_info.array_size !=0:
-       #  if var_info.array_size!=0:
-       #     print(var_name)
-       #  print(f"Variable Name: {var_name}, Info: {var_info}")
+    # # if var_info.address ==None and var_info.array_size !=0:
+    #  if var_info.array_size!=0:
+    #     print(var_name)
+    #  print(f"Variable Name: {var_name}, Info: {var_info}")
 
     #     if var_info.address !=None:
     #         #print(f"Variable Name: {var_name}, Info: {var_info}")
