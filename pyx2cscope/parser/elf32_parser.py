@@ -313,11 +313,9 @@ class Elf32Parser(ElfParser):
             assert die.tag == "DW_TAG_member"
             data_member_location = die.attributes.get("DW_AT_data_member_location")
             if data_member_location is None:
-                # bitfield may not have a data_member_location
                 return None
             value = data_member_location.value
             if isinstance(value, int):
-                # elf produced by linux-x64-gcc falls in this
                 return value
             if isinstance(value, ListContainer):
                 DW_OP_plus_uconst = 35
