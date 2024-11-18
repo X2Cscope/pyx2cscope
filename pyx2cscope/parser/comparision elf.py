@@ -1,4 +1,4 @@
-from pyx2cscope.parser.elf32_parser import Elf32Parser
+from pyx2cscope.parser.unified_parser import Parser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 
 
@@ -87,7 +87,7 @@ def compare_dicts_intelligently(dict1, dict2):
 
 def run_parsers_and_compare(elf_file_path):
     # Parse the ELF file with both 32-bit and 16-bit parsers
-    elf32_parser = Elf32Parser(elf_file_path)
+    elf32_parser = Parser(elf_file_path)
     elf16_parser = Elf16Parser(elf_file_path)
 
     # Generate variable maps for each parser
@@ -103,5 +103,5 @@ def run_parsers_and_compare(elf_file_path):
 # Usage example
 elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
 #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-#elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
+elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
 run_parsers_and_compare(elf_file)
