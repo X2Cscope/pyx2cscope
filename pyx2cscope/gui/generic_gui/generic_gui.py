@@ -1064,7 +1064,7 @@ class X2cscopeGui(QMainWindow):
                 return
 
             data_storage = {}
-            for channel, data in self.x2cscope.get_scope_channel_data().items():
+            for channel, data in self.x2cscope.get_scope_channel_data(valid_data=True).items():
                 data_storage[channel] = data
 
             self.scope_plot_widget.clear()
