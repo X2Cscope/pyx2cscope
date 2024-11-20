@@ -14,7 +14,7 @@ from elftools.common.construct_utils import ULEB128
 from io import BytesIO
 
 
-class Parser(ElfParser):
+class Generic_Parser(ElfParser):
     """Class for parsing ELF files compatible with 32-bit architectures."""
 
     def __init__(self, elf_path):
@@ -52,6 +52,8 @@ class Parser(ElfParser):
             for die_variable in tag_variables:
                 self._process_variable_die(die_variable)
 
+        print(self.variable_map)
+        print("number of variable",len(self.variable_map))
         vars_to_remove = [
             var_name
             for var_name, var_info in self.variable_map.items()
@@ -59,6 +61,7 @@ class Parser(ElfParser):
         ]
 
         # Remove the variables with no address from the map
+        print(len(vars_to_remove))
         for var_name in vars_to_remove:
             self.variable_map.pop(var_name)
 
@@ -463,7 +466,8 @@ if __name__ == "__main__":
     # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"  # 16bit-ELF
     elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-    elf_reader = Parser(elf_file)
+    elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+    elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
     # print((variable_map))
     # Collect variables with no address for removal
