@@ -12,6 +12,8 @@ from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
 from elftools.construct.lib import ListContainer
 from elftools.common.construct_utils import ULEB128
 from io import BytesIO
+from elftools.dwarf.dwarf_expr import DWARFExprParser
+
 
 
 class Generic_Parser(ElfParser):
@@ -50,10 +52,13 @@ class Generic_Parser(ElfParser):
             tag_variables = filter(lambda die: die.tag == "DW_TAG_variable", root_die)
 
             for die_variable in tag_variables:
+                self.expression_parser = DWARFExprParser(die_variable.cu.structs)
+                print(self.expression_parser)
                 self._process_variable_die(die_variable)
 
         print(self.variable_map)
         print("number of variable",len(self.variable_map))
+        # not removing incorrect address variable
         vars_to_remove = [
             var_name
             for var_name, var_info in self.variable_map.items()
@@ -95,15 +100,16 @@ class Generic_Parser(ElfParser):
             )
             self.die_variable = die_variable
             self._extract_address(die_variable)
-        elif (
-            die_variable.attributes.get("DW_AT_external")
-            and die_variable.attributes.get("DW_AT_name") is not None
-        ):
-            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-                "utf-8"
-            )
-            self.die_variable = die_variable
-            self._extract_address(die_variable)
+        # elif (
+        #     die_variable.attributes.get("DW_AT_external")
+        #     and die_variable.attributes.get("DW_AT_name") is not None
+        # ):
+        #     return # Skipping external variables.  YA
+        #     self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+        #         "utf-8"
+        #     )
+        #     self.die_variable = die_variable
+        #     self._extract_address(die_variable)
         else:
             return
 
@@ -213,8 +219,11 @@ class Generic_Parser(ElfParser):
         """Extracts the address of the current variable or fetches it from the symbol table if not found."""
         try:
             if "DW_AT_location" in die_variable.attributes:
-                data = list(die_variable.attributes["DW_AT_location"].value)[1:]
-                self.address = int.from_bytes(bytes(data), byteorder="little")
+                expression = self.expression_parser.parse_expr(die_variable.attributes["DW_AT_location"].value)
+                escape_expressions = ["DW_OP_plus_uconst", "DW_OP_addr" ]
+                if expression and expression[0].op_name in escape_expressions:
+                #data = list(die_variable.attributes["DW_AT_location"].value)[1:]
+                    self.address = expression[0].args[0] # int.from_bytes(bytes(data), byteorder="little")
             else:
                 self.address = self._fetch_address_from_symtab(
                     die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
@@ -321,12 +330,12 @@ class Generic_Parser(ElfParser):
             if isinstance(value, int):
                 return value
             if isinstance(value, ListContainer):
-                DW_OP_plus_uconst = 35
-                if len(value) < 2 or value[0] != DW_OP_plus_uconst:
-                    print(f"Not implemented, value={value}")
-                    return None
-                b = BytesIO(bytes(value[1:]))
-                return ULEB128("")._parse(b, None)
+                expression = self.expression_parser.parse_expr(value)
+                escape_expressions = ["DW_OP_plus_uconst", "DW_OP_addr", ]
+                if expression and expression[0].op_name in escape_expressions:
+                    # further info about types see:
+                    # https://dwarfstd.org/doc/Dwarf3.pdf
+                    return expression[0].args[0]
             print(f"Unknown data_member_location value={value} die={die}")
             return None
 
@@ -427,9 +436,9 @@ class Generic_Parser(ElfParser):
                     return array_length
         return 0
 
-    def _get_member_type(self, type_offset):
+    def _get_member_type(self, type_refaddr):
         """Retrieve the type information from DWARF given a type offset."""
-        type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
+        type_die = self.dwarf_info.get_DIE_from_refaddr(type_refaddr)
         if type_die:
             type_die = self._get_end_die(type_die)
             if type_die.tag == "DW_TAG_base_type":
@@ -467,6 +476,7 @@ if __name__ == "__main__":
     elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
     elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
     # print((variable_map))
