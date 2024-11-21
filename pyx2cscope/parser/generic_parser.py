@@ -10,10 +10,7 @@ from elftools.elf.sections import SymbolTableSection
 
 from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
 from elftools.construct.lib import ListContainer
-from elftools.common.construct_utils import ULEB128
-from io import BytesIO
 from elftools.dwarf.dwarf_expr import DWARFExprParser
-
 
 
 class Generic_Parser(ElfParser):
@@ -46,29 +43,19 @@ class Generic_Parser(ElfParser):
             self.stream.close()
 
     def _map_variables(self) -> dict[str, VariableInfo]:
+        """Maps all variables in the ELF file."""
         self.variable_map.clear()
-        for compilation_unit in self.dwarf_info.iter_CUs():
-            root_die = compilation_unit.iter_DIEs()
-            tag_variables = filter(lambda die: die.tag == "DW_TAG_variable", root_die)
+        for cu in self.dwarf_info.iter_CUs():
+            for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
+                self.expression_parser = DWARFExprParser(die.cu.structs)
+                self._process_variable_die(die)
 
-            for die_variable in tag_variables:
-                self.expression_parser = DWARFExprParser(die_variable.cu.structs)
-                print(self.expression_parser)
-                self._process_variable_die(die_variable)
-
-        print(self.variable_map)
-        print("number of variable",len(self.variable_map))
-        # not removing incorrect address variable
-        vars_to_remove = [
-            var_name
-            for var_name, var_info in self.variable_map.items()
-            if var_info.address is None or var_info.address == 0
-        ]
-
-        # Remove the variables with no address from the map
-        print(len(vars_to_remove))
-        for var_name in vars_to_remove:
-            self.variable_map.pop(var_name)
+        # Remove variables with invalid addresses
+        self.variable_map = {
+            name: info
+            for name, info in self.variable_map.items()
+            if info.address is not None and info.address != 0
+        }
 
         return self.variable_map
 
@@ -100,16 +87,16 @@ class Generic_Parser(ElfParser):
             )
             self.die_variable = die_variable
             self._extract_address(die_variable)
-        # elif (
-        #     die_variable.attributes.get("DW_AT_external")
-        #     and die_variable.attributes.get("DW_AT_name") is not None
-        # ):
-        #     return # Skipping external variables.  YA
-        #     self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-        #         "utf-8"
-        #     )
-        #     self.die_variable = die_variable
-        #     self._extract_address(die_variable)
+        elif (
+            die_variable.attributes.get("DW_AT_external")
+            and die_variable.attributes.get("DW_AT_name") is not None
+        ):
+            return # Skipping external variables.  YA
+            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+                "utf-8"
+            )
+            self.die_variable = die_variable
+            self._extract_address(die_variable)
         else:
             return
 
@@ -215,19 +202,47 @@ class Generic_Parser(ElfParser):
         else:
             self._process_base_type(end_die)
 
+    def _extract_address_from_expression(self, expr_value, structs):
+        """
+        Extracts an address from a DWARF expression.
+
+        Args:
+            expr_value: The raw DWARF expression bytes.
+            structs: The DWARF structs used for parsing expressions.
+
+        Returns:
+            int or None: The extracted address, or None if it couldn't be determined.
+        """
+        try:
+            expression_parser = DWARFExprParser(structs)
+            expression = expression_parser.parse_expr(expr_value)
+            # Supported operations for address extraction
+            valid_ops = {"DW_OP_plus_uconst", "DW_OP_plus_const", "DW_OP_addr"}
+
+            for op in expression:
+                if op.op_name in valid_ops:
+                    return op.args[0]
+
+        except Exception as e:
+            logging.error(f"Error parsing DWARF expression: {e}", exc_info=True)
+
+        return None
+
     def _extract_address(self, die_variable):
-        """Extracts the address of the current variable or fetches it from the symbol table if not found."""
+        """
+        Extracts the address of the current variable or fetches it from the symbol table if not found.
+        """
         try:
             if "DW_AT_location" in die_variable.attributes:
-                expression = self.expression_parser.parse_expr(die_variable.attributes["DW_AT_location"].value)
-                escape_expressions = ["DW_OP_plus_uconst", "DW_OP_addr" ]
-                if expression and expression[0].op_name in escape_expressions:
-                #data = list(die_variable.attributes["DW_AT_location"].value)[1:]
-                    self.address = expression[0].args[0] # int.from_bytes(bytes(data), byteorder="little")
+                expr_value = die_variable.attributes["DW_AT_location"].value
+                self.address = self._extract_address_from_expression(
+                    expr_value, die_variable.cu.structs
+                )
             else:
                 self.address = self._fetch_address_from_symtab(
                     die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
                 )
+                print("Value:Symtab")
         except Exception as e:
             logging.error(e)
             self.address = None
@@ -321,7 +336,15 @@ class Generic_Parser(ElfParser):
         members = {}
 
         def member_offset(die) -> int | None:
-            """Extracts the offset for a structure member."""
+            """
+            Extracts the offset for a structure member.
+
+            Args:
+                die: The DIE of the structure member.
+
+            Returns:
+                int or None: The offset value, or None if it couldn't be determined.
+            """
             assert die.tag == "DW_TAG_member"
             data_member_location = die.attributes.get("DW_AT_data_member_location")
             if data_member_location is None:
@@ -330,13 +353,10 @@ class Generic_Parser(ElfParser):
             if isinstance(value, int):
                 return value
             if isinstance(value, ListContainer):
-                expression = self.expression_parser.parse_expr(value)
-                escape_expressions = ["DW_OP_plus_uconst", "DW_OP_addr", ]
-                if expression and expression[0].op_name in escape_expressions:
-                    # further info about types see:
-                    # https://dwarfstd.org/doc/Dwarf3.pdf
-                    return expression[0].args[0]
-            print(f"Unknown data_member_location value={value} die={die}")
+                return self._extract_address_from_expression(value, die.cu.structs)
+                # further info about types see:
+                # https://dwarfstd.org/doc/Dwarf3.pdf
+            logging.warning(f"Unknown data_member_location value: {value}")
             return None
 
         for child_die in die.iter_children():
@@ -468,40 +488,11 @@ class Generic_Parser(ElfParser):
 
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
-    # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\LAB4_FOC\LAB4_FOC.X\dist\default\debug\LAB4_FOC.X.debug.elf"
-    # elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
-    # elf_file = r"C:\Users\m67250\Downloads\pmsm_foc_zsmt_hybrid_sam_e54\pmsm_foc_zsmt_hybrid_sam_e54\firmware\qspin_zsmt_hybrid.X\dist\default\production\qspin_zsmt_hybrid.X.production.elf"
-    # elf_file = r"C:\Users\m67250\Microchip Technology Inc\Mark Wendler - M18034 - Masters_2024_MC3\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\MastersDemo_ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-    # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"  # 16bit-ELF
-    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-    elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
+    elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
+    #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
-    # print((variable_map))
-    # Collect variables with no address for removal
-    # vars_to_remove = [var_name for var_name, var_info in variable_map.items() if var_info.address is None or var_info.address == 0]
-
-    # Remove the variables with no address from the map
-    # for var_name in vars_to_remove:
-    #     variable_map.pop(var_name)
     print(len(variable_map))
     print(variable_map)
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
-    # for var_name, var_info in variable_map.items():
-
-    # # if var_info.address ==None and var_info.array_size !=0:
-    #  if var_info.array_size!=0:
-    #     print(var_name)
-    #  print(f"Variable Name: {var_name}, Info: {var_info}")
-
-    #     if var_info.address !=None:
-    #         #print(f"Variable Name: {var_name}, Info: {var_info}")
-    #         counter+=1
-    #     if var_info.array_size != 0:
-    #        # print(f"Variable Name: {var_name}, Info: {var_info}")
-    # print(counter)
-    # print(len(variable_map))
-    # print(variable_map)
