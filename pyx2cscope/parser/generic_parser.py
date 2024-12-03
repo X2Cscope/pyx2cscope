@@ -204,7 +204,7 @@ class Generic_Parser(ElfParser):
 
     def _extract_address_from_expression(self, expr_value, structs):
         """
-        Extracts an address from a DWARF expression.
+        Extracts an address from DWARF expression.
 
         Args:
             expr_value: The raw DWARF expression bytes.
@@ -330,9 +330,9 @@ class Generic_Parser(ElfParser):
         )
 
     def _get_structure_members_recursive(
-        self, die, parent_name: str, prev_address_offset=0
+            self, die, parent_name: str, prev_address_offset=0
     ):
-        """Recursively gets structure members from a DWARF DIE."""
+        """Recursively gets structure members from a DWARF DIE, including arrays."""
         members = {}
 
         def member_offset(die) -> int | None:
@@ -360,11 +360,7 @@ class Generic_Parser(ElfParser):
             return None
 
         for child_die in die.iter_children():
-            if child_die.tag in {
-                "DW_TAG_member",
-                "DW_TAG_pointer_type",
-                "DW_TAG_array_type",
-            }:
+            if child_die.tag in {"DW_TAG_member"}:
                 member = {}
 
                 # Get the offset of the member
@@ -381,34 +377,24 @@ class Generic_Parser(ElfParser):
                 if type_attr:
                     type_offset = type_attr.value + child_die.cu.cu_offset
                     try:
-                        member_type = self._get_member_type(type_offset)
+                        member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
+                        if not member_type_die:
+                            continue
 
-                        nested_die = self._get_end_die(child_die)
-                        if nested_die.tag == "DW_TAG_structure_type":
-                            # Recursive call for nested structures
-                            nested_members, _ = self._get_structure_members_recursive(
-                                nested_die,
-                                member_name,
-                                prev_address_offset + offset_value,
-                            )
-                            if nested_members:
-                                members.update(nested_members)
-                        elif nested_die.tag == "DW_TAG_array_type":
-                            # Handle arrays
-                            array_size = self._get_array_length(nested_die)
-                            base_type_attr = nested_die.attributes.get("DW_AT_type")
+                        # Process array types
+                        if member_type_die.tag == "DW_TAG_array_type":
+                            array_size = self._get_array_length(member_type_die)
+                            base_type_attr = member_type_die.attributes.get("DW_AT_type")
                             if base_type_attr:
                                 base_type_offset = (
-                                    base_type_attr.value + nested_die.cu.cu_offset
+                                        base_type_attr.value + member_type_die.cu.cu_offset
                                 )
                                 base_type_die = self.dwarf_info.get_DIE_from_refaddr(
                                     base_type_offset
                                 )
                                 base_type_die = self._get_end_die(base_type_die)
                                 if base_type_die:
-                                    type_name = base_type_die.attributes.get(
-                                        "DW_AT_name"
-                                    )
+                                    type_name = base_type_die.attributes.get("DW_AT_name")
                                     type_name = (
                                         type_name.value.decode("utf-8")
                                         if type_name
@@ -423,21 +409,45 @@ class Generic_Parser(ElfParser):
                                     member["type"] = type_name
                                     member["byte_size"] = byte_size
                                     member["address_offset"] = (
-                                        prev_address_offset + offset_value
+                                            prev_address_offset + offset_value
                                     )
                                     member["array_size"] = array_size
                                     members[member_name] = member
+
+                                    # If the array elements are structures, process them recursively
+                                    if base_type_die.tag == "DW_TAG_structure_type":
+                                        for i in range(array_size):
+                                            element_offset = i * byte_size
+                                            nested_members, _ = self._get_structure_members_recursive(
+                                                base_type_die,
+                                                f"{member_name}[{i}]",
+                                                prev_address_offset + offset_value + element_offset,
+                                            )
+                                            members.update(nested_members)
                         else:
-                            # Handle normal members
-                            member["type"] = member_type["name"]
-                            member["byte_size"] = member_type["byte_size"]
-                            member["address_offset"] = (
-                                prev_address_offset + offset_value
-                            )
-                            member["array_size"] = self._get_array_length(child_die)
-                            members[member_name] = member
+                            # Process regular members
+                            member_type = self._get_member_type(type_offset)
+                            if member_type:
+                                member["type"] = member_type["name"]
+                                member["byte_size"] = member_type["byte_size"]
+                                member["address_offset"] = (
+                                        prev_address_offset + offset_value
+                                )
+                                member["array_size"] = self._get_array_length(child_die)
+                                members[member_name] = member
+
+                            # Handle nested structures
+                            nested_die = self._get_end_die(child_die)
+                            if nested_die.tag == "DW_TAG_structure_type":
+                                nested_members, _ = self._get_structure_members_recursive(
+                                    nested_die,
+                                    member_name,
+                                    prev_address_offset + offset_value,
+                                )
+                                if nested_members:
+                                    members.update(nested_members)
                     except Exception as e:
-                        logging.error("exception", exc_info=e)
+                        logging.error("Exception while processing member", exc_info=e)
                         continue
 
         return members, prev_address_offset
@@ -489,7 +499,7 @@ class Generic_Parser(ElfParser):
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
-    #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
+    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(len(variable_map))
