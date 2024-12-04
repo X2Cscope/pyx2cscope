@@ -249,7 +249,7 @@ class Generic_Parser(ElfParser):
                 self.address = self._fetch_address_from_symtab(
                     die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
                 )
-                print("Value:Symtab")
+                # print("Value:Symtab")
         except Exception as e:
             logging.error(e)
             self.address = None
