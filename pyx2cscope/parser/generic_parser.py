@@ -390,55 +390,26 @@ class Generic_Parser(ElfParser):
 
                         # Process array types
                         if member_type_die.tag == "DW_TAG_array_type":
-                            array_size = self._get_array_length(member_type_die)
-                            base_type_attr = member_type_die.attributes.get("DW_AT_type")
-                            if base_type_attr:
-                                base_type_offset = (
-                                        base_type_attr.value + member_type_die.cu.cu_offset
-                                )
-                                base_type_die = self.dwarf_info.get_DIE_from_refaddr(
-                                    base_type_offset
-                                )
-                                base_type_die = self._get_end_die(base_type_die)
-                                if base_type_die:
-                                    type_name = base_type_die.attributes.get("DW_AT_name")
-                                    type_name = (
-                                        type_name.value.decode("utf-8")
-                                        if type_name
-                                        else "unknown"
-                                    )
-                                    byte_size_attr = base_type_die.attributes.get(
-                                        "DW_AT_byte_size"
-                                    )
-                                    byte_size = (
-                                        byte_size_attr.value if byte_size_attr else 0
-                                    )
-                                    member["type"] = type_name
-                                    member["byte_size"] = byte_size
-                                    member["address_offset"] = (
-                                            prev_address_offset + offset_value
-                                    )
-                                    member["array_size"] = array_size
-                                    members[member_name] = member
-
+                            self._process_array_type(self._get_end_die(member_type_die))
+                            byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
+                            byte_size = (byte_size_attr.value if byte_size_attr else 0)
                                     # If the array elements are structures, process them recursively
-                                    if base_type_die.tag == "DW_TAG_structure_type":
-                                        for i in range(array_size):
-                                            element_offset = i * byte_size
-                                            nested_members, _ = self._get_structure_members_recursive(
-                                                base_type_die,
-                                                f"{member_name}[{i}]",
-                                                prev_address_offset + offset_value + element_offset,
-                                            )
-                                            members.update(nested_members)
+                            if base_type_die.tag == "DW_TAG_structure_type":
+                                for i in range(array_size):
+                                    element_offset = i * byte_size
+                                    nested_members, _ = self._get_structure_members_recursive(
+                                        base_type_die,
+                                        f"{member_name}[{i}]",
+                                        prev_address_offset + offset_value + element_offset,
+                                    )
+                                    members.update(nested_members)
 
                         elif member_type_die.tag == "DW_TAG_pointer_type":
                             # Recursively process pointer types and their members
                             self.var_name = parent_name
                             pointer_end_die = self._get_end_die(child_die)
-
                             # Process the pointer type itself
-                            #self._process_pointer_type(pointer_end_die)
+
 
                             # If the pointed-to type is a structure or array, process it recursively
                             base_type_attr = pointer_end_die.attributes.get("DW_AT_type")
@@ -463,7 +434,11 @@ class Generic_Parser(ElfParser):
                                             base_type_die, parent_name, prev_address_offset + offset_value
                                         )
                                         if nested_members:
-                                            members.update(nested_members)
+                                            members.update(base_type_die)
+
+
+                                    else:
+                                        self._process_pointer_type(pointer_end_die)
 
                         # elif member_type_die.tag == "DW_TAG_pointer_type": # pointer TRY TODO
                         #     self.var_name = parent_name
@@ -545,7 +520,7 @@ if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
-    elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+    #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
     print(len(variable_map))

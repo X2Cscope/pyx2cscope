@@ -99,7 +99,8 @@ def run_parsers_and_compare(elf_file_path):
 
 
 # Usage example
-# elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-# elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-elf_file = r"C:\_DESKTOP\_Projects\33ak_MCLV48V300W_FOC_PLL\project\pmsm.X\dist\default\production\pmsm.X.production.elf"
+elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
+#elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+#elf_file = r"C:\_DESKTOP\_Projects\33ak_MCLV48V300W_FOC_PLL\project\pmsm.X\dist\default\production\pmsm.X.production.elf"
+elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
 run_parsers_and_compare(elf_file)
