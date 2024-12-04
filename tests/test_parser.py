@@ -17,10 +17,17 @@ class TestParser:
         os.path.dirname(data.__file__), "MC_FOC_DYNO_SAME54_MCLV2.elf"
     )
 
-    def test_variable_does_not_exist(self, mocker):
+    def test_variable_16_does_not_exist(self, mocker):
         """Given a valid 16 bit elf file, check if an invalid variable outputs the expected behavior."""
         fake_serial(mocker, 16)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        variable = x2c_scope.get_variable("wrong_variable_name")
+        assert variable is None
+
+    def test_variable_32_does_not_exist(self, mocker):
+        """Given a valid 32 bit elf file, check if an invalid variable outputs the expected behavior."""
+        fake_serial(mocker, 16)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("wrong_variable_name")
         assert variable is None
 
@@ -34,7 +41,7 @@ class TestParser:
         assert len(variable) == 4, "array has wrong length"  # noqa: PLR2004
 
     def test_array_variable_32(self, mocker, array_size_test=10):
-        """Given a valid 16 bit elf file, check if an array variable is read correctly."""
+        """Given a valid 32 bit elf file, check if an array variable is read correctly."""
         fake_serial(mocker, 32)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("systemData.adc_data.potentiometer.buffer")
