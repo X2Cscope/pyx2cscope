@@ -31,9 +31,7 @@ def compare_dicts_intelligently(dict1, dict2):
         array_size_match = var1.array_size == var2.array_size
 
         if address_match and type_match and array_size_match:
-            same_values.append(
-                {"key": key, "in_dict1": var1, "in_dict2": var2}
-            )
+            same_values.append({"key": key, "in_dict1": var1, "in_dict2": var2})
         else:
             differences = {}
             if not address_match:
@@ -101,7 +99,7 @@ def run_parsers_and_compare(elf_file_path):
 
 
 # Usage example
-#elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-#elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
+# elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
+# elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+elf_file = r"C:\_DESKTOP\_Projects\33ak_MCLV48V300W_FOC_PLL\project\pmsm.X\dist\default\production\pmsm.X.production.elf"
 run_parsers_and_compare(elf_file)
