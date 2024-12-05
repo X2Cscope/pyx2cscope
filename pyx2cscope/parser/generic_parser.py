@@ -42,22 +42,7 @@ class Generic_Parser(ElfParser):
         if self.stream:
             self.stream.close()
 
-    def _map_variables(self) -> dict[str, VariableInfo]:
-        """Maps all variables in the ELF file."""
-        self.variable_map.clear()
-        for cu in self.dwarf_info.iter_CUs():
-            for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
-                self.expression_parser = DWARFExprParser(die.cu.structs)
-                self._process_variable_die(die)
 
-        # Remove variables with invalid addresses
-        self.variable_map = {
-            name: info
-            for name, info in self.variable_map.items()
-            if info.address is not None and info.address != 0
-        }
-
-        return self.variable_map
 
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
@@ -201,7 +186,7 @@ class Generic_Parser(ElfParser):
             return
 
         if end_die.tag == "DW_TAG_pointer_type":
-            self._process_pointer_type(end_die)
+            pass
         elif end_die.tag == "DW_TAG_structure_type":
             self._process_structure_type(end_die)
         elif end_die.tag == "DW_TAG_array_type":
@@ -275,16 +260,6 @@ class Generic_Parser(ElfParser):
             )
             die_variable = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
         return die_variable
-
-    def _process_pointer_type(self, end_die):
-        """Process a pointer type variable."""
-        type_name = "pointer"
-        self.variable_map[self.var_name] = VariableInfo(
-            name=self.var_name,
-            byte_size=end_die.attributes["DW_AT_byte_size"].value,
-            type=type_name,
-            address=self.address,
-        )
 
     def _process_structure_type(self, end_die):
         """Process a structure type variable."""
@@ -387,63 +362,22 @@ class Generic_Parser(ElfParser):
                         member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
                         if not member_type_die:
                             continue
-
                         # Process array types
                         if member_type_die.tag == "DW_TAG_array_type":
                             self._process_array_type(self._get_end_die(member_type_die))
-                            byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
+                            byte_size_attr = member_type_die.attributes.get("DW_AT_byte_size")
                             byte_size = (byte_size_attr.value if byte_size_attr else 0)
-                                    # If the array elements are structures, process them recursively
-                            if base_type_die.tag == "DW_TAG_structure_type":
+                            # If the array elements are structures, process them recursively
+                            if member_type_die.tag == "DW_TAG_structure_type":
+                                array_size = self._get_array_length(member_type_die)
                                 for i in range(array_size):
                                     element_offset = i * byte_size
                                     nested_members, _ = self._get_structure_members_recursive(
-                                        base_type_die,
+                                        member_type_die,
                                         f"{member_name}[{i}]",
                                         prev_address_offset + offset_value + element_offset,
                                     )
                                     members.update(nested_members)
-
-                        elif member_type_die.tag == "DW_TAG_pointer_type":
-                            # Recursively process pointer types and their members
-                            self.var_name = parent_name
-                            pointer_end_die = self._get_end_die(child_die)
-                            # Process the pointer type itself
-
-
-                            # If the pointed-to type is a structure or array, process it recursively
-                            base_type_attr = pointer_end_die.attributes.get("DW_AT_type")
-                            if base_type_attr:
-                                base_type_offset = base_type_attr.value + pointer_end_die.cu.cu_offset
-                                base_type_die = self.dwarf_info.get_DIE_from_refaddr(base_type_offset)
-                                if base_type_die:
-                                    base_type_die = self._get_end_die(base_type_die)
-
-                                    if base_type_die.tag == "DW_TAG_structure_type":
-                                        nested_members, _ = self._get_structure_members_recursive(
-                                            base_type_die, parent_name, prev_address_offset + offset_value
-                                        )
-                                        if nested_members:
-                                            members.update(nested_members)
-
-                                    elif base_type_die.tag == "DW_TAG_array_type":
-                                        array_size = self._get_array_length(base_type_die)
-                                        members[parent_name]["array_size"] = array_size
-                                        # Process array members recursively if the base type is another structure or array
-                                        nested_members, _ = self._get_structure_members_recursive(
-                                            base_type_die, parent_name, prev_address_offset + offset_value
-                                        )
-                                        if nested_members:
-                                            members.update(base_type_die)
-
-
-                                    else:
-                                        self._process_pointer_type(pointer_end_die)
-
-                        # elif member_type_die.tag == "DW_TAG_pointer_type": # pointer TRY TODO
-                        #     self.var_name = parent_name
-                        #     self._process_pointer_type(self._get_end_die(child_die))
-
                         else:
                             # Process regular members
                             member_type = self._get_member_type(type_offset)
@@ -514,6 +448,28 @@ class Generic_Parser(ElfParser):
                 if die.offset == offset:
                     return die
         return None
+
+    def _map_variables(self) -> dict[str, VariableInfo]:
+        """Maps all variables in the ELF file."""
+        self.variable_map.clear()
+        for cu in self.dwarf_info.iter_CUs():
+            for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
+                self.expression_parser = DWARFExprParser(die.cu.structs)
+                self._process_variable_die(die)
+
+        # Remove variables with invalid addresses
+        self.variable_map = {
+            name: info
+            for name, info in self.variable_map.items()
+            if info.address is not None and info.address != 0
+        }
+
+        #Update type _Bool to bool
+        for var_info in self.variable_map.values():
+            if var_info.type == "_Bool":
+                var_info.type = "bool"
+
+        return self.variable_map
 
 
 if __name__ == "__main__":
