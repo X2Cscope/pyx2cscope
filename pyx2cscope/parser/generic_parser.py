@@ -42,46 +42,15 @@ class Generic_Parser(ElfParser):
         if self.stream:
             self.stream.close()
 
-
-
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
 
         if "DW_AT_specification" in die_variable.attributes:
-            spec_ref_addr = (
-                die_variable.attributes["DW_AT_specification"].value
-                + die_variable.cu.cu_offset
-            )
-            spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
-
-            if spec_die.tag == "DW_TAG_variable":
-                self.die_variable = spec_die
-                self.var_name = self.die_variable.attributes.get(
-                    "DW_AT_name"
-                ).value.decode("utf-8")
-                self._extract_address(die_variable)
-            else:
-                return
-
-        elif (
-            die_variable.attributes.get("DW_AT_location")
-            and die_variable.attributes.get("DW_AT_name") is not None
-        ):
-            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-                "utf-8"
-            )
-            self.die_variable = die_variable
-            self._extract_address(die_variable)
-        elif (
-            die_variable.attributes.get("DW_AT_external")
-            and die_variable.attributes.get("DW_AT_name") is not None
-        ):
-            return # Skipping external variables.  YA
-            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-                "utf-8"
-            )
-            self.die_variable = die_variable
-            self._extract_address(die_variable)
+            self._process_specification(die_variable)
+        elif self._has_location_and_name(die_variable):
+            self._process_variable_with_location(die_variable)
+        elif self._has_external(die_variable):
+            return  # Skipping external variables. YA
         else:
             return
 
@@ -91,43 +60,71 @@ class Generic_Parser(ElfParser):
 
         ref_addr = type_attr.value + self.die_variable.cu.cu_offset
         type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
+        end_die = self._get_end_die(die_variable)
 
+        # Handle types
+        self._process_type(type_die, end_die)
+
+    def _process_specification(self, die_variable):
+        """Process variable specification."""
+        spec_ref_addr = (
+                die_variable.attributes["DW_AT_specification"].value
+                + die_variable.cu.cu_offset
+        )
+        spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
+
+        if spec_die.tag == "DW_TAG_variable":
+            self.die_variable = spec_die
+            self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+            self._extract_address(die_variable)
+
+    def _has_location_and_name(self, die_variable):
+        """Check if variable has location and name attributes."""
+        return (
+                die_variable.attributes.get("DW_AT_location")
+                and die_variable.attributes.get("DW_AT_name") is not None
+        )
+
+    def _process_variable_with_location(self, die_variable):
+        """Process variable that has location and name."""
+        self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+        self.die_variable = die_variable
+        self._extract_address(die_variable)
+
+    def _has_external(self, die_variable):
+        """Check if variable is external."""
+        return (
+                die_variable.attributes.get("DW_AT_external")
+                and die_variable.attributes.get("DW_AT_name") is not None
+        )
+
+    def _process_type(self, type_die, end_die):
+        """Handle types (enums, structures, arrays, etc.)."""
         # Handle enums specifically
         if type_die.tag == "DW_TAG_enumeration_type":
             self._process_enum_type(type_die)
         else:
-            end_die = self._get_end_die(type_die)
-            if end_die is None:
-                logging.warning(
-                    f"Skipping variable {self.var_name} due to missing end DIE"
-                )
-                return
-            self._processing_end_die(end_die)
+            self._process_end_die(type_die, end_die)
 
         # Handle structures and arrays
         if type_die.tag == "DW_TAG_structure_type":
             self._process_structure_type(type_die)
-
-        if type_die.tag == "DW_TAG_array_type":
+        elif type_die.tag == "DW_TAG_array_type":
             self._process_array_type(type_die)
 
-        if type_die.tag != "DW_TAG_volatile_type":
-            end_die = self._get_end_die(type_die)
-            if end_die is None:
-                logging.warning(
-                    f"Skipping variable {self.var_name} due to missing end DIE"
-                )
-                return
-            self._processing_end_die(end_die)
+        # Handle volatile types
+        if type_die.tag == "DW_TAG_volatile_type":
+            self._process_end_die(type_die, end_die)
 
-        elif type_die.tag == "DW_TAG_volatile_type":
-            end_die = self._get_end_die(type_die)
-            if end_die is None:
-                logging.warning(
-                    f"Skipping volatile type variable {self.var_name} due to missing end DIE"
-                )
-                return
-            self._processing_end_die(end_die)
+    def _process_end_die(self, type_die, end_die):
+        """Process the end DIE."""
+        end_die = self._get_end_die(type_die)
+        if end_die is None:
+            logging.warning(
+                f"Skipping variable {self.var_name} due to missing end DIE"
+            )
+            return
+        self._processing_end_die(end_die)
 
     def _process_enum_type(self, enum_die):
         """Process an enum type variable and map its members."""
@@ -158,22 +155,14 @@ class Generic_Parser(ElfParser):
         )
 
     def _get_end_die(self, current_die):
-        """Find the end DIE of a type."""
-        valid_words = {
-            "DW_TAG_base_type",
-            "DW_TAG_pointer_type",
-            "DW_TAG_structure_type",
-            "DW_TAG_array_type",
-        }
-        while current_die.tag not in valid_words:
-            if "DW_AT_type" not in current_die.attributes:
-                logging.warning(
-                    f"Skipping DIE at offset {current_die.offset} with no 'DW_AT_type' attribute"
-                )
+        """Find the end DIE of a type iteratively."""
+        valid_tags = {"DW_TAG_base_type", "DW_TAG_pointer_type", "DW_TAG_structure_type", "DW_TAG_array_type"}
+        while current_die and current_die.tag not in valid_tags:
+            type_attr = current_die.attributes.get("DW_AT_type")
+            if not type_attr:
+                logging.warning(f"Skipping DIE at offset {current_die.offset} with no 'DW_AT_type'")
                 return None
-            ref_addr = (
-                current_die.attributes["DW_AT_type"].value + current_die.cu.cu_offset
-            )
+            ref_addr = type_attr.value + current_die.cu.cu_offset
             current_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         return current_die
 
@@ -206,17 +195,13 @@ class Generic_Parser(ElfParser):
             int or None: The extracted address, or None if it couldn't be determined.
         """
         try:
-            expression_parser = DWARFExprParser(structs)
-            expression = expression_parser.parse_expr(expr_value)
-            # Supported operations for address extraction
-            valid_ops = {"DW_OP_plus_uconst", "DW_OP_plus_const", "DW_OP_addr"}
-
+            expression = DWARFExprParser(structs).parse_expr(expr_value)
             for op in expression:
-                if op.op_name in valid_ops:
+                if op.op_name in {"DW_OP_plus_uconst", "DW_OP_plus_const", "DW_OP_addr"}:
                     return op.args[0]
-
         except Exception as e:
             logging.error(f"Error parsing DWARF expression: {e}", exc_info=True)
+        return None
 
         return None
 
@@ -311,13 +296,11 @@ class Generic_Parser(ElfParser):
             address=self.address,
         )
 
-    def _get_structure_members_recursive(
-            self, die, parent_name: str, prev_address_offset=0
-    ):
-        """Recursively gets structure members from a DWARF DIE, including arrays."""
+    def _get_structure_members_recursive(self, die, parent_name: str, prev_address_offset=0):
+        """Recursively extracts structure members from a DWARF DIE, including arrays."""
         members = {}
 
-        def member_offset(die) -> int | None:
+        def get_member_offset(die) -> int | None:
             """
             Extracts the offset for a structure member.
 
@@ -336,17 +319,59 @@ class Generic_Parser(ElfParser):
                 return value
             if isinstance(value, ListContainer):
                 return self._extract_address_from_expression(value, die.cu.structs)
-                # further info about types see:
-                # https://dwarfstd.org/doc/Dwarf3.pdf
             logging.warning(f"Unknown data_member_location value: {value}")
             return None
 
-        for child_die in die.iter_children():
-            if child_die.tag in {"DW_TAG_member"}:
-                member = {}
+        def process_array_type(member_type_die, member_name, offset_value):
+            """Process array type structure members recursively."""
+            byte_size_attr = member_type_die.attributes.get("DW_AT_byte_size")
+            byte_size = byte_size_attr.value if byte_size_attr else 0
+            array_size = self._get_array_length(member_type_die)
 
-                # Get the offset of the member
-                offset_value = member_offset(child_die)
+            for i in range(array_size):
+                element_offset = i * byte_size
+                nested_members, _ = self._get_structure_members_recursive(
+                    member_type_die, f"{member_name}[{i}]", prev_address_offset + offset_value + element_offset
+                )
+                members.update(nested_members)
+
+        def process_structure_member(child_die, offset_value, member_name):
+            """Process individual structure member, including handling nested types and arrays."""
+            member = {}
+            type_attr = child_die.attributes.get("DW_AT_type")
+            if type_attr:
+                type_offset = type_attr.value + child_die.cu.cu_offset
+                try:
+                    member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
+                    if not member_type_die:
+                        return None
+                    if member_type_die.tag == "DW_TAG_array_type":
+                        self._process_array_type(self._get_end_die(member_type_die))
+                        process_array_type(member_type_die, member_name, offset_value)
+                    else:
+                        member_type = self._get_member_type(type_offset)
+                        if member_type:
+                            member["type"] = member_type["name"]
+                            member["byte_size"] = member_type["byte_size"]
+                            member["address_offset"] = prev_address_offset + offset_value
+                            member["array_size"] = self._get_array_length(child_die)
+                            members[member_name] = member
+
+                    # Handle nested structures
+                    nested_die = self._get_end_die(child_die)
+                    if nested_die.tag == "DW_TAG_structure_type":
+                        nested_members, _ = self._get_structure_members_recursive(
+                            nested_die, member_name, prev_address_offset + offset_value
+                        )
+                        if nested_members:
+                            members.update(nested_members)
+
+                except Exception as e:
+                    logging.error(f"Exception processing member '{member_name}': {e}", exc_info=True)
+
+        for child_die in die.iter_children():
+            if child_die.tag == "DW_TAG_member":
+                offset_value = get_member_offset(child_die)
                 if offset_value is None:
                     continue
 
@@ -355,54 +380,7 @@ class Generic_Parser(ElfParser):
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
 
-                type_attr = child_die.attributes.get("DW_AT_type")
-                if type_attr:
-                    type_offset = type_attr.value + child_die.cu.cu_offset
-                    try:
-                        member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
-                        if not member_type_die:
-                            continue
-                        # Process array types
-                        if member_type_die.tag == "DW_TAG_array_type":
-                            self._process_array_type(self._get_end_die(member_type_die))
-                            byte_size_attr = member_type_die.attributes.get("DW_AT_byte_size")
-                            byte_size = (byte_size_attr.value if byte_size_attr else 0)
-                            # If the array elements are structures, process them recursively
-                            if member_type_die.tag == "DW_TAG_structure_type":
-                                array_size = self._get_array_length(member_type_die)
-                                for i in range(array_size):
-                                    element_offset = i * byte_size
-                                    nested_members, _ = self._get_structure_members_recursive(
-                                        member_type_die,
-                                        f"{member_name}[{i}]",
-                                        prev_address_offset + offset_value + element_offset,
-                                    )
-                                    members.update(nested_members)
-                        else:
-                            # Process regular members
-                            member_type = self._get_member_type(type_offset)
-                            if member_type:
-                                member["type"] = member_type["name"]
-                                member["byte_size"] = member_type["byte_size"]
-                                member["address_offset"] = (
-                                        prev_address_offset + offset_value
-                                )
-                                member["array_size"] = self._get_array_length(child_die)
-                                members[member_name] = member
-
-                            # Handle nested structures
-                            nested_die = self._get_end_die(child_die)
-                            if nested_die.tag == "DW_TAG_structure_type":
-                                nested_members, _ = self._get_structure_members_recursive(
-                                    nested_die,
-                                    member_name,
-                                    prev_address_offset + offset_value,
-                                )
-                                if nested_members:
-                                    members.update(nested_members)
-                    except Exception as e:
-                        logging.error("Exception while processing member", exc_info=e)
-                        continue
+                process_structure_member(child_die, offset_value, member_name)
 
         return members, prev_address_offset
 
@@ -476,10 +454,11 @@ if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
-    #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+    elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
-    print(len(variable_map))
+
     print(variable_map)
+    print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
