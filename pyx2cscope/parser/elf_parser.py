@@ -114,3 +114,20 @@ class ElfParser(ABC):
         Returns:
             Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
         """
+
+class DummyParser(ElfParser):
+    """Dummy implementation of ElfParser class.
+
+    This class provides basic functionality of a parser in case an elf_file is
+    not supplied. It is a pure implementation of class ElfParser.
+    """
+
+    def __init__(self, elf_path = ""):
+        """DummyParser constructor takes no argument."""
+        super().__init__(elf_path = elf_path)
+
+    def _load_elf_file(self):
+        pass
+
+    def _map_variables(self) -> Dict[str, VariableInfo]:
+        return {}
