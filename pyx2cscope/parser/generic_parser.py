@@ -315,95 +315,95 @@ class Generic_Parser(ElfParser):
             address=self.address,
         )
 
-    def _get_structure_members_recursive(self, die, parent_name: str, prev_address_offset=0):
+    def _get_member_offset(self, die) -> int | None:
+        """
+        Extracts the offset for a structure member.
+
+        Args:
+            die: The DIE of the structure member.
+
+        Returns:
+            int or None: The offset value, or None if it couldn't be determined.
+        """
+        assert die.tag == "DW_TAG_member"
+        data_member_location = die.attributes.get("DW_AT_data_member_location")
+        if data_member_location is None:
+            return None
+        value = data_member_location.value
+        if isinstance(value, int):
+            return value
+        if isinstance(value, ListContainer):
+            return self._extract_address_from_expression(value, die.cu.structs)
+        logging.warning(f"Unknown data_member_location value: {value}")
+        return None
+
+    def process_member_array_type(self, member_type_die, member_name, prev_offset, offset):
+        """Process array type structure members recursively."""
+        members = {}
+        byte_size_attr = member_type_die.attributes.get("DW_AT_byte_size")
+        byte_size = byte_size_attr.value if byte_size_attr else 0
+        array_size = self._get_array_length(member_type_die)
+
+        for i in range(array_size):
+            element_offset = i * byte_size
+            nested_members, _ = self._get_structure_members_recursive(
+                member_type_die, f"{member_name}[{i}]", prev_offset + offset + element_offset
+            )
+            members.update(nested_members)
+        return members
+
+    def _process_structure_member(self, members, child_die, prev_offset, offset, parent_name):
+        """Process individual structure member, including handling nested types and arrays."""
+        member = {}
+        type_attr = child_die.attributes.get("DW_AT_type")
+        if type_attr:
+            type_offset = type_attr.value + child_die.cu.cu_offset
+            try:
+                member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
+                if not member_type_die:
+                    return
+
+                if member_type_die.tag == "DW_TAG_array_type":
+                    nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset, offset)
+                    member.update(nested_array_members)
+                    return
+
+                member_type = self._get_member_type(type_offset)
+                if member_type:
+                    member["type"] = member_type["name"]
+                    member["byte_size"] = member_type["byte_size"]
+                    member["address_offset"] = prev_offset + offset
+                    member["array_size"] = 0
+                    members[parent_name] = member
+
+                # Handle nested structures
+                nested_die = self._get_end_die(child_die)
+                if nested_die.tag == "DW_TAG_structure_type":
+                    nested_members, _ = self._get_structure_members_recursive(
+                        nested_die, parent_name, prev_offset + offset
+                    )
+                    if nested_members:
+                        members.update(nested_members)
+
+            except Exception as e:
+                logging.error(f"Exception processing member '{parent_name}': {e}", exc_info=True)
+
+    def _get_structure_members_recursive(self, die, parent_name: str, prev_offset=0):
         """Recursively extracts structure members from a DWARF DIE, including arrays."""
         members = {}
-
-        def get_member_offset(die) -> int | None:
-            """
-            Extracts the offset for a structure member.
-
-            Args:
-                die: The DIE of the structure member.
-
-            Returns:
-                int or None: The offset value, or None if it couldn't be determined.
-            """
-            assert die.tag == "DW_TAG_member"
-            data_member_location = die.attributes.get("DW_AT_data_member_location")
-            if data_member_location is None:
-                return None
-            value = data_member_location.value
-            if isinstance(value, int):
-                return value
-            if isinstance(value, ListContainer):
-                return self._extract_address_from_expression(value, die.cu.structs)
-            logging.warning(f"Unknown data_member_location value: {value}")
-            return None
-
-        def process_array_type(member_type_die, member_name, offset_value):
-            """Process array type structure members recursively."""
-            byte_size_attr = member_type_die.attributes.get("DW_AT_byte_size")
-            byte_size = byte_size_attr.value if byte_size_attr else 0
-            array_size = self._get_array_length(member_type_die)
-
-            for i in range(array_size):
-                element_offset = i * byte_size
-                nested_members, _ = self._get_structure_members_recursive(
-                    member_type_die, f"{member_name}[{i}]", prev_address_offset + offset_value + element_offset
-                )
-                members.update(nested_members)
-            return members
-
-
-        def process_structure_member(child_die, offset_value, member_name):
-            """Process individual structure member, including handling nested types and arrays."""
-            member = {}
-            type_attr = child_die.attributes.get("DW_AT_type")
-            if type_attr:
-                type_offset = type_attr.value + child_die.cu.cu_offset
-                try:
-                    member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
-                    if not member_type_die:
-                        return None
-                    if member_type_die.tag == "DW_TAG_array_type":
-                        nested_array_members = process_array_type(member_type_die, member_name, offset_value)
-                        members.update(nested_array_members)
-                    else:
-                        member_type = self._get_member_type(type_offset)
-                        if member_type:
-                            member["type"] = member_type["name"]
-                            member["byte_size"] = member_type["byte_size"]
-                            member["address_offset"] = prev_address_offset + offset_value
-                            member["array_size"] = self._get_array_length(child_die)
-                            members[member_name] = member
-
-                    # Handle nested structures
-                    nested_die = self._get_end_die(child_die)
-                    if nested_die.tag == "DW_TAG_structure_type":
-                        nested_members, _ = self._get_structure_members_recursive(
-                            nested_die, member_name, prev_address_offset + offset_value
-                        )
-                        if nested_members:
-                            members.update(nested_members)
-
-                except Exception as e:
-                    logging.error(f"Exception processing member '{member_name}': {e}", exc_info=True)
-
         for child_die in die.iter_children():
+            member = {}
             if child_die.tag == "DW_TAG_member":
-                offset_value = get_member_offset(child_die)
-                if offset_value is None:
+                offset = self._get_member_offset(child_die)
+                if offset is None:
                     continue
-
                 member_name = parent_name
                 name_attr = child_die.attributes.get("DW_AT_name")
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
-
-                process_structure_member(child_die, offset_value, member_name)
-
-        return members, prev_address_offset
+                self._process_structure_member(member, child_die, prev_offset, offset, member_name)
+                members.update(member)
+        return members, prev_offset
 
     def _get_structure_members(self, structure_die, var_name):
         """Retrieves structure members from a DWARF DIE."""
