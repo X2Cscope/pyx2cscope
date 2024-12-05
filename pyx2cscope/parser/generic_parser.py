@@ -363,17 +363,17 @@ class Generic_Parser(ElfParser):
                 if not member_type_die:
                     return
 
-                if member_type_die.tag == "DW_TAG_array_type":
-                    nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset, offset)
-                    member.update(nested_array_members)
-                    return
+                # if member_type_die.tag == "DW_TAG_array_type":
+                #     nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset, offset)
+                #     member.update(nested_array_members)
+                #     #return
 
                 member_type = self._get_member_type(type_offset)
                 if member_type:
                     member["type"] = member_type["name"]
                     member["byte_size"] = member_type["byte_size"]
                     member["address_offset"] = prev_offset + offset
-                    member["array_size"] = 0
+                    member["array_size"] = self._get_array_length(member_type_die)
                     members[parent_name] = member
 
                 # Handle nested structures
