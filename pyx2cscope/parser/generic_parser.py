@@ -42,15 +42,46 @@ class Generic_Parser(ElfParser):
         if self.stream:
             self.stream.close()
 
+
+
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
 
         if "DW_AT_specification" in die_variable.attributes:
-            self._process_specification(die_variable)
-        elif self._has_location_and_name(die_variable):
-            self._process_variable_with_location(die_variable)
-        elif self._has_external(die_variable):
-            return  # Skipping external variables. YA
+            spec_ref_addr = (
+                die_variable.attributes["DW_AT_specification"].value
+                + die_variable.cu.cu_offset
+            )
+            spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
+
+            if spec_die.tag == "DW_TAG_variable":
+                self.die_variable = spec_die
+                self.var_name = self.die_variable.attributes.get(
+                    "DW_AT_name"
+                ).value.decode("utf-8")
+                self._extract_address(die_variable)
+            else:
+                return
+
+        elif (
+            die_variable.attributes.get("DW_AT_location")
+            and die_variable.attributes.get("DW_AT_name") is not None
+        ):
+            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+                "utf-8"
+            )
+            self.die_variable = die_variable
+            self._extract_address(die_variable)
+        elif (
+            die_variable.attributes.get("DW_AT_external")
+            and die_variable.attributes.get("DW_AT_name") is not None
+        ):
+            return # Skipping external variables.  YA
+            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+                "utf-8"
+            )
+            self.die_variable = die_variable
+            self._extract_address(die_variable)
         else:
             return
 
@@ -62,69 +93,55 @@ class Generic_Parser(ElfParser):
         type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         end_die = self._get_end_die(die_variable)
 
-        # Handle types
-        self._process_type(type_die, end_die)
-
-    def _process_specification(self, die_variable):
-        """Process variable specification."""
-        spec_ref_addr = (
-                die_variable.attributes["DW_AT_specification"].value
-                + die_variable.cu.cu_offset
-        )
-        spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
-
-        if spec_die.tag == "DW_TAG_variable":
-            self.die_variable = spec_die
-            self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
-            self._extract_address(die_variable)
-
-    def _has_location_and_name(self, die_variable):
-        """Check if variable has location and name attributes."""
-        return (
-                die_variable.attributes.get("DW_AT_location")
-                and die_variable.attributes.get("DW_AT_name") is not None
-        )
-
-    def _process_variable_with_location(self, die_variable):
-        """Process variable that has location and name."""
-        self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
-        self.die_variable = die_variable
-        self._extract_address(die_variable)
-
-    def _has_external(self, die_variable):
-        """Check if variable is external."""
-        return (
-                die_variable.attributes.get("DW_AT_external")
-                and die_variable.attributes.get("DW_AT_name") is not None
-        )
-
-    def _process_type(self, type_die, end_die):
-        """Handle types (enums, structures, arrays, etc.)."""
         # Handle enums specifically
-        if type_die.tag == "DW_TAG_enumeration_type":
-            self._process_enum_type(type_die)
+
+        # else:
+        #     end_die_test = self._get_end_die(type_die)
+        #     if end_die_test is None:
+        #         logging.warning(
+        #             f"Skipping variable {self.var_name} due to missing end DIE"
+        #         )
+        #         return
+        #     self._processing_end_die(end_die_test)
+
+        if end_die is not None and end_die.tag is not None:
+            self._processing_end_die(end_die)
         else:
-            self._process_end_die(type_die, end_die)
+            end_die = self._get_end_die(type_die)
+            if end_die is None:
+                logging.warning(
+                    f"Skipping variable {self.var_name} due to missing end DIE"
+                )
+                return
+            self._processing_end_die(end_die)
 
-        # Handle structures and arrays
-        if type_die.tag == "DW_TAG_structure_type":
-            self._process_structure_type(type_die)
-        elif type_die.tag == "DW_TAG_array_type":
-            self._process_array_type(type_die)
-
-        # Handle volatile types
-        if type_die.tag == "DW_TAG_volatile_type":
-            self._process_end_die(type_die, end_die)
-
-    def _process_end_die(self, type_die, end_die):
-        """Process the end DIE."""
-        end_die = self._get_end_die(type_die)
-        if end_die is None:
-            logging.warning(
-                f"Skipping variable {self.var_name} due to missing end DIE"
-            )
-            return
-        self._processing_end_die(end_die)
+        # # Handle Types
+        # if end_die.tag == "DW_TAG_enumeration_type":
+        #     self._process_enum_type(type_die)
+        #
+        # elif end_die.tag and end_die.tag == "DW_TAG_structure_type":
+        #     self._process_structure_type(type_die)
+        #
+        # elif end_die.tag == "DW_TAG_array_type":
+        #     self._process_array_type(type_die)
+        #
+        # elif end_die.tag != "DW_TAG_volatile_type":
+        #     end_die = self._get_end_die(type_die)
+        #     if end_die is None:
+        #         logging.warning(
+        #             f"Skipping variable {self.var_name} due to missing end DIE"
+        #         )
+        #         return
+        #     self._processing_end_die(end_die)
+        #
+        # elif type_die.tag == "DW_TAG_volatile_type":
+        #     end_die = self._get_end_die(type_die)
+        #     if end_die is None:
+        #         logging.warning(
+        #             f"Skipping volatile type variable {self.var_name} due to missing end DIE"
+        #         )
+        #         return
+        #     self._processing_end_die(end_die)
 
     def _process_enum_type(self, enum_die):
         """Process an enum type variable and map its members."""
@@ -176,6 +193,8 @@ class Generic_Parser(ElfParser):
 
         if end_die.tag == "DW_TAG_pointer_type":
             pass
+        elif end_die.tag == "DW_TAG_enumeration_type":
+            self._process_enum_type(end_die)
         elif end_die.tag == "DW_TAG_structure_type":
             self._process_structure_type(end_die)
         elif end_die.tag == "DW_TAG_array_type":
@@ -272,7 +291,7 @@ class Generic_Parser(ElfParser):
             if base_type_die:
                 base_type_die = self._get_end_die(base_type_die)
                 type_name = base_type_die.attributes.get("DW_AT_name")
-                type_name = type_name.value.decode("utf-8") if type_name else "unknown"
+                type_name = type_name.value.decode("utf-8") if type_name else "Array Unknown"
                 byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
                 byte_size = byte_size_attr.value if byte_size_attr else 0
                 self.variable_map[self.var_name] = VariableInfo(
@@ -287,7 +306,7 @@ class Generic_Parser(ElfParser):
         """Process a base type variable."""
         type_name_attr = end_die.attributes.get("DW_AT_name")
         type_name = (
-            type_name_attr.value.decode("utf-8") if type_name_attr else "unknown"
+            type_name_attr.value.decode("utf-8") if type_name_attr else "base unknown"
         )
         self.variable_map[self.var_name] = VariableInfo(
             name=self.var_name,
@@ -334,6 +353,8 @@ class Generic_Parser(ElfParser):
                     member_type_die, f"{member_name}[{i}]", prev_address_offset + offset_value + element_offset
                 )
                 members.update(nested_members)
+            return members
+
 
         def process_structure_member(child_die, offset_value, member_name):
             """Process individual structure member, including handling nested types and arrays."""
@@ -346,8 +367,8 @@ class Generic_Parser(ElfParser):
                     if not member_type_die:
                         return None
                     if member_type_die.tag == "DW_TAG_array_type":
-                        self._process_array_type(self._get_end_die(member_type_die))
-                        process_array_type(member_type_die, member_name, offset_value)
+                        nested_array_members = process_array_type(member_type_die, member_name, offset_value)
+                        members.update(nested_array_members)
                     else:
                         member_type = self._get_member_type(type_offset)
                         if member_type:
@@ -462,3 +483,31 @@ if __name__ == "__main__":
     print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
+
+    duplicates_by_address = {}  # Dictionary to track duplicates by address
+    duplicates_by_name = {}  # Dictionary to track duplicates by name
+    # Check for duplicates in the variable names and addresses
+    # Check for duplicates by address
+    # Check for duplicates by address and name
+    for var_name, var_info in variable_map.items():
+        # Check for duplicate address
+        if var_info.address in duplicates_by_address:
+            # Log both variables that have the same address, including their names and details
+            logging.warning(f"Duplicate address found for variable: {var_name} at address {var_info.address}.")
+            logging.warning(
+                f"First variable: {duplicates_by_address[var_info.address].name} - {duplicates_by_address[var_info.address]} at address {var_info.address}.")
+            logging.warning(f"Second variable: {var_info.name} - {var_info} at address {var_info.address}.")
+        else:
+            duplicates_by_address[var_info.address] = var_info
+
+        # Check for duplicate name
+        if var_name in duplicates_by_name:
+            # Log both variables that have the same name
+            logging.warning(f"Duplicate name found for variable: {var_name} with address {var_info.address}.")
+            logging.warning(
+                f"First variable: {duplicates_by_name[var_name].name} - {duplicates_by_name[var_name]} at address {duplicates_by_name[var_name].address}.")
+            logging.warning(f"Second variable: {var_info.name} - {var_info} at address {var_info.address}.")
+        else:
+            duplicates_by_name[var_name] = var_info
+
+

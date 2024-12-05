@@ -15,6 +15,10 @@ class VariableInfo:
 
 
 def compare_dicts_intelligently(dict1, dict2):
+    # Exclude pointer type variables from comparison
+    dict1 = {key: value for key, value in dict1.items() if not value.type.startswith("pointer")}
+    dict2 = {key: value for key, value in dict2.items() if not value.type.startswith("pointer")}
+
     common_keys = set(dict1.keys()).intersection(set(dict2.keys()))
     unique_to_dict1 = set(dict1.keys()) - set(dict2.keys())
     unique_to_dict2 = set(dict2.keys()) - set(dict1.keys())
@@ -72,10 +76,6 @@ def compare_dicts_intelligently(dict1, dict2):
         if "array_size_diff" in diff["differences"]:
             print(f"  Array size difference: {diff['differences']['array_size_diff']}")
 
-    # print("\nCommon keys with same values:")
-    # for same in same_values:
-    #      print(f"{same['key']}")
-
     print(f"\nTotal variables in dict1: {len(dict1)}")
     print(f"Total variables in dict2: {len(dict2)}")
     print(f"Variables in both parsers: {len(common_keys)}")
@@ -100,7 +100,7 @@ def run_parsers_and_compare(elf_file_path):
 
 # Usage example
 elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-#elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
 #elf_file = r"C:\_DESKTOP\_Projects\33ak_MCLV48V300W_FOC_PLL\project\pmsm.X\dist\default\production\pmsm.X.production.elf"
-elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
+#elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
 run_parsers_and_compare(elf_file)
