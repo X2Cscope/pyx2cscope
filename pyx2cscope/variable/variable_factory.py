@@ -3,7 +3,7 @@
 import logging
 
 from mchplnet.lnet import LNet
-from pyx2cscope.parser.generic_parser import Generic_Parser
+from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
     VariableFloat,
@@ -44,7 +44,7 @@ class VariableFactory:
         """
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
-        parser = Generic_Parser
+        parser = GenericParser
         if (
             self.device_info.processor_id == "__GENERIC_MICROCHIP_DSPIC__"
         ):  # TODO implement it better for future cores.

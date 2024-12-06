@@ -4,7 +4,6 @@ It focuses on extracting structure members and variable information from DWARF d
 """
 
 import logging
-from enum import member
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
@@ -14,21 +13,18 @@ from elftools.construct.lib import ListContainer
 from elftools.dwarf.dwarf_expr import DWARFExprParser
 
 
-class Generic_Parser(ElfParser):
+class GenericParser(ElfParser):
     """Class for parsing ELF files compatible with 32-bit architectures."""
 
     def __init__(self, elf_path):
-        """Initialize the Elf32Parser with the given ELF file path."""
-        self.elf_path = elf_path
-        self.variable_map = {}
-        self.symbol_table = {}  # Ensure this initialization is included
+        """Initialize the GenericParser with the given ELF file path."""
+
+        super().__init__(elf_path)
+
+        # These variables are used as local holders during the file parsing
         self.address = None
         self.var_name = None
         self.die_variable = None
-        self.elf_file = None
-        self.dwarf_info = None
-        self._load_elf_file()
-        self._load_symbol_table()  # Load symbol table entries into a dictionary
 
     def _load_elf_file(self):
         try:
@@ -42,8 +38,6 @@ class Generic_Parser(ElfParser):
         """Closes the ELF file stream."""
         if self.stream:
             self.stream.close()
-
-
 
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
@@ -177,8 +171,8 @@ class Generic_Parser(ElfParser):
             for op in expression:
                 if op.op_name in {"DW_OP_plus_uconst", "DW_OP_plus_const", "DW_OP_addr"}:
                     return op.args[0]
-        except Exception as e:
-            logging.error(f"Error parsing DWARF expression: {e}", exc_info=True)
+        except TypeError as e:
+            logging.warning(f"Error parsing DWARF expression: {e}")
         return None
 
     def _extract_address(self, die_variable):
@@ -400,24 +394,28 @@ class Generic_Parser(ElfParser):
                     return array_length
         return 0
 
-    def _get_member_type(self, type_refaddr):
+    def _get_member_type(self, type_ref_addr):
         """Retrieve the type information from DWARF given a type offset."""
-        type_die = self.dwarf_info.get_DIE_from_refaddr(type_refaddr)
-        if type_die:
-            type_die = self._get_end_die(type_die)
-            if type_die.tag == "DW_TAG_base_type":
-                type_name = type_die.attributes["DW_AT_name"].value.decode("utf-8")
-                byte_size_attr = type_die.attributes.get("DW_AT_byte_size")
-                byte_size = byte_size_attr.value if byte_size_attr else None
-                return {
-                    "name": type_name,
-                    "byte_size": byte_size,
-                }
-            elif type_die.tag != "DW_TAG_base_type":
-                base_type_attr = type_die.attributes.get("DW_AT_type")
-                if base_type_attr:
-                    base_type_offset = base_type_attr.value
-                    return self._get_member_type(base_type_offset)
+        try:
+            type_die = self.dwarf_info.get_DIE_from_refaddr(type_ref_addr)
+        except KeyError:
+            return
+        type_die = self._get_end_die(type_die)
+        if type_die is None:
+            return
+        if type_die.tag == "DW_TAG_base_type":
+            type_name = type_die.attributes["DW_AT_name"].value.decode("utf-8")
+            byte_size_attr = type_die.attributes.get("DW_AT_byte_size")
+            byte_size = byte_size_attr.value if byte_size_attr else None
+            return {
+                "name": type_name,
+                "byte_size": byte_size,
+            }
+        # if we have a different tag than "DW_TAG_base_type", keep on searching
+        base_type_attr = type_die.attributes.get("DW_AT_type")
+        if base_type_attr:
+            base_type_offset = base_type_attr.value
+            return self._get_member_type(base_type_offset)
 
     def _get_dwarf_die_by_offset(self, offset):
         """Retrieve a DWARF DIE given its offset."""
@@ -454,12 +452,11 @@ class Generic_Parser(ElfParser):
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
-    elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
+    # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
     #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-    elf_file = r"C:\_DESKTOP\pyx2cscope\pyx2cscope\tests\data\qspin_foc_same54.elf"
-    elf_reader = Generic_Parser(elf_file)
+    elf_file = r"..\..\tests\data\qspin_foc_same54.elf"
+    elf_reader = GenericParser(elf_file)
     variable_map = elf_reader._map_variables()
-
 
     print(variable_map)
     print(len(variable_map))

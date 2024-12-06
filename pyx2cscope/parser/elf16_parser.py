@@ -36,6 +36,14 @@ class Elf16Parser(ElfParser):
         xc16_read_elf_path (str): Path to the XC16 `readelf` executable.
     """
 
+    def _load_symbol_table(self):
+        """Load symbol tables.
+
+        This method exists at this class only for compatibility.
+        This class is deprecated and not maintained on current version.
+        """
+        pass
+
     def __init__(self, elf_path):
         """Initialize the Elf16Parser instance.
 

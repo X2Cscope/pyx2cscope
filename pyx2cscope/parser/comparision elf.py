@@ -1,4 +1,4 @@
-from pyx2cscope.parser.generic_parser import Generic_Parser
+from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 
 
@@ -85,7 +85,7 @@ def compare_dicts_intelligently(dict1, dict2):
 
 def run_parsers_and_compare(elf_file_path):
     # Parse the ELF file with both 32-bit and 16-bit parsers
-    elf32_parser = Generic_Parser(elf_file_path)
+    elf32_parser = GenericParser(elf_file_path)
     elf16_parser = Elf16Parser(elf_file_path)
 
     # Generate variable maps for each parser

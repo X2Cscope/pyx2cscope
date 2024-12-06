@@ -43,7 +43,6 @@ class ElfParser(ABC):
         dwarf_info (dict): A dictionary to store DWARF information from the ELF file.
         elf_file: An object representing the ELF file, specific to the implementation.
         variable_map (dict): A map of variable names to their corresponding information.
-        var_name (str): The name of the current variable being processed.
 
     Methods:
         get_var_info: Return information about a specified variable.
@@ -61,9 +60,11 @@ class ElfParser(ABC):
         self.dwarf_info = {}
         self.elf_file = None
         self.variable_map = {}
-        self.var_name = None
+        self.symbol_table = {}
         self.array_size = 0
         self._load_elf_file()
+        self._load_symbol_table()
+
 
     def get_var_info(self, name: str) -> Optional[VariableInfo]:
         """Return the VariableInfo associated with a given variable name, or None if not found.
@@ -101,6 +102,13 @@ class ElfParser(ABC):
     @abstractmethod
     def _load_elf_file(self):
         """Load the ELF file according to the specific hardware architecture.
+
+        This method should be implemented by subclasses to handle different ELF file formats.
+        """
+
+    @abstractmethod
+    def _load_symbol_table(self):
+        """Load symbol table according to the specific hardware architecture.
 
         This method should be implemented by subclasses to handle different ELF file formats.
         """
