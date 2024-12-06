@@ -47,44 +47,41 @@ class Generic_Parser(ElfParser):
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
 
+        # In DIE structure, a variable to be considered valid, has under
+        # its attributes the attribute DW_AT_specification or DW_AT_location
         if "DW_AT_specification" in die_variable.attributes:
             spec_ref_addr = (
                 die_variable.attributes["DW_AT_specification"].value
                 + die_variable.cu.cu_offset
             )
             spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
-
-            if spec_die.tag == "DW_TAG_variable":
-                self.die_variable = spec_die
-                self.var_name = self.die_variable.attributes.get(
-                    "DW_AT_name"
-                ).value.decode("utf-8")
-                self._extract_address(die_variable)
-            else:
+            if spec_die.tag != "DW_TAG_variable":
                 return
-
+            self.die_variable = spec_die
         elif (
             die_variable.attributes.get("DW_AT_location")
             and die_variable.attributes.get("DW_AT_name") is not None
         ):
-            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-                "utf-8"
-            )
             self.die_variable = die_variable
-            self._extract_address(die_variable)
-        elif (
-            die_variable.attributes.get("DW_AT_external")
-            and die_variable.attributes.get("DW_AT_name") is not None
-        ):
-            return # Skipping external variables.  YA
-            self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-                "utf-8"
-            )
-            self.die_variable = die_variable
-            self._extract_address(die_variable)
+        # YA/EP We are not sure if we need to catch external variables.
+        # probably they are already being detected anywhere else as static or global
+        # variables, so this step may be avoided here.
+        # We let the code here in case we want to process them anyway.
+        # elif (
+        #     die_variable.attributes.get("DW_AT_external")
+        #     and die_variable.attributes.get("DW_AT_name") is not None
+        # ):
+        #     return # Skipping external variables.  YA
+        #     self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+        #         "utf-8"
+        #     )
+        #     self.die_variable = die_variable
+        #     self._extract_address(die_variable)
         else:
             return
 
+        self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
+        self.address = self._extract_address(die_variable)
         type_attr = self.die_variable.attributes.get("DW_AT_type")
         if type_attr is None:
             return
@@ -92,17 +89,6 @@ class Generic_Parser(ElfParser):
         ref_addr = type_attr.value + self.die_variable.cu.cu_offset
         type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         end_die = self._get_end_die(die_variable)
-
-        # Handle enums specifically
-
-        # else:
-        #     end_die_test = self._get_end_die(type_die)
-        #     if end_die_test is None:
-        #         logging.warning(
-        #             f"Skipping variable {self.var_name} due to missing end DIE"
-        #         )
-        #         return
-        #     self._processing_end_die(end_die_test)
 
         if end_die is not None and end_die.tag is not None:
             self._processing_end_die(end_die)
@@ -114,34 +100,6 @@ class Generic_Parser(ElfParser):
                 )
                 return
             self._processing_end_die(end_die)
-
-        # # Handle Types
-        # if end_die.tag == "DW_TAG_enumeration_type":
-        #     self._process_enum_type(type_die)
-        #
-        # elif end_die.tag and end_die.tag == "DW_TAG_structure_type":
-        #     self._process_structure_type(type_die)
-        #
-        # elif end_die.tag == "DW_TAG_array_type":
-        #     self._process_array_type(type_die)
-        #
-        # elif end_die.tag != "DW_TAG_volatile_type":
-        #     end_die = self._get_end_die(type_die)
-        #     if end_die is None:
-        #         logging.warning(
-        #             f"Skipping variable {self.var_name} due to missing end DIE"
-        #         )
-        #         return
-        #     self._processing_end_die(end_die)
-        #
-        # elif type_die.tag == "DW_TAG_volatile_type":
-        #     end_die = self._get_end_die(type_die)
-        #     if end_die is None:
-        #         logging.warning(
-        #             f"Skipping volatile type variable {self.var_name} due to missing end DIE"
-        #         )
-        #         return
-        #     self._processing_end_die(end_die)
 
     def _process_enum_type(self, enum_die):
         """Process an enum type variable and map its members."""
@@ -185,12 +143,8 @@ class Generic_Parser(ElfParser):
 
     def _processing_end_die(self, end_die):
         """Processes the end DIE of a tag to extract variable information."""
-        self._extract_address(self.die_variable)
-        if self.address is None and not self.die_variable.attributes.get(
-            "DW_AT_external"
-        ):
-            return
 
+        # Handle Types
         if end_die.tag == "DW_TAG_pointer_type":
             pass
         elif end_die.tag == "DW_TAG_enumeration_type":
@@ -201,6 +155,16 @@ class Generic_Parser(ElfParser):
             self._process_array_type(end_die)
         else:
             self._process_base_type(end_die)
+        # YA/EP Do we need to process volatile type? TODO
+        # elif end_die.tag != "DW_TAG_volatile_type":
+        #     end_die = self._get_end_die(type_die)
+        #     if end_die is None:
+        #         logging.warning(
+        #             f"Skipping variable {self.var_name} due to missing end DIE"
+        #         )
+        #         return
+        #     self._processing_end_die(end_die)
+        #
 
     def _extract_address_from_expression(self, expr_value, structs):
         """
@@ -231,17 +195,16 @@ class Generic_Parser(ElfParser):
         try:
             if "DW_AT_location" in die_variable.attributes:
                 expr_value = die_variable.attributes["DW_AT_location"].value
-                self.address = self._extract_address_from_expression(
+                return self._extract_address_from_expression(
                     expr_value, die_variable.cu.structs
                 )
             else:
-                self.address = self._fetch_address_from_symtab(
+                return self._fetch_address_from_symtab(
                     die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
                 )
-                # print("Value:Symtab")
         except Exception as e:
             logging.error(e)
-            self.address = None
+            return None
 
     def _load_symbol_table(self):
         """Loads symbol table entries into a dictionary for fast access."""
@@ -475,7 +438,7 @@ if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
-    elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+    #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
 
