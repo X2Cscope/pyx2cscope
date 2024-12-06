@@ -126,12 +126,12 @@ class Generic_Parser(ElfParser):
             type=f"enum {enum_name}",
             address=self.address,
             array_size=0,
-            members=enum_members,  # Store enum members here
+            #members=enum_members,  # Store enum members here
         )
 
     def _get_end_die(self, current_die):
         """Find the end DIE of a type iteratively."""
-        valid_tags = {"DW_TAG_base_type", "DW_TAG_pointer_type", "DW_TAG_structure_type", "DW_TAG_array_type"}
+        valid_tags = {"DW_TAG_base_type", "DW_TAG_pointer_type", "DW_TAG_structure_type", "DW_TAG_array_type", "DW_TAG_enumeration_type"}
         while current_die and current_die.tag not in valid_tags:
             type_attr = current_die.attributes.get("DW_AT_type")
             if not type_attr:
@@ -142,7 +142,11 @@ class Generic_Parser(ElfParser):
         return current_die
 
     def _processing_end_die(self, end_die):
-        """Processes the end DIE of a tag to extract variable information."""
+        """Processes the end DIE of a tag to extract variable information.
+
+        This method NEEDS to add a variable to the variable_map.
+        In case the end_die does not contain a valid variable, it should return.
+        """
 
         # Handle Types
         if end_die.tag == "DW_TAG_pointer_type":
@@ -155,16 +159,6 @@ class Generic_Parser(ElfParser):
             self._process_array_type(end_die)
         else:
             self._process_base_type(end_die)
-        # YA/EP Do we need to process volatile type? TODO
-        # elif end_die.tag != "DW_TAG_volatile_type":
-        #     end_die = self._get_end_die(type_die)
-        #     if end_die is None:
-        #         logging.warning(
-        #             f"Skipping variable {self.var_name} due to missing end DIE"
-        #         )
-        #         return
-        #     self._processing_end_die(end_die)
-        #
 
     def _extract_address_from_expression(self, expr_value, structs):
         """
@@ -184,8 +178,6 @@ class Generic_Parser(ElfParser):
                     return op.args[0]
         except Exception as e:
             logging.error(f"Error parsing DWARF expression: {e}", exc_info=True)
-        return None
-
         return None
 
     def _extract_address(self, die_variable):
@@ -303,14 +295,22 @@ class Generic_Parser(ElfParser):
     def process_member_array_type(self, member_type_die, member_name, prev_offset, offset):
         """Process array type structure members recursively."""
         members = {}
-        byte_size_attr = member_type_die.attributes.get("DW_AT_byte_size")
-        byte_size = byte_size_attr.value if byte_size_attr else 0
-        array_size = self._get_array_length(member_type_die)
-
+        end_die = self._get_end_die(member_type_die)
+        array_size = self._get_array_length(end_die)
+        base_type_attr = end_die.attributes.get("DW_AT_type")
+        if base_type_attr:
+            base_type_offset = base_type_attr.value + end_die.cu.cu_offset
+            base_type_die = self.dwarf_info.get_DIE_from_refaddr(base_type_offset)
+            if base_type_die:
+                base_type_die = self._get_end_die(base_type_die)
+                type_name = base_type_die.attributes.get("DW_AT_name")
+                type_name = "array"
+                byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
+                byte_size = byte_size_attr.value if byte_size_attr else 0
         for i in range(array_size):
             element_offset = i * byte_size
             nested_members, _ = self._get_structure_members_recursive(
-                member_type_die, f"{member_name}[{i}]", prev_offset + offset + element_offset
+               end_die, f"{member_name}[{i}]", prev_offset + offset + element_offset
             )
             members.update(nested_members)
         return members
@@ -326,10 +326,10 @@ class Generic_Parser(ElfParser):
                 if not member_type_die:
                     return
 
-                # if member_type_die.tag == "DW_TAG_array_type":
-                #     nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset, offset)
-                #     member.update(nested_array_members)
-                #     #return
+                if member_type_die.tag == "DW_TAG_array_type":
+                    nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset, offset)
+                    member.update(nested_array_members)
+                    #return
 
                 member_type = self._get_member_type(type_offset)
                 if member_type:
@@ -391,7 +391,6 @@ class Generic_Parser(ElfParser):
                 type_name = type_die.attributes["DW_AT_name"].value.decode("utf-8")
                 byte_size_attr = type_die.attributes.get("DW_AT_byte_size")
                 byte_size = byte_size_attr.value if byte_size_attr else None
-
                 return {
                     "name": type_name,
                     "byte_size": byte_size,
@@ -439,6 +438,7 @@ if __name__ == "__main__":
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
     #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+    #elf_file = r"C:\_DESKTOP\pyx2cscope\pyx2cscope\tests\data\qspin_foc_same54.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
 
@@ -446,31 +446,3 @@ if __name__ == "__main__":
     print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
-
-    duplicates_by_address = {}  # Dictionary to track duplicates by address
-    duplicates_by_name = {}  # Dictionary to track duplicates by name
-    # Check for duplicates in the variable names and addresses
-    # Check for duplicates by address
-    # Check for duplicates by address and name
-    for var_name, var_info in variable_map.items():
-        # Check for duplicate address
-        if var_info.address in duplicates_by_address:
-            # Log both variables that have the same address, including their names and details
-            logging.warning(f"Duplicate address found for variable: {var_name} at address {var_info.address}.")
-            logging.warning(
-                f"First variable: {duplicates_by_address[var_info.address].name} - {duplicates_by_address[var_info.address]} at address {var_info.address}.")
-            logging.warning(f"Second variable: {var_info.name} - {var_info} at address {var_info.address}.")
-        else:
-            duplicates_by_address[var_info.address] = var_info
-
-        # Check for duplicate name
-        if var_name in duplicates_by_name:
-            # Log both variables that have the same name
-            logging.warning(f"Duplicate name found for variable: {var_name} with address {var_info.address}.")
-            logging.warning(
-                f"First variable: {duplicates_by_name[var_name].name} - {duplicates_by_name[var_name]} at address {duplicates_by_name[var_name].address}.")
-            logging.warning(f"Second variable: {var_info.name} - {var_info} at address {var_info.address}.")
-        else:
-            duplicates_by_name[var_name] = var_info
-
-
