@@ -139,4 +139,4 @@ dmypy.json
 /doc/source/
 **/web/upload/
 **/config.ini
-/pyx2cscope/gui/generic_gui/setup.py
+/pyx2cscope/setup.py
