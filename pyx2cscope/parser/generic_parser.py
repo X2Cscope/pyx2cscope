@@ -246,7 +246,7 @@ class Generic_Parser(ElfParser):
             if base_type_die:
                 base_type_die = self._get_end_die(base_type_die)
                 type_name = base_type_die.attributes.get("DW_AT_name")
-                type_name = type_name.value.decode("utf-8") if type_name else "Array Unknown"
+                type_name = type_name.value.decode("utf-8") if type_name else "array"
                 byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
                 byte_size = byte_size_attr.value if byte_size_attr else 0
                 self.variable_map[self.var_name] = VariableInfo(
@@ -303,16 +303,24 @@ class Generic_Parser(ElfParser):
             base_type_die = self.dwarf_info.get_DIE_from_refaddr(base_type_offset)
             if base_type_die:
                 base_type_die = self._get_end_die(base_type_die)
-                type_name = base_type_die.attributes.get("DW_AT_name")
-                type_name = "array"
+                type_name_attr = base_type_die.attributes.get("DW_AT_name")
+                type_name = (
+                    type_name_attr.value.decode("utf-8")
+                    if type_name_attr
+                    else "Array Unknown"
+                )
                 byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
-                byte_size = byte_size_attr.value if byte_size_attr else 0
-        for i in range(array_size):
-            element_offset = i * byte_size
-            nested_members, _ = self._get_structure_members_recursive(
-               end_die, f"{member_name}[{i}]", prev_offset + offset + element_offset
-            )
-            members.update(nested_members)
+                element_byte_size = byte_size_attr.value if byte_size_attr else 1
+
+                # Generate array members
+                for i in range(array_size):
+                    element_name = f"{member_name}[{i}]"
+                    members[element_name] = {
+                        "type": type_name,
+                        "byte_size": element_byte_size,
+                        "address_offset": prev_offset + offset + i * element_byte_size,
+                        "array_size": 0,  # Individual elements aren't arrays
+                    }
         return members
 
     def _process_structure_member(self, members, child_die, prev_offset, offset, parent_name):
@@ -327,9 +335,10 @@ class Generic_Parser(ElfParser):
                     return
 
                 if member_type_die.tag == "DW_TAG_array_type":
-                    nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset, offset)
-                    member.update(nested_array_members)
-                    #return
+                    nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset,
+                                                                          offset)
+                    members.update(nested_array_members)
+                    return  # Array processing is handled
 
                 member_type = self._get_member_type(type_offset)
                 if member_type:
