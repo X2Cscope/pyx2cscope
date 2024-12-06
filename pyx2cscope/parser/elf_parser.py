@@ -8,7 +8,7 @@ The module is designed to be extended by specific implementations for different 
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 
@@ -28,7 +28,8 @@ class VariableInfo:
     type: str
     byte_size: int
     address: int
-    array_size: int = 0
+    array_size: int
+    valid_values: Dict[str, int]
 
 
 class ElfParser(ABC):

@@ -22,9 +22,10 @@ class GenericParser(ElfParser):
         super().__init__(elf_path)
 
         # These variables are used as local holders during the file parsing
-        self.address = None
-        self.var_name = None
         self.die_variable = None
+        self.var_name = None
+        self.address = None
+        self.type_attr = None
 
     def _load_elf_file(self):
         try:
@@ -39,23 +40,36 @@ class GenericParser(ElfParser):
         if self.stream:
             self.stream.close()
 
-    def _process_variable_die(self, die_variable):
-        """Process an individual variable DIE."""
+    def _get_die_variable_details(self, die_variable):
+        """Process the die_variable to obtain detailed info.
+
+        The purpose of this method is to populate:
+        - self.die_variable
+        - self.var_name
+        - self.address
+        - self.type_attr
+        """
+
+        self.die_variable = None
+        self.var_name = None
+        self.address = None
+        self.type_attr = None
 
         # In DIE structure, a variable to be considered valid, has under
         # its attributes the attribute DW_AT_specification or DW_AT_location
         if "DW_AT_specification" in die_variable.attributes:
             spec_ref_addr = (
-                die_variable.attributes["DW_AT_specification"].value
-                + die_variable.cu.cu_offset
+                    die_variable.attributes["DW_AT_specification"].value
+                    + die_variable.cu.cu_offset
             )
             spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
+            # if it is not a concrete variable, return
             if spec_die.tag != "DW_TAG_variable":
                 return
             self.die_variable = spec_die
         elif (
-            die_variable.attributes.get("DW_AT_location")
-            and die_variable.attributes.get("DW_AT_name") is not None
+                die_variable.attributes.get("DW_AT_location")
+                and die_variable.attributes.get("DW_AT_name") is not None
         ):
             self.die_variable = die_variable
         # YA/EP We are not sure if we need to catch external variables.
@@ -77,24 +91,33 @@ class GenericParser(ElfParser):
 
         self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
         self.address = self._extract_address(die_variable)
-        type_attr = self.die_variable.attributes.get("DW_AT_type")
-        if type_attr is None:
-            return
+        self.type_attr = self.die_variable.attributes.get("DW_AT_type")
 
-        ref_addr = type_attr.value + self.die_variable.cu.cu_offset
+    def _process_variable_die(self, die_variable):
+        """Process an individual variable DIE."""
+
+        self._get_die_variable_details(die_variable)
+        if self.type_attr is None:
+            return []
+
+        ref_addr = self.type_attr.value + self.die_variable.cu.cu_offset
         type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         end_die = self._get_end_die(die_variable)
 
+        # try to get variable data on end_die
         if end_die is not None and end_die.tag is not None:
-            self._processing_end_die(end_die)
-        else:
-            end_die = self._get_end_die(type_die)
-            if end_die is None:
-                logging.warning(
-                    f"Skipping variable {self.var_name} due to missing end DIE"
-                )
-                return
-            self._processing_end_die(end_die)
+            return self._process_end_die(end_die)
+
+        # try to get variable data on type_die
+        end_die = self._get_end_die(type_die)
+        if end_die:
+            return self._process_end_die(end_die)
+
+        # no data found
+        logging.warning(
+            f"Skipping variable {self.var_name} due to missing end DIE"
+        )
+        return []
 
     def _process_enum_type(self, enum_die):
         """Process an enum type variable and map its members."""
@@ -121,7 +144,7 @@ class GenericParser(ElfParser):
             type=f"enum {enum_name}",
             address=self.address,
             array_size=0,
-            #members=enum_members,  # Store enum members here
+            valid_values = enum_members
         )
 
     def _get_end_die(self, current_die):
@@ -136,7 +159,7 @@ class GenericParser(ElfParser):
             current_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
         return current_die
 
-    def _processing_end_die(self, end_die):
+    def _process_end_die(self, end_die):
         """Processes the end DIE of a tag to extract variable information.
 
         This method NEEDS to add a variable to the variable_map.
@@ -229,6 +252,7 @@ class GenericParser(ElfParser):
                     else None
                 ),
                 array_size=member_data["array_size"],
+                valid_values={}
             )
 
     def _process_array_type(self, end_die):
@@ -250,6 +274,7 @@ class GenericParser(ElfParser):
                     type=type_name,
                     address=self.address,
                     array_size=array_size,
+                    valid_values={}
                 )
 
     def _process_base_type(self, end_die):
@@ -263,6 +288,8 @@ class GenericParser(ElfParser):
             byte_size=end_die.attributes["DW_AT_byte_size"].value,
             type=type_name,
             address=self.address,
+            array_size=0,
+            valid_values={}
         )
 
     def _get_member_offset(self, die) -> int | None:
