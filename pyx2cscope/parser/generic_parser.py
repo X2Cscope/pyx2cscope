@@ -4,6 +4,7 @@ It focuses on extracting structure members and variable information from DWARF d
 """
 
 import logging
+from enum import member
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
@@ -307,10 +308,18 @@ class Generic_Parser(ElfParser):
                 type_name = (
                     type_name_attr.value.decode("utf-8")
                     if type_name_attr
-                    else "Array Unknown"
+                    else "Array Element"
                 )
                 byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
                 element_byte_size = byte_size_attr.value if byte_size_attr else 1
+
+                # add the array itself as a variable
+                members[member_name] = {
+                    "type": type_name,
+                    "byte_size": array_size * element_byte_size,
+                    "address_offset": prev_offset + offset,
+                    "array_size": array_size,  # Individual elements aren't arrays
+                }
 
                 # Generate array members
                 for i in range(array_size):
@@ -434,10 +443,10 @@ class Generic_Parser(ElfParser):
             if info.address is not None and info.address != 0
         }
 
-        #Update type _Bool to bool
-        for var_info in self.variable_map.values():
-            if var_info.type == "_Bool":
-                var_info.type = "bool"
+        # #Update type _Bool to bool
+        # for var_info in self.variable_map.values():
+        #     if var_info.type == "_Bool":
+        #         var_info.type = "bool"
 
         return self.variable_map
 
@@ -447,11 +456,16 @@ if __name__ == "__main__":
     #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
     elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
     #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-    #elf_file = r"C:\_DESKTOP\pyx2cscope\pyx2cscope\tests\data\qspin_foc_same54.elf"
+    elf_file = r"C:\_DESKTOP\pyx2cscope\pyx2cscope\tests\data\qspin_foc_same54.elf"
     elf_reader = Generic_Parser(elf_file)
     variable_map = elf_reader._map_variables()
+
 
     print(variable_map)
     print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
     counter = 0
+
+    for var_info in variable_map.values():
+        if var_info.array_size > 0:
+            print(var_info)
