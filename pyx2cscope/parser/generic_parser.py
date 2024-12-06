@@ -18,7 +18,6 @@ class GenericParser(ElfParser):
 
     def __init__(self, elf_path):
         """Initialize the GenericParser with the given ELF file path."""
-
         super().__init__(elf_path)
 
         # These variables are used as local holders during the file parsing
@@ -49,7 +48,6 @@ class GenericParser(ElfParser):
         - self.address
         - self.type_attr
         """
-
         self.die_variable = None
         self.var_name = None
         self.address = None
@@ -95,7 +93,6 @@ class GenericParser(ElfParser):
 
     def _process_variable_die(self, die_variable):
         """Process an individual variable DIE."""
-
         self._get_die_variable_details(die_variable)
         if self.type_attr is None:
             return []
@@ -165,7 +162,6 @@ class GenericParser(ElfParser):
         This method NEEDS to add a variable to the variable_map.
         In case the end_die does not contain a valid variable, it should return.
         """
-
         # Handle Types
         if end_die.tag == "DW_TAG_pointer_type":
             pass
@@ -179,8 +175,7 @@ class GenericParser(ElfParser):
             self._process_base_type(end_die)
 
     def _extract_address_from_expression(self, expr_value, structs):
-        """
-        Extracts an address from DWARF expression.
+        """Extracts an address from DWARF expression.
 
         Args:
             expr_value: The raw DWARF expression bytes.
@@ -199,8 +194,7 @@ class GenericParser(ElfParser):
         return None
 
     def _extract_address(self, die_variable):
-        """
-        Extracts the address of the current variable or fetches it from the symbol table if not found.
+        """Extracts the address of the current variable or fetches it from the symbol table if not found.
         """
         try:
             if "DW_AT_location" in die_variable.attributes:
@@ -293,8 +287,7 @@ class GenericParser(ElfParser):
         )
 
     def _get_member_offset(self, die) -> int | None:
-        """
-        Extracts the offset for a structure member.
+        """Extracts the offset for a structure member.
 
         Args:
             die: The DIE of the structure member.
@@ -314,7 +307,7 @@ class GenericParser(ElfParser):
         logging.warning(f"Unknown data_member_location value: {value}")
         return None
 
-    def process_member_array_type(self, member_type_die, member_name, prev_offset, offset):
+    def _process_member_array_type(self, member_type_die, member_name, prev_offset, offset):
         """Process array type structure members recursively."""
         members = {}
         end_die = self._get_end_die(member_type_die)
@@ -365,8 +358,9 @@ class GenericParser(ElfParser):
                     return
 
                 if member_type_die.tag == "DW_TAG_array_type":
-                    nested_array_members = self.process_member_array_type(member_type_die, parent_name, prev_offset,
-                                                                          offset)
+                    nested_array_members = self._process_member_array_type(
+                        member_type_die, parent_name, prev_offset, offset
+                    )
                     members.update(nested_array_members)
                     return  # Array processing is handled
 
@@ -411,7 +405,8 @@ class GenericParser(ElfParser):
         """Retrieves structure members from a DWARF DIE."""
         return self._get_structure_members_recursive(structure_die, var_name)[0]
 
-    def _get_array_length(self, type_die):
+    @staticmethod
+    def _get_array_length(type_die):
         """Gets the length of an array type."""
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":

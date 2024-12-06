@@ -8,7 +8,7 @@ The module is designed to be extended by specific implementations for different 
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 
