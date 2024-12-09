@@ -139,3 +139,6 @@ dmypy.json
 /doc/source/
 **/web/upload/
 **/config.ini
+
+#backup files
+.bkp
