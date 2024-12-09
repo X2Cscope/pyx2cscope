@@ -94,7 +94,6 @@ class X2CScope:
         i_type = interface if interface is not None else InterfaceType.SERIAL
         self.interface = InterfaceFactory.get_interface(interface_type=i_type, **kwargs)
         self.lnet = LNet(self.interface)
-        self.elf_file = elf_file
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
@@ -144,6 +143,24 @@ class X2CScope:
             Variable: The requested variable object.
         """
         return self.variable_factory.get_variable(name)
+
+    def export_variables(self, path: str = None, filename: str = None):
+        """Store the variables registered on the elf file to a pickle file.
+
+        Args:
+            path (str): The path where the file will be stored. Defaults to the current directory if empty.
+            filename (str): The name of the file. Defaults to 'elf_file_name.pkl' if not provided.
+        """
+        self.variable_factory.parser.export_variable_list(path, filename)
+
+    def import_variables(self, path: str = None, filename: str ="variables_list"):
+        """Import and load variables registered on the pickle file.
+
+        Args:
+            path (str): The path where the file is stored. Defaults to the current directory if empty.
+            filename (str): The name of the pickle file. Defaults to 'variables_list.pkl' if not provided.
+        """
+        self.variable_factory.parser.import_variable_list(path, filename)
 
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
         """Add a variable as a scope channel.
