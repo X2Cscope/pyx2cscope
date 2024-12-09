@@ -4,7 +4,7 @@ import logging
 
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_device_info import DeviceInfo
-from parser.elf_parser import DummyParser
+from pyx2cscope.parser.elf_parser import DummyParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 from pyx2cscope.parser.elf32_parser import Elf32Parser
 from pyx2cscope.variable.variable import (
