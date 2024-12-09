@@ -62,10 +62,11 @@ class ElfParser(ABC):
         self.elf_file = None
         self.variable_map = {}
         self.symbol_table = {}
-        self.array_size = 0
-        self._load_elf_file()
-        self._load_symbol_table()
 
+        self._load_elf_file()
+        self._map_variables()
+        self._load_symbol_table()
+        self._close_elf_file()
 
     def get_var_info(self, name: str) -> Optional[VariableInfo]:
         """Return the VariableInfo associated with a given variable name, or None if not found.
@@ -76,8 +77,6 @@ class ElfParser(ABC):
         Returns:
             Optional[VariableInfo]: The information of the variable, if available.
         """
-        if not self.variable_map:
-            self.map_variables()
         return self.variable_map.get(name)
 
     def get_var_list(self) -> List[str]:
@@ -86,19 +85,7 @@ class ElfParser(ABC):
         Returns:
             List[str]: A sorted list of variable names.
         """
-        if not self.variable_map:
-            self._map_variables()
         return sorted(self.variable_map.keys(), key=lambda x: x.lower())
-
-    def map_variables(self) -> Dict[str, VariableInfo]:
-        """Map variables from the parsed DWARF information and return them.
-
-        Returns:
-            Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
-        """
-        if not self.variable_map:
-            self._map_variables()
-        return self.variable_map
 
     @abstractmethod
     def _load_elf_file(self):
@@ -124,12 +111,18 @@ class ElfParser(ABC):
             Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
         """
 
+    @abstractmethod
+    def _close_elf_file(self):
+        """Abstract method to close any open file connection after parsing is done."""
+
+
 class DummyParser(ElfParser):
     """Dummy implementation of ElfParser class.
 
     This class provides basic functionality of a parser in case an elf_file is
     not supplied. It is a pure implementation of class ElfParser.
     """
+
 
     def __init__(self, elf_path = ""):
         """DummyParser constructor takes no argument."""
@@ -138,5 +131,12 @@ class DummyParser(ElfParser):
     def _load_elf_file(self):
         pass
 
+    def _load_symbol_table(self):
+        pass
+
     def _map_variables(self) -> Dict[str, VariableInfo]:
         return {}
+
+    def _close_elf_file(self):
+        pass
+
