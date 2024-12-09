@@ -57,3 +57,26 @@ class TestParser:
         assert variable is not None, "variable name not found"
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
+
+    def test_variable_export_import(self, mocker):
+        """Given a valid 32 bit elf file, check if export and import functions for variables are working."""
+        fake_serial(mocker, 32)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
+        variable = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecSpeed")
+        x2c_scope.export_variables(filename="my_variables")
+        assert os.path.exists("my_variables.pkl") == True, "custom export pickle file name not found"
+        x2c_scope.export_variables()
+        assert os.path.exists("qspin_foc_same54.pkl") == True, "default export pickle file name not found"
+        x2c_scope.disconnect()
+
+        # load generated pickle file and try top
+        x2c_reloaded = X2CScope(port="COM14")
+        x2c_reloaded.import_variables(filename="my_variables.pkl")
+        variable_reloaded = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecSpeed")
+        assert variable.name == variable_reloaded.name, "variables don't have the same name"
+        assert variable.address == variable_reloaded.address, "variables don't have the same address"
+        assert variable.array_size == variable_reloaded.array_size, "variables don't have the same array size"
+
+        # house keeping -> delete generated files
+        os.remove("my_variables.pkl")
+        os.remove("qspin_foc_same54.pkl")
