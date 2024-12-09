@@ -58,7 +58,7 @@ class Elf16Parser(ElfParser):
             os.path.dirname(os.path.abspath(__file__)), "xc16-readelf"
         )
 
-        logging.warn("Do not use this class for new development, it will be discontinued.")
+        logging.warning("Do not use this class for new development, it will be discontinued.")
 
         # Checking if the xc16-readelf executable exists in the same directory as the script or executable
         if os.path.exists(local_readelf):
@@ -377,13 +377,15 @@ class Elf16Parser(ElfParser):
         """
         if end_die["tag"] != "DW_TAG_pointer_type":
             return False
-        _variabledata = VariableInfo(
+        variable_data = VariableInfo(
             name=die["DW_AT_name"],
-            byte_size=end_die["DW_AT_byte_size"],
             type="pointer",
+            byte_size=end_die["DW_AT_byte_size"],
             address=address,
+            array_size=0,
+            valid_values = {}
         )
-        self.variable_map[die["DW_AT_name"]] = _variabledata
+        self.variable_map[die["DW_AT_name"]] = variable_data
         return True
 
     def _check_for_structure_tag(self, die, end_die, address):
@@ -404,9 +406,11 @@ class Elf16Parser(ElfParser):
                 # Return the entire structure as a single variable
                 variable_data = VariableInfo(
                     name=die["DW_AT_name"],
-                    byte_size=end_die["DW_AT_byte_size"],
                     type=end_die["DW_AT_name"],
+                    byte_size=end_die["DW_AT_byte_size"],
                     address=address,
+                    array_size=0,
+                    valid_values={}
                 )
                 self.variable_map[die["DW_AT_name"]] = variable_data
             if members:
@@ -418,6 +422,7 @@ class Elf16Parser(ElfParser):
                         type=member_info.get("type"),
                         address=address + (member_info.get("address_offset")),
                         array_size=member_info.get("array_size"),
+                        valid_values={}
                     )
                     self.variable_map[member_name] = variable_data
                     # Reset array attributes for each variable
@@ -531,14 +536,15 @@ class Elf16Parser(ElfParser):
                         type=end_die["DW_AT_name"],
                         address=address,
                         array_size=self.calculate_array_size(die),
+                        valid_values={}
                     )
                     self.variable_map[die["DW_AT_name"]] = variable_data
         return self.variable_map
 
 
 if __name__ == "__main__":
-    # elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\ZSMT-42BLF02-MCLV2-33ck256mp508.X\dist\default\production\ZSMT-42BLF02-MCLV2-33ck256mp508.X.production.elf"
-    elf_file = r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300.X.production.elf"
+    elf_file = r"..\..\tests\data\MCAF_ZSMT_dsPIC33CK.elf"
+    # elf_file = r"..\..\tests\data\mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
     # logging.basicConfig(level=logging.DEBUG)  # Set the desired logging level and stream
     elf_reader = Elf16Parser(elf_file)
     variable_map = elf_reader.map_variables()
