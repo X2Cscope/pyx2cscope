@@ -4,6 +4,7 @@ import logging
 
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_device_info import DeviceInfo
+from pyx2cscope.parser.elf_parser import DummyParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 from pyx2cscope.parser.elf32_parser import Elf32Parser
 from pyx2cscope.variable.variable import (
@@ -46,16 +47,31 @@ class VariableFactory:
         """
         self.l_net = l_net
         self.device_info = self.l_net.get_device_info()
-        parser = (
-            Elf16Parser
-            if self.device_info.uc_width == DeviceInfo.MACHINE_16
-            else Elf32Parser
-        )
         if (
             self.device_info.processor_id == "__GENERIC_MICROCHIP_DSPIC__"
         ):  # TODO implement it better for future cores.
             self.device_info.uc_width = 2
 
+        # we should be able to initialize without using and elf file
+        if elf_path is None:
+            self.parser = DummyParser()
+        else:
+            self.set_elf_file(elf_path)
+
+    def set_elf_file(self, elf_path: str):
+        """Set an elf file to be used as source for variables and addresses.
+
+        Args:
+            elf_path (str): Path to the elf file.
+
+        Returns:
+            None
+        """
+        parser = (
+            Elf16Parser
+            if self.device_info.uc_width == DeviceInfo.MACHINE_16
+            else Elf32Parser
+        )
         self.parser = parser(elf_path)
 
     def get_var_list(self) -> list[str]:
