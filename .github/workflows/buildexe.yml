@@ -2,7 +2,6 @@ name: Build PyInstaller Executable
 
 on:
     workflow_dispatch:
-    pull_request:
 
 jobs:
     buildwindows:
@@ -28,6 +27,7 @@ jobs:
                 pyinstaller --noconfirm .\pyx2cscope.spec
 
         - name: Create startWebInterface.bat
+          shell: cmd
           run: |
                 echo pyX2Cscope.exe -w > dist\pyx2cscope\startWebInterface.bat
 
