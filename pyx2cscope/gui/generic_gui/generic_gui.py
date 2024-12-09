@@ -333,12 +333,8 @@ class X2cscopeGui(QMainWindow):
         self.Value_var5 = QLineEdit(self)
 
     def timer(self):
-        """Initializing timer."""
-        self.timer5 = QTimer()
-        self.timer4 = QTimer()
-        self.timer3 = QTimer()
-        self.timer2 = QTimer()
-        self.timer1 = QTimer()
+        """Initializing timers."""
+        self.timers = [QTimer() for _ in range(5)]
 
     def offset_var(self):
         """Initializing Offset Variable."""
@@ -1666,11 +1662,7 @@ class X2cscopeGui(QMainWindow):
             self.scope_timer.timeout.connect(
                 lambda: self._sample_scope_data_timer(single_shot)
             )
-            self.scope_timer.start(100)  # Adjust interval (milliseconds) as needed
-
-            # If it is a single shot, stop the timer after the first run
-            # if single_shot:
-            #     self.scope_timer.singleShot(100, lambda: self.scope_timer.stop())
+            self.scope_timer.start(250)  # Adjust the interval (milliseconds) as needed
 
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
@@ -1724,15 +1716,6 @@ class X2cscopeGui(QMainWindow):
             # Request new data for the next tick
             if self.x2cscope.is_scope_data_ready():
                 self.x2cscope.request_scope_data()
-
-        except Exception as e:
-            error_message = f"Error sampling scope data: {e}"
-            logging.error(error_message)
-            self.handle_error(error_message)
-            self.scope_timer.stop()  # Stop timer on error
-            self.sampling_active = False
-            self.scope_sample_button.setText("Sample")  # Update button text
-
 
         except Exception as e:
             error_message = f"Error sampling scope data: {e}"
