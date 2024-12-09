@@ -83,7 +83,7 @@ class X2CScope:
         convert_list (dict): Dictionary to store variable conversion functions.
     """
 
-    def __init__(self, elf_file: str, interface: InterfaceABC = None, **kwargs):
+    def __init__(self, elf_file: str = None, interface: InterfaceABC = None, **kwargs):
         """Initialize the X2CScope instance.
 
         Args:
@@ -98,7 +98,7 @@ class X2CScope:
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
-        self.ucwidth = self.variable_factory.device_info.uc_width
+        self.uc_width = self.variable_factory.device_info.uc_width
 
     def set_interface(self, interface: InterfaceABC):
         """Set the communication interface for the scope.
@@ -116,7 +116,7 @@ class X2CScope:
         Args:
             elf_file (str): Path to the ELF file.
         """
-        self.variable_factory = VariableFactory(self.lnet, elf_file)
+        self.variable_factory.set_elf_file(elf_file)
 
     def connect(self):
         """Establish a connection with the scope interface."""
@@ -268,7 +268,7 @@ class X2CScope:
         scope_data: LoadScopeData = self.lnet.scope_data
         return int(
             scope_data.trigger_event_position
-            / (self.scope_setup.get_dataset_size() / self.ucwidth)
+            / (self.scope_setup.get_dataset_size() / self.uc_width)
         )
 
     def get_delay_trigger_position(self) -> int:
@@ -287,7 +287,7 @@ class X2CScope:
             int: The length of the used portion of the SDA.
         """
         bytes_not_used = self.lnet.scope_data.data_array_size % (
-            self.scope_setup.get_dataset_size() / self.ucwidth
+            self.scope_setup.get_dataset_size() / self.uc_width
         )
         return self.lnet.scope_data.data_array_size - bytes_not_used
 
