@@ -10,6 +10,7 @@ from dataclasses import asdict
 
 from mchplnet.lnet import LNet
 from pyx2cscope.parser.elf_parser import DummyParser
+from pyx2cscope.parser.elf_parser import DummyParser
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
