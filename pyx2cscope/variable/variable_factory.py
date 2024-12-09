@@ -63,6 +63,7 @@ class VariableFactory:
 
         Args:
             elf_path (str): Path to the elf file.
+
         Returns:
             None
         """
