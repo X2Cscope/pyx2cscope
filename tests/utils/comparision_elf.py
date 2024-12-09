@@ -2,17 +2,6 @@ from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 
 
-class VariableInfo:
-    def __init__(self, name, type, byte_size, address, array_size):
-        self.name = name
-        self.type = type
-        self.byte_size = byte_size
-        self.address = address
-        self.array_size = array_size
-
-    def __repr__(self):
-        return f"VariableInfo(name={self.name}, type={self.type}, byte_size={self.byte_size}, address={self.address}, array_size={self.array_size})"
-
 
 def compare_dicts_intelligently(dict1, dict2):
     # Exclude pointer type variables from comparison
@@ -100,7 +89,7 @@ def run_parsers_and_compare(elf_file_path):
 
 # Usage example
 elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
+#elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
 #elf_file = r"C:\_DESKTOP\_Projects\33ak_MCLV48V300W_FOC_PLL\project\pmsm.X\dist\default\production\pmsm.X.production.elf"
 #elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
 run_parsers_and_compare(elf_file)
