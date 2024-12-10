@@ -34,7 +34,7 @@ class GenericParser(ElfParser):
         except IOError:
             raise Exception(f"Error loading ELF file: {self.elf_path}")
 
-    def close_elf_file(self):
+    def _close_elf_file(self):
         """Closes the ELF file stream."""
         if self.stream:
             self.stream.close()

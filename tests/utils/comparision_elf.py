@@ -133,5 +133,5 @@ def run_parsers_and_compare(elf_file_path):
 
 # Usage example
 if __name__ == "__main__":
-    elf_file = r"elf_file"
+    #elf_file = r"elf_file"
     run_parsers_and_compare(elf_file)
