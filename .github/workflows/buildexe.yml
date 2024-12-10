@@ -68,4 +68,4 @@ jobs:
           uses: actions/upload-artifact@v4
           with:
                 name: pyX2Cscope-linux
-                path: dist/pyx2cscope
+                path: dist/pyx2cscope_linux
