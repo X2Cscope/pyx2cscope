@@ -67,8 +67,8 @@ jobs:
 
         - name: Create startWebInterface.sh
           run: |
-                echo '#!/bin/bash' > dist/pyX2Cscope/startWebInterface.sh
-                echo 'pyX2Cscope -w' >> dist/pyX2Cscope/startWebInterface.sh
+                echo '#!/bin/bash' > dist/pyX2Cscope_linux/startWebInterface.sh
+                echo 'pyX2Cscope -w' >> dist/pyX2Cscope_linux/startWebInterface.sh
                 chmod +x dist/pyX2Cscope_linux/startWebInterface.sh
 
         - name: Upload artifact
