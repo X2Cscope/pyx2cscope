@@ -1,0 +1,92 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class pyx2cscope {
+          }
+          class __main__ {
+          }
+          class gui {
+          }
+          class generic_gui {
+          }
+          class detachable_gui {
+          }
+          class generic_gui {
+          }
+          class img {
+          }
+          class watchView {
+          }
+          class minimal_gui {
+          }
+          class web {
+          }
+          class app {
+          }
+          class views {
+          }
+          class scope_view {
+          }
+          class watch_view {
+          }
+          class parser {
+          }
+          class elf16_parser {
+          }
+          class elf32_parser {
+          }
+          class elf_parser {
+          }
+          class elfparser_try_unified {
+          }
+          class utils {
+          }
+          class variable {
+          }
+          class variable {
+          }
+          class variable_factory {
+          }
+          class x2cscope {
+          }
+          __main__ --> pyx2cscope
+          __main__ --> gui
+          __main__ --> utils
+          gui --> generic_gui
+          gui --> web
+          gui --> app
+          detachable_gui --> gui
+          detachable_gui --> img
+          detachable_gui --> x2cscope
+          generic_gui --> gui
+          generic_gui --> img
+          generic_gui --> x2cscope
+          minimal_gui --> pyx2cscope
+          minimal_gui --> gui
+          minimal_gui --> img
+          minimal_gui --> x2cscope
+          web --> x2cscope
+          app --> pyx2cscope
+          app --> gui
+          app --> web
+          app --> scope_view
+          app --> watch_view
+          scope_view --> gui
+          scope_view --> web
+          scope_view --> x2cscope
+          watch_view --> gui
+          watch_view --> web
+          elf16_parser --> elf_parser
+          elf32_parser --> elf_parser
+          variable_factory --> elf16_parser
+          variable_factory --> elf32_parser
+          variable_factory --> variable
+          x2cscope --> variable
+          x2cscope --> variable_factory
+  
+       </div>
+  </body>
+</html>

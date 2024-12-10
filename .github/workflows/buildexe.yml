@@ -19,6 +19,9 @@ jobs:
         - name: Install dependencies
           run: |
                 python -m pip install --upgrade pip
+                git submodule init
+                git submodule update
+                git pull --recurse-submodules
                 pip install -r requirements.txt
                 pip install -r quality.txt
 
@@ -53,6 +56,9 @@ jobs:
         - name: Install dependencies
           run: |
                 python -m pip install --upgrade pip
+                git submodule init
+                git submodule update
+                git pull --recurse-submodules
                 pip install -r requirements.txt
                 pip install -r quality.txt
 
