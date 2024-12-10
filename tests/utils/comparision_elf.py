@@ -8,31 +8,6 @@ the variable mappings are analyzed and displayed.
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 
-
-class VariableInfo:
-    """Represents detailed information about a variable extracted from an ELF file."""
-    def __init__(self, name, type, byte_size, address, array_size):
-        """Initialize a VariableInfo object.
-
-        :param name: Name of the variable
-        :param type: Data type of the variable
-        :param byte_size: Size of the variable in bytes
-        :param address: Memory address of the variable
-        :param array_size: Size of the array if the variable is an array
-        """
-        self.name = name
-        self.type = type
-        self.byte_size = byte_size
-        self.address = address
-        self.array_size = array_size
-
-    def __repr__(self):
-        """Return a string representation of the VariableInfo object."""
-        return (f"VariableInfo(name={self.name}, type={self.type}, "
-                f"byte_size={self.byte_size}, address={self.address}, "
-                f"array_size={self.array_size})")
-
-
 def compare_dicts_intelligently(dict1, dict2):
     """Compare two dictionaries of variables and analyze similarities and differences.
 
@@ -133,5 +108,5 @@ def run_parsers_and_compare(elf_file_path):
 
 # Usage example
 if __name__ == "__main__":
-    elf_file = r"elf_file"
+    elf_file = r"../data/MCAF_ZSMT_dsPIC33CK.elf"
     run_parsers_and_compare(elf_file)
