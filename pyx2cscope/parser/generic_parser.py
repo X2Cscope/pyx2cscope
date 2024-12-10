@@ -78,11 +78,12 @@ class GenericParser(ElfParser):
         #      die_variable.attributes.get("DW_AT_external")
         #      and die_variable.attributes.get("DW_AT_name") is not None
         #  ):
-        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-        #          "utf-8"
-        #      )
-        #      self.die_variable = die_variable
-        #      self._extract_address(die_variable)
+        #      return # Skipping external variables.  YA
+        #     self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+        #         "utf-8"
+        #     )
+        #     self.die_variable = die_variable
+        #     self._extract_address(die_variable)
         else:
             return
 
