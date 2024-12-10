@@ -194,8 +194,7 @@ class GenericParser(ElfParser):
         return None
 
     def _extract_address(self, die_variable):
-        """Extracts the address of the current variable or fetches it from the symbol table if not found.
-        """
+        """Extracts the address of the current variable or fetches it from the symbol table if not found."""
         try:
             if "DW_AT_location" in die_variable.attributes:
                 expr_value = die_variable.attributes["DW_AT_location"].value

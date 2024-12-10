@@ -1,9 +1,25 @@
+"""Module for comparing ELF files parsed by 16-bit and 32-bit ELF parsers.
+
+This script defines utility functions and classes to map and compare variables
+from ELF files parsed by the two parsers. Differences and similarities between
+the variable mappings are analyzed and displayed.
+"""
+
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
 
 
 class VariableInfo:
+    """Represents detailed information about a variable extracted from an ELF file."""
     def __init__(self, name, type, byte_size, address, array_size):
+        """Initialize a VariableInfo object.
+
+        :param name: Name of the variable
+        :param type: Data type of the variable
+        :param byte_size: Size of the variable in bytes
+        :param address: Memory address of the variable
+        :param array_size: Size of the array if the variable is an array
+        """
         self.name = name
         self.type = type
         self.byte_size = byte_size
@@ -11,49 +27,73 @@ class VariableInfo:
         self.array_size = array_size
 
     def __repr__(self):
-        return f"VariableInfo(name={self.name}, type={self.type}, byte_size={self.byte_size}, address={self.address}, array_size={self.array_size})"
+        """Return a string representation of the VariableInfo object."""
+        return (f"VariableInfo(name={self.name}, type={self.type}, "
+                f"byte_size={self.byte_size}, address={self.address}, "
+                f"array_size={self.array_size})")
 
 
 def compare_dicts_intelligently(dict1, dict2):
-    # Exclude pointer type variables from comparison
+    """Compare two dictionaries of variables and analyze similarities and differences.
+
+    Variables with pointer types are excluded from the comparison.
+    Differences are categorized by address, type, and array size.
+
+    :param dict1: First dictionary of variables
+    :param dict2: Second dictionary of variables
+    """
     dict1 = {key: value for key, value in dict1.items() if not value.type.startswith("pointer")}
     dict2 = {key: value for key, value in dict2.items() if not value.type.startswith("pointer")}
 
-    common_keys = set(dict1.keys()).intersection(set(dict2.keys()))
-    unique_to_dict1 = set(dict1.keys()) - set(dict2.keys())
-    unique_to_dict2 = set(dict2.keys()) - set(dict1.keys())
+    common_keys = dict1.keys() & dict2.keys()
+    unique_to_dict1 = dict1.keys() - dict2.keys()
+    unique_to_dict2 = dict2.keys() - dict1.keys()
 
     same_values = []
     different_values = []
 
+    def compare_variable_properties(var1, var2):
+        """Compare the properties of two variables and identify differences.
+
+        :param var1: Variable from dict1
+        :param var2: Variable from dict2
+        :return: A dictionary of differences
+        """
+        differences = {}
+        if var1.address != var2.address:
+            differences["address_diff"] = abs(var1.address - var2.address)
+        if var1.type != var2.type:
+            differences["type_diff"] = (var1.type, var2.type)
+        if var1.array_size != var2.array_size:
+            differences["array_size_diff"] = (var1.array_size, var2.array_size)
+        return differences
+
     for key in common_keys:
-        var1 = dict1[key]
-        var2 = dict2[key]
-
-        address_match = var1.address == var2.address
-        type_match = var1.type == var2.type
-        array_size_match = var1.array_size == var2.array_size
-
-        if address_match and type_match and array_size_match:
-            same_values.append({"key": key, "in_dict1": var1, "in_dict2": var2})
+        differences = compare_variable_properties(dict1[key], dict2[key])
+        if differences:
+            different_values.append({
+                "key": key,
+                "in_dict1": dict1[key],
+                "in_dict2": dict2[key],
+                "differences": differences,
+            })
         else:
-            differences = {}
-            if not address_match:
-                differences["address_diff"] = abs(var1.address - var2.address)
-            if not type_match:
-                differences["type_diff"] = (var1.type, var2.type)
-            if not array_size_match:
-                differences["array_size_diff"] = (var1.array_size, var2.array_size)
+            same_values.append({"key": key, "in_dict1": dict1[key], "in_dict2": dict2[key]})
 
-            different_values.append(
-                {
-                    "key": key,
-                    "in_dict1": var1,
-                    "in_dict2": var2,
-                    "differences": differences,
-                }
-            )
+    print_summary(unique_to_dict1, dict1, unique_to_dict2, dict2, different_values, same_values, len(common_keys))
 
+
+def print_summary(unique_to_dict1, dict1, unique_to_dict2, dict2, different_values, same_values, common_count):
+    """Print a summary of the comparison results.
+
+    :param unique_to_dict1: Keys unique to the first dictionary
+    :param dict1: The first dictionary
+    :param unique_to_dict2: Keys unique to the second dictionary
+    :param dict2: The second dictionary
+    :param different_values: List of keys with differing values
+    :param same_values: List of keys with identical values
+    :param common_count: Number of common keys
+    """
     print("Keys only in dict1:")
     for key in unique_to_dict1:
         print(f"{key}: {dict1[key]}")
@@ -67,40 +107,31 @@ def compare_dicts_intelligently(dict1, dict2):
         print(f"{diff['key']}:")
         print(f"  in dict1: {diff['in_dict1']}")
         print(f"  in dict2: {diff['in_dict2']}")
-        if "address_diff" in diff["differences"]:
-            print(f"  Address difference: {diff['differences']['address_diff']}")
-        if "type_diff" in diff["differences"]:
-            print(f"  Type difference: {diff['differences']['type_diff']}")
-        if "byte_size_diff" in diff["differences"]:
-            print(f"  Byte size difference: {diff['differences']['byte_size_diff']}")
-        if "array_size_diff" in diff["differences"]:
-            print(f"  Array size difference: {diff['differences']['array_size_diff']}")
+        for k, v in diff["differences"].items():
+            print(f"  {k.replace('_', ' ').capitalize()}: {v}")
 
     print(f"\nTotal variables in dict1: {len(dict1)}")
     print(f"Total variables in dict2: {len(dict2)}")
-    print(f"Variables in both parsers: {len(common_keys)}")
+    print(f"Variables in both parsers: {common_count}")
     print(f"Different values: {len(different_values)}")
     print(f"Same values: {len(same_values)}")
 
 
 def run_parsers_and_compare(elf_file_path):
-    # Parse the ELF file with both 32-bit and 16-bit parsers
+    """Run both ELF parsers and compare the variable maps they produce.
+
+    :param elf_file_path: Path to the ELF file to parse
+    """
     elf32_parser = GenericParser(elf_file_path)
     elf16_parser = Elf16Parser(elf_file_path)
 
-    # Generate variable maps for each parser
     variable_map_32 = elf32_parser._map_variables()
     variable_map_16 = elf16_parser._map_variables()
 
-    # print("variable_map_16", variable_map_16)
-    # print("variable_map_32", variable_map_32)
-    # Compare the two dictionaries
     compare_dicts_intelligently(variable_map_16, variable_map_32)
 
 
 # Usage example
-elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\elfparser_Decoding\Unified.X\dist\default\production\Unified.X.production.elf"
-elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-#elf_file = r"C:\_DESKTOP\_Projects\33ak_MCLV48V300W_FOC_PLL\project\pmsm.X\dist\default\production\pmsm.X.production.elf"
-#elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
-run_parsers_and_compare(elf_file)
+if __name__ == "__main__":
+    elf_file = r"elf_file"
+    run_parsers_and_compare(elf_file)

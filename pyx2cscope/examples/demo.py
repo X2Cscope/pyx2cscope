@@ -1,3 +1,4 @@
+"""Demo scripting for user to get started."""
 from pyx2cscope.x2cscope import X2CScope
 
 elf_file =r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
