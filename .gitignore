@@ -139,4 +139,6 @@ dmypy.json
 /doc/source/
 **/web/upload/
 **/config.ini
-/pyx2cscope/setup.py
+
+#backup files
+.bkp
