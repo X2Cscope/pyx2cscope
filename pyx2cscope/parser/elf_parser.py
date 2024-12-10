@@ -6,9 +6,6 @@ Classes:
 
 The module is designed to be extended by specific implementations for different ELF file formats.
 """
-import logging
-import os
-import pickle
 from abc import ABC, abstractmethod
 
 from dataclasses import dataclass
@@ -117,56 +114,6 @@ class ElfParser(ABC):
     @abstractmethod
     def _close_elf_file(self):
         """Abstract method to close any open file connection after parsing is done."""
-
-
-    def export_variable_list(self, path: str = None, filename: str = None):
-        """Store the variables registered on the elf file to a pickle file.
-
-        Args:
-            path (str): The path where the file will be stored. Defaults to the current directory if empty.
-            filename (str): The name of the file. Defaults to 'elf_file_name.pkl' if not provided.
-        """
-        if filename is None:
-            if self.elf_path is not None:
-                # get the elf_file name without path and replace .elf by .pkl
-                filename = os.path.splitext(os.path.basename(self.elf_path))[0] + ".pkl"
-            else:
-                filename = "variables_list.pkl"
-        else:
-            filename += ".pkl"
-
-        if path:
-            filename = os.path.join(path, filename)
-
-        with open(filename, 'wb') as file:
-            pickle.dump(self.variable_map, file)
-
-        logging.debug(f"Dictionary stored to {filename}")
-
-    def import_variable_list(self, path: str = None, filename: str ='variables_list'):
-        """Import and load variables registered on the pickle file.
-
-        Args:
-            path (str): The path where the file is stored. Defaults to the current directory if empty.
-            filename (str): The name of the pickle file. Defaults to 'variables_list.pkl' if not provided.
-        """
-        if not filename.endswith('.pkl'):
-            filename += '.pkl'
-
-        if path:
-            filepath = os.path.join(path, filename)
-        else:
-            filepath = filename
-
-        if not os.path.exists(filepath):
-            raise ValueError(f"Pickle file does not exist at given path: {filepath}")
-
-        # clear any previous loaded variable
-        self.variable_map.clear()
-
-        with open(filepath, 'rb') as file:
-            self.variable_map = pickle.load(file)
-        logging.debug(f"Pickle file loaded from {filepath}")
 
 
 class DummyParser(ElfParser):
