@@ -59,10 +59,17 @@ jobs:
                 python -m pip install --upgrade pip
                 pip install -r requirements.txt
                 pip install -r quality.txt
+                sudo apt install libxcb-xinerama0
 
         - name: Build executable
           run: |
                 pyinstaller --noconfirm ./pyx2cscope_linux.spec
+
+        - name: Create startWebInterface.sh
+          run: |
+                echo '#!/bin/bash' > dist/pyX2Cscope/startWebInterface.sh
+                echo 'pyX2Cscope -w' >> dist/pyX2Cscope/startWebInterface.sh
+                chmod +x dist/pyX2Cscope/startWebInterface.sh
 
         - name: Upload artifact
           uses: actions/upload-artifact@v4
