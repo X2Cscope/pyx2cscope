@@ -18,6 +18,10 @@ class TestParser:
         os.path.dirname(data.__file__), "qspin_foc_same54.elf"
     )
 
+    elf_file_dspic33ak = os.path.join(
+        os.path.dirname(data.__file__), "dsPIC33ak128mc106_foc.elf"
+    )
+
     def test_variable_16_does_not_exist(self, mocker):
         """Given a valid 16 bit elf file, check if an invalid variable outputs the expected behavior."""
         fake_serial(mocker, 16)
@@ -49,6 +53,20 @@ class TestParser:
         assert variable is not None, "variable name not found"
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
+
+    def test_variable_dspic33ak(self, mocker, array_size_test=4900):
+        """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
+        fake_serial(mocker, 32)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+        variable = x2c_scope.get_variable("measureInputs.current.Ia")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should be an array"
+        # test array
+        variable_array = x2c_scope.get_variable("X2C_BUFFER")
+        assert variable_array is not None, "variable name not found"
+        assert variable_array.is_array() == True, "variable should be an array"
+        assert len(variable_array) == array_size_test, "array has wrong length"
 
     def test_nested_array_variable_32(self, mocker, array_size_test=3):
         """Given a valid 32 bit elf file, check if an array variable is read correctly."""
