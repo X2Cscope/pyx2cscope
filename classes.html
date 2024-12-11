@@ -1,0 +1,692 @@
+<html>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+      <div class="mermaid">
+    
+        classDiagram
+          class Elf16Parser {
+            array_size : int
+            next_line : NoneType
+            tree_string : NoneType
+            xc16_read_elf_path : NoneType, str
+            calculate_array_size(array_die)
+          }
+          class Elf32Parser {
+            address : NoneType
+            die_variable : NoneType
+            dwarf_info : NoneType
+            elf_file : NoneType
+            elf_path
+            stream
+            symbol_table : dict
+            var_name : NoneType
+            variable_map : dict
+            close_elf_file()
+          }
+          class ElfParser {
+            array_size : int
+            dwarf_info : dict
+            elf_file : NoneType
+            elf_path : str
+            var_name : NoneType
+            variable_map : dict
+            get_var_info(name: str) Optional[VariableInfo]
+            get_var_list() List[str]
+            map_variables() Dict[str, VariableInfo]
+          }
+          class TriggerConfig {
+            trigger_delay : int
+            trigger_edge : int
+            trigger_level : int
+            trigger_mode : int
+            variable
+          }
+          class Variable {
+            address : int
+            array_size : int
+            l_net
+            name : Optional[str]
+            bytes_to_array(data: bytearray) List[Number]
+            bytes_to_value(data: bytearray)* Number
+            get_value()
+            get_width()* int
+            is_array()
+            is_integer()* bool
+            is_signed()* bool
+            set_value(new_value: Number)*
+          }
+          class VariableFactory {
+            device_info
+            l_net
+            parser
+            get_var_list() list[str]
+            get_variable(name: str) Variable | None
+          }
+          class VariableFloat {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: float)
+          }
+          class VariableInfo {
+            address : int
+            array_size : int
+            byte_size : int
+            name : str
+            type : str
+          }
+          class VariableInt16 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableInt32 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableInt64 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableInt8 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableSelectionDialog {
+            button_box
+            layout
+            search_bar
+            selected_variable : NoneType
+            variable_list
+            variables
+            accept_selection()
+            filter_variables(text)
+            init_ui()
+          }
+          class VariableUint16 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableUint32 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableUint64 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class VariableUint8 {
+            bytes_to_value(data: bytearray) Number
+            get_width() int
+            is_integer() bool
+            is_signed() bool
+            set_value(value: int)
+          }
+          class X2CScope {
+            convert_list : dict
+            elf_file : str
+            interface
+            lnet
+            scope_setup
+            ucwidth
+            variable_factory
+            add_scope_channel(variable: Variable, trigger: bool) int
+            clear_all_scope_channel()
+            clear_trigger()
+            connect()
+            disconnect()
+            get_delay_trigger_position() int
+            get_device_info()
+            get_scope_channel_data(valid_data: bool) Dict[str, List[Number]]
+            get_scope_channel_list() Dict[str, ScopeChannel]
+            get_trigger_position() int
+            get_variable(name: str) Variable
+            is_scope_data_ready() bool
+            list_variables() List[str]
+            read_array(data_type: int) List[bytearray]
+            remove_scope_channel(variable: Variable)
+            request_scope_data()
+            reset_scope_trigger()
+            scope_sample_time(time_microseconds: float) float
+            set_elf_file(elf_file: str)
+            set_interface(interface: InterfaceABC)
+            set_sample_time(sample_time: int)
+            set_scope_state(scope_state: int)
+            set_scope_trigger(config: TriggerConfig)
+          }
+          class X2cscopeGui {
+            Connect_button
+            Live_var1
+            Live_var2
+            Live_var3
+            Live_var4
+            Live_var5
+            ScaledValue_var1
+            ScaledValue_var2
+            ScaledValue_var3
+            ScaledValue_var4
+            ScaledValue_var5
+            Scaling_var1
+            Scaling_var2
+            Scaling_var3
+            Scaling_var4
+            Scaling_var5
+            Unit_var1
+            Unit_var2
+            Unit_var3
+            Unit_var4
+            Unit_var5
+            Value_var1
+            Value_var2
+            Value_var3
+            Value_var4
+            Value_var5
+            Value_var_boxes : NoneType, list
+            VariableList : list
+            baud_combo
+            box_layout
+            combo_box1
+            combo_box2
+            combo_box3
+            combo_box4
+            combo_box5
+            combo_boxes : NoneType, list
+            decimal_validator
+            error_shown : bool
+            file_path : str
+            grid_layout
+            labels : list
+            layout : NoneType
+            live_checkboxes : NoneType, list
+            load_button_scope
+            mutex
+            offset_boxes : NoneType, list
+            offset_var1
+            offset_var2
+            offset_var3
+            offset_var4
+            offset_var5
+            old_Variable_list : list
+            plot_button
+            plot_checkboxes : NoneType, list
+            plot_colors : list
+            plot_data : deque
+            plot_update_timer
+            plot_var1_checkbox
+            plot_var2_checkbox
+            plot_var3_checkbox
+            plot_var4_checkbox
+            plot_var5_checkbox
+            plot_window_open : bool
+            port_combo
+            sample_time_factor
+            sampletime
+            sampling_active : bool
+            save_button_scope
+            scaled_value_boxes : NoneType, list
+            scaling_boxes : NoneType, list
+            scope_channel_checkboxes
+            scope_plot_widget
+            scope_sample_button
+            scope_sampletime_edit
+            scope_scaling_boxes
+            scope_var_lines
+            scope_view_dock
+            select_file_button
+            selected_var_indices : list
+            selected_variables : list
+            ser : NoneType
+            settings
+            single_shot_checkbox
+            slider_var1
+            tab1
+            tab2
+            timer1
+            timer2
+            timer3
+            timer4
+            timer5
+            timerValue : int
+            timer_list : NoneType, list
+            total_time_label
+            total_time_value
+            triggerVariable : NoneType
+            trigger_delay_edit
+            trigger_edge_combo
+            trigger_level_edit
+            trigger_mode_combo
+            trigger_var_checkbox
+            var_factory : NoneType
+            watch_plot_widget
+            watch_view_dock
+            x2cscope
+            close_event(event)
+            close_plot_window()
+            combo_box()
+            configure_trigger()
+            connect_editing_finished()
+            connect_serial()
+            create_central_widget()
+            create_dockable_tabs()
+            create_save_load_buttons()
+            create_scope_plot_widget()
+            create_trigger_configuration_group()
+            create_variable_selection_group()
+            disconnect_serial()
+            handle_error(error_message: str)
+            handle_scope_checkbox_change(state, index)
+            handle_var_update(counter, value_var)
+            handle_variable_getram(variable, value_var)
+            handle_variable_putram(variable, value_var)
+            init_ui()
+            initi_variables()
+            initialize_variables()
+            live_var()
+            offset_var()
+            plot_data_plot()
+            plot_data_update()
+            plot_var_check()
+            refresh_combo_box()
+            refresh_ports()
+            sample_scope_data(single_shot)
+            sampletime_edit()
+            scaled_value()
+            scaling_var()
+            select_elf_file()
+            setup_application_style()
+            setup_baud_layout(layout)
+            setup_connections()
+            setup_port_layout(layout)
+            setup_sampletime_layout(layout)
+            setup_tab1()
+            setup_tab2()
+            setup_variable_layout(layout)
+            setup_window_properties()
+            slider_var1_changed(value)
+            start_sampling()
+            timer()
+            toggle_connection()
+            unit_var()
+            update_scaled_value(scaling_var, value_var, scaled_value_var, offset_var)
+            update_scope_plot()
+            update_watch_plot()
+            value_var()
+            var_live(live_var, timer)
+          }
+          class X2cscopeGui {
+            Connect_button
+            Live_var1
+            Live_var2
+            Live_var3
+            Live_var4
+            Live_var5
+            ScaledValue_var1
+            ScaledValue_var2
+            ScaledValue_var3
+            ScaledValue_var4
+            ScaledValue_var5
+            Scaling_var1
+            Scaling_var2
+            Scaling_var3
+            Scaling_var4
+            Scaling_var5
+            Unit_var1
+            Unit_var2
+            Unit_var3
+            Unit_var4
+            Unit_var5
+            Value_var1
+            Value_var2
+            Value_var3
+            Value_var4
+            Value_var5
+            Value_var_boxes : NoneType, list
+            VariableList : list
+            add_variable_button
+            baud_combo
+            box_layout
+            config_file_loaded : bool
+            current_row : int
+            decimal_validator
+            device_info_labels : dict
+            elf_file_loaded : bool
+            error_shown : bool
+            file_path : str
+            grid_layout
+            labels : list
+            last_error_time : NoneType
+            layout : NoneType
+            line_edit1
+            line_edit2
+            line_edit3
+            line_edit4
+            line_edit5
+            line_edit_boxes : NoneType, list
+            live_checkboxes : NoneType, list
+            live_tab3 : list
+            live_update_timer
+            load_button_scope
+            load_button_tab3
+            load_button_watch
+            mutex
+            offset_boxes : NoneType, list
+            offset_edits_tab3 : list
+            offset_var1
+            offset_var2
+            offset_var3
+            offset_var4
+            offset_var5
+            old_Variable_list : list
+            plot_button
+            plot_checkboxes : NoneType, list
+            plot_colors : list
+            plot_data : deque
+            plot_update_timer
+            plot_var1_checkbox
+            plot_var2_checkbox
+            plot_var3_checkbox
+            plot_var4_checkbox
+            plot_var5_checkbox
+            plot_window_open : bool
+            port_combo
+            previous_selected_variables : dict
+            real_sampletime
+            row_widgets : list
+            sample_time_factor
+            sampletime
+            sampling_active : bool
+            save_button_scope
+            save_button_tab3
+            save_button_watch
+            scaled_value_boxes : NoneType, list
+            scaled_value_edits_tab3 : list
+            scaling_boxes : NoneType, list
+            scaling_edits_tab3 : list
+            scope_channel_checkboxes
+            scope_plot_widget
+            scope_sample_button
+            scope_sampletime_edit
+            scope_scaling_boxes
+            scope_timer
+            scope_var_lines
+            select_file_button
+            selected_var_indices : list
+            selected_variables : list
+            ser : NoneType
+            settings
+            single_shot_checkbox
+            slider_var1
+            tab1
+            tab2
+            tab3
+            tab_widget
+            timeout : int
+            timer1
+            timer2
+            timer3
+            timer4
+            timer5
+            timerValue : int
+            timer_list : NoneType, list
+            total_time_label
+            total_time_value
+            triggerVariable : NoneType
+            trigger_delay_edit
+            trigger_edge_combo
+            trigger_level_edit
+            trigger_mode_combo
+            trigger_var_checkbox
+            value_line_edits : list
+            var_factory : NoneType
+            variable_line_edits : list
+            watch_plot_widget
+            watchview_grid
+            x2cscope : NoneType
+            x2cscope_initialized : bool
+            add_variable_row()
+            attempt_connection()
+            auto_connect_serial(baud_rate)
+            clear_tab3()
+            close_event(event)
+            close_plot_window()
+            configure_trigger()
+            connect_editing_finished()
+            connect_serial()
+            connect_to_port(port, baud_rate)
+            create_central_widget()
+            create_save_load_buttons()
+            create_scope_plot_widget()
+            create_tabs()
+            create_trigger_configuration_group()
+            create_variable_selection_group()
+            disconnect_serial()
+            eventFilter(source, event)
+            handle_connection(config_port)
+            handle_error(error_message: str)
+            handle_failed_connection()
+            handle_scope_checkbox_change(state, index)
+            handle_var_update(counter, value_var)
+            handle_variable_getram(variable, value_var)
+            handle_variable_putram(variable, value_var)
+            init_ui()
+            initi_variables()
+            initialize_variables()
+            is_connected()
+            line_edit()
+            live_var()
+            load_config()
+            load_general_settings(config)
+            load_json_file(file_path)
+            load_scope_view(scope_view)
+            load_tab3_view(tab3_view)
+            load_watch_view(watch_view)
+            manual_connect_serial(baud_rate)
+            offset_var()
+            plot_data_plot()
+            plot_data_update()
+            plot_var_check()
+            prompt_for_file()
+            rearrange_grid()
+            refresh_line_edit()
+            refresh_ports()
+            remove_variable_row(live_checkbox, variable_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit, unit_edit, remove_button)
+            restore_selected_variables()
+            sample_scope_data(single_shot)
+            sampletime_edit()
+            save_config()
+            save_selected_variables()
+            scaled_value()
+            scaling_var()
+            select_elf_file()
+            setup_application_style()
+            setup_connected_state()
+            setup_connections()
+            setup_port_layout(layout)
+            setup_sampletime_layout(layout)
+            setup_tab1()
+            setup_tab2()
+            setup_tab3()
+            setup_tabs()
+            setup_variable_layout(layout)
+            setup_window_properties()
+            show_file_not_found_warning(elf_file_path)
+            slider_var1_changed(value)
+            start_sampling()
+            timer()
+            toggle_connection()
+            try_other_ports(available_ports)
+            unit_var()
+            update_device_info()
+            update_live_variables()
+            update_scaled_value(scaling_var, value_var, scaled_value_var, offset_var)
+            update_scaled_value_tab3(value_edit, scaling_edit, offset_edit, scaled_value_edit)
+            update_scope_plot()
+            update_watch_plot()
+            value_var()
+            var_live(live_var, timer)
+          }
+          class X2cscopeGui {
+            Connect_button
+            Live_var1
+            Live_var2
+            Live_var3
+            Live_var4
+            Live_var5
+            ScaledValue_var1
+            ScaledValue_var2
+            ScaledValue_var3
+            ScaledValue_var4
+            ScaledValue_var5
+            Scaling_var1
+            Scaling_var2
+            Scaling_var3
+            Scaling_var4
+            Scaling_var5
+            Unit_var1
+            Unit_var2
+            Unit_var3
+            Unit_var4
+            Unit_var5
+            Value_var1
+            Value_var2
+            Value_var3
+            Value_var4
+            Value_var5
+            Value_var_boxes : NoneType, list
+            VariableList : list
+            ani : NoneType
+            ax : NoneType
+            baud_combo
+            box_layout
+            combo_box1
+            combo_box2
+            combo_box3
+            combo_box4
+            combo_box5
+            combo_boxes : NoneType, list
+            decimal_validator
+            error_shown : bool
+            fig : NoneType
+            file_path : str
+            grid_layout
+            labels : list
+            layout : NoneType
+            live_checkboxes : NoneType, list
+            mutex
+            offset_boxes : NoneType, list
+            offset_var1
+            offset_var2
+            offset_var3
+            offset_var4
+            offset_var5
+            old_Variablelist : list
+            plot_button
+            plot_checkboxes : NoneType, list
+            plot_data : deque
+            plot_var1_checkbox
+            plot_var2_checkbox
+            plot_var3_checkbox
+            plot_var4_checkbox
+            plot_var5_checkbox
+            plot_window_open : bool
+            port_combo
+            sampletime
+            scaled_value_boxes : NoneType, list
+            scaling_boxes : NoneType, list
+            select_file_button
+            selected_var_indices : list
+            selected_variables : list
+            ser : NoneType
+            settings
+            slider_var1
+            timer1
+            timer2
+            timer3
+            timer4
+            timer5
+            timerValue : int
+            timer_list : NoneType, list
+            var_factory : NoneType
+            x2cscope
+            close_event(event)
+            close_plot_window()
+            combo_box()
+            connect_editing_finished()
+            connect_serial()
+            disconnect_serial()
+            handle_error(error_message: str)
+            handle_var_update(counter, value_var)
+            handle_variable_getram(variable, value_var)
+            handle_variable_putram(variable, value_var)
+            init_ui()
+            initialize_variables()
+            live_var()
+            offset_var()
+            plot_data_plot()
+            plot_data_update()
+            plot_var_check()
+            refresh_combo_box()
+            refresh_ports()
+            sampletime_edit()
+            scailing_var()
+            scaled_value()
+            select_elf_file()
+            setup_baud_layout()
+            setup_connections()
+            setup_port_layout()
+            setup_sampletime_layout()
+            setup_variable_layout()
+            slider_var1_changed(value)
+            timer()
+            toggle_connection()
+            unit_var()
+            update_plot(frame)
+            update_scaled_value(scaling_var, value_var, scaled_value_var, offset_var)
+            value_var()
+            var_live(live_var, timer)
+          }
+          Elf16Parser --|> ElfParser
+          Elf32Parser --|> ElfParser
+          VariableFloat --|> Variable
+          VariableInt16 --|> Variable
+          VariableInt32 --|> Variable
+          VariableInt64 --|> Variable
+          VariableInt8 --|> Variable
+          VariableUint16 --|> Variable
+          VariableUint32 --|> Variable
+          VariableUint64 --|> Variable
+          VariableUint8 --|> Variable
+          Elf16Parser --* VariableFactory : parser
+          Elf32Parser --* VariableFactory : parser
+          Variable --* TriggerConfig : variable
+          VariableFactory --* X2CScope : variable_factory
+          VariableFactory --* X2CScope : variable_factory
+          VariableFactory --* X2CScope : variable_factory
+          X2CScope --* X2cscopeGui : x2cscope
+          X2CScope --* X2cscopeGui : x2cscope
+          X2CScope --* X2cscopeGui : x2cscope
+  
+       </div>
+  </body>
+</html>
