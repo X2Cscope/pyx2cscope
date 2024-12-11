@@ -7,6 +7,6 @@ and the Graphical User Interface:
 .. toctree::
    :maxdepth: 3
 
-   scripting.md
+   scripting.rst
    gui_qt.md
    gui_web.md

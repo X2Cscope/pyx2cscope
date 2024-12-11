@@ -32,13 +32,13 @@ elf_file = get_elf_file_path()  # Get the path to the ELF file from the utility 
 
 # Initialize the X2CScope with the specified serial port and baud rate
 # The default baud rate is 115200
-x2c_scope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
+x2cScope = X2CScope(port=serial_port, baud_rate=baud_rate, elf_file=elf_file)
 
 # Retrieve specific variables from the MCU
-speed_reference = x2c_scope.get_variable(
+speed_reference = x2cScope.get_variable(
     "motor.apiData.velocityReference"
 )  # Get the speed reference variable
-speed_measured = x2c_scope.get_variable(
+speed_measured = x2cScope.get_variable(
     "motor.apiData.velocityMeasured"
 )  # Get the measured speed variable
 
@@ -203,7 +203,7 @@ logging.basicConfig(
 
 # X2C Scope Set up
 elf_file = get_elf_file_path()
-x2c_scope = X2CScope(port=get_com_port(), elf_file=elf_file)
+x2cScope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
 # Define variables
 variables = [
@@ -215,9 +215,9 @@ variables = [
 ]  # upto 8 variables could be selected.
 
 for var in variables:
-    x2c_scope.add_scope_channel(x2c_scope.get_variable(var))
+    x2cScope.add_scope_channel(x2cScope.get_variable(var))
 
-x2c_scope.set_sample_time(1)
+x2cScope.set_sample_time(1)
 
 # Create the plot
 plt.ion()  # Turn on interactive mode
@@ -229,12 +229,12 @@ max_sample = 100  # Increase the number of samples if needed
 
 while sample_count < max_sample:
     try:
-        if x2c_scope.is_scope_data_ready():
+        if x2cScope.is_scope_data_ready():
             sample_count += 1
             logging.info("Scope data is ready.")
 
             data_storage = {}
-            for channel, data in x2c_scope.get_scope_channel_data(
+            for channel, data in x2cScope.get_scope_channel_data(
                     valid_data=False
             ).items():
                 data_storage[channel] = data
@@ -255,7 +255,7 @@ while sample_count < max_sample:
 
             if sample_count >= max_sample:
                 break
-            x2c_scope.request_scope_data()
+            x2cScope.request_scope_data()
 
     except Exception as e:
         logging.error(f"Error in main loop: {str(e)}")
