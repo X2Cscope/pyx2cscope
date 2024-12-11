@@ -9,7 +9,7 @@ from enum import Enum
 from dataclasses import asdict
 
 from mchplnet.lnet import LNet
-from pyx2cscope.parser.elf_parser import DummyParser
+from pyx2cscope.parser.elf_parser import DummyParser, VariableInfo
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
@@ -188,7 +188,6 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
-
             return self.get_variable_raw(variable_info)
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
