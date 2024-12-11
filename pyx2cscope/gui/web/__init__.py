@@ -21,8 +21,9 @@ def connect_x2c(*args, **kwargs):
         **kwargs: keyed arguments. Expected minimal "port" and "elf_file".
     """
     global x2c_scope, x2c_scope_init
+    file = kwargs.pop("import_file")
     x2c_scope = X2CScope(**kwargs)
-    x2c_scope.list_variables()
+    x2c_scope.import_variables(file)
     x2c_scope_init = True
 
 

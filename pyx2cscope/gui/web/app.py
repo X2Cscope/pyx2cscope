@@ -49,7 +49,7 @@ def connect():
         file_name = os.path.join(web_lib_path, "elf_file.elf")
         try:
             elf_file.save(file_name)
-            connect_x2c(port=uart, elf_file=file_name)
+            connect_x2c(port=uart, import_file=file_name)
             return jsonify({"status": "success"})
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
