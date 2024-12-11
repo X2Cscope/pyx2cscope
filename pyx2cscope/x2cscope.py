@@ -17,7 +17,7 @@ from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
 from pyx2cscope.variable.variable import Variable
-from pyx2cscope.variable.variable_factory import VariableFactory
+from pyx2cscope.variable.variable_factory import VariableFactory, FileType
 
 # Configure logging for debugging and tracking
 logging.basicConfig(
@@ -75,12 +75,12 @@ class X2CScope:
     requesting data, and processing received data.
 
     Attributes:
-        elf_file (str): Path to the ELF file.
         interface (InterfaceABC): Interface object for communication.
         lnet (LNet): LNet object for low-level network operations.
         variable_factory (VariableFactory): Factory to create Variable objects.
         scope_setup: Configuration for the scope setup.
         convert_list (dict): Dictionary to store variable conversion functions.
+        uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.
     """
 
     def __init__(self, elf_file: str = None, interface: InterfaceABC = None, **kwargs):
@@ -94,7 +94,6 @@ class X2CScope:
         i_type = interface if interface is not None else InterfaceType.SERIAL
         self.interface = InterfaceFactory.get_interface(interface_type=i_type, **kwargs)
         self.lnet = LNet(self.interface)
-        self.elf_file = elf_file
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
@@ -108,15 +107,7 @@ class X2CScope:
         """
         self.lnet = LNet(interface)
         self.scope_setup = self.lnet.get_scope_setup()
-        self.variable_factory = VariableFactory(self.lnet, self.elf_file)
-
-    def set_elf_file(self, elf_file: str):
-        """Set the ELF file for the scope.
-
-        Args:
-            elf_file (str): Path to the ELF file.
-        """
-        self.variable_factory.set_elf_file(elf_file)
+        self.variable_factory.set_lnet_interface(self.lnet)
 
     def connect(self):
         """Establish a connection with the scope interface."""
@@ -144,6 +135,27 @@ class X2CScope:
             Variable: The requested variable object.
         """
         return self.variable_factory.get_variable(name)
+
+    def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
+        """Store the variables registered on the elf file to a pickle file.
+
+        Args:
+            filename (str): The path and name of the file to store data to. Defaults to 'elf_file_name.yml'.
+            ext (FileType): The file extension type to be used (elf, yml, pkl, etc.)
+            items (List): A list of variable names or variables to export. Export all variables if empty.
+        """
+        self.variable_factory.export_variables(filename, ext, items)
+
+    def import_variables(self, filename: str):
+        """Import and load variables registered on the file.
+
+        Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
+        This method clears any loaded variable.
+
+        Args:
+            filename (str): The name of the file and its path.
+        """
+        self.variable_factory.import_variables(filename)
 
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
         """Add a variable as a scope channel.

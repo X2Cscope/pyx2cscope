@@ -6,8 +6,8 @@ Classes:
 
 The module is designed to be extended by specific implementations for different ELF file formats.
 """
-
 from abc import ABC, abstractmethod
+
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 

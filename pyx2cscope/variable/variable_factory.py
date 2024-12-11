@@ -1,9 +1,14 @@
 """Variable Factory returns the respective variable type according to the variable type found at the elf file."""
 
 import logging
+import os
+import pickle
+import yaml
+from enum import Enum
+from dataclasses import asdict
 
 from mchplnet.lnet import LNet
-from pyx2cscope.parser.elf_parser import DummyParser
+from pyx2cscope.parser.elf_parser import DummyParser, VariableInfo
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
@@ -18,6 +23,25 @@ from pyx2cscope.variable.variable import (
     VariableUint64,
 )
 
+class FileType(Enum):
+    """Enumeration of supported file types for import/export operations."""
+    YAML = ".yml"
+    PICKLE = ".pkl"
+    ELF = ".elf"
+
+def variable_info_repr(dumper, data):
+    """Helper function to yaml file deserializer. Do not call this function."""
+    return dumper.represent_mapping('!VariableInfo', asdict(data))
+
+# Custom constructor for VariableInfo
+def variable_info_constructor(loader, node):
+    """Helper function to yaml file deserializer. Do not call this function."""
+    values = loader.construct_mapping(node)
+    return VariableInfo(**values)
+
+# adding constructor and representation of VariableInfo to yaml module.
+yaml.add_representer(VariableInfo, variable_info_repr)
+yaml.add_constructor('!VariableInfo', variable_info_constructor)
 
 class VariableFactory:
     """A factory class for creating variable objects based on ELF file parsing.
@@ -64,6 +88,84 @@ class VariableFactory:
         parser = GenericParser
         self.parser = parser(elf_path)
 
+    def set_lnet_interface(self, lnet: LNet):
+        """Set the LNet interface to be used for data communication.
+
+        Args:
+            lnet (LNet): the LNet interface
+        """
+        self.l_net = lnet
+
+    def _build_export_file_name(self, filename: str = None, ext: FileType= FileType.YAML):
+        if filename is None:
+            if self.parser.elf_path is not None:
+                # get the elf_file name without extension
+                filename = os.path.splitext(os.path.basename(self.parser.elf_path))[0]
+            else:
+                filename = "variables_list"
+
+        return os.path.splitext(filename)[0] + ext.value
+
+    def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
+        """Store the variables registered on the elf file to a pickle file.
+
+        Args:
+            filename (str): The path and name of the file to store data to. Defaults to 'elf_file_name.yml'.
+            ext (FileType): The file extension type to be used (yml or pkl, elf is not supported for export).
+            items (List): A list of variable names or variables to export. Export all variables if empty.
+        """
+        if ext is FileType.ELF:
+            raise ValueError("Elf file is not yet supported as export format...")
+        filename = self._build_export_file_name(filename, ext)
+
+        export_dict = {}
+        if items:
+            for item in items:
+                variable_name = item.name if isinstance(item, Variable) else item
+                export_dict[variable_name] = self.parser.variable_map.get(variable_name)
+        else:
+            export_dict = self.parser.variable_map
+
+        if ext is FileType.PICKLE:
+            with open(filename, 'wb') as file:
+                pickle.dump(export_dict, file)
+        if ext is FileType.YAML:
+            with open(filename, 'w') as file:
+                yaml.dump(export_dict, file)
+
+        logging.debug(f"Dictionary stored to {filename}")
+
+    def import_variables(self, filename: str):
+        """Import and load variables registered on the file.
+
+        Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
+        The flush parameter defaults to true and clears all previous loaded variables. This flag is
+        intended to be used when adding single variables to the parser.
+
+        Args:
+            filename (str): The name of the file and its path.
+        """
+        if not os.path.exists(filename):
+            raise ValueError(f"File does not exist at given path: {filename}")
+        try:
+            ext = FileType(os.path.splitext(filename)[1])
+        except ValueError:
+            raise ValueError(f"File extension not supported. Supported ones are: {[f.value for f in FileType]}")
+
+        # clear any previous loaded variable
+        self.parser.variable_map.clear()
+
+        if ext is FileType.ELF:
+            self.parser = GenericParser(filename)
+        if ext is FileType.PICKLE:
+            with open(filename, 'rb') as file:
+                self.parser.variable_map = pickle.load(file)
+        if ext is FileType.YAML:
+            with open(filename, 'r') as file:
+                self.parser.variable_map = yaml.load(file, Loader=yaml.FullLoader)
+
+        logging.debug(f"Variables loaded from {filename}")
+
     def get_var_list(self) -> list[str]:
         """Get a list of variable names available in the ELF file.
 
@@ -83,29 +185,15 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
-            return self._get_variable_instance(
-                variable_info.address,
-                variable_info.type,
-                variable_info.array_size,
-                variable_info.name,
-            )
+            return self._get_variable_instance(variable_info)
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
 
-    def _get_variable_instance(
-        self,
-        address: int,
-        var_type: str,
-        array_size: int,
-        name: str,
-    ) -> Variable:
+    def _get_variable_instance(self, var_info: VariableInfo) -> Variable:
         """Create a variable object based on the provided address, type, and name.
 
         Args:
-            address (int): Address of the variable in the MCU memory.
-            var_type (VarTypes): Type of the variable.
-            array_size (int): the size of the array, in case of an array, 0 otherwise.
-            name (str): Name of the variable.
+            var_info (VariableInfo): details about the variable as name, address, type, array_size, etc.
 
         returns:
             Variable: Variable object based on the provided information.
@@ -129,7 +217,7 @@ class VariableFactory:
                 VariableUint16
                 if self.device_info.uc_width == self.device_info.MACHINE_16
                 else VariableUint32
-            ),  # TODO v 0.2.0
+            ),
             "short": VariableInt16,
             "short int": VariableInt16,
             "short unsigned int": VariableUint16,
@@ -144,9 +232,9 @@ class VariableFactory:
         }
 
         try:
-            var_type = var_type.lower().replace("_", "")
-            return type_factory[var_type](self.l_net, address, array_size, name)
+            var_type = var_info.type.lower().replace("_", "")
+            return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name)
         except IndexError:
-            raise Exception(
+            raise ValueError(
                 f"Type {var_type} not found. Cannot select the right variable representation."
             )
