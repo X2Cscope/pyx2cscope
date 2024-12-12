@@ -27,7 +27,7 @@ device_info = x2c_scope.get_device_info()
 print(device_info)
 
 # set the elf_file later, post instantiation
-x2c_scope.set_elf_file("""your_path_to_elf_file.elf""")
+x2c_scope.import_variables("""your_path_to_elf_file.elf""")
 
 # Collect some variables, i.e.: from QSPIN on SAME54 MCLV-48V-300W
 angle_reference = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecAngle")

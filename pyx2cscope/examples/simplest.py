@@ -7,7 +7,9 @@ retrieves specific variables, reads their values, and writes new values to them.
 from pyx2cscope.x2cscope import X2CScope
 
 # initialize the X2CScope class with serial port, by default baud rate is 115200
-x2c_scope = X2CScope(port="COM8", elf_file="Path_To_Elf_File")
+x2c_scope = X2CScope(port="COM8")
+# instead of loading directly the elf file, we can import it after instantiating the X2CScope class
+x2c_scope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
 
 # Collect some variables.
 speed_reference = x2c_scope.get_variable("motor.apiData.velocityReference")
