@@ -260,11 +260,15 @@ def load():
         if isinstance(data, list) and data and isinstance(data[0], dict) and "trigger" in data[0].keys():
             scope_data = data
             with get_x2c() as x2c:
-                x2c.clear_all_scope_channel()
                 for item in scope_data:
                     item["variable"] = x2c.get_variable(item["variable"])
-                    x2c.add_scope_channel(item["variable"])
-                return jsonify({"status": "success"})
+                if any(item["variable"] is None for item in scope_data):
+                    scope_data.clear()
+                else:
+                    x2c.clear_all_scope_channel()
+                    for item in scope_data:
+                        x2c.add_scope_channel(item["variable"])
+                    return jsonify({"status": "success"})
         return jsonify({"status": "error", "msg": "Invalid ScopeConfig file."}), 400
 
 

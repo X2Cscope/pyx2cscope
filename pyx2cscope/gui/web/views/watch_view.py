@@ -132,7 +132,10 @@ def load():
             with get_x2c() as x2c:
                 for item in watch_data:
                     item["variable"] = x2c.get_variable(item["variable"])
-                return jsonify({"status": "success"})
+                if any(item["variable"] is None for item in watch_data):
+                    watch_data.clear()
+                else:
+                    return jsonify({"status": "success"})
         return jsonify({"status": "error", "msg": "Invalid WatchConfig file."}), 400
 
 
