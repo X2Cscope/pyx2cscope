@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.3.3 documentation</title>
+  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=d5a15cff"></script>
+        <script src="../../../_static/documentation_options.js?v=6c02275b"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.3.3
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -50,9 +50,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../how_to.html">How-To</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scripting.html">API Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gui_qt.html">GUI Qt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gui_web.html">GUI Web</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../development.html">Development</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope</span></code></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
@@ -202,17 +206,17 @@ trigger_edge (int): Rising 0, falling 1.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyx2cscope.x2cscope.X2CScope">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.x2cscope.</span></span><span class="sig-name descname"><span class="pre">X2CScope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">mchplnet.interfaces.abstract_interface.InterfaceABC</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/x2cscope.html#X2CScope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.x2cscope.X2CScope" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.x2cscope.</span></span><span class="sig-name descname"><span class="pre">X2CScope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">mchplnet.interfaces.abstract_interface.InterfaceABC</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/x2cscope.html#X2CScope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.x2cscope.X2CScope" title="Link to this definition"></a></dt>
 <dd><p>X2CScope class for interfacing with the X2C Scope tool.</p>
 <p>This class provides methods for connecting to the scope, setting up scope channels,
 requesting data, and processing received data.</p>
 <dl class="simple">
-<dt>Attributes:</dt><dd><p>elf_file (str): Path to the ELF file.
-interface (InterfaceABC): Interface object for communication.
+<dt>Attributes:</dt><dd><p>interface (InterfaceABC): Interface object for communication.
 lnet (LNet): LNet object for low-level network operations.
 variable_factory (VariableFactory): Factory to create Variable objects.
 scope_setup: Configuration for the scope setup.
-convert_list (dict): Dictionary to store variable conversion functions.</p>
+convert_list (dict): Dictionary to store variable conversion functions.
+uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.</p>
 </dd>
 </dl>
 <dl class="py method">
@@ -221,16 +225,6 @@ convert_list (dict): Dictionary to store variable conversion functions.</p>
 <dd><p>Set the communication interface for the scope.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>interface (InterfaceABC): The interface to be set for communication.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.x2cscope.X2CScope.set_elf_file">
-<span class="sig-name descname"><span class="pre">set_elf_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/x2cscope.html#X2CScope.set_elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.x2cscope.X2CScope.set_elf_file" title="Link to this definition"></a></dt>
-<dd><p>Set the ELF file for the scope.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>elf_file (str): Path to the ELF file.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -265,6 +259,30 @@ convert_list (dict): Dictionary to store variable conversion functions.</p>
 <dt>Args:</dt><dd><p>name (str): The name of the variable to retrieve.</p>
 </dd>
 <dt>Returns:</dt><dd><p>Variable: The requested variable object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.x2cscope.X2CScope.export_variables">
+<span class="sig-name descname"><span class="pre">export_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.FileType" title="pyx2cscope.variable.variable_factory.FileType"><span class="pre">pyx2cscope.variable.variable_factory.FileType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">FileType.YAML</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/x2cscope.html#X2CScope.export_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.x2cscope.X2CScope.export_variables" title="Link to this definition"></a></dt>
+<dd><p>Store the variables registered on the elf file to a pickle file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>filename (str): The path and name of the file to store data to. Defaults to ‘elf_file_name.yml’.
+ext (FileType): The file extension type to be used (elf, yml, pkl, etc.)
+items (List): A list of variable names or variables to export. Export all variables if empty.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.x2cscope.X2CScope.import_variables">
+<span class="sig-name descname"><span class="pre">import_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/x2cscope.html#X2CScope.import_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.x2cscope.X2CScope.import_variables" title="Link to this definition"></a></dt>
+<dd><p>Import and load variables registered on the file.</p>
+<p>Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
+This method clears any loaded variable.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>filename (str): The name of the file and its path.</p>
 </dd>
 </dl>
 </dd></dl>

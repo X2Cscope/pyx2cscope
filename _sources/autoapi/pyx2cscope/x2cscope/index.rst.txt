@@ -108,7 +108,7 @@ Attributes
       
 
 
-.. py:class:: X2CScope(elf_file: str, interface: mchplnet.interfaces.abstract_interface.InterfaceABC = None, **kwargs)
+.. py:class:: X2CScope(elf_file: str = None, interface: mchplnet.interfaces.abstract_interface.InterfaceABC = None, **kwargs)
 
 
    X2CScope class for interfacing with the X2C Scope tool.
@@ -117,12 +117,12 @@ Attributes
    requesting data, and processing received data.
 
    Attributes:
-       elf_file (str): Path to the ELF file.
        interface (InterfaceABC): Interface object for communication.
        lnet (LNet): LNet object for low-level network operations.
        variable_factory (VariableFactory): Factory to create Variable objects.
        scope_setup: Configuration for the scope setup.
        convert_list (dict): Dictionary to store variable conversion functions.
+       uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.
 
    .. py:method:: set_interface(interface: mchplnet.interfaces.abstract_interface.InterfaceABC)
 
@@ -130,14 +130,6 @@ Attributes
 
       Args:
           interface (InterfaceABC): The interface to be set for communication.
-
-
-   .. py:method:: set_elf_file(elf_file: str)
-
-      Set the ELF file for the scope.
-
-      Args:
-          elf_file (str): Path to the ELF file.
 
 
    .. py:method:: connect()
@@ -167,6 +159,27 @@ Attributes
 
       Returns:
           Variable: The requested variable object.
+
+
+   .. py:method:: export_variables(filename: str = None, ext: pyx2cscope.variable.variable_factory.FileType = FileType.YAML, items=None)
+
+      Store the variables registered on the elf file to a pickle file.
+
+      Args:
+          filename (str): The path and name of the file to store data to. Defaults to 'elf_file_name.yml'.
+          ext (FileType): The file extension type to be used (elf, yml, pkl, etc.)
+          items (List): A list of variable names or variables to export. Export all variables if empty.
+
+
+   .. py:method:: import_variables(filename: str)
+
+      Import and load variables registered on the file.
+
+      Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
+      This method clears any loaded variable.
+
+      Args:
+          filename (str): The name of the file and its path.
 
 
    .. py:method:: add_scope_channel(variable: pyx2cscope.variable.variable.Variable, trigger: bool = False) -> int

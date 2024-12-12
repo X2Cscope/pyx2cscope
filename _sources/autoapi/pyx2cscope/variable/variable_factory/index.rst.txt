@@ -17,9 +17,52 @@ Classes
 
 .. autoapisummary::
 
+   pyx2cscope.variable.variable_factory.FileType
    pyx2cscope.variable.variable_factory.VariableFactory
 
 
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.variable.variable_factory.variable_info_repr
+   pyx2cscope.variable.variable_factory.variable_info_constructor
+
+
+
+.. py:class:: FileType
+
+
+   Bases: :py:obj:`enum.Enum`
+
+   Enumeration of supported file types for import/export operations.
+
+   .. py:attribute:: YAML
+      :value: '.yml'
+
+      
+
+   .. py:attribute:: PICKLE
+      :value: '.pkl'
+
+      
+
+   .. py:attribute:: ELF
+      :value: '.elf'
+
+      
+
+
+.. py:function:: variable_info_repr(dumper, data)
+
+   Helper function to yaml file deserializer. Do not call this function.
+
+
+.. py:function:: variable_info_constructor(loader, node)
+
+   Helper function to yaml file deserializer. Do not call this function.
 
 
 .. py:class:: VariableFactory(l_net: mchplnet.lnet.LNet, elf_path=None)
@@ -40,6 +83,50 @@ Classes
        get_variable: Gets a Variable object based on the variable name.
        _get_variable_instance: Creates a Variable instance from provided information.
 
+   .. py:method:: set_elf_file(elf_path: str)
+
+      Set an elf file to be used as source for variables and addresses.
+
+      Args:
+          elf_path (str): Path to the elf file.
+
+      Returns:
+          None
+
+
+   .. py:method:: set_lnet_interface(lnet: mchplnet.lnet.LNet)
+
+      Set the LNet interface to be used for data communication.
+
+      Args:
+          lnet (LNet): the LNet interface
+
+
+   .. py:method:: _build_export_file_name(filename: str = None, ext: FileType = FileType.YAML)
+
+
+   .. py:method:: export_variables(filename: str = None, ext: FileType = FileType.YAML, items=None)
+
+      Store the variables registered on the elf file to a pickle file.
+
+      Args:
+          filename (str): The path and name of the file to store data to. Defaults to 'elf_file_name.yml'.
+          ext (FileType): The file extension type to be used (yml or pkl, elf is not supported for export).
+          items (List): A list of variable names or variables to export. Export all variables if empty.
+
+
+   .. py:method:: import_variables(filename: str)
+
+      Import and load variables registered on the file.
+
+      Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
+      The flush parameter defaults to true and clears all previous loaded variables. This flag is
+      intended to be used when adding single variables to the parser.
+
+      Args:
+          filename (str): The name of the file and its path.
+
+
    .. py:method:: get_var_list() -> list[str]
 
       Get a list of variable names available in the ELF file.
@@ -59,15 +146,12 @@ Classes
           Variable: The Variable object, if found. None otherwise.
 
 
-   .. py:method:: _get_variable_instance(address: int, var_type: str, array_size: int, name: str) -> pyx2cscope.variable.variable.Variable
+   .. py:method:: _get_variable_instance(var_info: pyx2cscope.parser.elf_parser.VariableInfo) -> pyx2cscope.variable.variable.Variable
 
       Create a variable object based on the provided address, type, and name.
 
       Args:
-          address (int): Address of the variable in the MCU memory.
-          var_type (VarTypes): Type of the variable.
-          array_size (int): the size of the array, in case of an array, 0 otherwise.
-          name (str): Name of the variable.
+          var_info (VariableInfo): details about the variable as name, address, type, array_size, etc.
 
       returns:
           Variable: Variable object based on the provided information.

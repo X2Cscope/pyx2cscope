@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.3.3 documentation</title>
+  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=d5a15cff"></script>
+        <script src="../../../../_static/documentation_options.js?v=6c02275b"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.3.3
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -51,9 +51,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../../../../how_to.html">How-To</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../scripting.html">API Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../gui_qt.html">GUI Qt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../gui_web.html">GUI Web</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../development.html">Development</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope</span></code></a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
@@ -105,11 +109,61 @@
 <h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.variable.variable_factory.VariableFactory" title="pyx2cscope.variable.variable_factory.VariableFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VariableFactory</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.variable.variable_factory.FileType" title="pyx2cscope.variable.variable_factory.FileType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileType</span></code></a></p></td>
+<td><p>Enumeration of supported file types for import/export operations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.variable.variable_factory.VariableFactory" title="pyx2cscope.variable.variable_factory.VariableFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VariableFactory</span></code></a></p></td>
 <td><p>A factory class for creating variable objects based on ELF file parsing.</p></td>
 </tr>
 </tbody>
 </table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.variable.variable_factory.variable_info_repr" title="pyx2cscope.variable.variable_factory.variable_info_repr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variable_info_repr</span></code></a>(dumper, data)</p></td>
+<td><p>Helper function to yaml file deserializer. Do not call this function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.variable.variable_factory.variable_info_constructor" title="pyx2cscope.variable.variable_factory.variable_info_constructor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variable_info_constructor</span></code></a>(loader, node)</p></td>
+<td><p>Helper function to yaml file deserializer. Do not call this function.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.FileType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.variable.variable_factory.</span></span><span class="sig-name descname"><span class="pre">FileType</span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#FileType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.FileType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Enumeration of supported file types for import/export operations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.FileType.YAML">
+<span class="sig-name descname"><span class="pre">YAML</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.yml'</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#FileType.YAML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.FileType.YAML" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.FileType.PICKLE">
+<span class="sig-name descname"><span class="pre">PICKLE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.pkl'</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#FileType.PICKLE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.FileType.PICKLE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.FileType.ELF">
+<span class="sig-name descname"><span class="pre">ELF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.elf'</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#FileType.ELF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.FileType.ELF" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.variable_info_repr">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.variable.variable_factory.</span></span><span class="sig-name descname"><span class="pre">variable_info_repr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dumper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#variable_info_repr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.variable_info_repr" title="Link to this definition"></a></dt>
+<dd><p>Helper function to yaml file deserializer. Do not call this function.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.variable_info_constructor">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.variable.variable_factory.</span></span><span class="sig-name descname"><span class="pre">variable_info_constructor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#variable_info_constructor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.variable_info_constructor" title="Link to this definition"></a></dt>
+<dd><p>Helper function to yaml file deserializer. Do not call this function.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.variable.variable_factory.</span></span><span class="sig-name descname"><span class="pre">VariableFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_net</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">mchplnet.lnet.LNet</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elf_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory" title="Link to this definition"></a></dt>
@@ -126,6 +180,58 @@ get_variable: Gets a Variable object based on the variable name.
 _get_variable_instance: Creates a Variable instance from provided information.</p>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory.set_elf_file">
+<span class="sig-name descname"><span class="pre">set_elf_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory.set_elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory.set_elf_file" title="Link to this definition"></a></dt>
+<dd><p>Set an elf file to be used as source for variables and addresses.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>elf_path (str): Path to the elf file.</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory.set_lnet_interface">
+<span class="sig-name descname"><span class="pre">set_lnet_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lnet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">mchplnet.lnet.LNet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory.set_lnet_interface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory.set_lnet_interface" title="Link to this definition"></a></dt>
+<dd><p>Set the LNet interface to be used for data communication.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>lnet (LNet): the LNet interface</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory._build_export_file_name">
+<span class="sig-name descname"><span class="pre">_build_export_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyx2cscope.variable.variable_factory.FileType" title="pyx2cscope.variable.variable_factory.FileType"><span class="pre">FileType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">FileType.YAML</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory._build_export_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory._build_export_file_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory.export_variables">
+<span class="sig-name descname"><span class="pre">export_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyx2cscope.variable.variable_factory.FileType" title="pyx2cscope.variable.variable_factory.FileType"><span class="pre">FileType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">FileType.YAML</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory.export_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory.export_variables" title="Link to this definition"></a></dt>
+<dd><p>Store the variables registered on the elf file to a pickle file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>filename (str): The path and name of the file to store data to. Defaults to ‘elf_file_name.yml’.
+ext (FileType): The file extension type to be used (yml or pkl, elf is not supported for export).
+items (List): A list of variable names or variables to export. Export all variables if empty.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory.import_variables">
+<span class="sig-name descname"><span class="pre">import_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory.import_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory.import_variables" title="Link to this definition"></a></dt>
+<dd><p>Import and load variables registered on the file.</p>
+<p>Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
+The flush parameter defaults to true and clears all previous loaded variables. This flag is
+intended to be used when adding single variables to the parser.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>filename (str): The name of the file and its path.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory.get_var_list">
 <span class="sig-name descname"><span class="pre">get_var_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory.get_var_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory.get_var_list" title="Link to this definition"></a></dt>
@@ -150,13 +256,10 @@ _get_variable_instance: Creates a Variable instance from provided information.</
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.variable.variable_factory.VariableFactory._get_variable_instance">
-<span class="sig-name descname"><span class="pre">_get_variable_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../variable/index.html#pyx2cscope.variable.variable.Variable" title="pyx2cscope.variable.variable.Variable"><span class="pre">pyx2cscope.variable.variable.Variable</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory._get_variable_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory._get_variable_instance" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_get_variable_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.VariableInfo" title="pyx2cscope.parser.elf_parser.VariableInfo"><span class="pre">pyx2cscope.parser.elf_parser.VariableInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../variable/index.html#pyx2cscope.variable.variable.Variable" title="pyx2cscope.variable.variable.Variable"><span class="pre">pyx2cscope.variable.variable.Variable</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable_factory.html#VariableFactory._get_variable_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable_factory.VariableFactory._get_variable_instance" title="Link to this definition"></a></dt>
 <dd><p>Create a variable object based on the provided address, type, and name.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>address (int): Address of the variable in the MCU memory.
-var_type (VarTypes): Type of the variable.
-array_size (int): the size of the array, in case of an array, 0 otherwise.
-name (str): Name of the variable.</p>
+<dt>Args:</dt><dd><p>var_info (VariableInfo): details about the variable as name, address, type, array_size, etc.</p>
 </dd>
 <dt>returns:</dt><dd><p>Variable: Variable object based on the provided information.</p>
 </dd>

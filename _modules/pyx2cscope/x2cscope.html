@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.3.3 documentation</title>
+  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=d5a15cff"></script>
+        <script src="../../_static/documentation_options.js?v=6c02275b"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.3.3
+                0.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -48,9 +48,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../how_to.html">How-To</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scripting.html">API Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_qt.html">GUI Qt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_web.html">GUI Web</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
 </ul>
 
@@ -99,7 +103,7 @@
 <span class="kn">from</span> <span class="nn">mchplnet.services.frame_load_parameter</span> <span class="kn">import</span> <span class="n">LoadScopeData</span>
 <span class="kn">from</span> <span class="nn">mchplnet.services.scope</span> <span class="kn">import</span> <span class="n">ScopeChannel</span><span class="p">,</span> <span class="n">ScopeTrigger</span>
 <span class="kn">from</span> <span class="nn">pyx2cscope.variable.variable</span> <span class="kn">import</span> <span class="n">Variable</span>
-<span class="kn">from</span> <span class="nn">pyx2cscope.variable.variable_factory</span> <span class="kn">import</span> <span class="n">VariableFactory</span>
+<span class="kn">from</span> <span class="nn">pyx2cscope.variable.variable_factory</span> <span class="kn">import</span> <span class="n">VariableFactory</span><span class="p">,</span> <span class="n">FileType</span>
 
 <span class="c1"># Configure logging for debugging and tracking</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
@@ -186,15 +190,15 @@
 <span class="sd">    requesting data, and processing received data.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        elf_file (str): Path to the ELF file.</span>
 <span class="sd">        interface (InterfaceABC): Interface object for communication.</span>
 <span class="sd">        lnet (LNet): LNet object for low-level network operations.</span>
 <span class="sd">        variable_factory (VariableFactory): Factory to create Variable objects.</span>
 <span class="sd">        scope_setup: Configuration for the scope setup.</span>
 <span class="sd">        convert_list (dict): Dictionary to store variable conversion functions.</span>
+<span class="sd">        uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">InterfaceABC</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">InterfaceABC</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the X2CScope instance.</span>
 
 <span class="sd">        Args:</span>
@@ -205,11 +209,10 @@
         <span class="n">i_type</span> <span class="o">=</span> <span class="n">interface</span> <span class="k">if</span> <span class="n">interface</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">InterfaceType</span><span class="o">.</span><span class="n">SERIAL</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">InterfaceFactory</span><span class="o">.</span><span class="n">get_interface</span><span class="p">(</span><span class="n">interface_type</span><span class="o">=</span><span class="n">i_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span> <span class="o">=</span> <span class="n">LNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span> <span class="o">=</span> <span class="n">elf_file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span> <span class="o">=</span> <span class="n">VariableFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_scope_setup</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ucwidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span>
 
 <div class="viewcode-block" id="X2CScope.set_interface">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_interface">[docs]</a>
@@ -221,18 +224,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span> <span class="o">=</span> <span class="n">LNet</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_scope_setup</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span> <span class="o">=</span> <span class="n">VariableFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="X2CScope.set_elf_file">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_elf_file">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the ELF file for the scope.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            elf_file (str): Path to the ELF file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span> <span class="o">=</span> <span class="n">VariableFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">set_lnet_interface</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.connect">
@@ -272,6 +264,33 @@
 <span class="sd">            Variable: The requested variable object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="X2CScope.export_variables">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.export_variables">[docs]</a>
+    <span class="k">def</span> <span class="nf">export_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span> <span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the variables registered on the elf file to a pickle file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): The path and name of the file to store data to. Defaults to &#39;elf_file_name.yml&#39;.</span>
+<span class="sd">            ext (FileType): The file extension type to be used (elf, yml, pkl, etc.)</span>
+<span class="sd">            items (List): A list of variable names or variables to export. Export all variables if empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">export_variables</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="X2CScope.import_variables">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.import_variables">[docs]</a>
+    <span class="k">def</span> <span class="nf">import_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Import and load variables registered on the file.</span>
+
+<span class="sd">        Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).</span>
+<span class="sd">        This method clears any loaded variable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): The name of the file and its path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.add_scope_channel">
@@ -432,7 +451,7 @@
         <span class="n">scope_data</span><span class="p">:</span> <span class="n">LoadScopeData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span>
             <span class="n">scope_data</span><span class="o">.</span><span class="n">trigger_event_position</span>
-            <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ucwidth</span><span class="p">)</span>
+            <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_width</span><span class="p">)</span>
         <span class="p">)</span></div>
 
 
@@ -457,7 +476,7 @@
 <span class="sd">            int: The length of the used portion of the SDA.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">bytes_not_used</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ucwidth</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_width</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">-</span> <span class="n">bytes_not_used</span></div>
 

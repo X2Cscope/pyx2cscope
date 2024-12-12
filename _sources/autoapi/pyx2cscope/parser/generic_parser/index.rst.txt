@@ -1,0 +1,192 @@
+:py:mod:`pyx2cscope.parser.generic_parser`
+==========================================
+
+.. py:module:: pyx2cscope.parser.generic_parser
+
+.. autoapi-nested-parse::
+
+   This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+
+   It focuses on extracting structure members and variable information from DWARF debugging information.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.generic_parser.GenericParser
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.generic_parser.elf_file
+
+
+.. py:class:: GenericParser(elf_path)
+
+
+   Bases: :py:obj:`pyx2cscope.parser.elf_parser.ElfParser`
+
+   Class for parsing ELF files compatible with 32-bit architectures.
+
+   .. py:method:: _load_elf_file()
+
+      Load the ELF file according to the specific hardware architecture.
+
+      This method should be implemented by subclasses to handle different ELF file formats.
+
+
+   .. py:method:: _close_elf_file()
+
+      Closes the ELF file stream.
+
+
+   .. py:method:: _get_die_variable_details(die_variable)
+
+      Process the die_variable to obtain detailed info.
+
+      The purpose of this method is to populate:
+      - self.die_variable
+      - self.var_name
+      - self.address
+      - self.type_attr
+
+
+   .. py:method:: _process_variable_die(die_variable)
+
+      Process an individual variable DIE.
+
+
+   .. py:method:: _process_enum_type(enum_die)
+
+      Process an enum type variable and map its members.
+
+
+   .. py:method:: _get_end_die(current_die)
+
+      Find the end DIE of a type iteratively.
+
+
+   .. py:method:: _process_end_die(end_die)
+
+      Processes the end DIE of a tag to extract variable information.
+
+      This method NEEDS to add a variable to the variable_map.
+      In case the end_die does not contain a valid variable, it should return.
+
+
+   .. py:method:: _extract_address_from_expression(expr_value, structs)
+
+      Extracts an address from DWARF expression.
+
+      Args:
+          expr_value: The raw DWARF expression bytes.
+          structs: The DWARF structs used for parsing expressions.
+
+      Returns:
+          int or None: The extracted address, or None if it couldn't be determined.
+
+
+   .. py:method:: _extract_address(die_variable)
+
+      Extracts the address of the current variable or fetches it from the symbol table if not found.
+
+
+   .. py:method:: _load_symbol_table()
+
+      Loads symbol table entries into a dictionary for fast access.
+
+
+   .. py:method:: _fetch_address_from_symtab(variable_name)
+
+      Fetches the address of a variable from the preloaded symbol table.
+
+
+   .. py:method:: _find_actual_declaration(die_variable)
+
+      Find the actual declaration of an extern variable.
+
+
+   .. py:method:: _process_structure_type(end_die)
+
+      Process a structure type variable.
+
+
+   .. py:method:: _process_array_type(end_die)
+
+      Process an array type variable.
+
+
+   .. py:method:: _process_base_type(end_die)
+
+      Process a base type variable.
+
+
+   .. py:method:: _get_member_offset(die) -> int | None
+
+      Extracts the offset for a structure member.
+
+      Args:
+          die: The DIE of the structure member.
+
+      Returns:
+          int or None: The offset value, or None if it couldn't be determined.
+
+
+   .. py:method:: _process_member_array_type(member_type_die, member_name, prev_offset, offset)
+
+      Process array type structure members recursively.
+
+
+   .. py:method:: _process_structure_member(members, child_die, prev_offset, offset, parent_name)
+
+      Process individual structure member, including handling nested types and arrays.
+
+
+   .. py:method:: _get_structure_members_recursive(die, parent_name: str, prev_offset=0)
+
+      Recursively extracts structure members from a DWARF DIE, including arrays.
+
+
+   .. py:method:: _get_structure_members(structure_die, var_name)
+
+      Retrieves structure members from a DWARF DIE.
+
+
+   .. py:method:: _get_array_length(type_die)
+      :staticmethod:
+
+      Gets the length of an array type.
+
+
+   .. py:method:: _get_member_type(type_ref_addr)
+
+      Retrieve the type information from DWARF given a type offset.
+
+
+   .. py:method:: _get_dwarf_die_by_offset(offset)
+
+      Retrieve a DWARF DIE given its offset.
+
+
+   .. py:method:: _map_variables() -> dict[str, pyx2cscope.parser.elf_parser.VariableInfo]
+
+      Maps all variables in the ELF file.
+
+
+
+.. py:data:: elf_file
+   :value: '..\\..\\tests\\data\\qspin_foc_same54.elf'
+
+   
+

@@ -25,6 +25,7 @@ Classes
 
    pyx2cscope.parser.elf_parser.VariableInfo
    pyx2cscope.parser.elf_parser.ElfParser
+   pyx2cscope.parser.elf_parser.DummyParser
 
 
 
@@ -63,7 +64,11 @@ Classes
 
    .. py:attribute:: array_size
       :type: int
-      :value: 0
+
+      
+
+   .. py:attribute:: valid_values
+      :type: Dict[str, int]
 
       
 
@@ -84,7 +89,6 @@ Classes
        dwarf_info (dict): A dictionary to store DWARF information from the ELF file.
        elf_file: An object representing the ELF file, specific to the implementation.
        variable_map (dict): A map of variable names to their corresponding information.
-       var_name (str): The name of the current variable being processed.
 
    Methods:
        get_var_info: Return information about a specified variable.
@@ -110,18 +114,18 @@ Classes
           List[str]: A sorted list of variable names.
 
 
-   .. py:method:: map_variables() -> Dict[str, VariableInfo]
-
-      Map variables from the parsed DWARF information and return them.
-
-      Returns:
-          Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
-
-
    .. py:method:: _load_elf_file()
       :abstractmethod:
 
       Load the ELF file according to the specific hardware architecture.
+
+      This method should be implemented by subclasses to handle different ELF file formats.
+
+
+   .. py:method:: _load_symbol_table()
+      :abstractmethod:
+
+      Load symbol table according to the specific hardware architecture.
 
       This method should be implemented by subclasses to handle different ELF file formats.
 
@@ -135,6 +139,52 @@ Classes
 
       Returns:
           Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
+
+
+   .. py:method:: _close_elf_file()
+      :abstractmethod:
+
+      Abstract method to close any open file connection after parsing is done.
+
+
+
+.. py:class:: DummyParser(elf_path='')
+
+
+   Bases: :py:obj:`ElfParser`
+
+   Dummy implementation of ElfParser class.
+
+   This class provides basic functionality of a parser in case an elf_file is
+   not supplied. It is a pure implementation of class ElfParser.
+
+   .. py:method:: _load_elf_file()
+
+      Load the ELF file according to the specific hardware architecture.
+
+      This method should be implemented by subclasses to handle different ELF file formats.
+
+
+   .. py:method:: _load_symbol_table()
+
+      Load symbol table according to the specific hardware architecture.
+
+      This method should be implemented by subclasses to handle different ELF file formats.
+
+
+   .. py:method:: _map_variables() -> Dict[str, VariableInfo]
+
+      Abstract method to map variables from the parsed DWARF information.
+
+      Subclasses should implement this method to extract variable information specific to their ELF format.
+
+      Returns:
+          Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.
+
+
+   .. py:method:: _close_elf_file()
+
+      Abstract method to close any open file connection after parsing is done.
 
 
 
