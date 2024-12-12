@@ -49,7 +49,7 @@ def connect():
         file_name = os.path.join(web_lib_path, "elf_file.elf")
         try:
             elf_file.save(file_name)
-            connect_x2c(port=uart, elf_file=file_name)
+            connect_x2c(port=uart, import_file=file_name)
             return jsonify({"status": "success"})
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
@@ -63,7 +63,8 @@ def is_connected():
 
     call {server_url}/is_disconnect to execute.
     """
-    return jsonify({"status": (get_x2c() is not None)})
+    with get_x2c() as x2c:
+        return jsonify({"status": (x2c is not None)})
 
 
 def disconnect():
@@ -82,13 +83,13 @@ def variables_autocomplete():
     returning a list of possible candidates. Access this function over {server_url}/variables.
     """
     query = request.args.get("q", "")
-    x2c = get_x2c()
-    items = [
-        {"id": var, "text": var}
-        for var in x2c.list_variables()
-        if query.lower() in var.lower()
-    ]
-    return jsonify({"items": items})
+    with get_x2c() as x2c:
+        items = [
+            {"id": var, "text": var}
+            for var in x2c.list_variables()
+            if query.lower() in var.lower()
+        ]
+        return jsonify({"items": items})
 
 
 def get_variables():
@@ -97,9 +98,9 @@ def get_variables():
     Returns a list of all variables available on the elf file.
     Access this function over {server_url}/variables/all.
     """
-    x2c = get_x2c()
-    items = [{"id": var, "text": var} for var in x2c.list_variables()]
-    return jsonify({"items": items})
+    with get_x2c() as x2c:
+        items = [{"id": var, "text": var} for var in x2c.list_variables()]
+        return jsonify({"items": items})
 
 
 def open_browser(host="localhost", web_port=5000):

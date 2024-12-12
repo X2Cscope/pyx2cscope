@@ -333,12 +333,8 @@ class X2cscopeGui(QMainWindow):
         self.Value_var5 = QLineEdit(self)
 
     def timer(self):
-        """Initializing timer."""
-        self.timer5 = QTimer()
-        self.timer4 = QTimer()
-        self.timer3 = QTimer()
-        self.timer2 = QTimer()
-        self.timer1 = QTimer()
+        """Initializing timers."""
+        self.timers = [QTimer() for _ in range(5)]
 
     def offset_var(self):
         """Initializing Offset Variable."""
@@ -1064,7 +1060,7 @@ class X2cscopeGui(QMainWindow):
                 return
 
             data_storage = {}
-            for channel, data in self.x2cscope.get_scope_channel_data().items():
+            for channel, data in self.x2cscope.get_scope_channel_data(valid_data=True).items():
                 data_storage[channel] = data
 
             self.scope_plot_widget.clear()
@@ -1666,11 +1662,7 @@ class X2cscopeGui(QMainWindow):
             self.scope_timer.timeout.connect(
                 lambda: self._sample_scope_data_timer(single_shot)
             )
-            self.scope_timer.start(100)  # Adjust interval (milliseconds) as needed
-
-            # If it is a single shot, stop the timer after the first run
-            if single_shot:
-                self.scope_timer.singleShot(100, lambda: self.scope_timer.stop())
+            self.scope_timer.start(250)  # Adjust the interval (milliseconds) as needed
 
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
@@ -1680,26 +1672,26 @@ class X2cscopeGui(QMainWindow):
     def _sample_scope_data_timer(self, single_shot):
         """Function that QTimer calls periodically to handle scope data sampling."""
         try:
+            # Retry mechanism for single-shot mode
             if not self.x2cscope.is_scope_data_ready():
-                return  # No new data, exit the function
+                if single_shot:
+                    QTimer.singleShot(250, lambda: self._sample_scope_data_timer(single_shot))
+                return  # Exit if data is not ready
 
             logging.info("Scope data is ready.")
             data_storage = {}
             for channel, data in self.x2cscope.get_scope_channel_data().items():
                 data_storage[channel] = data
 
+            # Plot the data
             self.scope_plot_widget.clear()
             for i, (channel, data) in enumerate(data_storage.items()):
-                if self.scope_channel_checkboxes[
-                    i
-                ].isChecked():  # Check if the channel is enabled
-                    scale_factor = float(
-                        self.scope_scaling_boxes[i].text()
-                    )  # Get the scaling factor
+                if self.scope_channel_checkboxes[i].isChecked():  # Check if the channel is enabled
+                    scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
                     data_scaled = (
-                        np.array(data, dtype=float) * scale_factor
+                            np.array(data, dtype=float) * scale_factor
                     )  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
@@ -1710,14 +1702,20 @@ class X2cscopeGui(QMainWindow):
                         name=f"Channel {channel}",
                     )
 
+            # Update plot labels and grid
             self.scope_plot_widget.setLabel("left", "Value")
             self.scope_plot_widget.setLabel("bottom", "Time", units="ms")
             self.scope_plot_widget.showGrid(x=True, y=True)  # Enable grid lines
 
+            # Stop timer if single-shot mode is active
             if single_shot:
-                self.scope_timer.stop()  # Stop the timer if it was a single shot
+                self.scope_timer.stop()  # Stop the timer
+                self.sampling_active = False
+                self.scope_sample_button.setText("Sample")  # Update button text
 
-            self.x2cscope.request_scope_data()  # Request new data for next timer tick
+            # Request new data for the next tick
+            if self.x2cscope.is_scope_data_ready():
+                self.x2cscope.request_scope_data()
 
         except Exception as e:
             error_message = f"Error sampling scope data: {e}"
