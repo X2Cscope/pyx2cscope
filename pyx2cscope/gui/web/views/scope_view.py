@@ -208,7 +208,7 @@ def chart():
     """
     global scope_trigger, scope_burst
     with get_x2c() as x2c:
-        ready = x2c.is_scope_data_ready()
+        ready = False if x2c is None else x2c.is_scope_data_ready()
         finish = True if ready and scope_burst else False
         datasets = []
         label = []
