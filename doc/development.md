@@ -18,14 +18,45 @@ We appreciate your contribution!
 
 Create virtual envrionment with make venv
 
-'''
-git clone 
-
+```bash
+git clone https://github.com/X2Cscope/pyx2cscope.git
+cd pyx2cscope
 python -m venv .venv
+#Windows
 .venv\Scripts\activate
+#linux
+source .venv\bin\activate
+```
 
-<venv>\Scripts\activate
-'''
+## Installing dev requirements
+
+```bash
+pip install -r requirements.txt
+pip install -r quality.txt
+```
+
+## Runnin tests
+
+### ruff syntax check
+```bash
+ruff check .
+```
+
+### pytest
+```bash
+pytest
+```
+
+## Building docs
+```bash
+sphinx-build -M html doc build --keep-going  
+```
+
+## Creating executables
+```bash
+pyinstaller --noconfirm .\pyx2cscope_win.spec 
+```
+
 
 Devcontainer
 docker folder contains devcontainer environment.
