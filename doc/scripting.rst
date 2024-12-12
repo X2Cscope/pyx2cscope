@@ -27,7 +27,7 @@ parameter with your preferred baud rate.
 
     .. code-block:: python
 
-        x2cScope = X2CScope(port="COM16")
+        x2c_scope = X2CScope(port="COM16")
 
 Import variables
 ----------------
@@ -38,7 +38,7 @@ See more details at :ref:`Import and Export variables <import-and-export-variabl
 
     .. code-block:: python
 
-        x2cScope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
+        x2c_scope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
 
 Variable class
 --------------
@@ -52,7 +52,7 @@ is a string containing the variable name.
 
     .. code-block:: python
 
-        variable = x2cScope.get_variable('variable_name')
+        variable = x2c_scope.get_variable('variable_name')
 
 Replace 'variable_name' with the name of the variable you want to monitor. You can create multiple variable 
 objects as required. To get variables that are underneath a struct, use the "dot" convention: 
@@ -109,24 +109,24 @@ add this variable to the scope by means of the method: **add_scope_channel(varia
 
     .. code-block:: python
 
-        variable1 = x2cScope.get_variable("variable1")
-        variable2 = x2cScope.get_variable("variable2")
+        variable1 = x2c_scope.get_variable("variable1")
+        variable2 = x2c_scope.get_variable("variable2")
 
-        x2cScope.add_scope_channel(variable1)
-        x2cScope.add_scope_channel(variable2)
+        x2c_scope.add_scope_channel(variable1)
+        x2c_scope.add_scope_channel(variable2)
 
 2. To remove a variable from the scope: **remove_scope_channel(variable: Variable)**, to clear all
 variables and reset the scope use instead: **clear_all_scope_channel()**
 
     .. code-block:: python
 
-        x2cScope.remove_scope_channel(variable2)
+        x2c_scope.remove_scope_channel(variable2)
 
 or
 
     .. code-block:: python
 
-        x2cScope.clear_all_scope_channel()
+        x2c_scope.clear_all_scope_channel()
 
 Up to 8 channels can be added. Each time you add or remove a variable, the number of channels present
 on the channel are returned.
@@ -148,32 +148,32 @@ Step-by-step you need:
 
     .. code-block:: python
 
-        x2cScope.request_scope_data()
+        x2c_scope.request_scope_data()
 
 2. Check if the data is ready: 
 Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.
 
     .. code-block:: python
 
-        while not x2cScope.is_scope_data_ready():
+        while not x2c_scope.is_scope_data_ready():
              time.sleep(0.1)
 
 3. Get the scope data once sampling is completed
 
     .. code-block:: python
 
-        data = x2cScope.get_scope_channel_data()
+        data = x2c_scope.get_scope_channel_data()
 
 A simple loop request example to get only 1 frame of scope data is depicted below:
 
     .. code-block:: python
 
         # request scope to start sampling data
-        x2cScope.request_scope_data()
+        x2c_scope.request_scope_data()
         # wait while the data is not yet ready for reading
-        while not x2cScope.is_scope_data_ready():
+        while not x2c_scope.is_scope_data_ready():
              time.sleep(0.1)
-        for channel, data in x2cScope.get_scope_channel_data().items():
+        for channel, data in x2c_scope.get_scope_channel_data().items():
              # Do something with the data. 
              # channel contains the variable name, data is an array of values 
 
