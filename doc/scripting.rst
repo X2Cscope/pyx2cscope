@@ -1,9 +1,18 @@
-Scripting
-=========
+API Interface
+=============
 
-Once you have successfully installed pyX2Cscope into your environment or python project,
-start importing the X2CScope class. So you be able to read and write values from/to variables 
-inside the controller. Follow the steps below to get your script running.
+
+The API interface is managed over the X2CScope class. 
+
+Simplest example
+----------------
+
+.. literalinclude:: ../pyx2cscope/examples/simplest.py
+    :language: python
+    :linenos:
+
+Further examples in the repository: https://github.com/X2Cscope/pyx2cscope/tree/main/pyx2cscope/examples
+
 
 X2CScope class
 --------------

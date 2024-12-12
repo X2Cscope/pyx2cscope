@@ -11,7 +11,7 @@ The pyx2cscope Python package communicates with X2Cscope enabled firmwares runni
   - Record data in run-time for AI models
   - Implement custom user interface, dashboards for embedded applications (QT, Tkinter, Web)
 
-Dor detailed documentation is hosted at GitHub.io:
+Detailed documentation is hosted at GitHub.io:
 [https://x2cscope.github.io/pyx2cscope/](https://x2cscope.github.io/pyx2cscope/)
 
 ## Install

@@ -35,7 +35,7 @@ pip install -r requirements.txt
 pip install -r quality.txt
 ```
 
-## Runnin tests
+## Running tests
 
 ### ruff syntax check
 ```bash
@@ -56,10 +56,3 @@ sphinx-build -M html doc build --keep-going
 ```bash
 pyinstaller --noconfirm .\pyx2cscope_win.spec 
 ```
-
-
-Devcontainer
-docker folder contains devcontainer environment.
-.devcontainer is VSCode devcontainer environment
-Support
-commercial support is available through www.roxautomation.com
