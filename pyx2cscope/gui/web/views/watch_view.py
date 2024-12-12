@@ -2,7 +2,7 @@
 
 Calling the url {server_url}/watch-view, will render the watch-view page. 
 Attention: this page should be called only after a successful setup connection on the {server_url}
-""" ""
+"""
 import os
 
 from flask import Blueprint, Response, jsonify, render_template, request
@@ -53,11 +53,12 @@ def get_data():
     """
     result = []
     with get_x2c() as x2c:
-        for _data in watch_data:
-            if _data["live"]:
-                _read_variable(_data)
-            result.append({f: v.name if f == "variable" else v for f, v in _data.items()})
-        return {"data": result}
+        if x2c is not None:
+            for _data in watch_data:
+                if _data["live"]:
+                    _read_variable(_data)
+                result.append({f: v.name if f == "variable" else v for f, v in _data.items()})
+            return {"data": result}
 
 
 def add():
@@ -109,10 +110,11 @@ def read():
     Calling the link {watch-view-url}/update-non-live will execute this function.
     """
     with get_x2c() as x2c:
-        for _data in watch_data:
-            if not _data["live"]:
-                _read_variable(_data)
-        return jsonify({"status": "success"})
+        if x2c is not None:
+            for _data in watch_data:
+                if not _data["live"]:
+                    _read_variable(_data)
+            return jsonify({"status": "success"})
 
 
 def load():
