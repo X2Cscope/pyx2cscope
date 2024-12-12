@@ -25,12 +25,15 @@ def _read_variable(_data):
     value = _data["variable"].get_value()
     _data["value"] = value
     _data["scaled_value"] = value * _data["scaling"] + _data["offset"]
+    if _data["type"] == "float":
+        _data["value"] = round(_data["value"], 4)
+        _data["scaled_value"] = round(_data["scaled_value"], 4)
 
 
-def _get_variable(parameter):
-    variable = get_x2c().get_variable(parameter)
+def _get_variable_as_dict(variable):
     value = variable.get_value()
     primitive = variable.__class__.__name__.lower().replace("variable", "")
+    value = round(value, 4) if primitive == "float" else value
     return {
         "live": 0,
         "variable": variable,
@@ -49,11 +52,12 @@ def get_data():
     Calling the link {watch-view-url}/data will execute this function.
     """
     result = []
-    for _data in watch_data:
-        if _data["live"]:
-            _read_variable(_data)
-        result.append({f: v.name if f == "variable" else v for f, v in _data.items()})
-    return {"data": result}
+    with get_x2c() as x2c:
+        for _data in watch_data:
+            if _data["live"]:
+                _read_variable(_data)
+            result.append({f: v.name if f == "variable" else v for f, v in _data.items()})
+        return {"data": result}
 
 
 def add():
@@ -62,9 +66,11 @@ def add():
     Calling the link {watch-view-url}/add will execute this function.
     """
     parameter = request.args.get("param", "")
-    if not any(_data["variable"].name == parameter for _data in watch_data):
-        watch_data.append(_get_variable(parameter))
-    return jsonify({"status": "success"})
+    with get_x2c() as x2c:
+        if not any(_data["variable"].name == parameter for _data in watch_data):
+            variable = x2c.get_variable(parameter)
+            watch_data.append(_get_variable_as_dict(variable))
+        return jsonify({"status": "success"})
 
 
 def remove():
@@ -102,10 +108,11 @@ def read():
 
     Calling the link {watch-view-url}/update-non-live will execute this function.
     """
-    for _data in watch_data:
-        if not _data["live"]:
-            _read_variable(_data)
-    return jsonify({"status": "success"})
+    with get_x2c() as x2c:
+        for _data in watch_data:
+            if not _data["live"]:
+                _read_variable(_data)
+        return jsonify({"status": "success"})
 
 
 def load():
@@ -120,14 +127,12 @@ def load():
         filename = os.path.join(web_lib_path, "watch.cfg")
         cfg_file.save(filename)
         data = eval(open(filename).read())
-        if isinstance(data, list):
-            if len(data) > 0:
-                if isinstance(data[0], dict):
-                    if "live" in data[0].keys():
-                        watch_data = data
-                        for item in watch_data:
-                            item["variable"] = get_x2c().get_variable(item["variable"])
-                        return jsonify({"status": "success"})
+        if isinstance(data, list) and data and isinstance(data[0], dict) and "live" in data[0].keys():
+            watch_data = data
+            with get_x2c() as x2c:
+                for item in watch_data:
+                    item["variable"] = x2c.get_variable(item["variable"])
+                return jsonify({"status": "success"})
         return jsonify({"status": "error", "msg": "Invalid WatchConfig file."}), 400
 
 

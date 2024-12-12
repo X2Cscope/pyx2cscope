@@ -25,8 +25,7 @@ def index():
     return render_template("sv_index.html", title="ScopeView - pyX2Cscope")
 
 
-def _get_variable(parameter):
-    variable = get_x2c().get_variable(parameter)
+def _get_variable(variable):
     colors = [
         "#FF0000",
         "#00FF00",
@@ -64,12 +63,14 @@ def add():
 
     Calling the link {scope-view-url}/add will execute this function.
     """
-    parameter = request.args.get("param", "")
-    if not any(_data["variable"].name == parameter for _data in scope_data):
-        data = _get_variable(parameter)
-        scope_data.append(data)
-        get_x2c().add_scope_channel(data["variable"])
-    return jsonify({"status": "success"})
+    with get_x2c() as x2c:
+        parameter = request.args.get("param", "")
+        if not any(_data["variable"].name == parameter for _data in scope_data):
+            variable = x2c.get_variable(parameter)
+            data = _get_variable(variable)
+            scope_data.append(data)
+            x2c.add_scope_channel(data["variable"])
+        return jsonify({"status": "success"})
 
 
 def remove():
@@ -77,13 +78,14 @@ def remove():
 
     Calling the link {scope-view-url}/remove will execute this function.
     """
-    parameter = request.args.get("param", "")
-    for data in scope_data:
-        if data["variable"].name == parameter:
-            scope_data.remove(data)
-            get_x2c().remove_scope_channel(data["variable"])
-            break
-    return jsonify({"status": "success"})
+    with get_x2c() as x2c:
+        parameter = request.args.get("param", "")
+        for data in scope_data:
+            if data["variable"].name == parameter:
+                scope_data.remove(data)
+                x2c.remove_scope_channel(data["variable"])
+                break
+        return jsonify({"status": "success"})
 
 
 def _set_trigger(data, param, field, value):
@@ -98,13 +100,13 @@ def _set_fields(data, param, field, value):
         data[field] = value if field == "color" else float(value)
 
 
-def _set_enable(data, param, field, value):
+def _set_enable(x2c, data, param, field, value):
     if field == "enable":
         if data["variable"].name == param:
             if float(value):
-                get_x2c().add_scope_channel(data["variable"])
+                x2c.add_scope_channel(data["variable"])
             else:
-                get_x2c().remove_scope_channel(data["variable"])
+                x2c.remove_scope_channel(data["variable"])
 
 
 def update():
@@ -115,11 +117,12 @@ def update():
     param = request.args.get("param", "")
     field = request.args.get("field", "").lower()
     value = request.args.get("value", "")
-    for data in scope_data:
-        _set_trigger(data, param, field, value)
-        _set_enable(data, param, field, value)
-        _set_fields(data, param, field, value)
-    return jsonify({"status": "success"})
+    with get_x2c() as x2c:
+        for data in scope_data:
+            _set_trigger(data, param, field, value)
+            _set_enable(x2c, data, param, field, value)
+            _set_fields(data, param, field, value)
+        return jsonify({"status": "success"})
 
 
 def form_sample():
@@ -136,10 +139,11 @@ def form_sample():
     scope_trigger = True if param == "on" else False
     scope_sample = int(field)
     scope_time_sample = 1 / int(freq)
-    get_x2c().set_sample_time(scope_sample)
-    if scope_trigger or scope_burst:
-        get_x2c().request_scope_data()
-    return jsonify({"trigger": param != "off"})
+    with get_x2c() as x2c:
+        x2c.set_sample_time(scope_sample)
+        if scope_trigger or scope_burst:
+            x2c.request_scope_data()
+        return jsonify({"trigger": param != "off"})
 
 
 def form_trigger():
@@ -161,23 +165,23 @@ def form_trigger():
     variable = [
         channel["variable"] for channel in scope_data if channel["trigger"] == 1.0
     ]
-    if trigger["trigger_mode"] and len(variable) == 1:
-        get_x2c().set_scope_trigger(TriggerConfig(variable[0], **trigger))
-    else:
-        get_x2c().reset_scope_trigger()
-
-    return jsonify({"trigger": trigger})
+    with get_x2c() as x2c:
+        if trigger["trigger_mode"] and len(variable) == 1:
+            x2c.set_scope_trigger(TriggerConfig(variable[0], **trigger))
+        else:
+            x2c.reset_scope_trigger()
+        return jsonify({"trigger": trigger})
 
 
 def _get_chart_label(size=100):
     return [i * scope_time_sample * scope_sample for i in range(0, size)]
 
 
-def _get_datasets():
+def _get_datasets(x2c):
     data = []
-    channel_data = get_x2c().get_scope_channel_data()
+    channel_data = x2c.get_scope_channel_data()
     for channel in scope_data:
-        # if variable is disable on scope_data, it is not available on channel_data
+        # if variable is disabled on scope_data, it is not available on channel_data
         if channel["variable"].name in channel_data:
             variable = channel["variable"].name
             data_line = [
@@ -191,8 +195,6 @@ def _get_datasets():
                 "data": data_line,
             }
             data.append(item)
-    if scope_trigger:
-        get_x2c().request_scope_data()
     return data
 
 
@@ -204,17 +206,21 @@ def chart():
     parameters. Finally, a command of burst or sample need to be called. Date will be returned only if data is
     available. This function calls in the background x2cscope.is_scope_data_ready()
     """
-    ready = get_x2c().is_scope_data_ready()
-    finish = True if ready and scope_burst else False
-    datasets = []
-    label = []
-    if ready:
-        datasets = _get_datasets()
-        size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
-        label = _get_chart_label(size)
-    return jsonify(
-        {"ready": ready, "finish": finish, "data": datasets, "labels": label}
-    )
+    global scope_trigger, scope_burst
+    with get_x2c() as x2c:
+        ready = x2c.is_scope_data_ready()
+        finish = True if ready and scope_burst else False
+        datasets = []
+        label = []
+        if ready:
+            datasets = _get_datasets(x2c)
+            size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
+            label = _get_chart_label(size)
+            if scope_trigger:
+                x2c.request_scope_data()
+        return jsonify(
+            {"ready": ready, "finish": finish, "data": datasets, "labels": label}
+        )
 
 
 def chart_export():
@@ -223,7 +229,8 @@ def chart_export():
     Calling the link {scope-view-url}/export will collect all the variable arrays depicted on the chart
     and generate a csv file ready for download.
     """
-    datasets = _get_datasets()
+    with get_x2c() as x2c:
+        datasets = _get_datasets(x2c)
     size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
     label = _get_chart_label(size)
     csv = "index; " + "; ".join([sc["label"] for sc in datasets]) + "\n"
@@ -250,16 +257,14 @@ def load():
         filename = os.path.join(web_lib_path, "scope.cfg")
         cfg_file.save(filename)
         data = eval(open(filename).read())
-        if isinstance(data, list):
-            if len(data) > 0:
-                if isinstance(data[0], dict):
-                    if "trigger" in data[0].keys():
-                        scope_data = data
-                        get_x2c().clear_all_scope_channel()
-                        for item in scope_data:
-                            item["variable"] = get_x2c().get_variable(item["variable"])
-                            get_x2c().add_scope_channel(item["variable"])
-                        return jsonify({"status": "success"})
+        if isinstance(data, list) and data and isinstance(data[0], dict) and "trigger" in data[0].keys():
+            scope_data = data
+            with get_x2c() as x2c:
+                x2c.clear_all_scope_channel()
+                for item in scope_data:
+                    item["variable"] = x2c.get_variable(item["variable"])
+                    x2c.add_scope_channel(item["variable"])
+                return jsonify({"status": "success"})
         return jsonify({"status": "error", "msg": "Invalid ScopeConfig file."}), 400
 
 

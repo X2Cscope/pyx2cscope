@@ -207,7 +207,11 @@ function sv_set_stop_focus() {
 function sv_data_ready_check()
 {
     $.getJSON('/scope-view/chart', function(data) {
-        if(data.finish) {
+        if (data.length === 0) {
+            // There is no data to update, so, call refresh again later
+            if(dataReadyInterval) setTimeout(sv_data_ready_check, 200);
+        }
+        else if(data.finish) {
             sv_set_stop_focus();
             sv_update_scope_data(data);
         }
