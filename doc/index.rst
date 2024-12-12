@@ -15,16 +15,13 @@ like UART, CAN, LIN, USB, TCP/IP, etc.
 pyX2Cscope
 ==========
 
-pyX2Cscope is the Python implementation of the X2Cscope plugin from MPLABX. This will let the user use the
-functionality of X2Cscope even outside MPLABX environment / Standalone. It allows user to:
-
-* Automated Unit Tests (TDD) using pytest
-* BDD (behavior driven development), Framework: "Cucumber"
-* Different user interface
-* Data collection for machine learning and training models
-* Run-Time data analysis
-* Use of Real Time AI model
-* HiL (Hardware in the loop) testing and tuning
+The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on microcontrollers. Focusing real time control applications like motor control and power conversion.
+It allows user to:
+* Read - Write variables to the embedded target in runtime
+* Record and Plot fast, continuous signals from the target firmware
+* Implement Automated Unit Tests (TDD) and HIL tests for embedded development
+* Record data in run-time for AI models
+* Implement custom user interface, dashboards (QT, Tkinter, Web)
 
 .. image:: images/overview.gif
    :width: 420
