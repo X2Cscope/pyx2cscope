@@ -272,16 +272,10 @@ class X2CScope:
         )
 
     def get_trigger_position(self) -> int:
-        """Get the position of the trigger event.
-
-        Returns:
-            int: The index position of the trigger event.
-        """
+        """Get the position of the trigger event."""
         scope_data: LoadScopeData = self.lnet.scope_data
-        return int(
-            scope_data.trigger_event_position
-            / (self.scope_setup.get_dataset_size() / self.uc_width)
-        )
+        dataset_size = self.scope_setup.get_dataset_size()  # Size in SDA units
+        return int(scope_data.trigger_event_position // dataset_size)
 
     def get_delay_trigger_position(self) -> int:
         """Get the position of the delay trigger.
@@ -293,15 +287,11 @@ class X2CScope:
         return int(trigger_position - self.scope_setup.scope_trigger.trigger_delay)
 
     def _calc_sda_used_length(self) -> int:
-        """Calculate the used length of the Scope Data Array (SDA).
-
-        Returns:
-            int: The length of the used portion of the SDA.
-        """
-        bytes_not_used = self.lnet.scope_data.data_array_size % (
-            self.scope_setup.get_dataset_size() / self.uc_width
-        )
-        return self.lnet.scope_data.data_array_size - bytes_not_used
+        """Calculate the used length of the Scope Data Array (SDA)."""
+        dataset_size = self.scope_setup.get_dataset_size()  # Size in SDA units
+        sda_size = self.lnet.scope_data.data_array_size  # Total size in SDA units
+        unused_bytes = sda_size % dataset_size
+        return sda_size - unused_bytes
 
     def _read_array_chunks(self) -> List[bytearray]:
         """Read array chunks from the LNet layer.
