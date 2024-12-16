@@ -1602,7 +1602,7 @@ class X2cscopeGui(QMainWindow):
                     trigger_level = 0
                 else:
                     try:
-                        trigger_level = int(trigger_level_text)  # YA
+                        trigger_level = float(trigger_level_text)  # YA
                         print(trigger_level)
                     except ValueError:
                         logging.error(
@@ -1680,7 +1680,7 @@ class X2cscopeGui(QMainWindow):
 
             logging.info("Scope data is ready.")
             data_storage = {}
-            for channel, data in self.x2cscope.get_scope_channel_data().items():
+            for channel, data in self.x2cscope.get_scope_channel_data(valid_data=False).items():
                 data_storage[channel] = data
 
             # Plot the data
