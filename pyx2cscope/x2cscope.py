@@ -215,6 +215,9 @@ class X2CScope:
         Args:
             config (TriggerConfig): Configuration object for trigger settings.
         """
+
+        config.trigger_delay = config.trigger_delay*self.scope_setup.get_dataset_size()
+
         scope_trigger = ScopeTrigger(
             channel=get_variable_as_scope_channel(config.variable),
             trigger_level=config.trigger_level,
@@ -449,7 +452,7 @@ class X2CScope:
         logging.info(
             f"Total time for the scope functionality: {total_time_milliseconds} ms"
         )
-        return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
+        return self.scope_setup.sample_time_factor * total_time_milliseconds
 
     def get_device_info(self):
         """Returns the device information as a dictionary."""

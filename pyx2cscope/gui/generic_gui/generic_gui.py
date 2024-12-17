@@ -211,14 +211,22 @@ class X2cscopeGui(QMainWindow):
 
         self.plot_data = deque(maxlen=250)  # Store plot data for all variables
         self.plot_colors = [
-            "b",
-            "g",
-            "r",
-            "c",
-            "m",
-            "y",
-            "k",
-        ]  # colours for different plot
+            "b",  # blue
+            "g",  # green
+            "r",  # red
+            "c",  # cyan
+            "m",  # magenta
+            "y",  # yellow
+            "k",  # black
+            (1, 0.5, 0),  # orange (RGB)
+            (0.5, 0.2, 0.8),  # purple (RGB)
+            (0.2, 0.6, 0.2),  # dark green (RGB)
+            (0.8, 0.4, 0.4),  # light red (RGB)
+            (0.3, 0.3, 1),  # light blue (RGB)
+            (0.6, 0.6, 0),  # olive (RGB)
+            (0.7, 0.7, 0.7),  # grey (RGB)
+        ]
+
         # Add self.labels on top
         self.labels = [
             "Live",
@@ -488,10 +496,12 @@ class X2cscopeGui(QMainWindow):
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
 
-        self.scope_var_lines = [QLineEdit() for _ in range(7)]
-        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
-        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]
-        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]
+        number_of_variable = 8
+
+        self.scope_var_lines = [QLineEdit() for _ in range(number_of_variable)]
+        self.trigger_var_checkbox = [QCheckBox() for _ in range(number_of_variable)]
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(number_of_variable)]
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(number_of_variable)]
 
         for checkbox in self.scope_channel_checkboxes:
             checkbox.setChecked(True)
@@ -1602,7 +1612,7 @@ class X2cscopeGui(QMainWindow):
                     trigger_level = 0
                 else:
                     try:
-                        trigger_level = int(trigger_level_text)  # YA
+                        trigger_level = float(trigger_level_text)  # YA
                         print(trigger_level)
                     except ValueError:
                         logging.error(
@@ -1718,7 +1728,7 @@ class X2cscopeGui(QMainWindow):
                 self.x2cscope.request_scope_data()
 
         except Exception as e:
-            error_message = f"Error sampling scope data: {e}"
+            error_message = f"Error sampling scope data :I am here: {e}"
             logging.error(error_message)
             self.handle_error(error_message)
             self.scope_timer.stop()  # Stop timer on error
