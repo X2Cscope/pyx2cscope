@@ -280,7 +280,7 @@ class X2CScope:
         scope_data: LoadScopeData = self.lnet.scope_data
         return int(
             scope_data.trigger_event_position
-            / (self.scope_setup.get_dataset_size() / self.uc_width)
+            / self.scope_setup.get_dataset_size()
         )
 
     def get_delay_trigger_position(self) -> int:
