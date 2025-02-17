@@ -21,10 +21,32 @@ Classes:
 import logging
 import struct
 from abc import abstractmethod
+from dataclasses import dataclass
 from numbers import Number
-from typing import List
+from typing import List, Dict
 
 from mchplnet import lnet
+
+
+@dataclass
+class VariableInfo:
+    """A raw representation about a variable.
+
+    Attributes:
+        name (str): The name of the variable.
+        type (str): The data type of the variable.
+        byte_size (int): The size of the variable in bytes.
+        address (int): The memory address of the variable.
+        array_size (int): The size of the array if the variable is an array, default is 0.
+        valid_values (dict): enum type of valid values
+    """
+
+    name: str
+    type: str
+    byte_size: int
+    address: int
+    array_size: int
+    valid_values: Dict[str, int]
 
 
 class Variable:

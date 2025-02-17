@@ -3,6 +3,7 @@
 import logging
 import time
 
+from parser.elf_parser import VariableInfo
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
 
@@ -37,7 +38,7 @@ def set_led_state(value, bit_position, state):
     return value
 
 
-def sethigh(value, bit_position):
+def set_high(value, bit_position):
     """Set a specific bit to high (1).
 
     Args:
@@ -50,7 +51,7 @@ def sethigh(value, bit_position):
     return set_led_state(value, bit_position, True)
 
 
-def setlow(value, bit_position):
+def set_low(value, bit_position):
     """Set a specific bit to low (0).
 
     Args:
@@ -67,9 +68,8 @@ def example():
     """Main function to demonstrate LED state changes using SFR."""
     try:
         # Initialize the variable for the Special Function Register (SFR) controlling the LEDs
-        sfr_led = x2cscope.get_variable_raw(
-            3702, "int", "sfr"
-        )  # LATE address from data sheet 3702
+        variable_info = VariableInfo("my_led", "int", 1, 3702, 0, {})
+        sfr_led = x2cscope.get_variable_raw(variable_info) # LATE address from data sheet 3702
 
         # Get the initial LED state from the SFR
         initial_led_state = sfr_led.get_value()
@@ -79,11 +79,11 @@ def example():
             #########################
             # SET LED1 and LED2 High
             ##########################
-            led1_high_value = sethigh(initial_led_state, LED1_BIT)
+            led1_high_value = set_high(initial_led_state, LED1_BIT)
             sfr_led.set_value(led1_high_value)
 
             initial_led_state = sfr_led.get_value()
-            led2_high_value = sethigh(initial_led_state, LED2_BIT)
+            led2_high_value = set_high(initial_led_state, LED2_BIT)
             sfr_led.set_value(led2_high_value)
 
             #########################
@@ -91,11 +91,11 @@ def example():
             ##########################
             time.sleep(1)
             initial_led_state = sfr_led.get_value()
-            led1_low_value = setlow(initial_led_state, LED1_BIT)
+            led1_low_value = set_low(initial_led_state, LED1_BIT)
             sfr_led.set_value(led1_low_value)
 
             initial_led_state = sfr_led.get_value()
-            led2_low_value = setlow(initial_led_state, LED2_BIT)
+            led2_low_value = set_low(initial_led_state, LED2_BIT)
             sfr_led.set_value(led2_low_value)
             time.sleep(1)
 

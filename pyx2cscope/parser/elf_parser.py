@@ -8,28 +8,9 @@ The module is designed to be extended by specific implementations for different 
 """
 from abc import ABC, abstractmethod
 
-from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-
-@dataclass
-class VariableInfo:
-    """A data class representing information about a variable in an ELF file.
-
-    Attributes:
-        name (str): The name of the variable.
-        type (str): The data type of the variable.
-        byte_size (int): The size of the variable in bytes.
-        address (int): The memory address of the variable.
-        array_size (int): The size of the array if the variable is an array, default is 0.
-    """
-
-    name: str
-    type: str
-    byte_size: int
-    address: int
-    array_size: int
-    valid_values: Dict[str, int]
+from pyx2cscope.variable.variable import VariableInfo
 
 
 class ElfParser(ABC):
