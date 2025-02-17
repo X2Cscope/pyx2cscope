@@ -3,7 +3,6 @@
 import logging
 import os
 import pickle
-from typing import Dict
 
 import yaml
 from enum import Enum
