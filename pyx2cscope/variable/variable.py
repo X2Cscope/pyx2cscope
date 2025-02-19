@@ -909,7 +909,8 @@ class VariableEnum(Variable):
             name (str, optional): Name of the variable. Defaults to None.
             enum_list (dict[str, int]): The enumeration list with the values.
         """
-        
+        super().__init__(lnet, address, array_size, name)
+        self.enum_list = enum_list       
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 16-bit enum.
