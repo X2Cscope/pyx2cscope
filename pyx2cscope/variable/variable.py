@@ -891,3 +891,86 @@ class VariableFloat(Variable):
         """
         data = bytearray(data)
         return struct.unpack("<f", data)[0]
+
+
+# ------------------------------ Enum 2bytes ------------------------------
+class VariableEnum(Variable):
+    """Represents a 16-bit enum variable in the MCU data memory."""
+
+    def __init__(self, l_net: lnet, address: int, array_size: int, name: str,
+                 enum_list: dict[str, int]):
+        
+        super().__init__(lnet, address, array_size, name)
+        self.enum_list = enum_list
+        
+
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 16-bit enum.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
+        return min(self.enum_values.values()), max(self.enum_values.values())
+
+    def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: Enumeration is stricktly an integer.
+        """
+        return True
+
+    def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: Depending on the enum values.
+        """
+        if min(self.enum_values.values()) < 0:
+            return True
+        else:
+            return False
+
+    def get_width(self) -> int:
+        """Get the width of the 16-bit enum.
+
+        Returns:
+            int: Width of the variable, which is 2.
+        """
+        #TODO depends on architecture and enum count of elements
+        return 2
+
+    def set_value(self, value: int):
+        """Set the value of the 16-bit enum.
+
+        Args:
+            value (int): The value to set.
+        """
+        try:
+            self._check_value_range(value) #TODO might be different than super class
+            int_value = int(value)
+            bytes_data = int_value.to_bytes(
+                length=2, byteorder="little", signed=False
+            )  # construct the bytes representation of the value
+            self._set_value_raw(bytes_data)
+        except Exception as e:
+            logging.error(e)
+
+    def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to a 16-bit enum.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The 16-bit enum value.
+        """
+        return int.from_bytes(data, "little", signed=False)
+
+    def get_enumerator_list(self) -> Dict[str, int]:
+        """Get the valid values for the enum variable.
+
+        Returns:
+            Dict[str, int]: A dictionary of valid values for the enum variable.
+        """
+        return self.enum_list

@@ -21,7 +21,9 @@ from pyx2cscope.variable.variable import (
     VariableUint8,
     VariableUint16,
     VariableUint32,
-    VariableUint64, VariableInfo,
+    VariableUint64,
+    VariableEnum,
+    VariableInfo,
 )
 
 class FileType(Enum):
@@ -230,10 +232,14 @@ class VariableFactory:
             "unsigned int": VariableUint16,
             "unsigned long": VariableUint32,
             "unsigned long long": VariableUint64,
+            "enum anonymousenum": VariableEnum,
         }
 
         try:
             var_type: str = var_info.type.lower().replace("_", "")
+            if var_type == "enum anonymousenum":
+                return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name, var_info.valid_values)
+            
             return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name)
         except IndexError:
             raise ValueError(
