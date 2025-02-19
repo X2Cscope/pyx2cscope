@@ -15,6 +15,7 @@ Classes:
     - VariableInt64: Represents a 64-bit signed integer variable.
     - VariableUint64: Represents a 64-bit unsigned integer variable.
     - VariableFloat: Represents a floating-point number variable.
+    - VariableEnum: Represents an enum variable.
 
 """
 
@@ -895,13 +896,19 @@ class VariableFloat(Variable):
 
 # ------------------------------ Enum 2bytes ------------------------------
 class VariableEnum(Variable):
-    """Represents a 16-bit enum variable in the MCU data memory."""
+    """Represents enum variable in the MCU data memory."""
 
     def __init__(self, l_net: lnet, address: int, array_size: int, name: str,
                  enum_list: dict[str, int]):
-        
-        super().__init__(lnet, address, array_size, name)
-        self.enum_list = enum_list
+        """Initialize the Variable object. But needs customised constructor due to enum list initialisation.
+
+        Args:
+            l_net (LNet): LNet protocol that handles the communication with the target device.
+            address (int): Address of the variable in the MCU memory.
+            array_size (int): The number of elements in the array, 0 in case of a plain variable.
+            name (str, optional): Name of the variable. Defaults to None.
+            enum_list (dict[str, int]): The enumeration list with the values.
+        """
         
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
