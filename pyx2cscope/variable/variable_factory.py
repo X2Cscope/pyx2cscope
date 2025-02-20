@@ -9,7 +9,7 @@ from enum import Enum
 from dataclasses import asdict
 
 from mchplnet.lnet import LNet
-from pyx2cscope.parser.elf_parser import DummyParser, VariableInfo
+from pyx2cscope.parser.elf_parser import DummyParser
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
@@ -240,6 +240,7 @@ class VariableFactory:
             var_type: str = var_info.type.lower().replace("_", "")
             if var_type == "enum anonymousenum":
                 return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name, var_info.valid_values)
+
             return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name)
         except IndexError:
             raise ValueError(
