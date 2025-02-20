@@ -4,8 +4,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.elf_parser &mdash; pyX2Cscope 0.4.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+  <title>pyx2cscope.parser.elf_parser &mdash; pyX2Cscope 0.4.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
 
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=6c02275b"></script>
+        <script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.0
+                0.4.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -115,61 +115,14 @@ ElfParser: An abstract base class for parsing ELF files and extracting variable 
 <h3>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf_parser.VariableInfo" title="pyx2cscope.parser.elf_parser.VariableInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VariableInfo</span></code></a></p></td>
-<td><p>A data class representing information about a variable in an ELF file.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf_parser.ElfParser" title="pyx2cscope.parser.elf_parser.ElfParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ElfParser</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf_parser.ElfParser" title="pyx2cscope.parser.elf_parser.ElfParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ElfParser</span></code></a></p></td>
 <td><p>Abstract base class for parsing ELF files.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf_parser.DummyParser" title="pyx2cscope.parser.elf_parser.DummyParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyParser</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.parser.elf_parser.DummyParser" title="pyx2cscope.parser.elf_parser.DummyParser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyParser</span></code></a></p></td>
 <td><p>Dummy implementation of ElfParser class.</p></td>
 </tr>
 </tbody>
 </table>
-<dl class="py class">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf_parser.</span></span><span class="sig-name descname"><span class="pre">VariableInfo</span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo" title="Link to this definition"></a></dt>
-<dd><p>A data class representing information about a variable in an ELF file.</p>
-<dl class="simple">
-<dt>Attributes:</dt><dd><p>name (str): The name of the variable.
-type (str): The data type of the variable.
-byte_size (int): The size of the variable in bytes.
-address (int): The memory address of the variable.
-array_size (int): The size of the array if the variable is an array, default is 0.</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo.name" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo.type">
-<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo.type" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo.byte_size">
-<span class="sig-name descname"><span class="pre">byte_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo.byte_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo.byte_size" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo.address">
-<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo.address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo.address" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo.array_size">
-<span class="sig-name descname"><span class="pre">array_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo.array_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo.array_size" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.VariableInfo.valid_values">
-<span class="sig-name descname"><span class="pre">valid_values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#VariableInfo.valid_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.VariableInfo.valid_values" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.elf_parser.</span></span><span class="sig-name descname"><span class="pre">ElfParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser" title="Link to this definition"></a></dt>
@@ -191,7 +144,7 @@ map_variables: Map variables from the parsed DWARF information.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser.get_var_info">
-<span class="sig-name descname"><span class="pre">get_var_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyx2cscope.parser.elf_parser.VariableInfo" title="pyx2cscope.parser.elf_parser.VariableInfo"><span class="pre">VariableInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser.get_var_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser.get_var_info" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_var_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser.get_var_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser.get_var_info" title="Link to this definition"></a></dt>
 <dd><p>Return the VariableInfo associated with a given variable name, or None if not found.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>name (str): The name of the variable.</p>
@@ -227,7 +180,7 @@ map_variables: Map variables from the parsed DWARF information.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser._map_variables">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#pyx2cscope.parser.elf_parser.VariableInfo" title="pyx2cscope.parser.elf_parser.VariableInfo"><span class="pre">VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser._map_variables" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser._map_variables" title="Link to this definition"></a></dt>
 <dd><p>Abstract method to map variables from the parsed DWARF information.</p>
 <p>Subclasses should implement this method to extract variable information specific to their ELF format.</p>
 <dl class="simple">
@@ -267,7 +220,7 @@ not supplied. It is a pure implementation of class ElfParser.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.DummyParser._map_variables">
-<span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#pyx2cscope.parser.elf_parser.VariableInfo" title="pyx2cscope.parser.elf_parser.VariableInfo"><span class="pre">VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#DummyParser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.DummyParser._map_variables" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#DummyParser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.DummyParser._map_variables" title="Link to this definition"></a></dt>
 <dd><p>Abstract method to map variables from the parsed DWARF information.</p>
 <p>Subclasses should implement this method to extract variable information specific to their ELF format.</p>
 <dl class="simple">

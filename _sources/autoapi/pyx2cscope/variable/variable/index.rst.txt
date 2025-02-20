@@ -22,6 +22,7 @@
        - VariableInt64: Represents a 64-bit signed integer variable.
        - VariableUint64: Represents a 64-bit unsigned integer variable.
        - VariableFloat: Represents a floating-point number variable.
+       - VariableEnum: Represents an enum variable.
 
 
 
@@ -33,6 +34,7 @@ Classes
 
 .. autoapisummary::
 
+   pyx2cscope.variable.variable.VariableInfo
    pyx2cscope.variable.variable.Variable
    pyx2cscope.variable.variable.VariableInt8
    pyx2cscope.variable.variable.VariableUint8
@@ -43,11 +45,56 @@ Classes
    pyx2cscope.variable.variable.VariableUint64
    pyx2cscope.variable.variable.VariableInt64
    pyx2cscope.variable.variable.VariableFloat
+   pyx2cscope.variable.variable.VariableEnum
 
 
 
 
-.. py:class:: Variable(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInfo
+
+
+   A raw representation about a variable.
+
+   Attributes:
+       name (str): The name of the variable.
+       type (str): The data type of the variable.
+       byte_size (int): The size of the variable in bytes.
+       address (int): The memory address of the variable.
+       array_size (int): The size of the array if the variable is an array, default is 0.
+       valid_values (dict): enum type of valid values
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: type
+      :type: str
+
+      
+
+   .. py:attribute:: byte_size
+      :type: int
+
+      
+
+   .. py:attribute:: address
+      :type: int
+
+      
+
+   .. py:attribute:: array_size
+      :type: int
+
+      
+
+   .. py:attribute:: valid_values
+      :type: Dict[str, int]
+
+      
+
+
+.. py:class:: Variable(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Represents a variable in the MCU data memory.
@@ -237,7 +284,7 @@ Classes
 
 
 
-.. py:class:: VariableInt8(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt8(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -290,7 +337,7 @@ Classes
 
 
 
-.. py:class:: VariableUint8(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint8(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -348,7 +395,7 @@ Classes
 
 
 
-.. py:class:: VariableInt16(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt16(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -407,7 +454,7 @@ Classes
 
 
 
-.. py:class:: VariableUint16(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint16(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -466,7 +513,7 @@ Classes
 
 
 
-.. py:class:: VariableInt32(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt32(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -525,7 +572,7 @@ Classes
 
 
 
-.. py:class:: VariableUint32(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint32(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -584,7 +631,7 @@ Classes
 
 
 
-.. py:class:: VariableUint64(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint64(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -643,7 +690,7 @@ Classes
 
 
 
-.. py:class:: VariableInt64(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt64(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -702,7 +749,7 @@ Classes
 
 
 
-.. py:class:: VariableFloat(l_net: mchplnet.lnet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableFloat(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
 
 
    Bases: :py:obj:`Variable`
@@ -758,6 +805,73 @@ Classes
 
       Returns:
           Number: The 32-bit floating point value.
+
+
+
+.. py:class:: VariableEnum(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str, enum_list: dict[str, int])
+
+
+   Bases: :py:obj:`Variable`
+
+   Represents enum variable in the MCU data memory.
+
+   .. py:method:: _get_min_max_values() -> tuple[numbers.Number, numbers.Number]
+
+      Get the minimum and maximum values for the 16-bit enum.
+
+      Returns:
+          tuple[Number, Number]: The minimum and maximum values.
+
+
+   .. py:method:: is_integer() -> bool
+
+      Check if the variable is an integer.
+
+      Returns:
+          bool: Enumeration is stricktly an integer.
+
+
+   .. py:method:: is_signed() -> bool
+
+      Check if the variable is signed.
+
+      Returns:
+          bool: Depending on the enum values.
+
+
+   .. py:method:: get_width() -> int
+
+      Get the width of the 16-bit enum.
+
+      Returns:
+          int: Width of the variable, which is 2.
+
+
+   .. py:method:: set_value(value: int)
+
+      Set the value of the 16-bit enum.
+
+      Args:
+          value (int): The value to set.
+
+
+   .. py:method:: bytes_to_value(data: bytearray) -> numbers.Number
+
+      Convert the byte array to enum.
+
+      Args:
+          data (bytearray): The byte array to convert.
+
+      Returns:
+          Number: The enum value.
+
+
+   .. py:method:: get_enumerator_list() -> Dict[str, int]
+
+      Get the valid values for the enum variable.
+
+      Returns:
+          Dict[str, int]: A dictionary of valid values for the enum variable.
 
 
 

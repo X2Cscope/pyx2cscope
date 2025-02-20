@@ -146,9 +146,9 @@ Functions
           Variable: The Variable object, if found. None otherwise.
 
 
-   .. py:method:: _get_variable_instance(var_info: pyx2cscope.parser.elf_parser.VariableInfo) -> pyx2cscope.variable.variable.Variable
+   .. py:method:: get_variable_raw(var_info: pyx2cscope.variable.variable.VariableInfo) -> pyx2cscope.variable.variable.Variable
 
-      Create a variable object based on the provided address, type, and name.
+      Create a variable object based on the provided address, type, and name, defined by DataClass VariableInfo.
 
       Args:
           var_info (VariableInfo): details about the variable as name, address, type, array_size, etc.

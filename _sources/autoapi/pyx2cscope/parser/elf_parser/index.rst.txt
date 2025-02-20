@@ -23,54 +23,10 @@ Classes
 
 .. autoapisummary::
 
-   pyx2cscope.parser.elf_parser.VariableInfo
    pyx2cscope.parser.elf_parser.ElfParser
    pyx2cscope.parser.elf_parser.DummyParser
 
 
-
-
-.. py:class:: VariableInfo
-
-
-   A data class representing information about a variable in an ELF file.
-
-   Attributes:
-       name (str): The name of the variable.
-       type (str): The data type of the variable.
-       byte_size (int): The size of the variable in bytes.
-       address (int): The memory address of the variable.
-       array_size (int): The size of the array if the variable is an array, default is 0.
-
-   .. py:attribute:: name
-      :type: str
-
-      
-
-   .. py:attribute:: type
-      :type: str
-
-      
-
-   .. py:attribute:: byte_size
-      :type: int
-
-      
-
-   .. py:attribute:: address
-      :type: int
-
-      
-
-   .. py:attribute:: array_size
-      :type: int
-
-      
-
-   .. py:attribute:: valid_values
-      :type: Dict[str, int]
-
-      
 
 
 .. py:class:: ElfParser(elf_path: str)
@@ -95,7 +51,7 @@ Classes
        get_var_list: Return a list of variable names from the ELF file.
        map_variables: Map variables from the parsed DWARF information.
 
-   .. py:method:: get_var_info(name: str) -> Optional[VariableInfo]
+   .. py:method:: get_var_info(name: str) -> Optional[pyx2cscope.variable.variable.VariableInfo]
 
       Return the VariableInfo associated with a given variable name, or None if not found.
 
@@ -130,7 +86,7 @@ Classes
       This method should be implemented by subclasses to handle different ELF file formats.
 
 
-   .. py:method:: _map_variables() -> Dict[str, VariableInfo]
+   .. py:method:: _map_variables() -> Dict[str, pyx2cscope.variable.variable.VariableInfo]
       :abstractmethod:
 
       Abstract method to map variables from the parsed DWARF information.
@@ -172,7 +128,7 @@ Classes
       This method should be implemented by subclasses to handle different ELF file formats.
 
 
-   .. py:method:: _map_variables() -> Dict[str, VariableInfo]
+   .. py:method:: _map_variables() -> Dict[str, pyx2cscope.variable.variable.VariableInfo]
 
       Abstract method to map variables from the parsed DWARF information.
 

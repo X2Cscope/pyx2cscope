@@ -161,6 +161,17 @@ Attributes
           Variable: The requested variable object.
 
 
+   .. py:method:: get_variable_raw(variable_info: pyx2cscope.variable.variable.VariableInfo) -> pyx2cscope.variable.variable.Variable
+
+      Retrieve a variable by its definition encapsulated by VariableInfo Dataclass.
+
+      Args:
+          variable_info (VariableInfo): The information of the variable.
+
+      Returns:
+          Variable: The requested variable object.
+
+
    .. py:method:: export_variables(filename: str = None, ext: pyx2cscope.variable.variable_factory.FileType = FileType.YAML, items=None)
 
       Store the variables registered on the elf file to a pickle file.

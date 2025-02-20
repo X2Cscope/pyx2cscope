@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.4.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.4.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=6c02275b"></script>
+        <script src="../../../_static/documentation_options.js?v=c87aa342"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.0
+                0.4.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -86,17 +86,18 @@
   <h1>Source code for pyx2cscope.variable.variable_factory</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Variable Factory returns the respective variable type according to the variable type found at the elf file.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">yaml</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">asdict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 
-<span class="kn">from</span> <span class="nn">mchplnet.lnet</span> <span class="kn">import</span> <span class="n">LNet</span>
-<span class="kn">from</span> <span class="nn">pyx2cscope.parser.elf_parser</span> <span class="kn">import</span> <span class="n">DummyParser</span><span class="p">,</span> <span class="n">VariableInfo</span>
-<span class="kn">from</span> <span class="nn">pyx2cscope.parser.generic_parser</span> <span class="kn">import</span> <span class="n">GenericParser</span>
-<span class="kn">from</span> <span class="nn">pyx2cscope.variable.variable</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.lnet</span><span class="w"> </span><span class="kn">import</span> <span class="n">LNet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.parser.elf_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.parser.generic_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Variable</span><span class="p">,</span>
     <span class="n">VariableFloat</span><span class="p">,</span>
     <span class="n">VariableInt8</span><span class="p">,</span>
@@ -107,11 +108,13 @@
     <span class="n">VariableUint16</span><span class="p">,</span>
     <span class="n">VariableUint32</span><span class="p">,</span>
     <span class="n">VariableUint64</span><span class="p">,</span>
+    <span class="n">VariableEnum</span><span class="p">,</span>
+    <span class="n">VariableInfo</span><span class="p">,</span>
 <span class="p">)</span>
 
 <div class="viewcode-block" id="FileType">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.FileType">[docs]</a>
-<span class="k">class</span> <span class="nc">FileType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FileType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumeration of supported file types for import/export operations.&quot;&quot;&quot;</span>
 <div class="viewcode-block" id="FileType.YAML">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.FileType.YAML">[docs]</a>
@@ -129,7 +132,7 @@
 
 <div class="viewcode-block" id="variable_info_repr">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.variable_info_repr">[docs]</a>
-<span class="k">def</span> <span class="nf">variable_info_repr</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">variable_info_repr</span><span class="p">(</span><span class="n">dumper</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to yaml file deserializer. Do not call this function.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">dumper</span><span class="o">.</span><span class="n">represent_mapping</span><span class="p">(</span><span class="s1">&#39;!VariableInfo&#39;</span><span class="p">,</span> <span class="n">asdict</span><span class="p">(</span><span class="n">data</span><span class="p">))</span></div>
 
@@ -137,7 +140,7 @@
 <span class="c1"># Custom constructor for VariableInfo</span>
 <div class="viewcode-block" id="variable_info_constructor">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.variable_info_constructor">[docs]</a>
-<span class="k">def</span> <span class="nf">variable_info_constructor</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">variable_info_constructor</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to yaml file deserializer. Do not call this function.&quot;&quot;&quot;</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">construct_mapping</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">VariableInfo</span><span class="p">(</span><span class="o">**</span><span class="n">values</span><span class="p">)</span></div>
@@ -149,7 +152,7 @@
 
 <div class="viewcode-block" id="VariableFactory">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory">[docs]</a>
-<span class="k">class</span> <span class="nc">VariableFactory</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VariableFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory class for creating variable objects based on ELF file parsing.</span>
 
 <span class="sd">    This class uses either `Elf16Parser` or `Elf32Parser` depending on the microcontroller&#39;s architecture</span>
@@ -166,7 +169,7 @@
 <span class="sd">        _get_variable_instance: Creates a Variable instance from provided information.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_net</span><span class="p">:</span> <span class="n">LNet</span><span class="p">,</span> <span class="n">elf_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_net</span><span class="p">:</span> <span class="n">LNet</span><span class="p">,</span> <span class="n">elf_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the VariableFactory with LNet instance and path to the ELF file.</span>
 
 <span class="sd">        Args:</span>
@@ -184,7 +187,7 @@
 
 <div class="viewcode-block" id="VariableFactory.set_elf_file">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.set_elf_file">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set an elf file to be used as source for variables and addresses.</span>
 
 <span class="sd">        Args:</span>
@@ -199,7 +202,7 @@
 
 <div class="viewcode-block" id="VariableFactory.set_lnet_interface">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.set_lnet_interface">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_lnet_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lnet</span><span class="p">:</span> <span class="n">LNet</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_lnet_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lnet</span><span class="p">:</span> <span class="n">LNet</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the LNet interface to be used for data communication.</span>
 
 <span class="sd">        Args:</span>
@@ -210,7 +213,7 @@
 
 <div class="viewcode-block" id="VariableFactory._build_export_file_name">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._build_export_file_name">[docs]</a>
-    <span class="k">def</span> <span class="nf">_build_export_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span><span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_export_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span><span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">elf_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># get the elf_file name without extension</span>
@@ -223,7 +226,7 @@
 
 <div class="viewcode-block" id="VariableFactory.export_variables">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.export_variables">[docs]</a>
-    <span class="k">def</span> <span class="nf">export_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span> <span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span> <span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the variables registered on the elf file to a pickle file.</span>
 
 <span class="sd">        Args:</span>
@@ -255,7 +258,7 @@
 
 <div class="viewcode-block" id="VariableFactory.import_variables">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.import_variables">[docs]</a>
-    <span class="k">def</span> <span class="nf">import_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">import_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Import and load variables registered on the file.</span>
 
 <span class="sd">        Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).</span>
@@ -289,7 +292,7 @@
 
 <div class="viewcode-block" id="VariableFactory.get_var_list">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_var_list">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_var_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_var_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of variable names available in the ELF file.</span>
 
 <span class="sd">        Returns:</span>
@@ -300,7 +303,7 @@
 
 <div class="viewcode-block" id="VariableFactory.get_variable">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_variable">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a Variable object based on its name.</span>
 
 <span class="sd">        Args:</span>
@@ -311,15 +314,16 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_variable_instance</span><span class="p">(</span><span class="n">variable_info</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable_raw</span><span class="p">(</span><span class="n">variable_info</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error while getting variable &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; : </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="VariableFactory._get_variable_instance">
-<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._get_variable_instance">[docs]</a>
-    <span class="k">def</span> <span class="nf">_get_variable_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_info</span><span class="p">:</span> <span class="n">VariableInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a variable object based on the provided address, type, and name.</span>
+<div class="viewcode-block" id="VariableFactory.get_variable_raw">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_variable_raw">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_info</span><span class="p">:</span> <span class="n">VariableInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a variable object based on the provided address, type, and name, defined by DataClass VariableInfo.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            var_info (VariableInfo): details about the variable as name, address, type, array_size, etc.</span>
@@ -358,10 +362,14 @@
             <span class="s2">&quot;unsigned int&quot;</span><span class="p">:</span> <span class="n">VariableUint16</span><span class="p">,</span>
             <span class="s2">&quot;unsigned long&quot;</span><span class="p">:</span> <span class="n">VariableUint32</span><span class="p">,</span>
             <span class="s2">&quot;unsigned long long&quot;</span><span class="p">:</span> <span class="n">VariableUint64</span><span class="p">,</span>
+            <span class="s2">&quot;enum anonymousenum&quot;</span><span class="p">:</span> <span class="n">VariableEnum</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">var_type</span> <span class="o">=</span> <span class="n">var_info</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">var_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">var_info</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">var_type</span> <span class="o">==</span> <span class="s2">&quot;enum anonymousenum&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">type_factory</span><span class="p">[</span><span class="n">var_type</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">array_size</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">valid_values</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">type_factory</span><span class="p">[</span><span class="n">var_type</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">array_size</span><span class="p">,</span> <span class="n">var_info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
