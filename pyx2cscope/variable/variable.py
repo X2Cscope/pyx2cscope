@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import List, Dict
 
-from mchplnet import lnet
+from mchplnet.lnet import LNet
 
 
 @dataclass
@@ -54,7 +54,7 @@ class Variable:
     """Represents a variable in the MCU data memory."""
 
     def __init__(
-        self, l_net: lnet, address: int, array_size: int, name: str = None
+        self, l_net: LNet, address: int, array_size: int, name: str = None
     ) -> None:
         """Initialize the Variable object.
 
@@ -898,7 +898,7 @@ class VariableFloat(Variable):
 class VariableEnum(Variable):
     """Represents enum variable in the MCU data memory."""
 
-    def __init__(self, l_net: lnet, address: int, array_size: int, name: str,
+    def __init__(self, l_net: LNet, address: int, array_size: int, name: str,
                  enum_list: dict[str, int]):
         """Initialize the Variable object. But needs customised constructor due to enum list initialisation.
 
@@ -909,7 +909,7 @@ class VariableEnum(Variable):
             name (str, optional): Name of the variable. Defaults to None.
             enum_list (dict[str, int]): The enumeration list with the values.
         """
-        super().__init__(lnet, address, array_size, name)
+        super().__init__(l_net, address, array_size, name)
         self.enum_list = enum_list       
 
     def _get_min_max_values(self) -> tuple[Number, Number]:
@@ -918,7 +918,7 @@ class VariableEnum(Variable):
         Returns:
             tuple[Number, Number]: The minimum and maximum values.
         """
-        return min(self.enum_values.values()), max(self.enum_values.values())
+        return min(self.enum_list.values()), max(self.enum_list.values())
 
     def is_integer(self) -> bool:
         """Check if the variable is an integer.
@@ -934,7 +934,7 @@ class VariableEnum(Variable):
         Returns:
             bool: Depending on the enum values.
         """
-        if min(self.enum_values.values()) < 0:
+        if min(self.enum_list.values()) < 0:
             return True
         else:
             return False
