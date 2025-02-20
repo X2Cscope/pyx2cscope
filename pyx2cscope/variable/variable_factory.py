@@ -3,12 +3,13 @@
 import logging
 import os
 import pickle
+
 import yaml
 from enum import Enum
 from dataclasses import asdict
 
 from mchplnet.lnet import LNet
-from pyx2cscope.parser.elf_parser import DummyParser, VariableInfo
+from pyx2cscope.parser.elf_parser import DummyParser
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
@@ -21,6 +22,8 @@ from pyx2cscope.variable.variable import (
     VariableUint16,
     VariableUint32,
     VariableUint64,
+    VariableEnum,
+    VariableInfo,
 )
 
 class FileType(Enum):
@@ -185,12 +188,13 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
-            return self._get_variable_instance(variable_info)
+
+            return self.get_variable_raw(variable_info)
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
 
-    def _get_variable_instance(self, var_info: VariableInfo) -> Variable:
-        """Create a variable object based on the provided address, type, and name.
+    def get_variable_raw(self, var_info: VariableInfo) -> Variable:
+        """Create a variable object based on the provided address, type, and name, defined by DataClass VariableInfo.
 
         Args:
             var_info (VariableInfo): details about the variable as name, address, type, array_size, etc.
@@ -229,10 +233,14 @@ class VariableFactory:
             "unsigned int": VariableUint16,
             "unsigned long": VariableUint32,
             "unsigned long long": VariableUint64,
+            "enum anonymousenum": VariableEnum,
         }
 
         try:
-            var_type = var_info.type.lower().replace("_", "")
+
+            var_type: str = var_info.type.lower().replace("_", "")
+            if var_type == "enum anonymousenum":
+                return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name, var_info.valid_values)
             return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name)
         except IndexError:
             raise ValueError(
