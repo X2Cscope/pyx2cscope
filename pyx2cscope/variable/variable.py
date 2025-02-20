@@ -946,7 +946,8 @@ class VariableEnum(Variable):
             int: Width of the variable, which is 2.
         """
         #TODO depends on architecture and enum count of elements
-        return 2
+        return self.l_net.device_info.uc_width
+ 
 
     def set_value(self, value: int):
         """Set the value of the 16-bit enum.
@@ -958,22 +959,22 @@ class VariableEnum(Variable):
             self._check_value_range(value) #TODO might be different than super class
             int_value = int(value)
             bytes_data = int_value.to_bytes(
-                length=2, byteorder="little", signed=False
+                length=self.l_net.device_info.uc_width, byteorder="little", signed=self.is_signed()
             )  # construct the bytes representation of the value
             self._set_value_raw(bytes_data)
         except Exception as e:
             logging.error(e)
 
     def bytes_to_value(self, data: bytearray) -> Number:
-        """Convert the byte array to a 16-bit enum.
+        """Convert the byte array to enum.
 
         Args:
             data (bytearray): The byte array to convert.
 
         Returns:
-            Number: The 16-bit enum value.
+            Number: The enum value.
         """
-        return int.from_bytes(data, "little", signed=False)
+        return int.from_bytes(data, "little", signed=self.is_signed())
 
     def get_enumerator_list(self) -> Dict[str, int]:
         """Get the valid values for the enum variable.
