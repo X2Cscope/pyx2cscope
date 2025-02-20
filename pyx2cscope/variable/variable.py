@@ -15,23 +15,46 @@ Classes:
     - VariableInt64: Represents a 64-bit signed integer variable.
     - VariableUint64: Represents a 64-bit unsigned integer variable.
     - VariableFloat: Represents a floating-point number variable.
+    - VariableEnum: Represents an enum variable.
 
 """
 
 import logging
 import struct
 from abc import abstractmethod
+from dataclasses import dataclass
 from numbers import Number
-from typing import List
+from typing import List, Dict
 
-from mchplnet import lnet
+from mchplnet.lnet import LNet
+
+
+@dataclass
+class VariableInfo:
+    """A raw representation about a variable.
+
+    Attributes:
+        name (str): The name of the variable.
+        type (str): The data type of the variable.
+        byte_size (int): The size of the variable in bytes.
+        address (int): The memory address of the variable.
+        array_size (int): The size of the array if the variable is an array, default is 0.
+        valid_values (dict): enum type of valid values
+    """
+
+    name: str
+    type: str
+    byte_size: int
+    address: int
+    array_size: int
+    valid_values: Dict[str, int]
 
 
 class Variable:
     """Represents a variable in the MCU data memory."""
 
     def __init__(
-        self, l_net: lnet, address: int, array_size: int, name: str = None
+        self, l_net: LNet, address: int, array_size: int, name: str = None
     ) -> None:
         """Initialize the Variable object.
 
@@ -869,3 +892,94 @@ class VariableFloat(Variable):
         """
         data = bytearray(data)
         return struct.unpack("<f", data)[0]
+
+
+# ------------------------------ Enum 2bytes ------------------------------
+class VariableEnum(Variable):
+    """Represents enum variable in the MCU data memory."""
+
+    def __init__(self, l_net: LNet, address: int, array_size: int, name: str,
+                 enum_list: dict[str, int]):
+        """Initialize the Variable object. But needs customised constructor due to enum list initialisation.
+
+        Args:
+            l_net (LNet): LNet protocol that handles the communication with the target device.
+            address (int): Address of the variable in the MCU memory.
+            array_size (int): The number of elements in the array, 0 in case of a plain variable.
+            name (str, optional): Name of the variable. Defaults to None.
+            enum_list (dict[str, int]): The enumeration list with the values.
+        """
+        super().__init__(l_net, address, array_size, name)
+        self.enum_list = enum_list       
+
+    def _get_min_max_values(self) -> tuple[Number, Number]:
+        """Get the minimum and maximum values for the 16-bit enum.
+
+        Returns:
+            tuple[Number, Number]: The minimum and maximum values.
+        """
+        return min(self.enum_list.values()), max(self.enum_list.values())
+
+    def is_integer(self) -> bool:
+        """Check if the variable is an integer.
+
+        Returns:
+            bool: Enumeration is stricktly an integer.
+        """
+        return True
+
+    def is_signed(self) -> bool:
+        """Check if the variable is signed.
+
+        Returns:
+            bool: Depending on the enum values.
+        """
+        if min(self.enum_list.values()) < 0:
+            return True
+        else:
+            return False
+
+    def get_width(self) -> int:
+        """Get the width of the 16-bit enum.
+
+        Returns:
+            int: Width of the variable, which is 2.
+        """
+        #TODO depends on architecture and enum count of elements
+        return self.l_net.device_info.uc_width
+ 
+
+    def set_value(self, value: int):
+        """Set the value of the 16-bit enum.
+
+        Args:
+            value (int): The value to set.
+        """
+        try:
+            self._check_value_range(value) #TODO might be different than super class
+            int_value = int(value)
+            bytes_data = int_value.to_bytes(
+                length=self.l_net.device_info.uc_width, byteorder="little", signed=self.is_signed()
+            )  # construct the bytes representation of the value
+            self._set_value_raw(bytes_data)
+        except Exception as e:
+            logging.error(e)
+
+    def bytes_to_value(self, data: bytearray) -> Number:
+        """Convert the byte array to enum.
+
+        Args:
+            data (bytearray): The byte array to convert.
+
+        Returns:
+            Number: The enum value.
+        """
+        return int.from_bytes(data, "little", signed=self.is_signed())
+
+    def get_enumerator_list(self) -> Dict[str, int]:
+        """Get the valid values for the enum variable.
+
+        Returns:
+            Dict[str, int]: A dictionary of valid values for the enum variable.
+        """
+        return self.enum_list

@@ -12,6 +12,7 @@ x2cscope.add_scope_channel(phase_current)
 x2cscope.add_scope_channel(phase_voltage)
 
 x2cscope.request_scope_data()
+
 while(1):
     if x2cscope.is_scope_data_ready():
         print(x2cscope.get_scope_channel_data())
