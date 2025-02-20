@@ -188,6 +188,7 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
+
             return self.get_variable_raw(variable_info)
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
@@ -236,10 +237,10 @@ class VariableFactory:
         }
 
         try:
+
             var_type: str = var_info.type.lower().replace("_", "")
             if var_type == "enum anonymousenum":
                 return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name, var_info.valid_values)
-            
             return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name)
         except IndexError:
             raise ValueError(

@@ -12,7 +12,6 @@ from typing import Dict, List, Optional
 
 from pyx2cscope.variable.variable import VariableInfo
 
-
 class ElfParser(ABC):
     """Abstract base class for parsing ELF files.
 
