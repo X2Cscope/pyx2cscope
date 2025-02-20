@@ -74,16 +74,15 @@ class GenericParser(ElfParser):
         # probably they are already being detected anywhere else as static or global
         # variables, so this step may be avoided here.
         # We let the code here in case we want to process them anyway.
-        # MW Looks like we need it as non static enums are not being detected without it.
-        elif (
-             die_variable.attributes.get("DW_AT_external")
-             and die_variable.attributes.get("DW_AT_name") is not None
-         ):
-             self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-                 "utf-8"
-             )
-             self.die_variable = die_variable
-             self._extract_address(die_variable)
+        # elif (
+        #      die_variable.attributes.get("DW_AT_external")
+        #      and die_variable.attributes.get("DW_AT_name") is not None
+        #  ):
+        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
+        #          "utf-8"
+        #      )
+        #      self.die_variable = die_variable
+        #      self._extract_address(die_variable)
         else:
             return
 
@@ -397,7 +396,7 @@ class GenericParser(ElfParser):
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
                 self._process_structure_member(member, child_die, prev_offset, offset, member_name)
-                members.update(member)
+                members.update(member) # member should be varinfo?
         return members, prev_offset
 
     def _get_structure_members(self, structure_die, var_name):
