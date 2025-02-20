@@ -16,7 +16,7 @@ from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
-from pyx2cscope.variable.variable import Variable
+from pyx2cscope.variable.variable import Variable, VariableInfo
 from pyx2cscope.variable.variable_factory import VariableFactory, FileType
 
 # Configure logging for debugging and tracking
@@ -135,6 +135,17 @@ class X2CScope:
             Variable: The requested variable object.
         """
         return self.variable_factory.get_variable(name)
+
+    def get_variable_raw(self, variable_info: VariableInfo) -> Variable:
+        """Retrieve a variable by its definition encapsulated by VariableInfo Dataclass.
+
+        Args:
+            variable_info (VariableInfo): The information of the variable.
+
+        Returns:
+            Variable: The requested variable object.
+        """
+        return self.variable_factory.get_variable_raw(variable_info)
 
     def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
         """Store the variables registered on the elf file to a pickle file.
@@ -280,7 +291,7 @@ class X2CScope:
         scope_data: LoadScopeData = self.lnet.scope_data
         return int(
             scope_data.trigger_event_position
-            / (self.scope_setup.get_dataset_size() / self.uc_width)
+            / self.scope_setup.get_dataset_size()
         )
 
     def get_delay_trigger_position(self) -> int:

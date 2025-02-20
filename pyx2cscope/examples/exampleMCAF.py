@@ -1,21 +1,13 @@
 """exampleMCAF.py.
 
-this example is the very basic example to retrieve the value of a certain variable for motorBench generated code.
+this example is a basic example to retrieve the value of a variable from motorBench auto-generated code.
 """
-
-import logging
 
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
 
-# Configure logging settings to capture all levels of log messages and write them to a file
-logging.basicConfig(
-    level=0,  # Log all levels of messages
-    filename="BlinkyMCFG.log",  # Log file name
-)
-
 # Configuration for serial port communication
-serial_port = get_com_port()  # Get the COM port to use from the utility function
+serial_port = get_com_port()  # Get the COM port from the utility function
 baud_rate = 115200  # Set baud rate for serial communication
 
 # Specify the path to the ELF file
@@ -35,13 +27,8 @@ speed_measured = x2c_scope.get_variable(
 
 # Attempt to read the value of the 'speedReference' variable and log the result
 try:
-    speed_reference_value = (
-        speed_reference.get_value()
-    )  # Read the value of the speed reference variable
-    logging.debug(
-        f"Speed Reference Value: {speed_reference_value}"
-    )  # Log the retrieved value
+    # Read the value of the speed reference variable
+    speed_reference_value = speed_reference.get_value()
+    print(f"Speed Reference Value: {speed_reference_value}")
 except Exception as e:
-    logging.debug(
-        f"Error reading speed reference value: {e}"
-    )  # Log any exceptions that occur
+    print(f"Error reading speed reference value: {e}")
