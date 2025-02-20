@@ -1,11 +1,11 @@
 """This module contains the pyx2cscope package.
 
-Version: 0.4.0
+Version: 0.4.1
 """
 
 import logging
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 
 def set_logger(
