@@ -93,19 +93,19 @@ class GenericParser(ElfParser):
         if self.address is None:
             return
 
-        member = {}
-        self._process_end_die(member, die_variable, 0, 0, self.var_name)
+        members = {}
+        self._process_end_die(members, die_variable, 0, 0, self.var_name)
 
-        for member_name, member_data in member.items():
+        for member_name, member_data in members.items():
+            # only include variables with valid addresses
+            if self.address is None or self.address + member_data["address_offset"] == 0:
+                continue
+
             self.variable_map[member_name] = VariableInfo(
-                name=member_name,
-                byte_size=member_data["byte_size"],
-                type=member_data["type"],
-                address=(
-                    self.address + member_data["address_offset"]
-                    if self.address
-                    else None
-                ),
+                name = member_name,
+                byte_size = member_data["byte_size"],
+                type = member_data["type"],
+                address = self.address + member_data["address_offset"],
                 array_size=member_data["array_size"],
                 valid_values=member_data["valid_values"],
             )
@@ -415,13 +415,6 @@ class GenericParser(ElfParser):
             for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
                 self._process_variable_die(die)
-
-        # Remove variables with invalid addresses
-        self.variable_map = {
-            name: info
-            for name, info in self.variable_map.items()
-            if info.address is not None and info.address != 0
-        }
 
         # #Update type _Bool to bool
         # for var_info in self.variable_map.values():
