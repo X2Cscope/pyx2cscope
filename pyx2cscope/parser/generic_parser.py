@@ -54,31 +54,20 @@ class GenericParser(ElfParser):
         # In DIE structure, a variable to be considered valid, has under
         # its attributes the attribute DW_AT_specification or DW_AT_location
         if "DW_AT_specification" in die_variable.attributes:
-            spec_ref_addr = (
-                    die_variable.attributes["DW_AT_specification"].value
-                    + die_variable.cu.cu_offset
-            )
+            spec_ref_addr = die_variable.attributes["DW_AT_specification"].value + die_variable.cu.cu_offset
             spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
             # if it is not a concrete variable, return
             if spec_die.tag != "DW_TAG_variable":
                 return
             self.die_variable = spec_die
-        elif (
-                die_variable.attributes.get("DW_AT_location")
-                and die_variable.attributes.get("DW_AT_name") is not None
-        ):
+        elif die_variable.attributes.get("DW_AT_location") and die_variable.attributes.get("DW_AT_name") is not None:
             self.die_variable = die_variable
         # YA/EP We are not sure if we need to catch external variables.
         # probably they are already being detected anywhere else as static or global
         # variables, so this step may be avoided here.
         # We let the code here in case we want to process them anyway.
-        # elif (
-        #      die_variable.attributes.get("DW_AT_external")
-        #      and die_variable.attributes.get("DW_AT_name") is not None
-        #  ):
-        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-        #          "utf-8"
-        #      )
+        # elif die_variable.attributes.get("DW_AT_external") and die_variable.attributes.get("DW_AT_name") is not None:
+        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
         #      self.die_variable = die_variable
         #      self._extract_address(die_variable)
         else:
@@ -94,7 +83,10 @@ class GenericParser(ElfParser):
             return
 
         members = {}
-        self._process_end_die(members, die_variable, 0, 0, self.var_name)
+        if not self._process_end_die(members, die_variable, 0, 0, self.var_name):
+            # check how to avoid self.die_variable and die_variable....
+            base_type_die = self._get_base_type_die(self.die_variable)
+            self._process_end_die(members, base_type_die, 0, 0, self.var_name)
 
         for member_name, member_data in members.items():
             # only include variables with valid addresses
@@ -113,8 +105,9 @@ class GenericParser(ElfParser):
     def _get_base_type_die(self, current_die):
         """Find the base type die regarding the current selected die, i.e. array_type."""
         type_attr = current_die.attributes.get("DW_AT_type")
-        ref_addr = type_attr.value + current_die.cu.cu_offset
-        return self.dwarf_info.get_DIE_from_refaddr(ref_addr)
+        if type_attr:
+            ref_addr = type_attr.value + current_die.cu.cu_offset
+            return self.dwarf_info.get_DIE_from_refaddr(ref_addr)
 
     def _get_end_die(self, current_die):
         """Find the end DIE of a type iteratively."""
@@ -257,7 +250,7 @@ class GenericParser(ElfParser):
         """
         end_die, type_ref_addr = self._get_end_die(child_die)
         if end_die is None:
-            return
+            return False
 
         nested_member = {}
         if end_die.tag == "DW_TAG_pointer_type":
@@ -274,6 +267,7 @@ class GenericParser(ElfParser):
             nested_member = self._process_base_type(end_die, parent_name, prev_offset, offset)
 
         members.update(nested_member)
+        return True
 
     @staticmethod
     def _process_enum_type(end_die, parent_name, prev_offset, offset):
