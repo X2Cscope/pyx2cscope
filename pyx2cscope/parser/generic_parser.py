@@ -83,10 +83,10 @@ class GenericParser(ElfParser):
             return
 
         members = {}
-        self._process_end_die(members, self.die_variable, 0, 0, self.var_name)
+        self._process_end_die(members, self.die_variable, self.var_name, 0)
         # Uncomment and use if base type processing is needed
         # base_type_die = self._get_base_type_die(self.die_variable)
-        # self._process_end_die(members, base_type_die, 0, 0, self.var_name)
+        # self._process_end_die(members, base_type_die, self.var_name, 0)
 
         for member_name, member_data in members.items():
             self.variable_map[member_name] = VariableInfo(
@@ -204,7 +204,7 @@ class GenericParser(ElfParser):
         logging.warning(f"Unknown data_member_location value: {value}")
         return None
 
-    def _process_array_type(self, end_die, member_name, prev_offset, offset):
+    def _process_array_type(self, end_die, member_name, offset):
         """Process array type members recursively.
 
         The easiest implementation is the array of primitives, which contains only primitives,
@@ -217,14 +217,14 @@ class GenericParser(ElfParser):
         array_members = {}
         array_size = self._get_array_length(end_die)
         base_type_die = self._get_base_type_die(end_die)
-        self._process_end_die(members, base_type_die, prev_offset, offset, member_name)
+        self._process_end_die(members, base_type_die, member_name, offset)
         if members:
             idx_size = sum(item["byte_size"] for item in members.values())
             # Generate array variable
             array_members[member_name] = {
                 "type": members[next(iter(members))]["type"] if len(members) == 1 else "array",
                 "byte_size": array_size * idx_size,
-                "address_offset": prev_offset + offset,
+                "address_offset": offset,
                 "array_size": array_size,  # Individual elements aren't arrays
                 "valid_values": {}
             }
@@ -238,7 +238,7 @@ class GenericParser(ElfParser):
 
         return array_members
 
-    def _process_end_die(self, members, child_die, prev_offset, offset, parent_name):
+    def _process_end_die(self, members, child_die, parent_name, offset):
         """Process the current die according to its tag.
 
         A variable can be a primitive or can have multiple children, e.g., a struct or and array of structs.
@@ -252,21 +252,21 @@ class GenericParser(ElfParser):
         if end_die.tag == "DW_TAG_pointer_type":
             pass
         elif end_die.tag == "DW_TAG_enumeration_type":
-            nested_member = self._process_enum_type(end_die, parent_name, prev_offset, offset)
+            nested_member = self._process_enum_type(end_die, parent_name, offset)
         elif end_die.tag == "DW_TAG_array_type":
-            nested_member = self._process_array_type(end_die, parent_name, prev_offset, offset)
+            nested_member = self._process_array_type(end_die, parent_name, offset)
         elif end_die.tag == "DW_TAG_structure_type":
-            nested_member = self._process_structure_type(end_die, parent_name, prev_offset + offset)
+            nested_member = self._process_structure_type(end_die, parent_name, offset)
         elif end_die.tag == "DW_TAG_union_type":
             pass
         else:
-            nested_member = self._process_base_type(end_die, parent_name, prev_offset, offset)
+            nested_member = self._process_base_type(end_die, parent_name, offset)
 
         members.update(nested_member)
         return
 
     @staticmethod
-    def _process_enum_type(end_die, parent_name, prev_offset, offset):
+    def _process_enum_type(end_die, parent_name, offset):
         """Process an enum type variable and map its members."""
         enum_name_attr = end_die.attributes.get("DW_AT_name")
         enum_name = (
@@ -288,26 +288,26 @@ class GenericParser(ElfParser):
             parent_name: {
                 "type": f"enum {enum_name}",
                 "byte_size": end_die.attributes.get("DW_AT_byte_size", 0).value,
-                "address_offset": prev_offset + offset,
+                "address_offset": offset,
                 "array_size": 0,
                 "valid_values": enum_members
             }
         }
 
-    def _process_structure_type(self, die, parent_name: str, prev_offset=0):
+    def _process_structure_type(self, die, parent_name: str, offset=0):
         """Recursively extracts structure members from a DWARF DIE, including arrays."""
         members = {}
         for child_die in die.iter_children():
             member = {}
             if child_die.tag == "DW_TAG_member":
-                offset = self._get_member_offset(child_die)
-                if offset is None:
+                member_offset = self._get_member_offset(child_die)
+                if member_offset is None:
                     continue
                 member_name = parent_name
                 name_attr = child_die.attributes.get("DW_AT_name")
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
-                self._process_end_die(member, child_die, prev_offset, offset, member_name)
+                self._process_end_die(member, child_die, member_name, offset + member_offset)
                 members.update(member)
         return members
 
@@ -324,7 +324,7 @@ class GenericParser(ElfParser):
         return array_length
 
     @staticmethod
-    def _process_base_type(end_die, parent_name, prev_offset, offset):
+    def _process_base_type(end_die, parent_name, offset):
         """Process a base type variable."""
         type_name_attr = end_die.attributes.get("DW_AT_name")
         type_name = type_name_attr.value.decode("utf-8") if type_name_attr else "base unknown"
@@ -334,7 +334,7 @@ class GenericParser(ElfParser):
             parent_name: {
                 "type": type_name,
                 "byte_size": byte_size,
-                "address_offset": prev_offset + offset,
+                "address_offset": offset,
                 "array_size": 0,
                 "valid_values": {}
             }
