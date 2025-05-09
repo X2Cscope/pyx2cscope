@@ -4,7 +4,6 @@ It focuses on extracting structure members and variable information from DWARF d
 """
 
 import logging
-from email.mime import base
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
@@ -220,7 +219,8 @@ class GenericParser(ElfParser):
         variable 'members' with only one element. Considering multidimensional arrays, arrays of
         structs, and arrays of unions, the variable 'members' will have multiple elements, that should
         be considered when calculating the size of the main array element. Afterward, each element need
-        to be added as single indexed element in the array_members variable."""
+        to be added as single indexed element in the array_members variable.
+        """
         members = {}
         array_members = {}
         array_size = self._get_array_length(end_die)
