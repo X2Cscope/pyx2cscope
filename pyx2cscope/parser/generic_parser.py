@@ -39,10 +39,10 @@ class GenericParser(ElfParser):
         if self.stream:
             self.stream.close()
 
-    def _get_die_variable_details(self, die_variable):
-        """Process the die_variable to obtain detailed info.
+    def _get_die_variable(self, die_struct):
+        """Process the die_struct to obtain the die containing the variable and its info.
 
-        The purpose of this method is to populate:
+        This method populates class members:
         - self.die_variable
         - self.var_name
         - self.address
@@ -53,15 +53,15 @@ class GenericParser(ElfParser):
 
         # In DIE structure, a variable to be considered valid, has under
         # its attributes the attribute DW_AT_specification or DW_AT_location
-        if "DW_AT_specification" in die_variable.attributes:
-            spec_ref_addr = die_variable.attributes["DW_AT_specification"].value + die_variable.cu.cu_offset
+        if "DW_AT_specification" in die_struct.attributes:
+            spec_ref_addr = die_struct.attributes["DW_AT_specification"].value + die_struct.cu.cu_offset
             spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
             # if it is not a concrete variable, return
             if spec_die.tag != "DW_TAG_variable":
                 return
             self.die_variable = spec_die
-        elif die_variable.attributes.get("DW_AT_location") and die_variable.attributes.get("DW_AT_name") is not None:
-            self.die_variable = die_variable
+        elif die_struct.attributes.get("DW_AT_location") and die_struct.attributes.get("DW_AT_name") is not None:
+            self.die_variable = die_struct
         # YA/EP We are not sure if we need to catch external variables.
         # probably they are already being detected anywhere else as static or global
         # variables, so this step may be avoided here.
@@ -74,25 +74,21 @@ class GenericParser(ElfParser):
             return
 
         self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
-        self.address = self._extract_address(die_variable)
+        self.address = self._extract_address(die_struct)
 
-    def _process_variable_die(self, die_variable):
-        """Process an individual variable DIE."""
-        self._get_die_variable_details(die_variable)
+    def _process_die(self, die):
+        """Process a DIE structure containing the variable and its."""
+        self._get_die_variable(die)
         if self.address is None:
             return
 
         members = {}
-        if not self._process_end_die(members, die_variable, 0, 0, self.var_name):
-            # check how to avoid self.die_variable and die_variable....
-            base_type_die = self._get_base_type_die(self.die_variable)
-            self._process_end_die(members, base_type_die, 0, 0, self.var_name)
+        self._process_end_die(members, self.die_variable, 0, 0, self.var_name)
+        # Uncomment and use if base type processing is needed
+        # base_type_die = self._get_base_type_die(self.die_variable)
+        # self._process_end_die(members, base_type_die, 0, 0, self.var_name)
 
         for member_name, member_data in members.items():
-            # only include variables with valid addresses
-            if self.address is None or self.address + member_data["address_offset"] == 0:
-                continue
-
             self.variable_map[member_name] = VariableInfo(
                 name = member_name,
                 byte_size = member_data["byte_size"],
@@ -250,7 +246,7 @@ class GenericParser(ElfParser):
         """
         end_die, type_ref_addr = self._get_end_die(child_die)
         if end_die is None:
-            return False
+            return
 
         nested_member = {}
         if end_die.tag == "DW_TAG_pointer_type":
@@ -267,7 +263,7 @@ class GenericParser(ElfParser):
             nested_member = self._process_base_type(end_die, parent_name, prev_offset, offset)
 
         members.update(nested_member)
-        return True
+        return
 
     @staticmethod
     def _process_enum_type(end_die, parent_name, prev_offset, offset):
@@ -359,7 +355,7 @@ class GenericParser(ElfParser):
         for cu in self.dwarf_info.iter_CUs():
             for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
-                self._process_variable_die(die)
+                self._process_die(die)
 
         # #Update type _Bool to bool
         # for var_info in self.variable_map.values():
