@@ -54,6 +54,19 @@ class TestParser:
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
 
+    def test_union_variable_16(self, mocker):
+        """Given a valid 32 bit elf file, check if an array variable is read correctly."""
+        fake_serial(mocker, 16)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        variable_lo = x2c_scope.get_variable("motor.vqFiltered.state.x16.lo")
+        variable_hi = x2c_scope.get_variable("motor.vqFiltered.state.x16.hi")
+        variable_union = x2c_scope.get_variable("motor.vqFiltered.state.x32")
+        assert variable_lo is not None, "variable name not found"
+        assert variable_hi is not None, "variable name not found"
+        assert variable_union is not None, "variable name not found"
+        assert variable_lo.address == variable_union.address, "variable union should have the same address as segment"
+        assert variable_hi.address == variable_union.address + 2, "variable high should have address + 2"
+
     def test_variable_dspic33ak(self, mocker, array_size_test=4900, address=22122):
         """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
         fake_serial(mocker, 32)

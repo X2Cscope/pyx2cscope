@@ -92,6 +92,8 @@ class GenericParser(ElfParser):
             self.variable_map[member_name] = VariableInfo(
                 name = member_name,
                 byte_size = member_data["byte_size"],
+                bit_size = member_data["bit_size"],
+                bit_offset = member_data["bit_offset"],
                 type = member_data["type"],
                 address = self.address + member_data["address_offset"],
                 array_size=member_data["array_size"],
@@ -183,26 +185,32 @@ class GenericParser(ElfParser):
             die_variable = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
         return die_variable
 
-    def _get_member_offset(self, die) -> int | None:
+    def _get_member_offset(self, die) -> [int, int, int]:
         """Extracts the offset for a structure member.
 
         Args:
             die: The DIE of the structure member.
 
         Returns:
-            int or None: The offset value, or None if it couldn't be determined.
+            int, int, int: The offset value, the bit_size (union) and bit offset (union).
         """
-        assert die.tag == "DW_TAG_member"
-        data_member_location = die.attributes.get("DW_AT_data_member_location")
-        if data_member_location is None:
-            return None
-        value = data_member_location.value
-        if isinstance(value, int):
-            return value
-        if isinstance(value, ListContainer):
-            return self._extract_address_from_expression(value, die.cu.structs)
-        logging.warning(f"Unknown data_member_location value: {value}")
-        return None
+        offset = None
+        bit_size = 0
+        bit_offset = 0
+        if "DW_AT_data_member_location" in die.attributes:
+            data_member_location = die.attributes.get("DW_AT_data_member_location")
+            if "DW_AT_bit_size" in die.attributes:
+                bit_size = die.attributes.get("DW_AT_bit_size").value
+                bit_offset = die.attributes.get("DW_AT_bit_offset").value
+            offset = data_member_location.value
+            if isinstance(offset, int):
+                return offset, bit_size, bit_offset
+            if isinstance(offset, ListContainer):
+                offset = self._extract_address_from_expression(offset, die.cu.structs)
+                return offset, bit_size, bit_offset
+            else:
+                logging.warning(f"Unknown data_member_location value: {offset}")
+        return offset, bit_size, bit_offset
 
     def _process_array_type(self, end_die, member_name, offset):
         """Process array type members recursively.
@@ -224,6 +232,8 @@ class GenericParser(ElfParser):
             array_members[member_name] = {
                 "type": members[next(iter(members))]["type"] if len(members) == 1 else "array",
                 "byte_size": array_size * idx_size,
+                "bit_size": 0,
+                "bit_offset": 0,
                 "address_offset": offset,
                 "array_size": array_size,  # Individual elements aren't arrays
                 "valid_values": {}
@@ -258,7 +268,7 @@ class GenericParser(ElfParser):
         elif end_die.tag == "DW_TAG_structure_type":
             nested_member = self._process_structure_type(end_die, parent_name, offset)
         elif end_die.tag == "DW_TAG_union_type":
-            pass
+            nested_member = self._process_union_type(end_die, parent_name, offset)
         else:
             nested_member = self._process_base_type(end_die, parent_name, offset)
 
@@ -288,11 +298,27 @@ class GenericParser(ElfParser):
             parent_name: {
                 "type": f"enum {enum_name}",
                 "byte_size": end_die.attributes.get("DW_AT_byte_size", 0).value,
+                "bit_size" : 0,
+                "bit_offset" : 0,
                 "address_offset": offset,
                 "array_size": 0,
                 "valid_values": enum_members
             }
         }
+
+    def _process_union_type(self, die, parent_name: str, offset=0):
+        """Recursively extracts union members from a DWARF DIE."""
+        members = {}
+        for child_die in die.iter_children():
+            member = {}
+            if child_die.tag == "DW_TAG_member":
+                member_name = parent_name
+                name_attr = child_die.attributes.get("DW_AT_name")
+                if name_attr:
+                    member_name += "." + name_attr.value.decode("utf-8")
+                self._process_end_die(member, child_die, member_name, offset)
+                members.update(member)
+        return members
 
     def _process_structure_type(self, die, parent_name: str, offset=0):
         """Recursively extracts structure members from a DWARF DIE, including arrays."""
@@ -300,7 +326,7 @@ class GenericParser(ElfParser):
         for child_die in die.iter_children():
             member = {}
             if child_die.tag == "DW_TAG_member":
-                member_offset = self._get_member_offset(child_die)
+                member_offset, bit_size, bit_offset = self._get_member_offset(child_die)
                 if member_offset is None:
                     continue
                 member_name = parent_name
@@ -308,6 +334,11 @@ class GenericParser(ElfParser):
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
                 self._process_end_die(member, child_die, member_name, offset + member_offset)
+                # in case of a union, here is the location where the bit size and offset are registered.
+                # on later versions of DWARF, it is available on the base type.
+                if bit_size:
+                    member[member_name]["bit_size"] = bit_size
+                    member[member_name]["bit_offset"] = bit_offset
                 members.update(member)
         return members
 
@@ -334,6 +365,8 @@ class GenericParser(ElfParser):
             parent_name: {
                 "type": type_name,
                 "byte_size": byte_size,
+                "bit_size": 0,
+                "bit_offset": 0,
                 "address_offset": offset,
                 "array_size": 0,
                 "valid_values": {}
