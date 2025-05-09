@@ -77,6 +77,31 @@ class TestParser:
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
 
+    def test_variable_enum_32(self, mocker, size6=6, size3=3):
+        """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
+        fake_serial(mocker, 32)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
+        # test simple variable enum
+        variable = x2c_scope.get_variable("nextGlobalState")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should not be an array"
+        assert len(variable.enum_list) == size6, "enum size should be 6"
+        # test nested enum inside a structure
+        variable = x2c_scope.get_variable("mcFoc_State_mds.FocState")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should not be an array"
+        assert len(variable.enum_list) == size3, "enum size should be 3"
+
+    def test_variable_enum_16(self, mocker, size6=6):
+        """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
+        fake_serial(mocker, 32)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        # test nested enum inside a structure
+        variable = x2c_scope.get_variable("motor.apiData.motorStatus")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should not be an array"
+        assert len(variable.enum_list) == size6, "enum size should be 3"
+
     def test_variable_export_import(self, mocker):
         """Given a valid 32 bit elf file, check if export and import functions for variables are working."""
         fake_serial(mocker, 32)
