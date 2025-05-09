@@ -54,7 +54,7 @@ class TestParser:
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
 
-    def test_variable_dspic33ak(self, mocker, array_size_test=4900):
+    def test_variable_dspic33ak(self, mocker, array_size_test=4900, address=22122):
         """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
         fake_serial(mocker, 32)
         x2c_scope = X2CScope(port="COM14")
@@ -62,6 +62,7 @@ class TestParser:
         variable = x2c_scope.get_variable("measureInputs.current.Ia")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == False, "variable should be an array"
+        assert variable.address == address, "variable has wrong address, check offset calculation"
         # test array
         variable_array = x2c_scope.get_variable("X2C_BUFFER")
         assert variable_array is not None, "variable name not found"
