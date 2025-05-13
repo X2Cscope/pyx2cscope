@@ -37,6 +37,8 @@ class VariableInfo:
         name (str): The name of the variable.
         type (str): The data type of the variable.
         byte_size (int): The size of the variable in bytes.
+        bit_size (int): bit_size of variable if size is less than a byte (e.g.: union type)
+        bit_offset (int): bit_offset of variable if size is less than a byte (e.g.: union type)
         address (int): The memory address of the variable.
         array_size (int): The size of the array if the variable is an array, default is 0.
         valid_values (dict): enum type of valid values
@@ -45,6 +47,8 @@ class VariableInfo:
     name: str
     type: str
     byte_size: int
+    bit_size: int
+    bit_offset: int
     address: int
     array_size: int
     valid_values: Dict[str, int]
