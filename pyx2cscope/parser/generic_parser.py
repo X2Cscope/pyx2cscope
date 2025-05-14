@@ -24,7 +24,6 @@ class GenericParser(ElfParser):
         self.die_variable = None
         self.var_name = None
         self.address = None
-        self.type_attr = None
 
     def _load_elf_file(self):
         try:
@@ -39,139 +38,94 @@ class GenericParser(ElfParser):
         if self.stream:
             self.stream.close()
 
-    def _get_die_variable_details(self, die_variable):
-        """Process the die_variable to obtain detailed info.
+    def _get_die_variable(self, die_struct):
+        """Process the die_struct to obtain the die containing the variable and its info.
 
-        The purpose of this method is to populate:
+        This method populates class members:
         - self.die_variable
         - self.var_name
         - self.address
-        - self.type_attr
         """
         self.die_variable = None
         self.var_name = None
         self.address = None
-        self.type_attr = None
 
         # In DIE structure, a variable to be considered valid, has under
         # its attributes the attribute DW_AT_specification or DW_AT_location
-        if "DW_AT_specification" in die_variable.attributes:
-            spec_ref_addr = (
-                    die_variable.attributes["DW_AT_specification"].value
-                    + die_variable.cu.cu_offset
-            )
+        if "DW_AT_specification" in die_struct.attributes:
+            spec_ref_addr = die_struct.attributes["DW_AT_specification"].value + die_struct.cu.cu_offset
             spec_die = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
             # if it is not a concrete variable, return
             if spec_die.tag != "DW_TAG_variable":
                 return
             self.die_variable = spec_die
-        elif (
-                die_variable.attributes.get("DW_AT_location")
-                and die_variable.attributes.get("DW_AT_name") is not None
-        ):
-            self.die_variable = die_variable
+        elif die_struct.attributes.get("DW_AT_location") and die_struct.attributes.get("DW_AT_name") is not None:
+            self.die_variable = die_struct
         # YA/EP We are not sure if we need to catch external variables.
         # probably they are already being detected anywhere else as static or global
         # variables, so this step may be avoided here.
         # We let the code here in case we want to process them anyway.
-        # elif (
-        #      die_variable.attributes.get("DW_AT_external")
-        #      and die_variable.attributes.get("DW_AT_name") is not None
-        #  ):
-        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode(
-        #          "utf-8"
-        #      )
+        # elif die_variable.attributes.get("DW_AT_external") and die_variable.attributes.get("DW_AT_name") is not None:
+        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
         #      self.die_variable = die_variable
         #      self._extract_address(die_variable)
         else:
             return
 
         self.var_name = self.die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
-        self.address = self._extract_address(die_variable)
-        self.type_attr = self.die_variable.attributes.get("DW_AT_type")
+        self.address = self._extract_address(die_struct)
 
-    def _process_variable_die(self, die_variable):
-        """Process an individual variable DIE."""
-        self._get_die_variable_details(die_variable)
-        if self.type_attr is None:
-            return []
+    def _process_die(self, die):
+        """Process a DIE structure containing the variable and its."""
+        self._get_die_variable(die)
+        if self.address is None:
+            return
 
-        ref_addr = self.type_attr.value + self.die_variable.cu.cu_offset
-        type_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-        end_die = self._get_end_die(die_variable)
+        members = {}
+        self._process_end_die(members, self.die_variable, self.var_name, 0)
+        # Uncomment and use if base type processing is needed
+        # base_type_die = self._get_base_type_die(self.die_variable)
+        # self._process_end_die(members, base_type_die, self.var_name, 0)
 
-        # try to get variable data on end_die
-        if end_die is not None and end_die.tag is not None:
-            return self._process_end_die(end_die)
+        for member_name, member_data in members.items():
+            self.variable_map[member_name] = VariableInfo(
+                name = member_name,
+                byte_size = member_data["byte_size"],
+                bit_size = member_data["bit_size"],
+                bit_offset = member_data["bit_offset"],
+                type = member_data["type"],
+                address = self.address + member_data["address_offset"],
+                array_size=member_data["array_size"],
+                valid_values=member_data["valid_values"],
+            )
 
-        # try to get variable data on type_die
-        end_die = self._get_end_die(type_die)
-        if end_die:
-            return self._process_end_die(end_die)
-
-        # no data found
-        logging.warning(
-            f"Skipping variable {self.var_name} due to missing end DIE"
-        )
-        return []
-
-    def _process_enum_type(self, enum_die):
-        """Process an enum type variable and map its members."""
-        enum_name_attr = enum_die.attributes.get("DW_AT_name")
-        enum_name = (
-            enum_name_attr.value.decode("utf-8") if enum_name_attr else "anonymous_enum"
-        )
-
-        # Dictionary to store enum member names and values
-        enum_members = {}
-        for child in enum_die.iter_children():
-            if child.tag == "DW_TAG_enumerator":
-                name_attr = child.attributes.get("DW_AT_name")
-                value_attr = child.attributes.get("DW_AT_const_value")
-                if name_attr and value_attr:
-                    member_name = name_attr.value.decode("utf-8")
-                    member_value = value_attr.value
-                    enum_members[member_name] = member_value
-
-        # Check if VariableInfo can accept 'members' or create a compatible entry
-        self.variable_map[self.var_name] = VariableInfo(
-            name=self.var_name,
-            byte_size=enum_die.attributes.get("DW_AT_byte_size", 0).value,
-            type=f"enum {enum_name}",
-            address=self.address,
-            array_size=0,
-            valid_values = enum_members
-        )
+    def _get_base_type_die(self, current_die):
+        """Find the base type die regarding the current selected die, i.e. array_type."""
+        type_attr = current_die.attributes.get("DW_AT_type")
+        if type_attr:
+            ref_addr = type_attr.value + current_die.cu.cu_offset
+            return self.dwarf_info.get_DIE_from_refaddr(ref_addr)
 
     def _get_end_die(self, current_die):
         """Find the end DIE of a type iteratively."""
-        valid_tags = {"DW_TAG_base_type", "DW_TAG_pointer_type", "DW_TAG_structure_type", "DW_TAG_array_type", "DW_TAG_enumeration_type"}
-        while current_die and current_die.tag not in valid_tags:
-            type_attr = current_die.attributes.get("DW_AT_type")
+        ref_addr = None
+        end_die = current_die
+        valid_tags = {
+            "DW_TAG_base_type",
+            "DW_TAG_pointer_type",
+            "DW_TAG_structure_type",
+            "DW_TAG_array_type",
+            "DW_TAG_enumeration_type",
+            "DW_TAG_union_type"
+        }
+        while end_die and end_die.tag not in valid_tags:
+            type_attr = end_die.attributes.get("DW_AT_type")
             if not type_attr:
                 logging.warning(f"Skipping DIE at offset {current_die.offset} with no 'DW_AT_type'")
-                return None
-            ref_addr = type_attr.value + current_die.cu.cu_offset
-            current_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
-        return current_die
-
-    def _process_end_die(self, end_die):
-        """Processes the end DIE of a tag to extract variable information.
-
-        This method NEEDS to add a variable to the variable_map.
-        In case the end_die does not contain a valid variable, it should return.
-        """
-        # Handle Types
-        if end_die.tag == "DW_TAG_pointer_type":
-            pass
-        elif end_die.tag == "DW_TAG_enumeration_type":
-            self._process_enum_type(end_die)
-        elif end_die.tag == "DW_TAG_structure_type":
-            self._process_structure_type(end_die)
-        elif end_die.tag == "DW_TAG_array_type":
-            self._process_array_type(end_die)
-        else:
-            self._process_base_type(end_die)
+                return None, None
+            ref_addr = type_attr.value + end_die.cu.cu_offset
+            end_die = self.dwarf_info.get_DIE_from_refaddr(ref_addr)
+        return end_die, ref_addr
 
     def _extract_address_from_expression(self, expr_value, structs):
         """Extracts an address from DWARF expression.
@@ -230,212 +184,194 @@ class GenericParser(ElfParser):
             die_variable = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
         return die_variable
 
-    def _process_structure_type(self, end_die):
-        """Process a structure type variable."""
-        members = self._get_structure_members(end_die, self.var_name)
-        for member_name, member_data in members.items():
-            self.variable_map[member_name] = VariableInfo(
-                name=member_name,
-                byte_size=member_data["byte_size"],
-                type=member_data["type"],
-                address=(
-                    self.address + member_data["address_offset"]
-                    if self.address
-                    else None
-                ),
-                array_size=member_data["array_size"],
-                valid_values={}
-            )
-
-    def _process_array_type(self, end_die):
-        """Process an array type variable."""
-        array_size = self._get_array_length(end_die)
-        base_type_attr = end_die.attributes.get("DW_AT_type")
-        if base_type_attr:
-            base_type_offset = base_type_attr.value + end_die.cu.cu_offset
-            base_type_die = self.dwarf_info.get_DIE_from_refaddr(base_type_offset)
-            if base_type_die:
-                base_type_die = self._get_end_die(base_type_die)
-                type_name = base_type_die.attributes.get("DW_AT_name")
-                type_name = type_name.value.decode("utf-8") if type_name else "array"
-                byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
-                byte_size = byte_size_attr.value if byte_size_attr else 0
-                self.variable_map[self.var_name] = VariableInfo(
-                    name=self.var_name,
-                    byte_size=byte_size,
-                    type=type_name,
-                    address=self.address,
-                    array_size=array_size,
-                    valid_values={}
-                )
-
-    def _process_base_type(self, end_die):
-        """Process a base type variable."""
-        type_name_attr = end_die.attributes.get("DW_AT_name")
-        type_name = (
-            type_name_attr.value.decode("utf-8") if type_name_attr else "base unknown"
-        )
-        self.variable_map[self.var_name] = VariableInfo(
-            name=self.var_name,
-            byte_size=end_die.attributes["DW_AT_byte_size"].value,
-            type=type_name,
-            address=self.address,
-            array_size=0,
-            valid_values={}
-        )
-
-    def _get_member_offset(self, die) -> int | None:
+    def _get_member_offset(self, die) -> [int, int, int]:
         """Extracts the offset for a structure member.
 
         Args:
             die: The DIE of the structure member.
 
         Returns:
-            int or None: The offset value, or None if it couldn't be determined.
+            int, int, int: The offset value, the bit_size (union) and bit offset (union).
         """
-        assert die.tag == "DW_TAG_member"
-        data_member_location = die.attributes.get("DW_AT_data_member_location")
-        if data_member_location is None:
-            return None
-        value = data_member_location.value
-        if isinstance(value, int):
-            return value
-        if isinstance(value, ListContainer):
-            return self._extract_address_from_expression(value, die.cu.structs)
-        logging.warning(f"Unknown data_member_location value: {value}")
-        return None
+        offset = None
+        bit_size = 0
+        bit_offset = 0
+        if "DW_AT_data_member_location" in die.attributes:
+            data_member_location = die.attributes.get("DW_AT_data_member_location")
+            if "DW_AT_bit_size" in die.attributes:
+                bit_size = die.attributes.get("DW_AT_bit_size").value
+                bit_offset = die.attributes.get("DW_AT_bit_offset").value
+            offset = data_member_location.value
+            if isinstance(offset, int):
+                return offset, bit_size, bit_offset
+            if isinstance(offset, ListContainer):
+                offset = self._extract_address_from_expression(offset, die.cu.structs)
+                return offset, bit_size, bit_offset
+            else:
+                logging.warning(f"Unknown data_member_location value: {offset}")
+        return offset, bit_size, bit_offset
 
-    def _process_member_array_type(self, member_type_die, member_name, prev_offset, offset):
-        """Process array type structure members recursively."""
+    def _process_array_type(self, end_die, member_name, offset):
+        """Process array type members recursively.
+
+        The easiest implementation is the array of primitives, which contains only primitives,
+        e.g.: char my_array[10]. In this case, function _process_end_die(...) will return the
+        variable 'members' with only one element. Considering multidimensional arrays, arrays of
+        structs, and arrays of unions, the variable 'members' will have multiple elements, that should
+        be considered when calculating the size of the main array element. Afterward, each element need
+        to be added as single indexed element in the array_members variable.
+        """
         members = {}
-        end_die = self._get_end_die(member_type_die)
+        array_members = {}
         array_size = self._get_array_length(end_die)
-        base_type_attr = end_die.attributes.get("DW_AT_type")
-        if base_type_attr:
-            base_type_offset = base_type_attr.value + end_die.cu.cu_offset
-            base_type_die = self.dwarf_info.get_DIE_from_refaddr(base_type_offset)
-            if base_type_die:
-                base_type_die = self._get_end_die(base_type_die)
-                type_name_attr = base_type_die.attributes.get("DW_AT_name")
-                type_name = (
-                    type_name_attr.value.decode("utf-8")
-                    if type_name_attr
-                    else "Array Element"
-                )
-                byte_size_attr = base_type_die.attributes.get("DW_AT_byte_size")
-                element_byte_size = byte_size_attr.value if byte_size_attr else 1
+        base_type_die = self._get_base_type_die(end_die)
+        self._process_end_die(members, base_type_die, member_name, offset)
+        if members:
+            idx_size = sum(item["byte_size"] for item in members.values())
+            # Generate array variable
+            array_members[member_name] = {
+                "type": members[next(iter(members))]["type"] if len(members) == 1 else "array",
+                "byte_size": array_size * idx_size,
+                "bit_size": 0,
+                "bit_offset": 0,
+                "address_offset": offset,
+                "array_size": array_size,  # Individual elements aren't arrays
+                "valid_values": {}
+            }
 
-                # add the array itself as a variable
-                members[member_name] = {
-                    "type": type_name,
-                    "byte_size": array_size * element_byte_size,
-                    "address_offset": prev_offset + offset,
-                    "array_size": array_size,  # Individual elements aren't arrays
-                }
+            # Generate array members, e.g.: array[0], array[1], ..., array[i]
+            for i in range(array_size):
+                for name, values in members.items():
+                    element_name = name.replace(member_name, f"{member_name}[{i}]")
+                    array_members[element_name] = values.copy()
+                    array_members[element_name]["address_offset"] += i * idx_size
 
-                # Generate array members
-                for i in range(array_size):
-                    element_name = f"{member_name}[{i}]"
-                    members[element_name] = {
-                        "type": type_name,
-                        "byte_size": element_byte_size,
-                        "address_offset": prev_offset + offset + i * element_byte_size,
-                        "array_size": 0,  # Individual elements aren't arrays
-                    }
+        return array_members
+
+    def _process_end_die(self, members, child_die, parent_name, offset):
+        """Process the current die according to its tag.
+
+        A variable can be a primitive or can have multiple children, e.g., a struct or and array of structs.
+        After calling this method, members is populated with details of the variable and its children.
+        """
+        end_die, type_ref_addr = self._get_end_die(child_die)
+        if end_die is None:
+            return
+
+        nested_member = {}
+        if end_die.tag == "DW_TAG_pointer_type":
+            pass
+        elif end_die.tag == "DW_TAG_enumeration_type":
+            nested_member = self._process_enum_type(end_die, parent_name, offset)
+        elif end_die.tag == "DW_TAG_array_type":
+            nested_member = self._process_array_type(end_die, parent_name, offset)
+        elif end_die.tag == "DW_TAG_structure_type":
+            nested_member = self._process_structure_type(end_die, parent_name, offset)
+        elif end_die.tag == "DW_TAG_union_type":
+            nested_member = self._process_union_type(end_die, parent_name, offset)
+        else:
+            nested_member = self._process_base_type(end_die, parent_name, offset)
+
+        members.update(nested_member)
+        return
+
+    @staticmethod
+    def _process_enum_type(end_die, parent_name, offset):
+        """Process an enum type variable and map its members."""
+        enum_name_attr = end_die.attributes.get("DW_AT_name")
+        enum_name = (
+            enum_name_attr.value.decode("utf-8") if enum_name_attr else "anonymous_enum"
+        )
+
+        # Dictionary to store enum member names and values
+        enum_members = {}
+        for child in end_die.iter_children():
+            if child.tag == "DW_TAG_enumerator":
+                name_attr = child.attributes.get("DW_AT_name")
+                value_attr = child.attributes.get("DW_AT_const_value")
+                if name_attr and value_attr:
+                    member_name = name_attr.value.decode("utf-8")
+                    member_value = value_attr.value
+                    enum_members[member_name] = member_value
+
+        return {
+            parent_name: {
+                "type": f"enum {enum_name}",
+                "byte_size": end_die.attributes.get("DW_AT_byte_size", 0).value,
+                "bit_size" : 0,
+                "bit_offset" : 0,
+                "address_offset": offset,
+                "array_size": 0,
+                "valid_values": enum_members
+            }
+        }
+
+    def _process_union_type(self, die, parent_name: str, offset=0):
+        """Recursively extracts union members from a DWARF DIE."""
+        members = {}
+        for child_die in die.iter_children():
+            member = {}
+            if child_die.tag == "DW_TAG_member":
+                member_name = parent_name
+                name_attr = child_die.attributes.get("DW_AT_name")
+                if name_attr:
+                    member_name += "." + name_attr.value.decode("utf-8")
+                self._process_end_die(member, child_die, member_name, offset)
+                members.update(member)
         return members
 
-    def _process_structure_member(self, members, child_die, prev_offset, offset, parent_name):
-        """Process individual structure member, including handling nested types and arrays."""
-        member = {}
-        type_attr = child_die.attributes.get("DW_AT_type")
-        if type_attr:
-            type_offset = type_attr.value + child_die.cu.cu_offset
-            try:
-                member_type_die = self.dwarf_info.get_DIE_from_refaddr(type_offset)
-                if not member_type_die:
-                    return
-
-                if member_type_die.tag == "DW_TAG_array_type":
-                    nested_array_members = self._process_member_array_type(
-                        member_type_die, parent_name, prev_offset, offset
-                    )
-                    members.update(nested_array_members)
-                    return  # Array processing is handled
-
-                member_type = self._get_member_type(type_offset)
-                if member_type:
-                    member["type"] = member_type["name"]
-                    member["byte_size"] = member_type["byte_size"]
-                    member["address_offset"] = prev_offset + offset
-                    member["array_size"] = self._get_array_length(member_type_die)
-                    members[parent_name] = member
-
-                # Handle nested structures
-                nested_die = self._get_end_die(child_die)
-                if nested_die.tag == "DW_TAG_structure_type":
-                    nested_members, _ = self._get_structure_members_recursive(
-                        nested_die, parent_name, prev_offset + offset
-                    )
-                    if nested_members:
-                        members.update(nested_members)
-
-            except Exception as e:
-                logging.error(f"Exception processing member '{parent_name}': {e}", exc_info=True)
-
-    def _get_structure_members_recursive(self, die, parent_name: str, prev_offset=0):
+    def _process_structure_type(self, die, parent_name: str, offset=0):
         """Recursively extracts structure members from a DWARF DIE, including arrays."""
         members = {}
         for child_die in die.iter_children():
             member = {}
             if child_die.tag == "DW_TAG_member":
-                offset = self._get_member_offset(child_die)
-                if offset is None:
+                member_offset, bit_size, bit_offset = self._get_member_offset(child_die)
+                if member_offset is None:
                     continue
                 member_name = parent_name
                 name_attr = child_die.attributes.get("DW_AT_name")
                 if name_attr:
                     member_name += "." + name_attr.value.decode("utf-8")
-                self._process_structure_member(member, child_die, prev_offset, offset, member_name)
-                members.update(member) # member should be varinfo?
-        return members, prev_offset
-
-    def _get_structure_members(self, structure_die, var_name):
-        """Retrieves structure members from a DWARF DIE."""
-        return self._get_structure_members_recursive(structure_die, var_name)[0]
+                self._process_end_die(member, child_die, member_name, offset + member_offset)
+                # in case of a union, here is the location where the bit size and offset are registered.
+                # on later versions of DWARF, it is available on the base type.
+                if bit_size:
+                    member[member_name]["bit_size"] = bit_size
+                    member[member_name]["bit_offset"] = bit_offset
+                members.update(member)
+        return members
 
     @staticmethod
     def _get_array_length(type_die):
         """Gets the length of an array type."""
+        array_length = 0
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")
                 if array_length_attr:
                     array_length = array_length_attr.value + 1
-                    return array_length
-        return 0
+                    break
+        return array_length
 
-    def _get_member_type(self, type_ref_addr):
-        """Retrieve the type information from DWARF given a type offset."""
-        try:
-            type_die = self.dwarf_info.get_DIE_from_refaddr(type_ref_addr)
-        except KeyError:
-            return
-        type_die = self._get_end_die(type_die)
-        if type_die is None:
-            return
-        if type_die.tag == "DW_TAG_base_type":
-            type_name = type_die.attributes["DW_AT_name"].value.decode("utf-8")
-            byte_size_attr = type_die.attributes.get("DW_AT_byte_size")
-            byte_size = byte_size_attr.value if byte_size_attr else None
-            return {
-                "name": type_name,
+    @staticmethod
+    def _process_base_type(end_die, parent_name, offset):
+        """Process a base type variable."""
+        type_name_attr = end_die.attributes.get("DW_AT_name")
+        type_name = type_name_attr.value.decode("utf-8") if type_name_attr else "base unknown"
+        byte_size_attr = end_die.attributes.get("DW_AT_byte_size")
+        byte_size = byte_size_attr.value if byte_size_attr else None
+        return {
+            parent_name: {
+                "type": type_name,
                 "byte_size": byte_size,
+                "bit_size": 0,
+                "bit_offset": 0,
+                "address_offset": offset,
+                "array_size": 0,
+                "valid_values": {}
             }
-        # if we have a different tag than "DW_TAG_base_type", keep on searching
-        base_type_attr = type_die.attributes.get("DW_AT_type")
-        if base_type_attr:
-            base_type_offset = base_type_attr.value
-            return self._get_member_type(base_type_offset)
+        }
 
     def _get_dwarf_die_by_offset(self, offset):
         """Retrieve a DWARF DIE given its offset."""
@@ -452,14 +388,7 @@ class GenericParser(ElfParser):
         for cu in self.dwarf_info.iter_CUs():
             for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
-                self._process_variable_die(die)
-
-        # Remove variables with invalid addresses
-        self.variable_map = {
-            name: info
-            for name, info in self.variable_map.items()
-            if info.address is not None and info.address != 0
-        }
+                self._process_die(die)
 
         # #Update type _Bool to bool
         # for var_info in self.variable_map.values():

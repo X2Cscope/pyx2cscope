@@ -54,7 +54,20 @@ class TestParser:
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
 
-    def test_variable_dspic33ak(self, mocker, array_size_test=4900):
+    def test_union_variable_16(self, mocker):
+        """Given a valid 32 bit elf file, check if an array variable is read correctly."""
+        fake_serial(mocker, 16)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        variable_lo = x2c_scope.get_variable("motor.vqFiltered.state.x16.lo")
+        variable_hi = x2c_scope.get_variable("motor.vqFiltered.state.x16.hi")
+        variable_union = x2c_scope.get_variable("motor.vqFiltered.state.x32")
+        assert variable_lo is not None, "variable name not found"
+        assert variable_hi is not None, "variable name not found"
+        assert variable_union is not None, "variable name not found"
+        assert variable_lo.address == variable_union.address, "variable union should have the same address as segment"
+        assert variable_hi.address == variable_union.address + 2, "variable high should have address + 2"
+
+    def test_variable_dspic33ak(self, mocker, array_size_test=4900, address=22122):
         """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
         fake_serial(mocker, 32)
         x2c_scope = X2CScope(port="COM14")
@@ -62,6 +75,7 @@ class TestParser:
         variable = x2c_scope.get_variable("measureInputs.current.Ia")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == False, "variable should be an array"
+        assert variable.address == address, "variable has wrong address, check offset calculation"
         # test array
         variable_array = x2c_scope.get_variable("X2C_BUFFER")
         assert variable_array is not None, "variable name not found"
@@ -76,6 +90,31 @@ class TestParser:
         assert variable is not None, "variable name not found"
         assert variable.is_array() == True, "variable should be an array"
         assert len(variable) == array_size_test, "array has wrong length"
+
+    def test_variable_enum_32(self, mocker, size6=6, size3=3):
+        """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
+        fake_serial(mocker, 32)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
+        # test simple variable enum
+        variable = x2c_scope.get_variable("nextGlobalState")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should not be an array"
+        assert len(variable.enum_list) == size6, "enum size should be 6"
+        # test nested enum inside a structure
+        variable = x2c_scope.get_variable("mcFoc_State_mds.FocState")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should not be an array"
+        assert len(variable.enum_list) == size3, "enum size should be 3"
+
+    def test_variable_enum_16(self, mocker, size6=6):
+        """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
+        fake_serial(mocker, 32)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        # test nested enum inside a structure
+        variable = x2c_scope.get_variable("motor.apiData.motorStatus")
+        assert variable is not None, "variable name not found"
+        assert variable.is_array() == False, "variable should not be an array"
+        assert len(variable.enum_list) == size6, "enum size should be 3"
 
     def test_variable_export_import(self, mocker):
         """Given a valid 32 bit elf file, check if export and import functions for variables are working."""

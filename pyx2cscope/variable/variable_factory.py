@@ -188,7 +188,6 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
-
             return self.get_variable_raw(variable_info)
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
@@ -233,15 +232,18 @@ class VariableFactory:
             "unsigned int": VariableUint16,
             "unsigned long": VariableUint32,
             "unsigned long long": VariableUint64,
-            "enum anonymousenum": VariableEnum,
+            "enum": VariableEnum,
         }
 
         try:
 
             var_type: str = var_info.type.lower().replace("_", "")
-            if var_type == "enum anonymousenum":
-                return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name, var_info.valid_values)
-            return type_factory[var_type](self.l_net, var_info.address, var_info.array_size, var_info.name)
+            params = [self.l_net, var_info.address, var_info.array_size, var_info.name]
+            if "enum" in var_type:
+                var_type = "enum"
+                params.append(var_info.valid_values)
+
+            return type_factory[var_type](*params)
         except IndexError:
             raise ValueError(
                 f"Type {var_type} not found. Cannot select the right variable representation."
