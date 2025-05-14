@@ -51,38 +51,29 @@ Attributes
       Closes the ELF file stream.
 
 
-   .. py:method:: _get_die_variable_details(die_variable)
+   .. py:method:: _get_die_variable(die_struct)
 
-      Process the die_variable to obtain detailed info.
+      Process the die_struct to obtain the die containing the variable and its info.
 
-      The purpose of this method is to populate:
+      This method populates class members:
       - self.die_variable
       - self.var_name
       - self.address
-      - self.type_attr
 
 
-   .. py:method:: _process_variable_die(die_variable)
+   .. py:method:: _process_die(die)
 
-      Process an individual variable DIE.
+      Process a DIE structure containing the variable and its.
 
 
-   .. py:method:: _process_enum_type(enum_die)
+   .. py:method:: _get_base_type_die(current_die)
 
-      Process an enum type variable and map its members.
+      Find the base type die regarding the current selected die, i.e. array_type.
 
 
    .. py:method:: _get_end_die(current_die)
 
       Find the end DIE of a type iteratively.
-
-
-   .. py:method:: _process_end_die(end_die)
-
-      Processes the end DIE of a tag to extract variable information.
-
-      This method NEEDS to add a variable to the variable_map.
-      In case the end_die does not contain a valid variable, it should return.
 
 
    .. py:method:: _extract_address_from_expression(expr_value, structs)
@@ -117,22 +108,7 @@ Attributes
       Find the actual declaration of an extern variable.
 
 
-   .. py:method:: _process_structure_type(end_die)
-
-      Process a structure type variable.
-
-
-   .. py:method:: _process_array_type(end_die)
-
-      Process an array type variable.
-
-
-   .. py:method:: _process_base_type(end_die)
-
-      Process a base type variable.
-
-
-   .. py:method:: _get_member_offset(die) -> int | None
+   .. py:method:: _get_member_offset(die) -> [int, int, int]
 
       Extracts the offset for a structure member.
 
@@ -140,27 +116,43 @@ Attributes
           die: The DIE of the structure member.
 
       Returns:
-          int or None: The offset value, or None if it couldn't be determined.
+          int, int, int: The offset value, the bit_size (union) and bit offset (union).
 
 
-   .. py:method:: _process_member_array_type(member_type_die, member_name, prev_offset, offset)
+   .. py:method:: _process_array_type(end_die, member_name, offset)
 
-      Process array type structure members recursively.
+      Process array type members recursively.
+
+      The easiest implementation is the array of primitives, which contains only primitives,
+      e.g.: char my_array[10]. In this case, function _process_end_die(...) will return the
+      variable 'members' with only one element. Considering multidimensional arrays, arrays of
+      structs, and arrays of unions, the variable 'members' will have multiple elements, that should
+      be considered when calculating the size of the main array element. Afterward, each element need
+      to be added as single indexed element in the array_members variable.
 
 
-   .. py:method:: _process_structure_member(members, child_die, prev_offset, offset, parent_name)
+   .. py:method:: _process_end_die(members, child_die, parent_name, offset)
 
-      Process individual structure member, including handling nested types and arrays.
+      Process the current die according to its tag.
+
+      A variable can be a primitive or can have multiple children, e.g., a struct or and array of structs.
+      After calling this method, members is populated with details of the variable and its children.
 
 
-   .. py:method:: _get_structure_members_recursive(die, parent_name: str, prev_offset=0)
+   .. py:method:: _process_enum_type(end_die, parent_name, offset)
+      :staticmethod:
+
+      Process an enum type variable and map its members.
+
+
+   .. py:method:: _process_union_type(die, parent_name: str, offset=0)
+
+      Recursively extracts union members from a DWARF DIE.
+
+
+   .. py:method:: _process_structure_type(die, parent_name: str, offset=0)
 
       Recursively extracts structure members from a DWARF DIE, including arrays.
-
-
-   .. py:method:: _get_structure_members(structure_die, var_name)
-
-      Retrieves structure members from a DWARF DIE.
 
 
    .. py:method:: _get_array_length(type_die)
@@ -169,9 +161,10 @@ Attributes
       Gets the length of an array type.
 
 
-   .. py:method:: _get_member_type(type_ref_addr)
+   .. py:method:: _process_base_type(end_die, parent_name, offset)
+      :staticmethod:
 
-      Retrieve the type information from DWARF given a type offset.
+      Process a base type variable.
 
 
    .. py:method:: _get_dwarf_die_by_offset(offset)

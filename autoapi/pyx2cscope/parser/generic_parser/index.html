@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.4.1 documentation</title>
+  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
+        <script src="../../../../_static/documentation_options.js?v=ff822928"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.1
+                0.4.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -144,40 +144,31 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_die_variable_details">
-<span class="sig-name descname"><span class="pre">_get_die_variable_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_die_variable_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_die_variable_details" title="Link to this definition"></a></dt>
-<dd><p>Process the die_variable to obtain detailed info.</p>
-<p>The purpose of this method is to populate:
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_die_variable">
+<span class="sig-name descname"><span class="pre">_get_die_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die_struct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_die_variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_die_variable" title="Link to this definition"></a></dt>
+<dd><p>Process the die_struct to obtain the die containing the variable and its info.</p>
+<p>This method populates class members:
 - self.die_variable
 - self.var_name
-- self.address
-- self.type_attr</p>
+- self.address</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_variable_die">
-<span class="sig-name descname"><span class="pre">_process_variable_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die_variable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_variable_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_variable_die" title="Link to this definition"></a></dt>
-<dd><p>Process an individual variable DIE.</p>
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_die">
+<span class="sig-name descname"><span class="pre">_process_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_die" title="Link to this definition"></a></dt>
+<dd><p>Process a DIE structure containing the variable and its.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_enum_type">
-<span class="sig-name descname"><span class="pre">_process_enum_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enum_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_enum_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_enum_type" title="Link to this definition"></a></dt>
-<dd><p>Process an enum type variable and map its members.</p>
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_base_type_die">
+<span class="sig-name descname"><span class="pre">_get_base_type_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_base_type_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_base_type_die" title="Link to this definition"></a></dt>
+<dd><p>Find the base type die regarding the current selected die, i.e. array_type.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_end_die">
 <span class="sig-name descname"><span class="pre">_get_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_end_die" title="Link to this definition"></a></dt>
 <dd><p>Find the end DIE of a type iteratively.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_end_die">
-<span class="sig-name descname"><span class="pre">_process_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_end_die" title="Link to this definition"></a></dt>
-<dd><p>Processes the end DIE of a tag to extract variable information.</p>
-<p>This method NEEDS to add a variable to the variable_map.
-In case the end_die does not contain a valid variable, it should return.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -218,57 +209,53 @@ structs: The DWARF structs used for parsing expressions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_structure_type">
-<span class="sig-name descname"><span class="pre">_process_structure_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_structure_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_structure_type" title="Link to this definition"></a></dt>
-<dd><p>Process a structure type variable.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_array_type">
-<span class="sig-name descname"><span class="pre">_process_array_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_array_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_array_type" title="Link to this definition"></a></dt>
-<dd><p>Process an array type variable.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_base_type">
-<span class="sig-name descname"><span class="pre">_process_base_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_base_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_base_type" title="Link to this definition"></a></dt>
-<dd><p>Process a base type variable.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_member_offset">
-<span class="sig-name descname"><span class="pre">_get_member_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_member_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_member_offset" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_get_member_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_member_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_member_offset" title="Link to this definition"></a></dt>
 <dd><p>Extracts the offset for a structure member.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>die: The DIE of the structure member.</p>
 </dd>
-<dt>Returns:</dt><dd><p>int or None: The offset value, or None if it couldn’t be determined.</p>
+<dt>Returns:</dt><dd><p>int, int, int: The offset value, the bit_size (union) and bit offset (union).</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_member_array_type">
-<span class="sig-name descname"><span class="pre">_process_member_array_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">member_type_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">member_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_member_array_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_member_array_type" title="Link to this definition"></a></dt>
-<dd><p>Process array type structure members recursively.</p>
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_array_type">
+<span class="sig-name descname"><span class="pre">_process_array_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">member_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_array_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_array_type" title="Link to this definition"></a></dt>
+<dd><p>Process array type members recursively.</p>
+<p>The easiest implementation is the array of primitives, which contains only primitives,
+e.g.: char my_array[10]. In this case, function _process_end_die(…) will return the
+variable ‘members’ with only one element. Considering multidimensional arrays, arrays of
+structs, and arrays of unions, the variable ‘members’ will have multiple elements, that should
+be considered when calculating the size of the main array element. Afterward, each element need
+to be added as single indexed element in the array_members variable.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_structure_member">
-<span class="sig-name descname"><span class="pre">_process_structure_member</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">members</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_structure_member"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_structure_member" title="Link to this definition"></a></dt>
-<dd><p>Process individual structure member, including handling nested types and arrays.</p>
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_end_die">
+<span class="sig-name descname"><span class="pre">_process_end_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">members</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_end_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_end_die" title="Link to this definition"></a></dt>
+<dd><p>Process the current die according to its tag.</p>
+<p>A variable can be a primitive or can have multiple children, e.g., a struct or and array of structs.
+After calling this method, members is populated with details of the variable and its children.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_structure_members_recursive">
-<span class="sig-name descname"><span class="pre">_get_structure_members_recursive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_structure_members_recursive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_structure_members_recursive" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_enum_type">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_process_enum_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_enum_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_enum_type" title="Link to this definition"></a></dt>
+<dd><p>Process an enum type variable and map its members.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_union_type">
+<span class="sig-name descname"><span class="pre">_process_union_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_union_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_union_type" title="Link to this definition"></a></dt>
+<dd><p>Recursively extracts union members from a DWARF DIE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_structure_type">
+<span class="sig-name descname"><span class="pre">_process_structure_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_structure_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_structure_type" title="Link to this definition"></a></dt>
 <dd><p>Recursively extracts structure members from a DWARF DIE, including arrays.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_structure_members">
-<span class="sig-name descname"><span class="pre">_get_structure_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_structure_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_structure_members" title="Link to this definition"></a></dt>
-<dd><p>Retrieves structure members from a DWARF DIE.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -278,9 +265,9 @@ structs: The DWARF structs used for parsing expressions.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_member_type">
-<span class="sig-name descname"><span class="pre">_get_member_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_ref_addr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_member_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_member_type" title="Link to this definition"></a></dt>
-<dd><p>Retrieve the type information from DWARF given a type offset.</p>
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_base_type">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_process_base_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end_die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_base_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_base_type" title="Link to this definition"></a></dt>
+<dd><p>Process a base type variable.</p>
 </dd></dl>
 
 <dl class="py method">

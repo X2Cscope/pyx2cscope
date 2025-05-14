@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; pyX2Cscope 0.4.1 documentation</title>
+  <title>Index &mdash; pyX2Cscope 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=c87aa342"></script>
+        <script src="_static/documentation_options.js?v=ff822928"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.1
+                0.4.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -160,7 +160,9 @@
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_array_values">_get_array_values() (pyx2cscope.variable.variable.Variable method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_die_variable_details">_get_die_variable_details() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
+      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_base_type_die">_get_base_type_die() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_die_variable">_get_die_variable() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._get_dwarf_die_by_offset">_get_dwarf_die_by_offset() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
 
@@ -177,8 +179,6 @@
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._get_member_from_nested_members">_get_member_from_nested_members() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_member_offset">_get_member_offset() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
-</li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_member_type">_get_member_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_min_max_values">_get_min_max_values() (pyx2cscope.variable.variable.Variable method)</a>
 
@@ -211,12 +211,6 @@
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._get_structure_member_offset">_get_structure_member_offset() (pyx2cscope.parser.elf16_parser.Elf16Parser static method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/elf16_parser/index.html#pyx2cscope.parser.elf16_parser.Elf16Parser._get_structure_members">_get_structure_members() (pyx2cscope.parser.elf16_parser.Elf16Parser method)</a>
-
-      <ul>
-        <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_structure_members">(pyx2cscope.parser.generic_parser.GenericParser method)</a>
-</li>
-      </ul></li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_structure_members_recursive">_get_structure_members_recursive() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_value_raw">_get_value_raw() (pyx2cscope.variable.variable.Variable method)</a>
 </li>
@@ -268,19 +262,17 @@
 </li>
       <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_array_type">_process_array_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_base_type">_process_base_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
+      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_base_type">_process_base_type() (pyx2cscope.parser.generic_parser.GenericParser static method)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_die">_process_die() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_end_die">_process_end_die() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_enum_type">_process_enum_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
-</li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_member_array_type">_process_member_array_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
-</li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_structure_member">_process_structure_member() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
+      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_enum_type">_process_enum_type() (pyx2cscope.parser.generic_parser.GenericParser static method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_structure_type">_process_structure_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
-      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_variable_die">_process_variable_die() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
+      <li><a href="autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_union_type">_process_union_type() (pyx2cscope.parser.generic_parser.GenericParser method)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._read_array_chunks">_read_array_chunks() (pyx2cscope.x2cscope.X2CScope method)</a>
 </li>
@@ -312,6 +304,10 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo.bit_offset">bit_offset (pyx2cscope.variable.variable.VariableInfo attribute)</a>
+</li>
+      <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo.bit_size">bit_size (pyx2cscope.variable.variable.VariableInfo attribute)</a>
+</li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo.byte_size">byte_size (pyx2cscope.variable.variable.VariableInfo attribute)</a>
 </li>
       <li><a href="autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.bytes_to_array">bytes_to_array() (pyx2cscope.variable.variable.Variable method)</a>

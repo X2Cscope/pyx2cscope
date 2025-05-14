@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable &mdash; pyX2Cscope 0.4.1 documentation</title>
+  <title>pyx2cscope.variable.variable &mdash; pyX2Cscope 0.4.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=c87aa342"></script>
+        <script src="../../../../_static/documentation_options.js?v=ff822928"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.1
+                0.4.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -173,6 +173,8 @@
 <dt>Attributes:</dt><dd><p>name (str): The name of the variable.
 type (str): The data type of the variable.
 byte_size (int): The size of the variable in bytes.
+bit_size (int): bit_size of variable if size is less than a byte (e.g.: union type)
+bit_offset (int): bit_offset of variable if size is less than a byte (e.g.: union type)
 address (int): The memory address of the variable.
 array_size (int): The size of the array if the variable is an array, default is 0.
 valid_values (dict): enum type of valid values</p>
@@ -191,6 +193,16 @@ valid_values (dict): enum type of valid values</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pyx2cscope.variable.variable.VariableInfo.byte_size">
 <span class="sig-name descname"><span class="pre">byte_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable.html#VariableInfo.byte_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable.VariableInfo.byte_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable.VariableInfo.bit_size">
+<span class="sig-name descname"><span class="pre">bit_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable.html#VariableInfo.bit_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable.VariableInfo.bit_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyx2cscope.variable.variable.VariableInfo.bit_offset">
+<span class="sig-name descname"><span class="pre">bit_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/variable/variable.html#VariableInfo.bit_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.variable.variable.VariableInfo.bit_offset" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
