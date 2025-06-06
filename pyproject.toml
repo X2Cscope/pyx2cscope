@@ -7,8 +7,8 @@ name = "pyx2cscope"
 version = "0.4.2"
 description = "python implementation of X2Cscope"
 authors = [
-  "Yash Agarwal <yash.agarwal@microchip.com>",
-  "Edras Pacola",
+  "Yash Agarwal",
+  "Edras Pacola <edras.pacola@microchip.com>",
   "Christoph Baumgartner",
   "Mark Wendler",
 ]

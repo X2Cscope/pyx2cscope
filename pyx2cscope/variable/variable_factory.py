@@ -124,7 +124,7 @@ class VariableFactory:
         export_dict = {}
         if items:
             for item in items:
-                variable_name = item.name if isinstance(item, Variable) else item
+                variable_name = item.info.name if isinstance(item, Variable) else item
                 export_dict[variable_name] = self.parser.variable_map.get(variable_name)
         else:
             export_dict = self.parser.variable_map
@@ -142,8 +142,6 @@ class VariableFactory:
         """Import and load variables registered on the file.
 
         Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
-        The flush parameter defaults to true and clears all previous loaded variables. This flag is
-        intended to be used when adding single variables to the parser.
 
         Args:
             filename (str): The name of the file and its path.
@@ -236,15 +234,10 @@ class VariableFactory:
         }
 
         try:
-
             var_type: str = var_info.type.lower().replace("_", "")
-            params = [self.l_net, var_info.address, var_info.array_size, var_info.name]
-            if "enum" in var_type:
-                var_type = "enum"
-                params.append(var_info.valid_values)
-
-            return type_factory[var_type](*params)
+            var_type = "enum" if "enum" in var_type else var_type
+            return type_factory[var_type](self.l_net, var_info)
         except IndexError:
             raise ValueError(
-                f"Type {var_type} not found. Cannot select the right variable representation."
+                f"Type {var_info.type} not found. Cannot select the right variable representation."
             )

@@ -58,23 +58,23 @@ class Variable:
     """Represents a variable in the MCU data memory."""
 
     def __init__(
-        self, l_net: LNet, address: int, array_size: int, name: str = None
+        self, l_net: LNet, info: VariableInfo
     ) -> None:
         """Initialize the Variable object.
 
+        On var_info, the minimal information needed are name, address, and array_size. This is valid
+        for most of the variables. Enums will need enum_list, and unions having elements which are smaller
+        than a byte.
+
         Args:
             l_net (LNet): LNet protocol that handles the communication with the target device.
-            address (int): Address of the variable in the MCU memory.
-            array_size (int): The number of elements in the array, 0 in case of a plain variable.
-            name (str, optional): Name of the variable. Defaults to None.
+            info (VariableInfo): Address of the variable in the MCU memory.
         """
         if type(self) == Variable:  # protect super class to be initiated directly
             raise Exception("<Variable> must be subclassed.")
         super().__init__()
         self.l_net = l_net
-        self.address = address
-        self.name = name
-        self.array_size = array_size
+        self.info = info
 
     def __getitem__(self, item):
         """Retrieve value regarding an indexed address from the variable's base address.
@@ -90,10 +90,10 @@ class Variable:
         Returns:
             the value of the variable's index position.
         """
-        if abs(item) > self.array_size:
+        if abs(item) > self.info.array_size:
             raise IndexError("Index outside scope")
         try:
-            idx = self.array_size + item if item < 0 else item
+            idx = self.info.array_size + item if item < 0 else item
             bytes_data = self._get_value_raw(index=idx)
             return self.bytes_to_value(bytes_data)
         except Exception as e:
@@ -106,12 +106,12 @@ class Variable:
             key (int): the index of the variable.
             value (Number): The value to be stored in the MCU.
         """
-        if abs(key) > self.array_size:
+        if abs(key) > self.info.array_size:
             raise IndexError("Index outside scope")
         try:
-            tmp_address = self.address
-            idx = self.array_size + key if key < 0 else key
-            self.address = self.address + idx * self.get_width()
+            tmp_address = self.info.address
+            idx = self.info.array_size + key if key < 0 else key
+            self.address = self.info.address + idx * self.get_width()
             self.set_value(value)
             self.address = tmp_address
         except Exception as e:
@@ -126,7 +126,7 @@ class Variable:
         Returns:
             int: The number of elements in the array or 0 for a single variable.
         """
-        return self.array_size
+        return self.info.array_size
 
     def __repr__(self):
         """String representation of the Variable.
@@ -134,7 +134,7 @@ class Variable:
         When printing the variable on a terminal or with str() operator, instead of printing the object and
         class attributes, the name of the variable will be printed.
         """
-        return self.name
+        return self.info.name
 
     def _get_array_values(self):
         """Retrieve all values of the array from the MCU memory.
@@ -144,7 +144,7 @@ class Variable:
         """
         chunk_data = bytearray()
         data_type = self.get_width()  # width of the array elements.
-        chunk_size = self.array_size * data_type
+        chunk_size = self.info.array_size * data_type
         array_byte_size = chunk_size
         max_chunk = 253
         i = 0
@@ -250,9 +250,9 @@ class Variable:
         Returns:
             bool: True if the variable is an array, False otherwise.
         """
-        return True if self.array_size > 0 else False
+        return True if self.info.array_size > 0 else False
 
-    def _get_value_raw(self, index=0) -> bytearray:
+    def _get_value_raw(self, index=0) -> bytearray|None:
         """Ask LNet and get the raw "bytearray" value from the hardware.
 
         Subclasses will handle the conversion to the real value.
@@ -296,7 +296,7 @@ class Variable:
         try:
             # Calculate relative address in case of array element
             address = self.address + index * self.get_width()
-            self.l_net.put_ram(address, self.get_width(), bytes_data)
+            self.l_net.put_ram(address, self.get_width(), bytearray(bytes_data))
         except Exception as e:
             logging.error(f"Error setting value: {e}")
 
@@ -902,33 +902,19 @@ class VariableFloat(Variable):
 class VariableEnum(Variable):
     """Represents enum variable in the MCU data memory."""
 
-    def __init__(self, l_net: LNet, address: int, array_size: int, name: str,
-                 enum_list: dict[str, int]):
-        """Initialize the Variable object. But needs customised constructor due to enum list initialisation.
-
-        Args:
-            l_net (LNet): LNet protocol that handles the communication with the target device.
-            address (int): Address of the variable in the MCU memory.
-            array_size (int): The number of elements in the array, 0 in case of a plain variable.
-            name (str, optional): Name of the variable. Defaults to None.
-            enum_list (dict[str, int]): The enumeration list with the values.
-        """
-        super().__init__(l_net, address, array_size, name)
-        self.enum_list = enum_list       
-
     def _get_min_max_values(self) -> tuple[Number, Number]:
         """Get the minimum and maximum values for the 16-bit enum.
 
         Returns:
             tuple[Number, Number]: The minimum and maximum values.
         """
-        return min(self.enum_list.values()), max(self.enum_list.values())
+        return min(self.info.valid_values.values()), max(self.info.valid_values.values())
 
     def is_integer(self) -> bool:
         """Check if the variable is an integer.
 
         Returns:
-            bool: Enumeration is stricktly an integer.
+            bool: Enumeration is strictly an integer.
         """
         return True
 
@@ -938,7 +924,7 @@ class VariableEnum(Variable):
         Returns:
             bool: Depending on the enum values.
         """
-        if min(self.enum_list.values()) < 0:
+        if min(self.info.valid_values.values()) < 0:
             return True
         else:
             return False
@@ -960,7 +946,7 @@ class VariableEnum(Variable):
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value) #TODO might be different than super class
+            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=self.l_net.device_info.uc_width, byteorder="little", signed=self.is_signed()
@@ -986,4 +972,4 @@ class VariableEnum(Variable):
         Returns:
             Dict[str, int]: A dictionary of valid values for the enum variable.
         """
-        return self.enum_list
+        return self.info.valid_values
