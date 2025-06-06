@@ -111,9 +111,9 @@ class Variable:
         try:
             tmp_address = self.info.address
             idx = self.info.array_size + key if key < 0 else key
-            self.address = self.info.address + idx * self.get_width()
+            self.info.address = self.info.address + idx * self.get_width()
             self.set_value(value)
-            self.address = tmp_address
+            self.info.address = tmp_address
         except Exception as e:
             logging.error(e)
 
@@ -150,7 +150,7 @@ class Variable:
         i = 0
         while i < array_byte_size:
             size_to_read = chunk_size if chunk_size < max_chunk else max_chunk
-            data = self.l_net.get_ram_array(self.address + i, size_to_read, 1)
+            data = self.l_net.get_ram_array(self.info.address + i, size_to_read, 1)
             chunk_data.extend(data)
             chunk_size -= max_chunk
             i += size_to_read
@@ -160,6 +160,17 @@ class Variable:
         ]
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
+
+    def _get_valid_bytes(self, bytes_data: bytearray):
+        """Extract the valid data in case of a union with bit size and offset"""
+        if self.info.bit_size is None:
+            return bytes_data
+
+        start = self.info.bit_offset
+        stop = self.info.bit_offset + self.info.bit_size
+        bytes_data = bytes_data[start:stop] >> self.info.bit_offset
+        bytes_data &= (1 << self.info.bit_size) - 1
+        return bytes_data
 
     def get_value(self):
         """Get the stored value from the MCU.
@@ -172,7 +183,8 @@ class Variable:
                 return self._get_array_values()
             else:
                 bytes_data = self._get_value_raw()
-                return self.bytes_to_value(bytes_data)
+                valid_data = self._get_valid_bytes(bytes_data)
+                return self.bytes_to_value(valid_data)
         except Exception as e:
             logging.error(e)
 
@@ -226,8 +238,17 @@ class Variable:
             array.append(self.bytes_to_value(data[i:j]))
         return array
 
-    @abstractmethod
     def set_value(self, new_value: Number):
+        """Set the value to be stored in the MCU.
+
+        Args:
+            new_value (Number): The value to be stored in the MCU.
+        """
+        self._check_value_range(new_value)
+        self._set_value(new_value)
+
+    @abstractmethod
+    def _set_value(self, new_value: Number):
         """Set the value to be stored in the MCU.
 
         Args:
@@ -252,7 +273,7 @@ class Variable:
         """
         return True if self.info.array_size > 0 else False
 
-    def _get_value_raw(self, index=0) -> bytearray|None:
+    def _get_value_raw(self, index=0) -> bytearray | None:
         """Ask LNet and get the raw "bytearray" value from the hardware.
 
         Subclasses will handle the conversion to the real value.
@@ -268,7 +289,7 @@ class Variable:
         """
         try:
             # Calculate relative address in case of array element
-            address = self.address + index * self.get_width()
+            address = self.info.address + index * self.get_width()
             # Ask LNet to get the value from the target
             bytes_data = self.l_net.get_ram(address, self.get_width())
             data_length = len(bytes_data)
@@ -295,7 +316,7 @@ class Variable:
         """
         try:
             # Calculate relative address in case of array element
-            address = self.address + index * self.get_width()
+            address = self.info.address + index * self.get_width()
             self.l_net.put_ram(address, self.get_width(), bytearray(bytes_data))
         except Exception as e:
             logging.error(f"Error setting value: {e}")
@@ -353,14 +374,13 @@ class VariableInt8(Variable):
         """
         return 1
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 8-bit signed integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=1, byteorder="little", signed=True
@@ -419,13 +439,12 @@ class VariableUint8(Variable):
         """
         return 1
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Override: Set the value of the variable in the MCU memory.
 
         Checks if the value is within the allowed range and converts it to bytes representation.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=1, byteorder="little", signed=False
@@ -484,14 +503,13 @@ class VariableInt16(Variable):
         """
         return 2
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 16-bit signed integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=2, byteorder="little", signed=True
@@ -550,14 +568,13 @@ class VariableUint16(Variable):
         """
         return 2
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 16-bit unsigned integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=2, byteorder="little", signed=False
@@ -616,14 +633,13 @@ class VariableInt32(Variable):
         """
         return 4
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 32-bit signed integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=4, byteorder="little", signed=True
@@ -682,14 +698,13 @@ class VariableUint32(Variable):
         """
         return 4
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 32-bit unsigned integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=4, byteorder="little", signed=False
@@ -745,14 +760,13 @@ class VariableUint64(Variable):
         """
         return 8
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 64-bit unsigned integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             bytes_data = value.to_bytes(
                 length=8, byteorder="little", signed=False
             )  # construct the bytes representation of the value
@@ -807,14 +821,13 @@ class VariableInt64(Variable):
         """
         return 8
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 64-bit signed integer.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             bytes_data = value.to_bytes(
                 length=8, byteorder="little", signed=True
             )  # construct the bytes representation of the value
@@ -872,7 +885,7 @@ class VariableFloat(Variable):
         """
         return 4
 
-    def set_value(self, value: float):
+    def _set_value(self, value: float):
         """Set the value of the 32-bit floating point.
 
         Args:
@@ -939,14 +952,13 @@ class VariableEnum(Variable):
         return self.l_net.device_info.uc_width
  
 
-    def set_value(self, value: int):
+    def _set_value(self, value: int):
         """Set the value of the 16-bit enum.
 
         Args:
             value (int): The value to set.
         """
         try:
-            self._check_value_range(value)
             int_value = int(value)
             bytes_data = int_value.to_bytes(
                 length=self.l_net.device_info.uc_width, byteorder="little", signed=self.is_signed()
