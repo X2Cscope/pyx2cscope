@@ -355,11 +355,12 @@ class X2cscopeGui(QMainWindow):
 
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
+        number_of_variables = 8
 
-        self.scope_var_lines = [QLineEdit() for _ in range(7)]
-        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
-        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]
-        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]
+        self.scope_var_lines = [QLineEdit() for _ in range(number_of_variables)]
+        self.trigger_var_checkbox = [QCheckBox() for _ in range(number_of_variables)]
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(number_of_variables)]
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(number_of_variables)]
 
         for checkbox in self.scope_channel_checkboxes:
             checkbox.setChecked(True)
