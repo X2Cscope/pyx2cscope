@@ -161,16 +161,10 @@ class Variable:
         # convert bytearray to number on every element of chunk_data
         return [self.bytes_to_value(k) for k in chunk_data]
 
-    def _get_valid_bytes(self, bytes_data: bytearray):
+    def _get_bit_value(self, byte_value: Number):
         """Extract the valid data in case of a union with bit size and offset"""
-        if self.info.bit_size is None:
-            return bytes_data
-
-        start = self.info.bit_offset
-        stop = self.info.bit_offset + self.info.bit_size
-        bytes_data = bytes_data[start:stop] >> self.info.bit_offset
-        bytes_data &= (1 << self.info.bit_size) - 1
-        return bytes_data
+        shift = (8 * self.info.byte_size) - (self.info.bit_offset + self.info.bit_size)
+        return (byte_value >> shift) & ((1 << self.info.bit_size) - 1)
 
     def get_value(self):
         """Get the stored value from the MCU.
@@ -183,8 +177,10 @@ class Variable:
                 return self._get_array_values()
             else:
                 bytes_data = self._get_value_raw()
-                valid_data = self._get_valid_bytes(bytes_data)
-                return self.bytes_to_value(valid_data)
+                value = self.bytes_to_value(bytes_data)
+                if self.info.bit_size != 0:
+                    return self._get_bit_value(value)
+                return value
         except Exception as e:
             logging.error(e)
 
