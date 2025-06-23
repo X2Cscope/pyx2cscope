@@ -186,6 +186,9 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name)
+            if variable_info is None:
+                logging.error(f"Variable '{name}' not found!")
+                return None
             return self.get_variable_raw(variable_info)
         except Exception as e:
             logging.error(f"Error while getting variable '{name}' : {str(e)}")
