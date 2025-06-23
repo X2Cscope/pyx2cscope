@@ -2,7 +2,7 @@
 
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 import json
 import os
 import sys

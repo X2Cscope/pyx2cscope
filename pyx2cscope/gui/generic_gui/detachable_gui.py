@@ -38,7 +38,7 @@ from PyQt5.QtWidgets import (
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 matplotlib.use("QtAgg")
 
@@ -100,9 +100,9 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.initi_variables()
+        self.init_variables()
 
-    def initi_variables(self):
+    def init_variables(self):
         """Some extra variables define."""
         self.selected_var_indices = [
             0,
