@@ -568,7 +568,7 @@ class X2cscopeGui(QMainWindow):
                 if i != index:
                     checkbox.setChecked(False)
             self.triggerVariable = self.scope_var_lines[index].text()
-            print(f"Checked variable: {self.scope_var_lines[index].text()}")
+            logging.debug(f"Checked variable: {self.scope_var_lines[index].text()}")
         else:
             self.triggerVariable = None
 
@@ -1563,9 +1563,7 @@ class X2cscopeGui(QMainWindow):
                 self.real_sampletime = self.x2cscope.scope_sample_time(
                     scope_sample_time_us
                 )
-                print(
-                    f"Real sample time: {self.real_sampletime} µs"
-                )  # Check this value
+                logging.debug(f"Real sample time: {self.real_sampletime} µs")  # Check this value
 
                 # Update the Total Time display
                 self.total_time_value.setText(str(self.real_sampletime))
@@ -1579,7 +1577,7 @@ class X2cscopeGui(QMainWindow):
                     single_shot=self.single_shot_checkbox.isChecked()
                 )
             b = time.time()
-            print("time execution", b - a)
+            logging.debug("time execution", b - a)
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
@@ -1603,7 +1601,7 @@ class X2cscopeGui(QMainWindow):
                 else:
                     try:
                         trigger_level = int(trigger_level_text)  # YA
-                        print(trigger_level)
+                        logging.debug(trigger_level)
                     except ValueError:
                         logging.error(
                             f"Invalid trigger level value: {trigger_level_text}"
@@ -2287,7 +2285,7 @@ class X2cscopeGui(QMainWindow):
                                 ],
                             )
                         except Exception as e:
-                            print(e)
+                            logging.debug(e)
 
         return super().eventFilter(source, event)
 

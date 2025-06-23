@@ -435,7 +435,7 @@ class X2cscopeGui(QMainWindow):
                 if i != index:
                     checkbox.setChecked(False)
             self.triggerVariable = self.scope_var_combos[index].currentText()
-            print(f"Checked variable: {self.scope_var_combos[index].currentText()}")
+            logging.debug(f"Checked variable: {self.scope_var_combos[index].currentText()}")
         else:
             self.triggerVariable = None
 
@@ -1310,7 +1310,7 @@ class X2cscopeGui(QMainWindow):
                 else:
                     try:
                         trigger_level = float(trigger_level_text)
-                        print(trigger_level)
+                        logging.debug(trigger_level)
                     except ValueError:
                         logging.error(
                             f"Invalid trigger level value: {trigger_level_text}"

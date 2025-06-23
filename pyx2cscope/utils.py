@@ -5,7 +5,7 @@ Functions:
     get_elf_file_path(key="path") -> str: Gets the path to the ELF file from the configuration.
     get_com_port(key="com_port") -> str: Gets the COM port from the configuration.
 """
-
+import logging
 import os
 from configparser import ConfigParser
 
@@ -28,7 +28,7 @@ def get_config_file() -> ConfigParser:
         config["COM_PORT"] = default_com
         with open(config_file, "w") as configfile:
             config.write(configfile)
-        print(f"Config file '{config_file}' created with default values")
+        logging.debug(f"Config file '{config_file}' created with default values")
     return config
 
 
