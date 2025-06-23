@@ -38,7 +38,7 @@ from PyQt5.QtWidgets import (
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)
 
 matplotlib.use("QtAgg")
 
@@ -100,9 +100,9 @@ class X2cscopeGui(QMainWindow):
         self.plot_window_open = False
         self.settings = QSettings("MyCompany", "MyApp")
         self.file_path: str = self.settings.value("file_path", "", type=str)
-        self.initi_variables()
+        self.init_variables()
 
-    def initi_variables(self):
+    def init_variables(self):
         """Some extra variables define."""
         self.selected_var_indices = [
             0,
@@ -355,11 +355,12 @@ class X2cscopeGui(QMainWindow):
 
         grid_layout_variable = QGridLayout()
         variable_layout.addLayout(grid_layout_variable)
+        number_of_variables = 8
 
-        self.scope_var_lines = [QLineEdit() for _ in range(7)]
-        self.trigger_var_checkbox = [QCheckBox() for _ in range(7)]
-        self.scope_channel_checkboxes = [QCheckBox() for _ in range(7)]
-        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(7)]
+        self.scope_var_lines = [QLineEdit() for _ in range(number_of_variables)]
+        self.trigger_var_checkbox = [QCheckBox() for _ in range(number_of_variables)]
+        self.scope_channel_checkboxes = [QCheckBox() for _ in range(number_of_variables)]
+        self.scope_scaling_boxes = [QLineEdit("1") for _ in range(number_of_variables)]
 
         for checkbox in self.scope_channel_checkboxes:
             checkbox.setChecked(True)
@@ -434,7 +435,7 @@ class X2cscopeGui(QMainWindow):
                 if i != index:
                     checkbox.setChecked(False)
             self.triggerVariable = self.scope_var_combos[index].currentText()
-            print(f"Checked variable: {self.scope_var_combos[index].currentText()}")
+            logging.debug(f"Checked variable: {self.scope_var_combos[index].currentText()}")
         else:
             self.triggerVariable = None
 
@@ -1309,7 +1310,7 @@ class X2cscopeGui(QMainWindow):
                 else:
                     try:
                         trigger_level = float(trigger_level_text)
-                        print(trigger_level)
+                        logging.debug(trigger_level)
                     except ValueError:
                         logging.error(
                             f"Invalid trigger level value: {trigger_level_text}"

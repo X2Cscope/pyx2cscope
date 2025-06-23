@@ -64,8 +64,8 @@ class TestParser:
         assert variable_lo is not None, "variable name not found"
         assert variable_hi is not None, "variable name not found"
         assert variable_union is not None, "variable name not found"
-        assert variable_lo.address == variable_union.address, "variable union should have the same address as segment"
-        assert variable_hi.address == variable_union.address + 2, "variable high should have address + 2"
+        assert variable_lo.info.address == variable_union.info.address, "variable union should have the same address as segment"
+        assert variable_hi.info.address == variable_union.info.address + 2, "variable high should have address + 2"
 
     def test_variable_dspic33ak(self, mocker, array_size_test=4900, address=22122):
         """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
@@ -75,7 +75,7 @@ class TestParser:
         variable = x2c_scope.get_variable("measureInputs.current.Ia")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == False, "variable should be an array"
-        assert variable.address == address, "variable has wrong address, check offset calculation"
+        assert variable.info.address == address, "variable has wrong address, check offset calculation"
         # test array
         variable_array = x2c_scope.get_variable("X2C_BUFFER")
         assert variable_array is not None, "variable name not found"
@@ -99,12 +99,12 @@ class TestParser:
         variable = x2c_scope.get_variable("nextGlobalState")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == False, "variable should not be an array"
-        assert len(variable.enum_list) == size6, "enum size should be 6"
+        assert len(variable.info.valid_values) == size6, "enum size should be 6"
         # test nested enum inside a structure
         variable = x2c_scope.get_variable("mcFoc_State_mds.FocState")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == False, "variable should not be an array"
-        assert len(variable.enum_list) == size3, "enum size should be 3"
+        assert len(variable.info.valid_values) == size3, "enum size should be 3"
 
     def test_variable_enum_16(self, mocker, size6=6):
         """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
@@ -114,7 +114,7 @@ class TestParser:
         variable = x2c_scope.get_variable("motor.apiData.motorStatus")
         assert variable is not None, "variable name not found"
         assert variable.is_array() == False, "variable should not be an array"
-        assert len(variable.enum_list) == size6, "enum size should be 3"
+        assert len(variable.info.valid_values) == size6, "enum size should be 3"
 
     def test_variable_export_import(self, mocker):
         """Given a valid 32 bit elf file, check if export and import functions for variables are working."""
@@ -138,18 +138,18 @@ class TestParser:
         x2c_reloaded = X2CScope(port="COM14")
         x2c_reloaded.import_variables(filename="my_variables.yml")
         variable_reloaded = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecSpeed")
-        assert variable.name == variable_reloaded.name, "variables don't have the same name"
-        assert variable.address == variable_reloaded.address, "variables don't have the same address"
-        assert variable.array_size == variable_reloaded.array_size, "variables don't have the same array size"
+        assert variable.info.name == variable_reloaded.info.name, "variables don't have the same name"
+        assert variable.info.address == variable_reloaded.info.address, "variables don't have the same address"
+        assert variable.info.array_size == variable_reloaded.info.array_size, "variables don't have the same array size"
 
         # load generated pickle file with single variable
         x2c_reloaded = X2CScope(port="COM14")
         x2c_reloaded.import_variables(filename="my_single_variable.pkl")
         variable_reloaded = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecSpeed")
         assert len(x2c_reloaded.variable_factory.parser.variable_map) == 1, "import loaded more than 1 variable"
-        assert variable.name == variable_reloaded.name, "variables don't have the same name"
-        assert variable.address == variable_reloaded.address, "variables don't have the same address"
-        assert variable.array_size == variable_reloaded.array_size, "variables don't have the same array size"
+        assert variable.info.name == variable_reloaded.info.name, "variables don't have the same name"
+        assert variable.info.address == variable_reloaded.info.address, "variables don't have the same address"
+        assert variable.info.array_size == variable_reloaded.info.array_size, "variables don't have the same array size"
 
         # house keeping -> delete generated files
         os.remove("my_variables.yml")
