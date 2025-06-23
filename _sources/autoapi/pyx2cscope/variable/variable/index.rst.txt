@@ -106,7 +106,7 @@ Classes
       
 
 
-.. py:class:: Variable(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: Variable(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Represents a variable in the MCU data memory.
@@ -163,6 +163,16 @@ Classes
           List[Number]: The list of values in the array.
 
 
+   .. py:method:: _get_bit_value(byte_value: numbers.Number)
+
+      Extract the valid data in case of a union with bit size and offset.
+
+
+   .. py:method:: _set_bit_value(value: numbers.Number)
+
+      Insert data into the correct bit position in case of a union with bit size and offset.
+
+
    .. py:method:: get_value()
 
       Get the stored value from the MCU.
@@ -215,6 +225,14 @@ Classes
 
 
    .. py:method:: set_value(new_value: numbers.Number)
+
+      Set the value to be stored in the MCU.
+
+      Args:
+          new_value (Number): The value to be stored in the MCU.
+
+
+   .. py:method:: _set_value(new_value: numbers.Number)
       :abstractmethod:
 
       Set the value to be stored in the MCU.
@@ -240,7 +258,7 @@ Classes
           bool: True if the variable is an array, False otherwise.
 
 
-   .. py:method:: _get_value_raw(index=0) -> bytearray
+   .. py:method:: _get_value_raw(index=0) -> bytearray | None
 
       Ask LNet and get the raw "bytearray" value from the hardware.
 
@@ -296,7 +314,7 @@ Classes
 
 
 
-.. py:class:: VariableInt8(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt8(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -329,7 +347,7 @@ Classes
           int: Width of the variable, which is 1.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 8-bit signed integer.
 
@@ -349,7 +367,7 @@ Classes
 
 
 
-.. py:class:: VariableUint8(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint8(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -388,7 +406,7 @@ Classes
           int: Width of the variable, which is 1.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Override: Set the value of the variable in the MCU memory.
 
@@ -407,7 +425,7 @@ Classes
 
 
 
-.. py:class:: VariableInt16(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt16(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -446,7 +464,7 @@ Classes
           int: Width of the variable, which is 2.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 16-bit signed integer.
 
@@ -466,7 +484,7 @@ Classes
 
 
 
-.. py:class:: VariableUint16(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint16(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -505,7 +523,7 @@ Classes
           int: Width of the variable, which is 2.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 16-bit unsigned integer.
 
@@ -525,7 +543,7 @@ Classes
 
 
 
-.. py:class:: VariableInt32(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt32(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -564,7 +582,7 @@ Classes
           int: Width of the variable, which is 4.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 32-bit signed integer.
 
@@ -584,7 +602,7 @@ Classes
 
 
 
-.. py:class:: VariableUint32(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint32(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -623,7 +641,7 @@ Classes
           int: Width of the variable, which is 4.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 32-bit unsigned integer.
 
@@ -643,7 +661,7 @@ Classes
 
 
 
-.. py:class:: VariableUint64(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableUint64(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -682,7 +700,7 @@ Classes
           int: Width of the variable, which is 8.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 64-bit unsigned integer.
 
@@ -702,7 +720,7 @@ Classes
 
 
 
-.. py:class:: VariableInt64(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableInt64(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -741,7 +759,7 @@ Classes
           int: Width of the variable, which is 8.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 64-bit signed integer.
 
@@ -761,7 +779,7 @@ Classes
 
 
 
-.. py:class:: VariableFloat(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str = None)
+.. py:class:: VariableFloat(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -800,7 +818,7 @@ Classes
           int: Width of the variable, which is 4.
 
 
-   .. py:method:: set_value(value: float)
+   .. py:method:: _set_value(value: float)
 
       Set the value of the 32-bit floating point.
 
@@ -820,7 +838,7 @@ Classes
 
 
 
-.. py:class:: VariableEnum(l_net: mchplnet.lnet.LNet, address: int, array_size: int, name: str, enum_list: dict[str, int])
+.. py:class:: VariableEnum(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
 
    Bases: :py:obj:`Variable`
@@ -840,7 +858,7 @@ Classes
       Check if the variable is an integer.
 
       Returns:
-          bool: Enumeration is stricktly an integer.
+          bool: Enumeration is strictly an integer.
 
 
    .. py:method:: is_signed() -> bool
@@ -859,7 +877,7 @@ Classes
           int: Width of the variable, which is 2.
 
 
-   .. py:method:: set_value(value: int)
+   .. py:method:: _set_value(value: int)
 
       Set the value of the 16-bit enum.
 

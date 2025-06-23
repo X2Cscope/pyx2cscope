@@ -7,7 +7,7 @@
 
    This module contains the pyx2cscope package.
 
-   Version: 0.4.2
+   Version: 0.4.3
 
 
 
@@ -54,7 +54,7 @@ Attributes
 
 
 .. py:data:: __version__
-   :value: '0.4.2'
+   :value: '0.4.3'
 
    
 

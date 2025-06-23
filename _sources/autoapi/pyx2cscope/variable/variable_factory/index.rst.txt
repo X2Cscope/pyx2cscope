@@ -120,8 +120,6 @@ Functions
       Import and load variables registered on the file.
 
       Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).
-      The flush parameter defaults to true and clears all previous loaded variables. This flag is
-      intended to be used when adding single variables to the parser.
 
       Args:
           filename (str): The name of the file and its path.
