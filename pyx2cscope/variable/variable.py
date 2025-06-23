@@ -162,9 +162,17 @@ class Variable:
         return [self.bytes_to_value(k) for k in chunk_data]
 
     def _get_bit_value(self, byte_value: Number):
-        """Extract the valid data in case of a union with bit size and offset"""
+        """Extract the valid data in case of a union with bit size and offset."""
         shift = (8 * self.info.byte_size) - (self.info.bit_offset + self.info.bit_size)
         return (byte_value >> shift) & ((1 << self.info.bit_size) - 1)
+
+    def _set_bit_value(self, value: Number):
+        """Insert data into the correct bit position in case of a union with bit size and offset."""
+        current_data = self.bytes_to_value(self._get_value_raw())
+        shift = (8 * self.info.byte_size) - (self.info.bit_offset + self.info.bit_size)
+        mask = ((1 << self.info.bit_size) - 1) << shift
+        current_data &= ~mask
+        return current_data | ((value << shift) & mask)
 
     def get_value(self):
         """Get the stored value from the MCU.
@@ -183,6 +191,7 @@ class Variable:
                 return value
         except Exception as e:
             logging.error(e)
+            return None
 
     def _check_value_range(self, value: Number):
         """Check if the given value is in range of min and max variable values.
@@ -241,6 +250,10 @@ class Variable:
             new_value (Number): The value to be stored in the MCU.
         """
         self._check_value_range(new_value)
+        if self.info.bit_size != 0:
+            # for bit-size variables, we should first read the current value (byte-size), mask out the old bits,
+            # and insert the new value (bit-size). Then write back the byte-size data.
+            new_value = self._set_bit_value(new_value)
         self._set_value(new_value)
 
     @abstractmethod
