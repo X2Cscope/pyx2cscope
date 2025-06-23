@@ -1577,7 +1577,7 @@ class X2cscopeGui(QMainWindow):
                     single_shot=self.single_shot_checkbox.isChecked()
                 )
             b = time.time()
-            logging.debug("time execution", b - a)
+            logging.debug(f"time execution '{b - a}'")
         except Exception as e:
             error_message = f"Error starting sampling: {e}"
             logging.error(error_message)
