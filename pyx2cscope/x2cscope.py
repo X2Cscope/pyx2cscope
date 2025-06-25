@@ -40,8 +40,8 @@ def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
         ScopeChannel: A ScopeChannel object representing the given variable.
     """
     return ScopeChannel(
-        name=variable.name,
-        source_location=variable.address,
+        name=variable.info.name,
+        source_location=variable.info.address,
         data_type_size=variable.get_width(),
         source_type=0,
         is_integer=variable.is_integer(),
@@ -83,7 +83,7 @@ class X2CScope:
         uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.
     """
 
-    def __init__(self, elf_file: str = None, interface: InterfaceABC = None, **kwargs):
+    def __init__(self, elf_file: str = None, interface: InterfaceType = None, **kwargs):
         """Initialize the X2CScope instance.
 
         Args:
@@ -179,7 +179,7 @@ class X2CScope:
             int: The ID of the added scope channel.
         """
         scope_channel = get_variable_as_scope_channel(variable)
-        self.convert_list[variable.name] = variable.bytes_to_value
+        self.convert_list[variable.info.name] = variable.bytes_to_value
         return self.scope_setup.add_channel(scope_channel, trigger)
 
     def clear_all_scope_channel(self):
@@ -204,9 +204,9 @@ class X2CScope:
         Returns:
             The result of the channel removal operation.
         """
-        if variable.name in self.convert_list:
-            self.convert_list.pop(variable.name)
-        return self.scope_setup.remove_channel(variable.name)
+        if variable.info.name in self.convert_list:
+            self.convert_list.pop(variable.info.name)
+        return self.scope_setup.remove_channel(variable.info.name)
 
     def get_scope_channel_list(self) -> Dict[str, ScopeChannel]:
         """Get a list of all scope channels.
@@ -411,9 +411,7 @@ class X2CScope:
             channels[channel].extend(rest)
         return channels
 
-    def get_scope_channel_data(
-        self, valid_data: bool = True
-    ) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(self, valid_data: bool = True) -> Dict[str, List[Number]]:
         """Get the sorted and optionally filtered scope channel data.
 
         Args:
@@ -465,6 +463,7 @@ class X2CScope:
     def get_device_info(self):
         """Returns the device information as a dictionary."""
         device_info = self.variable_factory.device_info
+        uc_width_value = "8-bit"
         if device_info.uc_width == UC_WIDTH_16BIT:
             uc_width_value = "16-bit"
         elif device_info.uc_width == UC_WIDTH_32BIT:
