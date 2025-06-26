@@ -38,7 +38,15 @@ angle_reference = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecAngl
 speed_measured = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.elecSpeed")
 
 # or load a variable directly from the memory
-speed_measured_info = VariableInfo("speed_measured", "float", 2, 536879832, 0, {})
+# name: str
+# type: str
+# byte_size: int
+# bit_size: int
+# bit_offset: int
+# address: int
+# array_size: int
+# valid_values: Dict[str, int]
+speed_measured_info = VariableInfo("speed_measured", "float", 2, 0, 0, 536879832, 0, {})
 speed_measured_raw = x2c_scope.get_variable_raw(speed_measured_info)
 
 # Read the value of the "motor.apiData.velocityMeasured" variable from the target

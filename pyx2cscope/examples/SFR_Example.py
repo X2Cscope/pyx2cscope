@@ -68,7 +68,7 @@ def example():
     """Main function to demonstrate LED state changes using SFR."""
     try:
         # Initialize the variable for the Special Function Register (SFR) controlling the LEDs
-        variable_info = VariableInfo("my_led", "int", 1, 3702, 0, {})
+        variable_info = VariableInfo("my_led", "int", 1, 0, 0, 3702, 0, {})
         sfr_led = x2cscope.get_variable_raw(variable_info) # LATE address from data sheet 3702
 
         # Get the initial LED state from the SFR

@@ -57,18 +57,12 @@ class VariableInfo:
 class Variable:
     """Represents a variable in the MCU data memory."""
 
-    def __init__(
-        self, l_net: LNet, info: VariableInfo
-    ) -> None:
+    def __init__(self, l_net: LNet, info: VariableInfo) -> None:
         """Initialize the Variable object.
-
-        On var_info, the minimal information needed are name, address, and array_size. This is valid
-        for most of the variables. Enums will need enum_list, and unions having elements which are smaller
-        than a byte.
 
         Args:
             l_net (LNet): LNet protocol that handles the communication with the target device.
-            info (VariableInfo): Address of the variable in the MCU memory.
+            info (VariableInfo): Information of the variable in the MCU memory.
         """
         if type(self) == Variable:  # protect super class to be initiated directly
             raise Exception("<Variable> must be subclassed.")
