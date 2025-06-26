@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyx2cscope"
-version = "0.4.3"
+version = "0.4.4"
 description = "python implementation of X2Cscope"
 authors = [
   "Yash Agarwal",
