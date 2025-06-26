@@ -277,7 +277,7 @@ Attributes
           dict: The DWARF dies.
 
 
-   .. py:method:: _map_variables() -> dict[str, pyx2cscope.parser.elf_parser.VariableInfo]
+   .. py:method:: _map_variables() -> dict[str, pyx2cscope.variable.variable.VariableInfo]
 
       Map variables from the DWARF information.
 

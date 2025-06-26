@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Interface &mdash; pyX2Cscope 0.4.3 documentation</title>
+  <title>API Interface &mdash; pyX2Cscope 0.4.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5bfaad31"></script>
+        <script src="_static/documentation_options.js?v=90733dfc"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.3
+                0.4.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -55,7 +55,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Interface</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#simplest-example">Simplest example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#x2cscope-class">X2CScope class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#import-variables">Import variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#load-variables">Load variables</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#variable-class">Variable class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#reading-values">Reading values</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#writing-values">Writing values</a></li>
@@ -133,15 +133,12 @@
 </section>
 <section id="x2cscope-class">
 <h2>X2CScope class<a class="headerlink" href="#x2cscope-class" title="Link to this heading"></a></h2>
-<ol class="arabic">
-<li><p>Import the X2Cscope class:</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2scope</span><span class="w"> </span><span class="kn">import</span> <span class="n">X2CScope</span>
+<ol class="arabic simple">
+<li><p>Import the X2Cscope class:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2scope</span><span class="w"> </span><span class="kn">import</span> <span class="n">X2CScope</span>
 </pre></div>
 </div>
-</div></blockquote>
-</li>
-</ol>
 <p>X2CScope class needs one parameter to be instantiated:</p>
 <ul class="simple">
 <li><p><strong>port</strong>: The desired communication port name, i.e.:”COM3”, “dev/ttyUSB”, etc.</p></li>
@@ -150,25 +147,28 @@
 and TCP/IP are coming in near future. For serial, the only parameter needed is the desired port name, by
 default baud rate is set to <strong>115200</strong>. If there’s a need to change the baud rate, include the baud_rate
 parameter with your preferred baud rate.</p>
-<ol class="arabic" start="2">
-<li><p>Instantiate X2CScope with the port:</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
+<ol class="arabic simple" start="2">
+<li><p>Instantiate X2CScope with the serial port number:</p></li>
 </ol>
-</section>
-<section id="import-variables">
-<h2>Import variables<a class="headerlink" href="#import-variables" title="Link to this heading"></a></h2>
-<p>X2Cscope needs the location of the variables inside the controller firmware. The list of variables can be loaded from multiple sources: .elf file, pickle binary and YML text file.</p>
-<p>See more details at <a class="reference internal" href="#import-and-export-variables"><span class="std std-ref">Import and Export variables</span></a> section.</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;..\..\tests\data\qspin_foc_same54.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
+</section>
+<section id="load-variables">
+<h2>Load variables<a class="headerlink" href="#load-variables" title="Link to this heading"></a></h2>
+<p>X2Cscope needs to know which variables are currently available on the firmware.
+The list of variables can be loaded from multiple file formats:</p>
+<ul class="simple">
+<li><p>Executable and Linkable Format (ELF, .elf, binary)</p></li>
+<li><p>Pickle (PKL, .pkl, binary)</p></li>
+<li><p>Yaml (YML, .yml, text)</p></li>
+</ul>
+<p>See more details at <a class="reference internal" href="#import-and-export-variables"><span class="std std-ref">Import and Export variables</span></a> section.
+The ELF file is one artifact generated during code compilation. To load the variables, Execute
+the code below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;..\..\tests\data\qspin_foc_same54.elf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="variable-class">
 <h2>Variable class<a class="headerlink" href="#variable-class" title="Link to this heading"></a></h2>
@@ -176,15 +176,12 @@ parameter with your preferred baud rate.</p>
 The next step is to get a variable object that will represent the variable inside the microcontroller.
 Use the method <cite>get_variable</cite> to link to a desired variable. The only parameter needed for that method
 is a string containing the variable name.</p>
-<ol class="arabic" start="3">
-<li><p>Create a Variable object for the variable you want to monitor:</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">&#39;variable_name&#39;</span><span class="p">)</span>
+<ol class="arabic simple" start="3">
+<li><p>Create a Variable object for the variable you want to monitor:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">&#39;variable_name&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
-</li>
-</ol>
 <p>Replace ‘variable_name’ with the name of the variable you want to monitor. You can create multiple variable
 objects as required. To get variables that are underneath a struct, use the “dot” convention:
 “struct_name.variable”. It is only possible to link to <strong>final</strong> variables, i.e., it is not possible to
@@ -193,23 +190,18 @@ link to a structure directly, only to its members.</p>
 <h3>Reading values<a class="headerlink" href="#reading-values" title="Link to this heading"></a></h3>
 <p>4. Once you have gone through these steps, you can use the method <strong>get_value()</strong> to retrieve the actual
 value of the variable:</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 </pre></div>
 </div>
-</div></blockquote>
 </section>
 <section id="writing-values">
 <h3>Writing values<a class="headerlink" href="#writing-values" title="Link to this heading"></a></h3>
-<ol class="arabic" start="5">
-<li><p>To set the value for the respective variable use the method <strong>set_value()</strong>:</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<ol class="arabic simple" start="5">
+<li><p>To set the value for the respective variable use the method <strong>set_value()</strong>:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
-</li>
-</ol>
 </section>
 </section>
 <section id="import-and-export-variables">
@@ -287,96 +279,91 @@ and return and array that could be plotted with any available python graphic fra
 seaborn, etc.</p>
 <p>1. To use the scope functionality, first you need to link a variable as previously explained, and
 add this variable to the scope by means of the method: <strong>add_scope_channel(variable: Variable)</strong> :</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable1</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable1&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable1</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable1&quot;</span><span class="p">)</span>
 <span class="n">variable2</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable2&quot;</span><span class="p">)</span>
 
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable1</span><span class="p">)</span>
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
 <p>2. To remove a variable from the scope: <strong>remove_scope_channel(variable: Variable)</strong>, to clear all
 variables and reset the scope use instead: <strong>clear_all_scope_channel()</strong></p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">remove_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">remove_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
 <p>or</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">clear_all_scope_channel</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">clear_all_scope_channel</span><span class="p">()</span>
 </pre></div>
 </div>
-</div></blockquote>
 <p>Up to 8 channels can be added. Each time you add or remove a variable, the number of channels present
 on the channel are returned.</p>
 <section id="getting-data-from-scope">
 <h3>Getting Data from Scope<a class="headerlink" href="#getting-data-from-scope" title="Link to this heading"></a></h3>
 <p>To get data from scope channel you need to follow this sequence:</p>
-<ul class="simple">
-<li><p>Request data</p></li>
-<li><dl class="simple">
-<dt>Check if data is ready (sampling is done)</dt><dd><ul>
-<li><p>Data is ready? Yes, get the data and handle it.</p></li>
-<li><p>Data is not ready? Execute some delay and check again.</p></li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p>After handling the data, start from the beginning requesting new data.</p></li>
-</ul>
-<p>Step-by-step you need:</p>
-<ol class="arabic">
-<li><p>Request to X2CScope to collect data for the variables registered on the scope channels.</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+------------------------------------+
+| Add variables to the scope channel |
++------------------------------------+
+            |
+            v
++--------------------------+
+| Request scope data       | &lt;---------------+
++--------------------------+                 |
+            |                                |
+            v                                |
++--------------------------+                 |
+| Is scope data ready?     |                 |
++--------------------------+                 |
+    / Yes          \ No                      |
+    v               v                        |
++-----------------+  +--------------------+  |
+| Handle the data |  | Execute some delay |  |
++-----------------+  +--------------------+  |
+        |                 |                  |
+        +-----------------+------------------+
 </pre></div>
 </div>
-</div></blockquote>
-</li>
+<p>Step-by-step you need:</p>
+<ol class="arabic simple">
+<li><p>Request to X2CScope to collect data for the variables registered on the scope channels.</p></li>
 </ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>2. Check if the data is ready:
 Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
-     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
-<ol class="arabic" start="3">
-<li><p>Get the scope data once sampling is completed</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span>
-</pre></div>
-</div>
-</div></blockquote>
-</li>
+<ol class="arabic simple" start="3">
+<li><p>Get the scope data once sampling is completed</p></li>
 </ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>A simple loop request example to get only 1 frame of scope data is depicted below:</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># request scope to start sampling data</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># request scope to start sampling data</span>
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
+
 <span class="c1"># wait while the data is not yet ready for reading</span>
 <span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
-     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
 <span class="k">for</span> <span class="n">channel</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-     <span class="c1"># Do something with the data.</span>
-     <span class="c1"># channel contains the variable name, data is an array of values</span>
+        <span class="c1"># Do something with the data.</span>
+        <span class="c1"># channel contains the variable name, data is an array of values</span>
 </pre></div>
 </div>
-</div></blockquote>
 </section>
 <section id="triggering">
 <h3>Triggering<a class="headerlink" href="#triggering" title="Link to this heading"></a></h3>
-<p>To Set up Trigger, any available variable can be selected, by default works on no trigger configuration.
-To set any trigger configuration, you need to pass a TriggerConfig imported from from pyx2cscope.x2cscope</p>
-<blockquote>
-<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trigger_config</span> <span class="o">=</span> <span class="n">TriggerConfig</span><span class="p">(</span><span class="n">Variable</span><span class="p">,</span> <span class="n">trigger_level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_mode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_edge</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
+<p>To set up a Trigger, any variable added to the scope channel can be selected.
+By default, there is no trigger selected.
+To set any trigger configuration, you need to pass a TriggerConfig imported from pyx2cscope.x2cscope</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">trigger_config</span> <span class="o">=</span> <span class="n">TriggerConfig</span><span class="p">(</span><span class="n">Variable</span><span class="p">,</span> <span class="n">trigger_level</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_mode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">trigger_edge</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span>
 <span class="n">x2cscope</span><span class="o">.</span><span class="n">set_scope_trigger</span><span class="p">(</span><span class="n">trigger_config</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
 <p>TriggerConfig needs some parameters like the variable and some trigger values like:</p>
 <ul class="simple">
 <li><p>Variable: the variable which will be monitored</p></li>

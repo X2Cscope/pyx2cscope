@@ -108,7 +108,7 @@ Attributes
       Find the actual declaration of an extern variable.
 
 
-   .. py:method:: _get_member_offset(die) -> [int, int, int]
+   .. py:method:: _get_member_offset(die) -> tuple[int | None, int, int]
 
       Extracts the offset for a structure member.
 
@@ -172,7 +172,7 @@ Attributes
       Retrieve a DWARF DIE given its offset.
 
 
-   .. py:method:: _map_variables() -> dict[str, pyx2cscope.parser.elf_parser.VariableInfo]
+   .. py:method:: _map_variables() -> dict[str, pyx2cscope.variable.variable.VariableInfo]
 
       Maps all variables in the ELF file.
 

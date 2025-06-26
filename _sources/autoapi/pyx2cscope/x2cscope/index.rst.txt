@@ -108,7 +108,7 @@ Attributes
       
 
 
-.. py:class:: X2CScope(elf_file: str = None, interface: mchplnet.interfaces.abstract_interface.InterfaceABC = None, **kwargs)
+.. py:class:: X2CScope(elf_file: str = None, interface: mchplnet.interfaces.factory.InterfaceType = None, **kwargs)
 
 
    X2CScope class for interfacing with the X2C Scope tool.
@@ -252,10 +252,10 @@ Attributes
 
    .. py:method:: set_sample_time(sample_time: int)
 
-      Define a pre-scaler for sampling mode.
+      Define the resolution how the samples will be buffered at the internal buffer.
 
       This can be used to extend total sampling time at the cost of resolution.
-      0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
+      1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample …
 
       Args:
           sample_time (int): The sample time factor.
@@ -364,12 +364,18 @@ Attributes
           Dict[str, List[Number]]: A dictionary with channel names as keys and data lists as values.
 
 
-   .. py:method:: scope_sample_time(time_microseconds: float) -> float
+   .. py:method:: get_scope_sample_time(time: float) -> float
 
       Evaluate the scope sample time based on user-provided time value.
 
+      X2Cscope has an internal buffer which is filled with data at a specific rate.
+      The argument time relates to the sampling rate of each sample. The total scope
+      channel time depends on the size of the internal buffer, the sampling rate, and
+      the time factor (resolution) set when starting the scope channel. See also
+      set_sample_time
+
       Args:
-          time_microseconds (float): The time value in microseconds for evaluating one scope sample.
+          time (float): The time value in microseconds of one sample.
 
       Returns:
           float: The real-time duration for the scope functionality in milliseconds.

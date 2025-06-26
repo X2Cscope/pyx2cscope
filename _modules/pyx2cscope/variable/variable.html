@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable &mdash; pyX2Cscope 0.4.3 documentation</title>
+  <title>pyx2cscope.variable.variable &mdash; pyX2Cscope 0.4.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=5bfaad31"></script>
+        <script src="../../../_static/documentation_options.js?v=90733dfc"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.3
+                0.4.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -172,18 +172,12 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">Variable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a variable in the MCU data memory.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">l_net</span><span class="p">:</span> <span class="n">LNet</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">VariableInfo</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_net</span><span class="p">:</span> <span class="n">LNet</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">VariableInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Variable object.</span>
-
-<span class="sd">        On var_info, the minimal information needed are name, address, and array_size. This is valid</span>
-<span class="sd">        for most of the variables. Enums will need enum_list, and unions having elements which are smaller</span>
-<span class="sd">        than a byte.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            l_net (LNet): LNet protocol that handles the communication with the target device.</span>
-<span class="sd">            info (VariableInfo): Address of the variable in the MCU memory.</span>
+<span class="sd">            info (VariableInfo): Information of the variable in the MCU memory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="n">Variable</span><span class="p">:</span>  <span class="c1"># protect super class to be initiated directly</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;&lt;Variable&gt; must be subclassed.&quot;</span><span class="p">)</span>
@@ -1330,13 +1324,16 @@
 <div class="viewcode-block" id="VariableEnum.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 16-bit enum.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the enum.</span>
+
+<span class="sd">        The enum may have variable byte size, depending on the mcu architecture and the</span>
+<span class="sd">        amount of elements contained under each specific enumeration. The size is obtained</span>
+<span class="sd">        during parsing and is described under byte_size.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            int: Width of the variable, which is 2.</span>
+<span class="sd">            int: Width of the variable in bytes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1">#TODO depends on architecture and enum count of elements</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">byte_size</span></div>
 
  
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.4.3 documentation</title>
+  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.4.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=5bfaad31"></script>
+        <script src="../../../../_static/documentation_options.js?v=90733dfc"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.3
+                0.4.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -210,7 +210,7 @@ structs: The DWARF structs used for parsing expressions.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_member_offset">
-<span class="sig-name descname"><span class="pre">_get_member_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_member_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_member_offset" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_get_member_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_member_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_member_offset" title="Link to this definition"></a></dt>
 <dd><p>Extracts the offset for a structure member.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>die: The DIE of the structure member.</p>
@@ -248,13 +248,13 @@ After calling this method, members is populated with details of the variable and
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_union_type">
-<span class="sig-name descname"><span class="pre">_process_union_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_union_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_union_type" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_process_union_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_union_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_union_type" title="Link to this definition"></a></dt>
 <dd><p>Recursively extracts union members from a DWARF DIE.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._process_structure_type">
-<span class="sig-name descname"><span class="pre">_process_structure_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_structure_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_structure_type" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_process_structure_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">die</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._process_structure_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._process_structure_type" title="Link to this definition"></a></dt>
 <dd><p>Recursively extracts structure members from a DWARF DIE, including arrays.</p>
 </dd></dl>
 
@@ -278,7 +278,7 @@ After calling this method, members is populated with details of the variable and
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._map_variables">
-<span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pyx2cscope.parser.elf_parser.VariableInfo</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._map_variables" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_map_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._map_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._map_variables" title="Link to this definition"></a></dt>
 <dd><p>Maps all variables in the ELF file.</p>
 </dd></dl>
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.4.3 documentation</title>
+  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.4.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5bfaad31"></script>
+        <script src="../../_static/documentation_options.js?v=90733dfc"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.3
+                0.4.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -134,8 +134,8 @@
 <span class="sd">        ScopeChannel: A ScopeChannel object representing the given variable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">ScopeChannel</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-        <span class="n">source_location</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">source_location</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
         <span class="n">data_type_size</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">get_width</span><span class="p">(),</span>
         <span class="n">source_type</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">is_integer</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">is_integer</span><span class="p">(),</span>
@@ -198,7 +198,7 @@
 <span class="sd">        uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">InterfaceABC</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">InterfaceType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the X2CScope instance.</span>
 
 <span class="sd">        Args:</span>
@@ -320,7 +320,7 @@
 <span class="sd">            int: The ID of the added scope channel.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scope_channel</span> <span class="o">=</span> <span class="n">get_variable_as_scope_channel</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="p">[</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">bytes_to_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="p">[</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">bytes_to_value</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="n">scope_channel</span><span class="p">,</span> <span class="n">trigger</span><span class="p">)</span></div>
 
 
@@ -351,9 +351,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            The result of the channel removal operation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">remove_channel</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">remove_channel</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_scope_channel_list">
@@ -402,14 +402,15 @@
 <div class="viewcode-block" id="X2CScope.set_sample_time">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_sample_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_sample_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define a pre-scaler for sampling mode.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the resolution how the samples will be buffered at the internal buffer.</span>
 
 <span class="sd">        This can be used to extend total sampling time at the cost of resolution.</span>
-<span class="sd">        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …</span>
+<span class="sd">        1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample …</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            sample_time (int): The sample time factor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sample_time</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">sample_time</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">sample_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">set_sample_time_factor</span><span class="p">(</span><span class="n">sample_time</span><span class="p">)</span></div>
 
 
@@ -606,9 +607,7 @@
 
 <div class="viewcode-block" id="X2CScope.get_scope_channel_data">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_channel_data">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_scope_channel_data</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">valid_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scope_channel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valid_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the sorted and optionally filtered scope channel data.</span>
 
 <span class="sd">        Args:</span>
@@ -625,15 +624,19 @@
         <span class="k">return</span> <span class="p">{}</span></div>
 
 
-<div class="viewcode-block" id="X2CScope.scope_sample_time">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.scope_sample_time">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">scope_sample_time</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">time_microseconds</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>  <span class="c1"># TODO testing and implementing the time axis.</span>
+<div class="viewcode-block" id="X2CScope.get_scope_sample_time">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_sample_time">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scope_sample_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the scope sample time based on user-provided time value.</span>
 
+<span class="sd">        X2Cscope has an internal buffer which is filled with data at a specific rate.</span>
+<span class="sd">        The argument time relates to the sampling rate of each sample. The total scope</span>
+<span class="sd">        channel time depends on the size of the internal buffer, the sampling rate, and</span>
+<span class="sd">        the time factor (resolution) set when starting the scope channel. See also</span>
+<span class="sd">        set_sample_time</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            time_microseconds (float): The time value in microseconds for evaluating one scope sample.</span>
+<span class="sd">            time (float): The time value in microseconds of one sample.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: The real-time duration for the scope functionality in milliseconds.</span>
@@ -650,7 +653,7 @@
         <span class="n">samples_in_buffer</span> <span class="o">=</span> <span class="n">buffer_size</span> <span class="o">//</span> <span class="n">dataset_size</span>
 
         <span class="c1"># Calculate the total time duration for the samples in the buffer</span>
-        <span class="n">total_time_microseconds</span> <span class="o">=</span> <span class="n">time_microseconds</span> <span class="o">*</span> <span class="n">samples_in_buffer</span>
+        <span class="n">total_time_microseconds</span> <span class="o">=</span> <span class="n">time</span> <span class="o">*</span> <span class="n">samples_in_buffer</span>
 
         <span class="c1"># Convert the total time to milliseconds</span>
         <span class="n">total_time_milliseconds</span> <span class="o">=</span> <span class="n">total_time_microseconds</span> <span class="o">/</span> <span class="mi">1000</span>
@@ -658,7 +661,7 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Total time for the scope functionality: </span><span class="si">{</span><span class="n">total_time_milliseconds</span><span class="si">}</span><span class="s2"> ms&quot;</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">sample_time_factor</span> <span class="o">*</span> <span class="n">total_time_milliseconds</span> <span class="o">*</span> <span class="mi">2</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">sample_time_factor</span> <span class="o">*</span> <span class="n">total_time_milliseconds</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_device_info">
@@ -666,6 +669,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_device_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the device information as a dictionary.&quot;&quot;&quot;</span>
         <span class="n">device_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">device_info</span>
+        <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">&quot;8-bit&quot;</span>
         <span class="k">if</span> <span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">==</span> <span class="n">UC_WIDTH_16BIT</span><span class="p">:</span>
             <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">&quot;16-bit&quot;</span>
         <span class="k">elif</span> <span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">==</span> <span class="n">UC_WIDTH_32BIT</span><span class="p">:</span>
