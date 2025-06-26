@@ -18,7 +18,7 @@ import warnings
 from shutil import which
 
 from pyx2cscope.parser.elf_parser import ElfParser
-from variable.variable import VariableInfo
+from pyx2cscope.variable.variable import VariableInfo
 
 # Constants for magic values
 ADDRESS_CHECK_LOWER_LIMIT = 2
