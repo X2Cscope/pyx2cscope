@@ -445,9 +445,7 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
-        self.scope_sampletime_edit = QLineEdit(
-            "50"
-        )  # Default sample time in microseconds
+        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
         self.scope_sampletime_edit.setValidator(self.decimal_validator)
 
         # Total Time
