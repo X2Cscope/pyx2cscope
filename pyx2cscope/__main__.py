@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.ERROR)
 import argparse
 
 import pyx2cscope
-from pyx2cscope import gui, utils
+from pyx2cscope import utils
+from pyx2cscope import gui
 
 
 def parse_arguments():

@@ -43,9 +43,10 @@ Load variables
 
 X2Cscope needs to know which variables are currently available on the firmware. 
 The list of variables can be loaded from multiple file formats: 
-    - Executable and Linkable Format (ELF, .elf, binary)
-    - Pickle (PKL, .pkl, binary) 
-    - Yaml (YML, .yml, text)
+
+- Executable and Linkable Format (ELF, .elf, binary)
+- Pickle (PKL, .pkl, binary) 
+- Yaml (YML, .yml, text)
 
 See more details at :ref:`Import and Export variables <import-and-export-variables>` section.
 The ELF file is one artifact generated during code compilation. To load the variables, Execute

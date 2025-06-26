@@ -20,7 +20,7 @@ python -m pyx2cscope -q
 
 ## Getting Started with pyX2Cscope reference GUI
 ## Tab: WatchPlot
-![WatchPlot](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/gui_watch_plot.jpg)
+![WatchPlot](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/bugfix---v0.4.3/doc/images/gui_watch_plot.jpg)
 1. pyX2Cscope-GUI is based on Serial interface.
 2. The Firmware of the microcontroller should have the X2Cscope library/Peripheral enabled.
 3. In Tab WatchPlot, five channels values can be viewed, modified and can be plotted in the plot window.
@@ -31,7 +31,7 @@ python -m pyx2cscope -q
 8. Information related to the microcontroller will be displayed in the top-left corner.  
 
 ## Tab: ScopeView
-![ScopeView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/gui_scope_view.jpg)
+![ScopeView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/bugfix---v0.4.3/doc/images/gui_scope_view.jpg)
 
 1. ScopeView supports up to 8 PWM resolution channels for precise signal control.
 2. You can configure all trigger settings directly within the window. To enable the trigger for a variable, check the corresponding trigger checkbox.
@@ -40,7 +40,7 @@ python -m pyx2cscope -q
 5. To zoom in on the plot, left-click and drag on the desired area. To return to the original view, right-click and select View All.
 
 ## Tab: WatchView
-![WatchView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/gui_watch_view.jpg)
+![WatchView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/bugfix---v0.4.3/doc/images/gui_watch_view.jpg)
 
 1. WatchView lets users add or remove variables as needed. To remove a variable, click the Remove button next to it.
 2. Users can visualize variables in live mode with an update rate of 500 milliseconds. This rate is the default setting and cannot be changed.

@@ -4,13 +4,16 @@ It focuses on extracting structure members and variable information from DWARF d
 """
 
 import logging
+from typing import Any
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
 
-from pyx2cscope.parser.elf_parser import ElfParser, VariableInfo
+from pyx2cscope.parser.elf_parser import ElfParser
 from elftools.construct.lib import ListContainer
 from elftools.dwarf.dwarf_expr import DWARFExprParser
+
+from variable.variable import VariableInfo
 
 
 class GenericParser(ElfParser):
@@ -184,7 +187,7 @@ class GenericParser(ElfParser):
             die_variable = self.dwarf_info.get_DIE_from_refaddr(spec_ref_addr)
         return die_variable
 
-    def _get_member_offset(self, die) -> [int, int, int]:
+    def _get_member_offset(self, die) -> tuple[int | None, int, int]:
         """Extracts the offset for a structure member.
 
         Args:
