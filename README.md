@@ -55,7 +55,7 @@ print(speed_measured.get_value())
 speed_reference.set_value(1000)
 ```
 
-Further [Examples](https://github.com/X2Cscope/pyx2cscope/tree/main/pyx2cscope/examples) directory in the pyX2Cscope project to check out the available examples or create a new .py file according to your requirements.
+Check [Examples](https://github.com/X2Cscope/pyx2cscope/tree/main/pyx2cscope/examples) directory in the pyX2Cscope project to see common uses of this library.
 
 ## Development
 
