@@ -240,14 +240,15 @@ class X2CScope:
         self.scope_setup.reset_trigger()
 
     def set_sample_time(self, sample_time: int):
-        """Define a pre-scaler for sampling mode.
+        """Define the resolution how the samples will be buffered at the internal buffer.
 
         This can be used to extend total sampling time at the cost of resolution.
-        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
+        1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample …
 
         Args:
             sample_time (int): The sample time factor.
         """
+        sample_time = 1 if sample_time < 1 else sample_time
         self.scope_setup.set_sample_time_factor(sample_time)
 
     def set_scope_state(self, scope_state: int):
@@ -427,13 +428,17 @@ class X2CScope:
             return self._filter_channels(channels) if valid_data else channels
         return {}
 
-    def scope_sample_time(
-        self, time_microseconds: float
-    ) -> float:  # TODO testing and implementing the time axis.
+    def get_scope_sample_time(self, time: float) -> float:
         """Evaluate the scope sample time based on user-provided time value.
 
+        X2Cscope has an internal buffer which is filled with data at a specific rate.
+        The argument time relates to the sampling rate of each sample. The total scope
+        channel time depends on the size of the internal buffer, the sampling rate, and
+        the time factor (resolution) set when starting the scope channel. See also
+        set_sample_time
+
         Args:
-            time_microseconds (float): The time value in microseconds for evaluating one scope sample.
+            time (float): The time value in microseconds of one sample.
 
         Returns:
             float: The real-time duration for the scope functionality in milliseconds.
@@ -450,7 +455,7 @@ class X2CScope:
         samples_in_buffer = buffer_size // dataset_size
 
         # Calculate the total time duration for the samples in the buffer
-        total_time_microseconds = time_microseconds * samples_in_buffer
+        total_time_microseconds = time * samples_in_buffer
 
         # Convert the total time to milliseconds
         total_time_milliseconds = total_time_microseconds / 1000
@@ -458,7 +463,7 @@ class X2CScope:
         logging.info(
             f"Total time for the scope functionality: {total_time_milliseconds} ms"
         )
-        return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
+        return self.scope_setup.sample_time_factor * total_time_milliseconds
 
     def get_device_info(self):
         """Returns the device information as a dictionary."""
