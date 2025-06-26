@@ -952,13 +952,16 @@ class VariableEnum(Variable):
             return False
 
     def get_width(self) -> int:
-        """Get the width of the 16-bit enum.
+        """Get the width of the enum.
+
+        The enum may have variable byte size, depending on the mcu architecture and the
+        amount of elements contained under each specific enumeration. The size is obtained
+        during parsing and is described under byte_size.
 
         Returns:
-            int: Width of the variable, which is 2.
+            int: Width of the variable in bytes.
         """
-        #TODO depends on architecture and enum count of elements
-        return self.l_net.device_info.uc_width
+        return self.info.byte_size
  
 
     def _set_value(self, value: int):
