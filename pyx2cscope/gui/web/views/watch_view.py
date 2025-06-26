@@ -58,7 +58,7 @@ def get_data():
                 if _data["live"]:
                     _read_variable(_data)
                 result.append({f: v.info.name if f == "variable" else v for f, v in _data.items()})
-            return {"data": result}
+        return {"data": result}
 
 
 def add():

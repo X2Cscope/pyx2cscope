@@ -4,7 +4,6 @@ It focuses on extracting structure members and variable information from DWARF d
 """
 
 import logging
-from typing import Any
 
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
@@ -13,7 +12,7 @@ from pyx2cscope.parser.elf_parser import ElfParser
 from elftools.construct.lib import ListContainer
 from elftools.dwarf.dwarf_expr import DWARFExprParser
 
-from variable.variable import VariableInfo
+from pyx2cscope.variable.variable import VariableInfo
 
 
 class GenericParser(ElfParser):
