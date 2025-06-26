@@ -1,8 +1,4 @@
-"""
-pyx2cscope.gui
-==============
-
-This module serves as the entry point for launching the various graphical user interfaces (GUIs) provided by the pyx2cscope package.
+"""This module serves as the entry point for launching the various graphical user interfaces (GUIs).
 
 It provides functions to start either the Qt-based desktop GUI or the web-based GUI server.
 
