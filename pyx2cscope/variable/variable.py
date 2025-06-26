@@ -57,18 +57,12 @@ class VariableInfo:
 class Variable:
     """Represents a variable in the MCU data memory."""
 
-    def __init__(
-        self, l_net: LNet, info: VariableInfo
-    ) -> None:
+    def __init__(self, l_net: LNet, info: VariableInfo) -> None:
         """Initialize the Variable object.
-
-        On var_info, the minimal information needed are name, address, and array_size. This is valid
-        for most of the variables. Enums will need enum_list, and unions having elements which are smaller
-        than a byte.
 
         Args:
             l_net (LNet): LNet protocol that handles the communication with the target device.
-            info (VariableInfo): Address of the variable in the MCU memory.
+            info (VariableInfo): Information of the variable in the MCU memory.
         """
         if type(self) == Variable:  # protect super class to be initiated directly
             raise Exception("<Variable> must be subclassed.")
@@ -952,13 +946,16 @@ class VariableEnum(Variable):
             return False
 
     def get_width(self) -> int:
-        """Get the width of the 16-bit enum.
+        """Get the width of the enum.
+
+        The enum may have variable byte size, depending on the mcu architecture and the
+        amount of elements contained under each specific enumeration. The size is obtained
+        during parsing and is described under byte_size.
 
         Returns:
-            int: Width of the variable, which is 2.
+            int: Width of the variable in bytes.
         """
-        #TODO depends on architecture and enum count of elements
-        return self.l_net.device_info.uc_width
+        return self.info.byte_size
  
 
     def _set_value(self, value: int):

@@ -6,6 +6,8 @@ There is a mailing group to receive your inputs and questions: MotorControl@micr
 ## Contribution
 Contribute to source code, documentation, examples and report issues: https://github.com/X2Cscope/pyx2cscope
 
+If you want to contribute to the project, please follow these steps:
+
 1. Fork the pyX2Cscope repository.
 2. Create a new branch for your changes.
 3. Make the necessary changes and commit them. 
@@ -22,8 +24,10 @@ Create virtual envrionment with make venv
 git clone https://github.com/X2Cscope/pyx2cscope.git
 cd pyx2cscope
 python -m venv .venv
+
 #Windows
 .venv\Scripts\activate
+
 #linux
 source .venv\bin\activate
 ```

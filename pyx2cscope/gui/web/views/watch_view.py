@@ -57,8 +57,8 @@ def get_data():
             for _data in watch_data:
                 if _data["live"]:
                     _read_variable(_data)
-                result.append({f: v.name if f == "variable" else v for f, v in _data.items()})
-            return {"data": result}
+                result.append({f: v.info.name if f == "variable" else v for f, v in _data.items()})
+        return {"data": result}
 
 
 def add():
@@ -68,7 +68,7 @@ def add():
     """
     parameter = request.args.get("param", "")
     with get_x2c() as x2c:
-        if not any(_data["variable"].name == parameter for _data in watch_data):
+        if not any(_data["variable"].info.name == parameter for _data in watch_data):
             variable = x2c.get_variable(parameter)
             watch_data.append(_get_variable_as_dict(variable))
         return jsonify({"status": "success"})
@@ -81,7 +81,7 @@ def remove():
     """
     parameter = request.args.get("param", "")
     for _data in watch_data:
-        if _data["variable"].name == parameter:
+        if _data["variable"].info.name == parameter:
             watch_data.remove(_data)
             break
     return jsonify({"status": "success"})
@@ -96,7 +96,7 @@ def update():
     field = request.args.get("field", "").lower()
     value = request.args.get("value", "")
     for _data in watch_data:
-        if _data["variable"].name == param:
+        if _data["variable"].info.name == param:
             _data[field] = float(value)
             if field == "value":
                 _data["variable"].set_value(_data[field])

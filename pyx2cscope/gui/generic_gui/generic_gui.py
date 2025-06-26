@@ -445,9 +445,7 @@ class X2cscopeGui(QMainWindow):
         self.trigger_delay_edit = QLineEdit("0")
         self.trigger_delay_edit.setValidator(self.decimal_validator)
 
-        self.scope_sampletime_edit = QLineEdit(
-            "50"
-        )  # Default sample time in microseconds
+        self.scope_sampletime_edit = QLineEdit("50")  # Default sample time in microseconds
         self.scope_sampletime_edit.setValidator(self.decimal_validator)
 
         # Total Time
@@ -1560,7 +1558,7 @@ class X2cscopeGui(QMainWindow):
 
                 # Set the scope sample time from the user input in microseconds
                 scope_sample_time_us = int(self.scope_sampletime_edit.text())
-                self.real_sampletime = self.x2cscope.scope_sample_time(
+                self.real_sampletime = self.x2cscope.get_scope_sample_time(
                     scope_sample_time_us
                 )
                 logging.debug(f"Real sample time: {self.real_sampletime} µs")  # Check this value

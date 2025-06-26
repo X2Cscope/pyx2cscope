@@ -1,8 +1,27 @@
-"""This module is for all the different GUI."""
+"""This module serves as the entry point for launching the various graphical user interfaces (GUIs).
+
+It provides functions to start either the Qt-based desktop GUI or the web-based GUI server.
+
+Functions
+---------
+- execute_qt(*args, **kwargs): Launches the default Qt GUI interface for X2Cscope.
+- execute_web(*args, **kwargs): Starts the web server for the web-based GUI.
+
+Typical usage example:
+
+    from pyx2cscope.gui import execute_qt, execute_web
+
+    # To launch the Qt GUI:
+    execute_qt()
+
+    # To launch the web GUI:
+    execute_web()
+
+"""
 
 
 def execute_qt(*args, **kwargs):
-    """Execute the default Qt GUI interface.
+    """Executes the default Qt GUI interface.
 
     Args:
         args: non-keyed arguments for Qt App.
@@ -29,7 +48,7 @@ def execute_qt(*args, **kwargs):
 
 
 def execute_web(*args, **kwargs):
-    """Start the web server.
+    """Starts the web server.
 
     Args:
         *args: non-keyed arguments

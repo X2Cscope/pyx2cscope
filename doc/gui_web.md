@@ -2,10 +2,8 @@
 
 The Web Graphic User Interface is implemented using Flask, bootstrap 4, jquery and chart.js
 It is also an example of how to build a custom GUI using pyX2Cscope.
-This interface allows
-you to use multiple windows or even access functions from smart devices.
-The server runs
-by default on your local machine and does not allow external access. 
+This interface allows you to use multiple windows or even access functions from smart devices.
+The server runs by default on your local machine and does not allow external access. 
 The server has default port 5000 and will be accessible on http://localhost:5000
 
 ## Starting the Web GUI

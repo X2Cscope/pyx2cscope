@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from pyx2cscope import set_logger
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
+from x2cscope import TriggerConfig
 
 set_logger(
     logging.INFO,
@@ -45,13 +46,8 @@ x2c_scope.add_scope_channel(variable5)
 
 
 # Setting up Trigger, any available variable can be selected.
-x2c_scope.set_scope_trigger(
-    variable3,
-    trigger_level=500,
-    trigger_mode=1,
-    trigger_delay=50,
-    trigger_edge=1,
-)
+config = TriggerConfig(variable3, trigger_level=500, trigger_mode=1, trigger_delay=50, trigger_edge=1)
+x2c_scope.set_scope_trigger(config)
 
 # Request and Acquire Scope Data
 # This loop requests and receives data from the scope, storing it in a dictionary for later use.

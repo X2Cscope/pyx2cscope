@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/X2Cscope/pyx2cscope/develop/pyx2cscope/gui/img/pyx2cscope.jpg?token=GHSAT0AAAAAACGXT7TPLZREQNFPHPTGHAVEZHIPUNQ" alt="pyX2Cscope Logo" width="250">
+  <img src="https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/pyx2cscope_logo.png" alt="pyX2Cscope Logo" width="250">
 </p>
 
 # pyX2Cscope
@@ -55,7 +55,7 @@ print(speed_measured.get_value())
 speed_reference.set_value(1000)
 ```
 
-Further [Examples](https://github.com/X2Cscope/pyx2cscope/tree/main/pyx2cscope/examples) directory in the pyX2Cscope project to check out the available examples or create a new .py file according to your requirements.
+Check [Examples](https://github.com/X2Cscope/pyx2cscope/tree/main/pyx2cscope/examples) directory in the pyX2Cscope project to see common uses of this library.
 
 ## Development
 

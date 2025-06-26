@@ -34,40 +34,32 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.graphviz",
     "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
     "autoapi.extension",
 ]
 
 autoapi_dirs = ["../pyx2cscope"]
 autoapi_ignore = [
     "*/examples/*",
-    "*/gui/*",  # For now, we ignore this, TODO: fix this
+    "*/gui/*",  # For now, we ignore this
 ]
 
 suppress_warnings = [
-    "autoapi.python_import_resolution"
-]  # Suppress warnings about unresolved imports TODO: fix this
+     "autoapi.python_import_resolution"
+]  # Suppress warnings about unresolved imports
 
 nitpick_ignore = [
-    ("py:class", "numbers.Number"),
+    ("py:class", "pyx2cscope.gui"),
+    ("py:class", "mchplnet.lnet"),
     ("py:class", "mchplnet.lnet.LNet"),
-    ("py:class", "mchplnet.lnet"),  # For now, we ignore this, TODO: fix this
-    (
-        "py:class",
-        "pyx2cscope.variable.variable.LNet",
-    ),  # For now, we ignore this, TODO: fix this
-    ("py:obj", "abc.ABC"),  # For now, we ignore this, TODO: fix this
-    ("py:class", "enum.Enum"),  # For now, we ignore this, TODO: fix this
-    ("py:class", "abc.ABC"),  # For now, we ignore this, TODO: fix this
-    ("py:class", "PyQt5.QtWidgets.QMainWindow"),
-    (
-        "py:class",
-        "mchplnet.services.scope.ScopeChannel",
-    ),  # For now, we ignore this, TODO: fix this
-    (
-        "py:class",
-        "mchplnet.interfaces.abstract_interface.InterfaceABC",
-    ),  # For now, we ignore this, TODO: fix this
+    ("py:class", "mchplnet.services.scope.ScopeChannel"),
+    ("py:class", "mchplnet.interfaces.factory.InterfaceType"),
+    ("py:class", "mchplnet.interfaces.abstract_interface.InterfaceABC"),   
 ]
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
 
 graphviz_output_format = "png"  # 'svg' is also possible
 

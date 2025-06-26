@@ -40,8 +40,8 @@ def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
         ScopeChannel: A ScopeChannel object representing the given variable.
     """
     return ScopeChannel(
-        name=variable.name,
-        source_location=variable.address,
+        name=variable.info.name,
+        source_location=variable.info.address,
         data_type_size=variable.get_width(),
         source_type=0,
         is_integer=variable.is_integer(),
@@ -83,7 +83,7 @@ class X2CScope:
         uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.
     """
 
-    def __init__(self, elf_file: str = None, interface: InterfaceABC = None, **kwargs):
+    def __init__(self, elf_file: str = None, interface: InterfaceType = None, **kwargs):
         """Initialize the X2CScope instance.
 
         Args:
@@ -179,7 +179,7 @@ class X2CScope:
             int: The ID of the added scope channel.
         """
         scope_channel = get_variable_as_scope_channel(variable)
-        self.convert_list[variable.name] = variable.bytes_to_value
+        self.convert_list[variable.info.name] = variable.bytes_to_value
         return self.scope_setup.add_channel(scope_channel, trigger)
 
     def clear_all_scope_channel(self):
@@ -204,9 +204,9 @@ class X2CScope:
         Returns:
             The result of the channel removal operation.
         """
-        if variable.name in self.convert_list:
-            self.convert_list.pop(variable.name)
-        return self.scope_setup.remove_channel(variable.name)
+        if variable.info.name in self.convert_list:
+            self.convert_list.pop(variable.info.name)
+        return self.scope_setup.remove_channel(variable.info.name)
 
     def get_scope_channel_list(self) -> Dict[str, ScopeChannel]:
         """Get a list of all scope channels.
@@ -240,14 +240,15 @@ class X2CScope:
         self.scope_setup.reset_trigger()
 
     def set_sample_time(self, sample_time: int):
-        """Define a pre-scaler for sampling mode.
+        """Define the resolution how the samples will be buffered at the internal buffer.
 
         This can be used to extend total sampling time at the cost of resolution.
-        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
+        1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample …
 
         Args:
             sample_time (int): The sample time factor.
         """
+        sample_time = 1 if sample_time < 1 else sample_time
         self.scope_setup.set_sample_time_factor(sample_time)
 
     def set_scope_state(self, scope_state: int):
@@ -411,9 +412,7 @@ class X2CScope:
             channels[channel].extend(rest)
         return channels
 
-    def get_scope_channel_data(
-        self, valid_data: bool = True
-    ) -> Dict[str, List[Number]]:
+    def get_scope_channel_data(self, valid_data: bool = True) -> Dict[str, List[Number]]:
         """Get the sorted and optionally filtered scope channel data.
 
         Args:
@@ -429,13 +428,17 @@ class X2CScope:
             return self._filter_channels(channels) if valid_data else channels
         return {}
 
-    def scope_sample_time(
-        self, time_microseconds: float
-    ) -> float:  # TODO testing and implementing the time axis.
+    def get_scope_sample_time(self, time: float) -> float:
         """Evaluate the scope sample time based on user-provided time value.
 
+        X2Cscope has an internal buffer which is filled with data at a specific rate.
+        The argument time relates to the sampling rate of each sample. The total scope
+        channel time depends on the size of the internal buffer, the sampling rate, and
+        the time factor (resolution) set when starting the scope channel. See also
+        set_sample_time
+
         Args:
-            time_microseconds (float): The time value in microseconds for evaluating one scope sample.
+            time (float): The time value in microseconds of one sample.
 
         Returns:
             float: The real-time duration for the scope functionality in milliseconds.
@@ -452,7 +455,7 @@ class X2CScope:
         samples_in_buffer = buffer_size // dataset_size
 
         # Calculate the total time duration for the samples in the buffer
-        total_time_microseconds = time_microseconds * samples_in_buffer
+        total_time_microseconds = time * samples_in_buffer
 
         # Convert the total time to milliseconds
         total_time_milliseconds = total_time_microseconds / 1000
@@ -460,11 +463,12 @@ class X2CScope:
         logging.info(
             f"Total time for the scope functionality: {total_time_milliseconds} ms"
         )
-        return self.scope_setup.sample_time_factor * total_time_milliseconds * 2
+        return self.scope_setup.sample_time_factor * total_time_milliseconds
 
     def get_device_info(self):
         """Returns the device information as a dictionary."""
         device_info = self.variable_factory.device_info
+        uc_width_value = "8-bit"
         if device_info.uc_width == UC_WIDTH_16BIT:
             uc_width_value = "16-bit"
         elif device_info.uc_width == UC_WIDTH_32BIT:

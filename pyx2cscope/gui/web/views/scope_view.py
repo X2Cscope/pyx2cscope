@@ -54,7 +54,7 @@ def get_data():
     """
     result = []
     for data in scope_data:
-        result.append({f: v.name if f == "variable" else v for f, v in data.items()})
+        result.append({f: v.info.name if f == "variable" else v for f, v in data.items()})
     return {"data": result}
 
 
@@ -65,7 +65,7 @@ def add():
     """
     with get_x2c() as x2c:
         parameter = request.args.get("param", "")
-        if not any(_data["variable"].name == parameter for _data in scope_data):
+        if not any(_data["variable"].info.name == parameter for _data in scope_data):
             variable = x2c.get_variable(parameter)
             data = _get_variable(variable)
             scope_data.append(data)
@@ -91,18 +91,18 @@ def remove():
 def _set_trigger(data, param, field, value):
     if field == "trigger":
         value = float(value)
-        if data["variable"].name != param:
+        if data["variable"].info.name != param:
             data["trigger"] = 0.0 if value == 1.0 else data["trigger"]
 
 
 def _set_fields(data, param, field, value):
-    if data["variable"].name == param:
+    if data["variable"].info.name == param:
         data[field] = value if field == "color" else float(value)
 
 
 def _set_enable(x2c, data, param, field, value):
     if field == "enable":
-        if data["variable"].name == param:
+        if data["variable"].info.name == param:
             if float(value):
                 x2c.add_scope_channel(data["variable"])
             else:
@@ -182,8 +182,8 @@ def _get_datasets(x2c):
     channel_data = x2c.get_scope_channel_data()
     for channel in scope_data:
         # if variable is disabled on scope_data, it is not available on channel_data
-        if channel["variable"].name in channel_data:
-            variable = channel["variable"].name
+        if channel["variable"].info.name in channel_data:
+            variable = channel["variable"].info.name
             data_line = [
                 l * channel["gain"] + channel["offset"] for l in channel_data[variable]
             ]
