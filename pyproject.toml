@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyx2cscope"
-version = "0.4.4"
+version = "0.4.5"
 description = "python implementation of X2Cscope"
 authors = [
   "Yash Agarwal",
@@ -33,7 +33,7 @@ numpy = "^1.26.0"
 matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
 pyqtgraph= "^0.13.7"
-mchplnet = "0.2.1"
+mchplnet = "0.2.2"
 flask = "^3.0.3"
 
 
