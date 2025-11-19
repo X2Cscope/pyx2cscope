@@ -4,6 +4,7 @@ import os
 import random
 import threading
 import time
+from typing import List
 
 import pytest
 
@@ -11,9 +12,46 @@ from pyx2cscope.x2cscope import X2CScope
 from tests import data
 from tests.utils.serial_stub import BIT_LENGTH_16, fake_serial
 
-# Global counter to track operation sequence
-operation_sequence = []
-sequence_lock = threading.Lock()
+
+class ThreadSafeSequence:
+    """A thread-safe sequence for tracking operation sequences in tests.
+    
+    This class provides thread-safe operations on a sequence of tuples, which is used
+    to track the order of operations in thread safety tests. It ensures that all
+    operations on the internal sequence are protected by a lock to prevent race conditions.
+    """
+    
+    def __init__(self) -> None:
+        """Initialize a new ThreadSafeSequence with an empty internal sequence."""
+        self._sequence: List[tuple] = []
+        self._lock = threading.Lock()
+    
+    def append(self, item: tuple) -> None:
+        """Safely append an item to the sequence.
+        
+        Args:
+            item: The tuple to append to the sequence.
+        """
+        with self._lock:
+            self._sequence.append(item)
+    
+    def clear(self) -> None:
+        """Safely remove all items from the sequence."""
+        with self._lock:
+            self._sequence.clear()
+    
+    def __iter__(self):
+        """Return a thread-safe iterator over a copy of the sequence.
+        
+        Returns:
+            An iterator over a copy of the current sequence.
+        """
+        with self._lock:
+            return iter(self._sequence.copy())
+
+# Thread-safe sequence to track operation sequence
+operation_sequence = ThreadSafeSequence()
+sequence_lock = threading.Lock()  # Lock for sequence operations in the test
 
 class TestX2CScopeThreadSafety:
     """Thread safety tests for X2CScope class."""
@@ -25,8 +63,7 @@ class TestX2CScopeThreadSafety:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):
         """Set up test environment before each test."""
-        global operation_sequence
-        operation_sequence = []  # Reset operation sequence
+        operation_sequence.clear()  # Reset operation sequence
 
         # Create a mock with a longer delay to increase chance of race conditions
         fake_serial(mocker, BIT_LENGTH_16)
@@ -114,8 +151,7 @@ class TestX2CScopeThreadSafety:
 
         # Reset the variable and operation sequence
         self.test_var.set_value(0)
-        global operation_sequence
-        operation_sequence = []
+        operation_sequence.clear()
 
         # Function to perform operations
         def perform_operations(thread_id):
