@@ -2,10 +2,10 @@
     <div>
         <label class="form-label fw-bold d-block mb-2">Trigger</label>
         <div class="btn-group w-100 mb-3" role="group" aria-label="Trigger state">
-            <input type="radio" class="btn-check" name="triggerEnable" id="triggerEnable" value="enable" autocomplete="off">
+            <input type="radio" class="btn-check" name="trigger_mode" id="triggerEnable" value="1">
             <label class="btn btn-outline-success" for="triggerEnable">Enable</label>
             
-            <input type="radio" class="btn-check" name="triggerEnable" id="triggerDisable" value="disable" autocomplete="off" checked>
+            <input type="radio" class="btn-check" name="trigger_mode" id="triggerDisable" value="0" checked>
             <label class="btn btn-outline-danger active" for="triggerDisable">Disable</label>
         </div>
     </div>
@@ -13,10 +13,10 @@
     <div>
         <label class="form-label fw-bold d-block mb-2">Edge Detection</label>
         <div class="btn-group w-100 mb-3" role="group" aria-label="Edge detection">
-            <input type="radio" class="btn-check" name="triggerEdge" id="rising" value="rising" autocomplete="off" checked>
+            <input type="radio" class="btn-check" name="trigger_edge" id="rising" value="1" checked>
             <label class="btn btn-outline-primary" for="rising">Rising</label>
             
-            <input type="radio" class="btn-check" name="triggerEdge" id="falling" value="falling" autocomplete="off">
+            <input type="radio" class="btn-check" name="trigger_edge" id="falling" value="0" autocomplete="off">
             <label class="btn btn-outline-primary" for="falling">Falling</label>
         </div>
     </div>
@@ -24,7 +24,7 @@
     <div>
         <label for="triggerLevel" class="form-label mb-2">Level</label>
         <div class="input-group">
-            <input type="number" step="1" class="form-control" id="triggerLevel" name="triggerLevel" value="0" placeholder="0" required>
+            <input type="number" step="1" class="form-control" id="triggerLevel" name="trigger_level" value="0" placeholder="0" required>
             <span class="input-group-text">V</span>
         </div>
         <div class="invalid-feedback">
@@ -35,7 +35,7 @@
     <div class="py-3">
         <label for="triggerDelay" class="form-label mb-2">Delay</label>
         <div class="input-group">
-            <input type="number" step="10" max="50" min="-50" class="form-control" id="triggerDelay" name="triggerDelay" value="0" placeholder="0" required>
+            <input type="number" step="10" max="50" min="-50" class="form-control" id="triggerDelay" name="trigger_delay" value="0" placeholder="0" required>
             <span class="input-group-text">%</span>
         </div>
         <div class="form-text">Range: -50% to +50%</div>

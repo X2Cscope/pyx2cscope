@@ -1,7 +1,101 @@
 let scopeCardEnabled = true;
-let dataReadyInterval;
 let scopeTable;
 let scopeChart;
+
+const socket_sv = io("/scope-view");
+
+socket_sv.on("connect", () => {
+    console.log("Connected to scope namespace:", socket_sv.id);
+});
+
+socket_sv.on("scope_table_update", (data) => {
+    $('#scopeSearch').val(null).trigger('change');
+    scopeTable.ajax.reload();
+});
+
+socket_sv.on("scope_chart_update", (data) => {
+    // check which datasets are visible
+    const visibility = {};
+    scopeChart.data.datasets.forEach((ds, i) => {
+      visibility[ds.label] = scopeChart.isDatasetVisible(i);
+    });
+
+    // update datasets and labels
+    scopeChart.data.datasets = data.datasets;
+    scopeChart.data.labels = data.labels;
+
+    // restore visibility for matching labels
+    scopeChart.data.datasets.forEach((ds, i) => {
+      if (visibility[ds.label] === false) {
+        scopeChart.setDatasetVisibility(i, false);
+      }
+    });
+
+    // update chart
+    scopeChart.update('none');
+});
+
+socket_sv.on("sample_control_updated", function(response) {
+    if (response.status === "success") {
+        // Handle triggerAction radio buttons
+        if (response.data.triggerAction) {
+            document.querySelectorAll('input[name="triggerAction"]').forEach(radio => {
+                const isTarget = radio.value === response.data.triggerAction;
+                radio.checked = isTarget;
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                label.classList.toggle('active', isTarget);
+            });
+        }
+        // Handle sampleTime input
+        if (response.data.sampleTime) {
+            const sampleTimeInput = document.getElementById('sampleTime');
+            sampleTimeInput.value = response.data.sampleTime;
+        }
+        // Handle sampleFreq input
+        if (response.data.sampleFreq) {
+            const sampleFreqInput = document.getElementById('sampleFreq');
+            sampleFreqInput.value = response.data.sampleFreq;
+        }
+    } else {
+        console.error("Failed to update sample control:", response.message);
+    }
+});
+
+// Add this handler for the trigger control response
+socket_sv.on("trigger_control_updated", function(response) {
+    if (response.status === "success" && response.data) {
+        // Handle trigger_mode radio buttons
+        if (response.data.trigger_mode !== undefined) {
+            document.querySelectorAll('input[name="trigger_mode"]').forEach(radio => {
+                const isTarget = radio.value === response.data.trigger_mode.toString();
+                radio.checked = isTarget;
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                label.classList.toggle('active', isTarget);
+            });
+        }
+        // Handle trigger_edge radio buttons
+        if (response.data.trigger_edge !== undefined) {
+            document.querySelectorAll('input[name="trigger_edge"]').forEach(radio => {
+                const isTarget = radio.value === response.data.trigger_edge.toString();
+                radio.checked = isTarget;
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                label.classList.toggle('active', isTarget);
+            });
+        }
+        // Handle trigger_level input
+        if (response.data.trigger_level !== undefined) {
+            const triggerLevelInput = document.getElementById('triggerLevel');
+            triggerLevelInput.value = response.data.trigger_level;
+        }
+        // Handle trigger_delay input
+        if (response.data.trigger_delay !== undefined) {
+            const triggerDelayInput = document.getElementById('triggerDelay');
+            triggerDelayInput.value = response.data.trigger_delay;
+        }
+    } else if (response.status !== "success") {
+        console.error("Failed to update trigger control:", response.message);
+    }
+});
 
 function initScopeSelect(){
     $('#scopeSearch').select2({
@@ -24,37 +118,15 @@ function initScopeSelect(){
 
     $('#scopeSearch').on('select2:select', function(e){
         parameter = $('#scopeSearch').select2('data')[0]['text'];
-        $.getJSON('/scope-view/add',
-        {
-            param: parameter
-        },
-        function(data) {
-            $('#scopeSearch').val(null).trigger('change');
-            scopeTable.ajax.reload();
-        });
+        socket_sv.emit("add_scope_var", {var: parameter});
     });
-}
-
-function sv_remove_chart_data(parameter) {
-    scopeChart.data.labels.pop(parameter);
-    scopeChart.data.datasets.forEach((dataset) => {
-        if(dataset.data.id == parameter) dataset.data.pop();
-    });
-    scopeChart.update();
 }
 
 function setScopeTableListeners(){
     // delete Row on button click
     $('#scopeTableBody').on('click', '.remove', function () {
         parameter = $(this).parent().siblings()[2].textContent;
-        $.getJSON('/scope-view/remove',
-        {
-            param: parameter
-        },
-        function(data) {
-            scopeTable.ajax.reload();
-            sv_remove_chart_data(parameter);
-        });
+        socket_sv.emit("remove_scope_var", {var: parameter});
     });
 
     // update variable after loosing focus on element
@@ -92,34 +164,12 @@ function sv_update_param(element) {
         if(element.type == "color") parameter_value = element.value;
     }
 
-    $.getJSON('/scope-view/update',
+    socket_sv.emit("update_scope_var",
     {
         param: parameter,
-        field: parameter_field,
+        field: parameter_field.toLowerCase(),
         value: parameter_value
-    }, function (data){
-        scopeTable.ajax.reload();
     });
-}
-
-function sv_update_scope_data(data) {
-
-    const vis = {}; // keep visibility state of items
-    scopeChart.data.datasets.forEach((ds, i) => {
-      vis[ds.label] = scopeChart.isDatasetVisible(i);
-    });
-
-    scopeChart.data.datasets = data.data;
-    scopeChart.data.labels = data.labels;
-
-    // Step 3: Restore visibility for matching labels
-    scopeChart.data.datasets.forEach((ds, i) => {
-      if (vis[ds.label] === false) {
-        scopeChart.setDatasetVisibility(i, false);
-      }
-    });
-
-    scopeChart.update('none');
 }
 
 function sv_checkbox(data, type) {
@@ -316,83 +366,11 @@ function initScopeChart() {
     $('#chartExport').attr("href", "/scope-view/export")
 }
 
-function sv_clear_stop_focus() {
-    $("#triggerStop").removeClass("active");
-    $("#triggerStop").removeClass("focus");
-}
-
-function sv_set_stop_focus() {
-    const stopButton = document.getElementById('triggerStop');
-    
-    if (stopButton) {
-        // First, uncheck all radio buttons in the group
-        document.querySelectorAll('input[name="triggerAction"]').forEach(btn => {
-            btn.checked = false;
-            const label = btn.parentElement;
-            label.classList.remove("active", "focus");
-        });
-        
-        // Programmatically click the stop button to ensure all Bootstrap states are updated
-        stopButton.checked = true;
-        const stopLabel = stopButton.parentElement;
-        
-        // Use a small timeout to ensure the UI updates properly
-        setTimeout(() => {
-            // Force the button to be checked and focused
-            stopButton.checked = true;
-            stopButton.dispatchEvent(new Event('change'));
-            stopButton.focus();
-            
-            // Update the label state
-            stopLabel.classList.add("active", "focus");
-            
-            // If we're in a desktop view, we might need to trigger a click on the label
-            if (window.innerWidth > 768) { // Assuming 768px is your mobile breakpoint
-                stopLabel.click();
-            }
-        }, 10);
-    }
-}
-
-function sv_data_ready_check()
-{
-    $.getJSON('/scope-view/chart', function(data) {
-        if (data.length === 0) {
-            // There is no data to update, so, call refresh again later
-            if(dataReadyInterval) setTimeout(sv_data_ready_check, 200);
-        }
-        else if(data.finish) {
-            sv_set_stop_focus();
-            sv_update_scope_data(data);
-        }
-        else {
-            if(data.ready) sv_update_scope_data(data);
-            if(dataReadyInterval) setTimeout(sv_data_ready_check, 200);
-        }
-    });
-}
-
 function initScopeForms(){
     $("#sampleControlForm").submit(function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
-        var form = $(this);
-
-        $.ajax({
-            type: "POST",
-            url: "/scope-view/form-sample",
-            data: form.serialize(),
-            success: function(data)
-            {
-                if(data.trigger){
-                    dataReadyInterval = true;
-                    setTimeout(sv_data_ready_check, 200);
-                    sv_clear_stop_focus();
-                }
-                else {
-                    dataReadyInterval = false;
-                }
-            }
-        });
+        var formData = $(this).serialize();
+        socket_sv.emit("update_sample_control", formData);
     });
 
     // Add change event handlers for the sample control radio buttons
@@ -412,19 +390,8 @@ function initScopeForms(){
     // Handle trigger control form submission
     $("#triggerControlForm").submit(function(e) {
         e.preventDefault();
-        var form = $(this);
-
-        $.ajax({
-            type: "POST",
-            url: "/scope-view/form-trigger",
-            data: form.serialize(),
-            success: function(data) {
-                // Update the visual state of the buttons based on the response if needed
-                if (data.triggerEnable) {
-                    $(`#${data.triggerEnable}`).prop('checked', true).trigger('change');
-                }
-            }
-        });
+        var formData = $(this).serialize();
+        socket_sv.emit("update_trigger_control", formData);
     });
 
     // Add change event handlers for the radio buttons to update their visual state
