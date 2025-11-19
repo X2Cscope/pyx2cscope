@@ -315,7 +315,7 @@ function initScopeChart() {
             },
             scales: {
                 x: {
-                    type: 'linear',
+                    type: 'category',
                     title: {
                         display: true,
                         text: 'Time (ms)'
@@ -323,6 +323,21 @@ function initScopeChart() {
                     grid: {
                         display: true,
                         drawBorder: true
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        includeBounds: true,
+                        callback: function(value, index, ticks) {
+                          const rawLabel = this.getLabelForValue(value);
+                          const num = parseFloat(rawLabel);
+                          if (isNaN(num)) return rawLabel;
+
+                          const tickCount = ticks.length;
+                          if (tickCount > 1000) return num.toFixed(2);
+                          if (tickCount > 500) return num.toFixed(3);
+                          if (tickCount > 100) return num.toFixed(4);
+                          return num.toFixed(5);
+                        }
                     }
                 },
                 y: {

@@ -58,8 +58,8 @@ def chart_export():
     """
     datasets = web_scope.get_scope_datasets()
     size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
-    label = web_scope.get_chart_label(size)
-    csv = "index; " + "; ".join([sc["label"] for sc in datasets]) + "\n"
+    label = web_scope.get_scope_chart_label(size)
+    csv = "time (ms); " + "; ".join([sc["label"] for sc in datasets]) + "\n"
     data = [d["data"] for d in datasets]
     data[:0] = [label]  # place labels as first item im list
     for i in zip(*data):
