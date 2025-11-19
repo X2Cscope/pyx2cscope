@@ -2,6 +2,7 @@
 
 This module is to be used by the Mocker to fake a working serial connection with either 16 or 32 bit devices.
 """
+import time
 
 from mchplnet.interfaces.uart import LNetSerial
 from mchplnet.lnetframe import LNetFrame
@@ -59,6 +60,7 @@ class SerialStub:
 
         Expected get_device_info and load_param bytestream are initialized here.
         """
+        self.delay_seconds = 0.2  # 200ms delay to make concurrency
         self.uc_width = uc_width
         self.data = bytearray()
         self.device_info = bytearray(b"\x55\x01\x01\x00\x57")
@@ -78,6 +80,7 @@ class SerialStub:
 
     def _get_ram(self):
         """Handle a get_ram request."""
+        time.sleep(self.delay_seconds)  # Simulate operation delay
         frame_builder = FrameBuilder(0x09, self.uc_width, None)
         frame_builder.received = self.data
         addr, size = frame_builder.deserialize()# 16-bit or 32-bit address
@@ -94,6 +97,7 @@ class SerialStub:
 
     def _put_ram(self):
         """Handle a put_ram request."""
+        time.sleep(self.delay_seconds)  # Simulate operation delay
         frame_builder = FrameBuilder(0x0A, self.uc_width, None)
         frame_builder.received = self.data
         addr, value = frame_builder.deserialize()
