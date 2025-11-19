@@ -336,6 +336,7 @@ function initScopeChart() {
                           if (tickCount > 1000) return num.toFixed(2);
                           if (tickCount > 500) return num.toFixed(3);
                           if (tickCount > 100) return num.toFixed(4);
+                          if (tickCount == 11) return num.toFixed(1);
                           return num.toFixed(5);
                         }
                     }

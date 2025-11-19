@@ -54,6 +54,8 @@ function setConnectState(status) {
         $("#btnConnect").prop("disabled", true);
         $("#btnConnect").html("Disconnect", true);
         $('#connection-status').html('Connected');
+        $('#desktopTabs').removeClass('disabled');
+        $('#mobileTabs').removeClass('disabled');
 
     }
     else {
@@ -68,6 +70,8 @@ function setConnectState(status) {
         $('#btnConnect').removeClass('btn-danger');
         $('#btnConnect').addClass('btn-primary');
         $('#setupView').removeClass('disabled');
+        $('#desktopTabs').addClass('disabled');
+        $('#mobileTabs').addClass('disabled');
     }
 }
 
