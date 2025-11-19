@@ -2,19 +2,21 @@
 
 {% block content %}
 <div class="row g-3" id="viewsContainer">
-    <div class="col-12 col-xxl-8" id="watchCol">
+    <div class="col-12 col-xxl-8" id="scopeCol">
         <div class="card h-100">
             <div class="card-header">
-                <strong>WatchView</strong>
+                <strong>ScopeView</strong>
             </div>
             <div class="card-body">
-                {% include 'watch_view.html' %}
+                {% include 'scope_view.html' %}
             </div>
         </div>
     </div>
 </div>
+<br>
+<br>
 {% endblock content %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/watch_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scope_view.js') }}"></script>
 {% endblock scripts %}

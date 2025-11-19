@@ -24,7 +24,7 @@ import struct
 from abc import abstractmethod
 from dataclasses import dataclass
 from numbers import Number
-from typing import List, Dict
+from typing import Dict, List
 
 from mchplnet.lnet import LNet
 

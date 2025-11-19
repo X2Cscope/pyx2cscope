@@ -3,8 +3,9 @@
     <title>{{ title }}</title>
     {% include 'header.html' %}
   </head>
-  <body>
-    <div class="container-fluid mt-3">
+  <body class="bg-light">
+    {% include 'navbar.html' %}
+    <div class="container-fluid py-3">
       {% block content %}{% endblock %}
       {% include 'modal.html' %}
     </div>
@@ -15,9 +16,5 @@
     </footer>
     {% include 'scripts.html' %}
     {% block scripts %}{% endblock %}
-    <br>
-  <br>
-  <br>
-  <br>
   </body>
 </html>

@@ -1,37 +1,30 @@
 <form id="sampleControlForm">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="btn-group btn-group-toggle d-flex" role="group" data-toggle="buttons">
-              <label class="btn btn-primary">
-                <input type="radio" name="triggerAction" id="triggerStart" value="on" autocomplete="off">Sample
-              </label>
-              <label class="btn btn-danger active focus">
-                <input type="radio" name="triggerAction" id="triggerStop" value="off" autocomplete="off">Stop
-              </label>
-              <label class="btn btn-secondary">
-                <input type="radio" name="triggerAction" id="triggerShot" value="shot" autocomplete="off">Burst
-              </label>
-            </div>
+    <div class="mb-3">
+        <div class="btn-group w-100" role="group" aria-label="Trigger actions">
+            <input type="radio" class="btn-check" name="triggerAction" id="triggerStart" value="on">
+            <label class="btn btn-outline-success" for="triggerStart">Sample</label>
+            
+            <input type="radio" class="btn-check" name="triggerAction" id="triggerStop" value="off" checked>
+            <label class="btn btn-outline-danger active" for="triggerStop">Stop</label>
+            
+            <input type="radio" class="btn-check" name="triggerAction" id="triggerShot" value="shot">
+            <label class="btn btn-outline-primary" for="triggerShot">Burst</label>
         </div>
     </div>
-    <br>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Time factor</span>
-                </div>
-                <input type="number" id="sampleTime" name="sampleTime" class="form-control" size="2" min="1" max="30" value="1">
-            </div>
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Frequency</span>
-                </div>
-                <input type="number" id="sampleFreq" name="sampleFreq" class="form-control" size="2" min="1" max="30" value="20">
-                <div class="input-group-postpend">
-                    <span class="input-group-text">KHz</span>
-                </div>
-            </div>
+    
+    <div class="mb-3">
+        <label for="sampleTime" class="form-label">Time factor</label>
+        <div class="input-group">
+            <input type="number" id="sampleTime" name="sampleTime" class="form-control" min="1" max="30" value="1" required>
+            <span class="input-group-text">:1</span>
+        </div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="sampleFreq" class="form-label">Frequency</label>
+        <div class="input-group">
+            <input type="number" id="sampleFreq" name="sampleFreq" class="form-control" min="1" max="30" value="20" required>
+            <span class="input-group-text">KHz</span>
         </div>
     </div>
 </form>

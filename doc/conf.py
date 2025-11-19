@@ -54,7 +54,7 @@ nitpick_ignore = [
     ("py:class", "mchplnet.lnet.LNet"),
     ("py:class", "mchplnet.services.scope.ScopeChannel"),
     ("py:class", "mchplnet.interfaces.factory.InterfaceType"),
-    ("py:class", "mchplnet.interfaces.abstract_interface.InterfaceABC"),   
+    ("py:class", "mchplnet.interfaces.abstract_interface.Interface"),
 ]
 
 intersphinx_mapping = {

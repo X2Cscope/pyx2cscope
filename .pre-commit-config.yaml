@@ -1,0 +1,10 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: update-version
+        name: Update version in __init__.py
+        entry: python scripts/update_version.py
+        language: python
+        files: ^pyproject.toml$
+        types: [toml]
+        always_run: true

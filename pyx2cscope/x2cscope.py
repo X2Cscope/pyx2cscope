@@ -11,17 +11,17 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Dict, List
 
-from mchplnet.interfaces.abstract_interface import InterfaceABC
+from mchplnet.interfaces.abstract_interface import Interface
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
 from pyx2cscope.variable.variable import Variable, VariableInfo
-from pyx2cscope.variable.variable_factory import VariableFactory, FileType
+from pyx2cscope.variable.variable_factory import FileType, VariableFactory
 
 # Configure logging for debugging and tracking
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.ERROR,
     filename=__name__ + ".log",
 )
 
@@ -75,7 +75,7 @@ class X2CScope:
     requesting data, and processing received data.
 
     Attributes:
-        interface (InterfaceABC): Interface object for communication.
+        interface (Interface): Interface object for communication.
         lnet (LNet): LNet object for low-level network operations.
         variable_factory (VariableFactory): Factory to create Variable objects.
         scope_setup: Configuration for the scope setup.
@@ -88,23 +88,23 @@ class X2CScope:
 
         Args:
             elf_file (str): Path to the ELF file.
-            interface (InterfaceABC): Communication interface to be used, defaults to None.
+            interface (Interface): Communication interface to be used, defaults to None.
             **kwargs: Key defined arguments.
         """
-        i_type = interface if interface is not None else InterfaceType.SERIAL
-        self.interface = InterfaceFactory.get_interface(interface_type=i_type, **kwargs)
+        self.interface = InterfaceFactory.get_interface(interface, **kwargs)
         self.lnet = LNet(self.interface)
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
         self.uc_width = self.variable_factory.device_info.uc_width
 
-    def set_interface(self, interface: InterfaceABC):
+    def set_interface(self, interface: Interface):
         """Set the communication interface for the scope.
 
         Args:
-            interface (InterfaceABC): The interface to be set for communication.
+            interface (Interface): The interface to be set for communication.
         """
+        self.interface = interface
         self.lnet = LNet(interface)
         self.scope_setup = self.lnet.get_scope_setup()
         self.variable_factory.set_lnet_interface(self.lnet)
@@ -233,6 +233,10 @@ class X2CScope:
             trigger_edge=config.trigger_edge,
             trigger_mode=config.trigger_mode,
         )
+        # check if trigger level is within variable range
+        min_value, max_value = config.variable._get_min_max_values()
+        if min_value > config.trigger_level or max_value < config.trigger_level:
+            scope_trigger.trigger_level = min_value if min_value > config.trigger_level else max_value
         self.scope_setup.set_trigger(scope_trigger)
 
     def clear_trigger(self):
@@ -475,8 +479,8 @@ class X2CScope:
         return {
             "processor_id": device_info.processor_id,
             "uc_width": uc_width_value,
-            "date": device_info.monitorDate,  ##TODO Change to APP date once implemented
-            "time": device_info.monitorTime,  # TODO Change to APP time once implemented
-            "AppVer": device_info.appVer,
+            "date": device_info.monitor_date,  ##TODO Change to APP date once implemented
+            "time": device_info.monitor_time,  # TODO Change to APP time once implemented
+            "AppVer": device_info.app_version,
             "dsp_state": device_info.dsp_state,
         }

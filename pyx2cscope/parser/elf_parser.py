@@ -7,10 +7,10 @@ Classes:
 The module is designed to be extended by specific implementations for different ELF file formats.
 """
 from abc import ABC, abstractmethod
-
 from typing import Dict, List, Optional
 
 from pyx2cscope.variable.variable import VariableInfo
+
 
 class ElfParser(ABC):
     """Abstract base class for parsing ELF files.
