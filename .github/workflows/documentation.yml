@@ -96,4 +96,30 @@ jobs:
         run: |
           sphinx-build -M html doc build --keep-going 
 
+  version-check:
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'main'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
+    - name: Check version has been updated
+      run: |
+        # Get PR branch version
+        PR_VERSION=$(grep -oP '(?<=version = ")[^"]*' pyproject.toml)
+        echo "PR Version: $PR_VERSION"
+        
+        # Get main branch version
+        git fetch origin main:main
+        MAIN_VERSION=$(git show main:pyproject.toml | grep -oP '(?<=version = ")[^"]*')
+        echo "Main Version: $MAIN_VERSION"
+        
+        # Compare versions
+        if [ "$PR_VERSION" == "$MAIN_VERSION" ]; then
+          echo "❌ ERROR: Version in PR ($PR_VERSION) is the same as in main branch ($MAIN_VERSION)"
+          echo "Please update the version in pyproject.toml before merging to main"
+          exit 1
+        else
+          echo "✅ Version check passed: $PR_VERSION (PR) vs $MAIN_VERSION (main)"
+        fi
