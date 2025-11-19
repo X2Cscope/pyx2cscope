@@ -22,7 +22,7 @@ scope_time_sample = 50e-3
 
 def index():
     """Scope View url entry point. Calling the page {url}/scope-view will render the scope view page."""
-    return render_template("sv_index.html", title="ScopeView - pyX2Cscope")
+    return render_template("index_sv.html", title="ScopeView - pyX2Cscope")
 
 
 def _get_variable(variable):

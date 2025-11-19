@@ -1,136 +1,22 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-12 mb-3">
-        <div class="card" id="scopeView">
+<div class="row g-3" id="viewsContainer">
+    <div class="col-12 col-md-6" id="scopeCol">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">Oscilloscope View</h5>
+                <strong>ScopeView</strong>
             </div>
             <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <select id="parameterSearch" class="form-control" style="width: 100%;"></select>
-                    </div>
-                    <div class="col-md-8">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-primary sample-control" data-action="start">
-                                <i class="fas fa-play"></i> Start
-                            </button>
-                            <button type="button" class="btn btn-warning sample-control" data-action="stop" disabled>
-                                <i class="fas fa-stop"></i> Stop
-                            </button>
-                            <button type="button" class="btn btn-success sample-control" data-action="single">
-                                <i class="fas fa-bolt"></i> Single
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
-                    <canvas id="scopeChart"></canvas>
-                </div>
-                
-                <div class="mt-3">
-                    <h5>Channels</h5>
-                    <div id="channelList" class="list-group">
-                        <!-- Channels will be added here dynamically -->
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer text-muted">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span id="connection-status" class="badge badge-danger">Disconnected</span>
-                    </div>
-                    <div class="last-update">
-                        Last update: <span id="last-update-time">Never</span>
-                    </div>
-                </div>
+                {% include 'scope_view.html' %}
             </div>
         </div>
     </div>
 </div>
-
-<!-- Channel Settings Modal -->
-<div class="modal fade" id="channelSettingsModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Channel Settings</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="channelSettingsForm">
-                    <input type="hidden" id="channelName">
-                    <div class="form-group">
-                        <label for="channelColor">Color</label>
-                        <input type="color" class="form-control param-update" id="channelColor" 
-                               data-field="color">
-                    </div>
-                    <div class="form-group">
-                        <label for="channelGain">Gain</label>
-                        <input type="number" class="form-control param-update" id="channelGain" 
-                               data-field="gain" step="0.1" value="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="channelOffset">Offset</label>
-                        <input type="number" class="form-control param-update" id="channelOffset" 
-                               data-field="offset" step="0.1" value="0">
-                    </div>
-                    <div class="form-group form-check">
-                        <input type="checkbox" class="form-check-input param-update" id="channelEnabled" 
-                               data-field="enable" checked>
-                        <label class="form-check-label" for="channelEnabled">Enable Channel</label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="removeChannel">
-                    <i class="fas fa-trash"></i> Remove Channel
-                </button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+<br>
+<br>
 {% endblock content %}
 
 {% block scripts %}
-<script>
-    // Connection status indicator
-    document.addEventListener('DOMContentLoaded', function() {
-        const statusElement = document.getElementById('connection-status');
-        const updateTimeElement = document.getElementById('last-update-time');
-        
-        // Update connection status
-        wsClient.on('connected', function() {
-            statusElement.className = 'badge badge-success';
-            statusElement.textContent = 'Connected';
-        });
-        
-        wsClient.on('disconnected', function() {
-            statusElement.className = 'badge badge-danger';
-            statusElement.textContent = 'Disconnected';
-        });
-        
-        // Update last update time
-        function updateLastUpdateTime() {
-            const now = new Date();
-            updateTimeElement.textContent = now.toLocaleTimeString();
-        }
-        
-        // Update time when we receive data
-        wsClient.on('scope_update', function() {
-            updateLastUpdateTime();
-        });
-        
-        // Initial update
-        updateLastUpdateTime();
-    });
-</script>
-<script src="{{ url_for('static', filename='js/scope_view_ws.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scope_view.js') }}"></script>
 {% endblock scripts %}
