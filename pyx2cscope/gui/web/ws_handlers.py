@@ -2,6 +2,7 @@
 
 This module contains all SocketIO event handlers for watch and scope views.
 """
+import os
 from urllib.parse import parse_qs
 
 from flask_socketio import emit
@@ -28,31 +29,36 @@ def background_x2cscope_task():
 @socketio.on("connect")
 def handle_connect():
     """Handle client connection to the main app namespace."""
-    print("Client connected (app)")
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (app)")
     if not hasattr(socketio, "bg_thread"):
         socketio.bg_thread = socketio.start_background_task(background_x2cscope_task)
 
 @socketio.on("connect", namespace="/watch-view")
 def handle_connect_watch():
     """Handle client connection to the watch view namespace."""
-    print("Client connected (watch_view)")
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (watch_view)")
     if not hasattr(socketio, "bg_thread"):
         socketio.bg_thread = socketio.start_background_task(background_x2cscope_task)
 
 @socketio.on("disconnect", namespace="/watch-view")
 def handle_disconnect_watch():
     """Handle client disconnection from the watch view namespace."""
-    print("Client disconnected (watch_view)")
+    if os.environ.get('DEBUG') == 'true':
+        print("Client disconnected (watch_view)")
 
 @socketio.on("connect", namespace="/scope-view")
 def handle_connect_scope():
     """Handle client connection to the scope view namespace."""
-    print("Client connected (scope_view)")
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (scope_view)")
 
 @socketio.on("disconnect", namespace="/scope-view")
 def handle_disconnect_scope():
     """Handle client disconnection from the scope view namespace."""
-    print("Client disconnected (scope_view)")
+    if os.environ.get('DEBUG') == 'true':
+        print("Client disconnected (scope_view)")
 
 @socketio.on("update_watch_var", namespace="/watch-view")
 def handle_update_watch_var(data):

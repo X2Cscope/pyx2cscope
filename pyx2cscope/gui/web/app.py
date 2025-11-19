@@ -19,7 +19,7 @@ from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
 from pyx2cscope.gui.web.ws_handlers import socketio
 
-set_logger(logging.INFO)
+set_logger(logging.ERROR)
 
 def create_app():
     """Create and configure the Flask application.
