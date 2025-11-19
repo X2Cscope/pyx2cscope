@@ -233,6 +233,10 @@ class X2CScope:
             trigger_edge=config.trigger_edge,
             trigger_mode=config.trigger_mode,
         )
+        # check if trigger level is within variable range
+        min_value, max_value = config.variable._get_min_max_values()
+        if min_value > config.trigger_level or max_value < config.trigger_level:
+            scope_trigger.trigger_level = min_value if min_value > config.trigger_level else max_value
         self.scope_setup.set_trigger(scope_trigger)
 
     def clear_trigger(self):
