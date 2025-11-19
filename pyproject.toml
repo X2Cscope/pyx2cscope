@@ -33,7 +33,7 @@ numpy = "^1.26.0"
 matplotlib = "^3.7.2"
 PyQt5 = "^5.15.9"
 pyqtgraph= "^0.13.7"
-mchplnet = "0.2.2"
+mchplnet = "0.3.0"
 flask = "^3.0.3"
 
 
