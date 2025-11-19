@@ -49,6 +49,6 @@ lint.select = ["D"]
 # PL - pylint
 lint.extend-select = ["I", "N", "F", "PL", "D"]
 exclude = ["mchplnet/*"]
-lint.ignore = []
+lint.ignore = ["PLR0913"]
 
 
