@@ -12,7 +12,7 @@ from threading import Timer
 import serial.tools.list_ports
 from flask import jsonify, render_template, request
 
-from pyx2cscope import set_logger
+from pyx2cscope import set_logger, __version__
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web import connect_x2c, create_app, disconnect_x2c, get_x2c
 from pyx2cscope.gui.web.views.scope_view import sv as scope_view
@@ -23,7 +23,7 @@ set_logger(logging.INFO)
 
 def index():
     """Web X2CScope url entry point. Calling the page {url_server} will render the web X2CScope view page."""
-    return render_template("index.html", title="pyX2Cscope")
+    return render_template("index.html", title="pyX2Cscope", version=__version__)
 
 
 def list_serial_ports():

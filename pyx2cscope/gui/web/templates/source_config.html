@@ -1,42 +1,48 @@
-<div class="row">
-    <div class="col-3 col-md-3">
-        <select id="scopeSearch" style="width:100%;"></select>
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-3">
+        <select id="scopeSearch" class="form-select" aria-label="Search variables"></select>
     </div>
-    <div class="col-2 col-md-2">
-        <a type="button" id="scopeSave" href=#" class="btn btn-secondary btn-block">Save</a>
+    <div class="col-6 col-md-2">
+        <button type="button" id="scopeSave" class="btn btn-secondary w-100">Save</button>
     </div>
-    <div class="col-2 col-md-2">
-        <label class="btn btn-secondary btn-block" for="scopeLoad">
-            <input type="file" accept=".cfg" class="custom-file-input" id="scopeLoad" style="display: none">Load
+    <div class="col-6 col-md-2">
+        <label class="btn btn-secondary w-100" for="scopeLoad">Load
+            <input type="file" accept=".cfg" class="d-none" id="scopeLoad">
         </label>
     </div>
-    <div class="col-2 col-md-2 ml-auto">
-        <div class="dropdown">
-            <button class="btn btn-info dropdown-toggle" type="button" id="chartMenuButton"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Chart
+    <div class="col-12 col-md-5 col-lg-4 ms-md-auto float-end">
+        <div class="dropdown d-inline-block">
+            <button class="btn btn-info dropdown-toggle w-100" type="button" id="chartMenuButton"
+                    data-bs-toggle="dropdown" aria-expanded="false">Chart Actions
             </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a>
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="#" id="chartExport">Export</a>
-            </div>
+            <ul class="dropdown-menu dropdown-menu-end w-100" aria-labelledby="chartMenuButton">
+                <li><a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="chartExport">Export data</a></li>
+            </ul>
         </div>
     </div>
 </div>
-<br>
-<table class="table" style="width:100%" id="scopeTable">
-<thead>
-    <tr>
-        <th>Trigger</th>
-        <th>Enable</th>
-        <th>Variable</th>
-        <th>Color</th>
-        <th>Gain</th>
-        <th>Offset</th>
-        <th></th>
-    </tr>
-</thead>
-<tbody id="scopeTableBody">
-</tbody>
-</table>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+            <table class="table table-hover table-striped align-middle mb-0" id="scopeTable">
+                <thead class="table-light sticky-top">
+                    <tr>
+                        <th class="text-nowrap">Trigger</th>
+                        <th class="text-nowrap">Enable</th>
+                        <th class="w-100">Variable</th>
+                        <th class="text-nowrap">Color</th>
+                        <th class="text-nowrap">Gain</th>
+                        <th class="text-nowrap">Offset</th>
+                        <th class="text-nowrap" style="width: 60px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="scopeTableBody" class="table-group-divider">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

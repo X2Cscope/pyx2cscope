@@ -1,4 +1,5 @@
 function connect(){
+
     let formData = new FormData();
     formData.append('uart', $('#uart').val());
     formData.append('elfFile', $('#elfFile')[0].files[0]);
@@ -12,7 +13,6 @@ function connect(){
         success: function(response) {
             if (response.status === 'success') {
                 setConnectState(true);
-                $("#btnConnSetup").click();
             }
         },
         error: function(data) {
@@ -46,26 +46,28 @@ function setConnectState(status) {
     if(status) {
         parameterCardEnabled = true;
         scopeCardEnabled = true;
+        $('#setupView').addClass('collapse');
         $('#watchView').removeClass('disabled');
         $('#scopeView').removeClass('disabled');
         $("#btnWatchView").prop("disabled", false);
         $("#btnScopeView").prop("disabled", false);
-        $("#btnConnect").prop("disabled", false);
-        $('#btnConnect').html('Disconnect');
-        $('#btnConnect').removeClass('btn-primary');
-        $('#btnConnect').addClass('btn-danger');
-        $('#setupControl').addClass('disabled');
+        $("#btnConnect").prop("disabled", true);
+        $("#btnConnect").html("Disconnect", true);
+        $('#connection-status').html('Connected');
+
     }
     else {
         parameterCardEnabled = false;
         scopeCardEnabled = false;
+        $('#setupView').removeClass('collapse');
         $('#watchView').addClass('disabled');
         $('#scopeView').addClass('disabled');
         $("#btnConnect").prop("disabled", false);
+        $('#connection-status').html('Disconnected');
         $('#btnConnect').html('Connect');
         $('#btnConnect').removeClass('btn-danger');
         $('#btnConnect').addClass('btn-primary');
-        $('#setupControl').removeClass('disabled');
+        $('#setupView').removeClass('disabled');
     }
 }
 
@@ -73,6 +75,10 @@ function initSetupCard(){
     $('#update_com_port').on('click', load_uart);
     $('#btnConnect').on('click', function() {
         if($('#btnConnect').html() === "Connect") connect();
+        else disconnect();
+    });
+    $('#connection-status').on('click', function() {
+        if($('#connection-status').html() === "Disconnected") connect();
         else disconnect();
     });
 }
@@ -88,6 +94,7 @@ function insertQRCode(link) {
     $('#x2cModalBody').html(qrCodeHtml);
 
     new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/" + link);
+
     $('#updateButton').click(function(e) {
         e.preventDefault(); // Prevent the default form submit action
         var ipAddress = $('#ipAddress').val();
@@ -120,13 +127,52 @@ $(document).ready(function() {
     load_uart();
     initQRCodes();
 
-    $("#btnWatchView").prop("disabled",true);
-    $("#btnScopeView").prop("disabled",true);
+    // Toggles for views
+    const toggleWatch = document.getElementById('toggleWatch');
+    const toggleScope = document.getElementById('toggleScope');
+    const watchCol = document.getElementById('watchCol');
+    const scopeCol = document.getElementById('scopeCol');
+
+    // Mobile view (tabs)
+    // Mobile tab click handlers
+    document.getElementById('tabWatch').addEventListener('click', function() {
+        watchCol.classList.remove('d-none');
+        scopeCol.classList.add('d-none');
+        this.classList.add('active');
+        document.getElementById('tabScope').classList.remove('active');
+    });
+
+    document.getElementById('tabScope').addEventListener('click', function() {
+        watchCol.classList.add('d-none');
+        scopeCol.classList.remove('d-none');
+        this.classList.add('active');
+        document.getElementById('tabWatch').classList.remove('active');
+    });
+
+    // Desktop view (toggles)
+    // Uncheck toggles and hide views by default on desktop
+    toggleWatch.checked = false;
+    toggleScope.checked = false;
+    watchCol.classList.add('d-none');
+    scopeCol.classList.add('d-none');
+
+    // Update toggle button states
+    document.querySelector('label[for="toggleWatch"]').classList.remove('active');
+    document.querySelector('label[for="toggleScope"]').classList.remove('active');
+
+    // Toggle event listeners for desktop
+    toggleWatch.addEventListener('change', () => {
+        watchCol.classList.toggle('d-none', !toggleWatch.checked);
+        document.querySelector('label[for="toggleWatch"]').classList.toggle('active', toggleWatch.checked);
+    });
+
+    toggleScope.addEventListener('change', () => {
+        scopeCol.classList.toggle('d-none', !toggleScope.checked);
+        document.querySelector('label[for="toggleScope"]').classList.toggle('active', toggleScope.checked);
+    });
 
     $.getJSON('/is-connected', function(data) {
         setConnectState(data.status);
-        if(data.status == false)
-           $("#btnConnSetup").click();
     });
 
 });

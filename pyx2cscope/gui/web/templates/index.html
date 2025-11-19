@@ -1,13 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<p>
-  <button id="btnConnSetup" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#setupView" aria-expanded="false" aria-controls="setupView">Connection Setup</button>
-  <button id="btnWatchView" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#watchView" aria-expanded="false" aria-controls="watchView">Watch View</button>
-  <button id="btnScopeView" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#scopeView" aria-expanded="false" aria-controls="scopeView">Scope View</button>
-</p>
 <div class="row">
-    <div class="col-10 col-md-5 col-lg-3">
+    <div class="col col-xs-12 col-md-8 col-lg-5">
         <div class="card collapse setupView" id="setupView">
             <div class="card-header">
                 Setup
@@ -19,14 +14,34 @@
     </div>
 </div>
 <br>
-<div class="row justify-content-center">
-    <div class="col-auto mb-3">
-        <div class="card collapse watchView" id="watchView">
+<!-- Tabs for Mobile -->
+<ul class="nav nav-tabs d-md-none mb-3" id="mobileTabs">
+    <li class="nav-item">
+        <button class="nav-link active" id="tabWatch" data-bs-toggle="tab" data-bs-target="#watchView">Watch View
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" id="tabScope" data-bs-toggle="tab" data-bs-target="#scopeView">Scope View</button>
+    </li>
+</ul>
+
+<!-- Desktop Toggles -->
+<div class="btn-group mb-3 d-none d-md-inline-flex" role="group" aria-label="Toggle views">
+    <input type="checkbox" class="btn-check" id="toggleWatch" checked autocomplete="off">
+    <label class="btn btn-outline-primary" for="toggleWatch">Watch View</label>
+    <input type="checkbox" class="btn-check" id="toggleScope" checked autocomplete="off">
+    <label class="btn btn-outline-primary" for="toggleScope">Scope View</label>
+</div>
+
+<!-- Views -->
+<div class="row g-3" id="viewsContainer">
+    <div class="col-12 col-md-6" id="watchCol">
+        <div class="card h-100">
             <div class="card-header">
-                WatchView
-                <a href="/watch-view" target="_blank" class="float-right" title="Open this card in a new window">
+                <strong>WatchView</strong>
+                <a href="/watch-view" target="_blank" class="float-end" title="Open this card in a new window">
                     <span class="material-icons">open_in_new</span></a>
-                <a href="#" class="float-right" title="Get QR-Code address" id="watchQRCode">
+                <a href="#" class="float-end" title="Get QR-Code address" id="watchQRCode">
                     <span class="material-icons md-18">qr_code_2</span></a>
             </div>
             <div class="card-body">
@@ -34,17 +49,17 @@
             </div>
         </div>
     </div>
-    <div class="col-auto mb-3">
-        <div class="card collapse scopeView" id="scopeView">
+    <div class="col-12 col-md-6" id="scopeCol">
+        <div class="card h-100">
             <div class="card-header">
-                ScopeView
-                <a href="/scope-view" target="_blank" class="float-right" title="Open this card in a new window">
+                <strong>ScopeView</strong>
+                <a href="/scope-view" target="_blank" class="float-end" title="Open this card in a new window">
                     <span class="material-icons md-18">open_in_new</span></a>
-                <a href="#" class="float-right" title="Get QR-Code address" id="scopeQRCode">
+                <a href="#" class="float-end" title="Get QR-Code address" id="scopeQRCode">
                     <span class="material-icons md-18">qr_code_2</span></a>
             </div>
             <div class="card-body">
-                 {% include 'scope_view.html' %}
+                {% include 'scope_view.html' %}
             </div>
         </div>
     </div>
@@ -53,8 +68,7 @@
 {% endblock content %}
 
 {% block scripts %}
- <script src="{{ url_for('static', filename='js/qrcode.min.js') }}"></script>
- <script src="{{ url_for('static', filename='js/script.js') }}"></script>
- <script src="{{ url_for('static', filename='js/watch_view.js') }}"></script>
- <script src="{{ url_for('static', filename='js/scope_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/watch_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scope_view.js') }}"></script>
 {% endblock scripts %}

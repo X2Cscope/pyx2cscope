@@ -70,7 +70,10 @@ function setParameterTableListeners(){
         }
     });
 
-    $("#parameterSave").attr("href", "/watch-view/save");
+    // Set up Save button click handler
+    $("#parameterSave").on("click", function() {
+        window.location.href = '/watch-view/save';
+    });
     $('#parameterLoad').on('change', function(event) {
         var file = event.target.files[0];
         var formData = new FormData();
@@ -154,7 +157,7 @@ function wv_checkbox(data, type) {
 }
 
 function wv_remove(data, type){
-    return '<button class="btn btn-danger remove" type="button">Remove</button>';
+    return '<button class="btn btn-danger remove float-end" type="button">Remove</button>';
 }
 
 $(document).ready(function () {

@@ -1,18 +1,34 @@
-<div id="setupControl">
-    <div class="form-row">
-        <div class="form-group col-5">
-            <label for="uart">Select UART:</label>
-            <select class="form-control" id="uart">
+<div id="setupControl" class="container mt-3">
+    <!-- UART Selection Row -->
+    <div class="row mb-3 align-items-end">
+        <div class="col-md-8">
+            <label for="uart" class="form-label">UART</label>
+            <select class="form-select" id="uart">
                 <option value="default">Select UART</option>
             </select>
         </div>
-    <div class="col-2 text-left">
-        <button type="button" class="btn btn-primary" id="update_com_port">Refresh</button>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-outline-primary w-100" id="update_com_port">
+                Refresh
+            </button>
+        </div>
     </div>
+
+    <!-- File Selection Row -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <label for="elfFile" class="form-label">Select an ELF or import file</label>
+            <div class="input-group">
+                <input type="file" class="form-control" id="elfFile" accept=".elf, .pkl, .yml">
+            </div>
+            <div class="form-text">Supported formats: .elf, .pkl, .yml</div>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="elfFile">Select an elf or a valid import file:</label>
-        <input type="file" accept=".elf, .pkl, .yml" class="form-control-file" id="elfFile">
+
+    <!-- Connect Button -->
+    <div class="row mt-4">
+        <div class="col-xs-12 col-md-5">
+            <button id="btnConnect" class="btn btn-primary w-100">Connect</button>
+        </div>
     </div>
 </div>
-<button id="btnConnect" class="btn btn-primary">Connect</button>

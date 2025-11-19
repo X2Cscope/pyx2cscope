@@ -108,11 +108,6 @@ function sv_update_scope_data(data) {
     scopeChart.update('none');
 }
 
-function initScopeCard(){
-    initScopeSelect();
-    setScopeTableListeners();
-}
-
 function sv_checkbox(data, type) {
     val = '<input type="checkbox" onclick="sv_update_param(this);"';
     if(data) val += ' checked="checked"';
@@ -149,7 +144,14 @@ const zoomOptions = {
 }
 
 function initScopeChart() {
-    let ctx = document.getElementById('scopeChart').getContext('2d');
+    const chartElement = document.getElementById('scopeChart');
+    const ctx = chartElement.getContext('2d');
+    
+    // Set the initial size of the canvas
+    const container = chartElement.parentElement;
+    chartElement.width = container.clientWidth;
+    chartElement.height = 300; // Fixed height as per your HTML
+    
     scopeChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -159,24 +161,58 @@ function initScopeChart() {
                 data: [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
+                pointRadius: 0, // Remove points for better performance
+                borderJoinStyle: 'round',
+                tension: 0.1
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false, // This is important for fixed height
+            animation: {
+                duration: 0 // Disable animations for better performance
+            },
             scales: {
                 x: {
                     type: 'linear',
                     title: {
                         display: true,
                         text: 'Time (ms)'
+                    },
+                    grid: {
+                        display: true,
+                        drawBorder: true
                     }
                 },
+                y: {
+                    grid: {
+                        display: true,
+                        drawBorder: true
+                    }
+                }
             },
             plugins: {
                 zoom: zoomOptions,
-                legend: false,
+                legend: {
+                    display: false
+                }
+            },
+            elements: {
+                line: {
+                    borderWidth: 1.5
+                }
             }
         }
     });
+    
+    // Handle window resize
+    const resizeObserver = new ResizeObserver(entries => {
+        const { width } = entries[0].contentRect;
+        chartElement.width = width;
+        scopeChart.update('none'); // Update without animation
+    });
+    
+    resizeObserver.observe(container);
 
     $('#chartZoomReset').on('click', function() {
         scopeChart.resetZoom();
@@ -191,17 +227,36 @@ function sv_clear_stop_focus() {
 }
 
 function sv_set_stop_focus() {
-    sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
-    sampleTriggerButtons.forEach(button => {
-        if(button.id == "triggerStop") {
-            button.parentElement.classList.add("active");
-            button.parentElement.classList.add("focus");
-        }
-        else {
-            button.parentElement.classList.remove("active");
-            button.parentElement.classList.remove("focus");
-        }
-    });
+    const stopButton = document.getElementById('triggerStop');
+    
+    if (stopButton) {
+        // First, uncheck all radio buttons in the group
+        document.querySelectorAll('input[name="triggerAction"]').forEach(btn => {
+            btn.checked = false;
+            const label = btn.parentElement;
+            label.classList.remove("active", "focus");
+        });
+        
+        // Programmatically click the stop button to ensure all Bootstrap states are updated
+        stopButton.checked = true;
+        const stopLabel = stopButton.parentElement;
+        
+        // Use a small timeout to ensure the UI updates properly
+        setTimeout(() => {
+            // Force the button to be checked and focused
+            stopButton.checked = true;
+            stopButton.dispatchEvent(new Event('change'));
+            stopButton.focus();
+            
+            // Update the label state
+            stopLabel.classList.add("active", "focus");
+            
+            // If we're in a desktop view, we might need to trigger a click on the label
+            if (window.innerWidth > 768) { // Assuming 768px is your mobile breakpoint
+                stopLabel.click();
+            }
+        }, 10);
+    }
 }
 
 function sv_data_ready_check()
@@ -245,27 +300,51 @@ function initScopeForms(){
         });
     });
 
-    sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
-    sampleTriggerButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            $("#sampleControlForm").submit();
-        });
+    // Add change event handlers for the sample control radio buttons
+    $('input[name="triggerAction"]').on('change', function() {
+        // Remove active class from all labels in the same button group
+        $(this).closest('.btn-group').find('.btn').removeClass('active');
+        // Add active class to the clicked button's label
+        $(`label[for="${this.id}"]`).addClass('active');
+        
+        // Submit the form
+        $("#sampleControlForm").submit();
     });
+    
+    // Initialize the active state of the stop button on page load
+    $('input[name="triggerAction"][checked]').trigger('change');
 
+    // Handle trigger control form submission
     $("#triggerControlForm").submit(function(e) {
-        e.preventDefault(); // avoid to execute the actual submit of the form.
+        e.preventDefault();
         var form = $(this);
 
         $.ajax({
             type: "POST",
             url: "/scope-view/form-trigger",
-            data: form.serialize(), // serializes the form's elements.
-            success: function(data){
+            data: form.serialize(),
+            success: function(data) {
+                // Update the visual state of the buttons based on the response if needed
+                if (data.triggerEnable) {
+                    $(`#${data.triggerEnable}`).prop('checked', true).trigger('change');
+                }
             }
         });
     });
 
-    $("#scopeSave").attr("href", "/scope-view/save");
+    // Add change event handlers for the radio buttons to update their visual state
+    $('input[name="triggerEnable"]').on('change', function() {
+        // Remove active class from all labels in the same button group
+        $(this).closest('.btn-group').find('.btn').removeClass('active');
+        // Add active class to the clicked button's label
+        $(`label[for="${this.id}"]`).addClass('active');
+    });
+
+    // Set up Save button click handler
+    $("#scopeSave").on("click", function() {
+        window.location.href = '/scope-view/save';
+    });
+
     $("#scopeLoad").on("change", function(event) {
         var file = event.target.files[0];
         var formData = new FormData();
@@ -300,7 +379,7 @@ $(document).ready(function () {
         searching: false,
         paging: false,
         info: false,
-        responsive: false,
+        responsive: true,
         columns: [
             {data: 'trigger', render: sv_checkbox, orderable: false},
             {data: 'enable', render: sv_checkbox, orderable: false},

@@ -1,45 +1,47 @@
-<div class="row">
-    <div class="col-3 col-md-3">
-        <select id="parameterSearch" style="width:100%;"></select>
-    </div>
-    <div class="col-2 col-md-2">
-        <a type="button" id="parameterSave" href=#" class="btn btn-secondary btn-block">Save</a>
-    </div>
-    <div class="col-2 col-md-2">
-        <label class="btn btn-secondary btn-block" for="parameterLoad">
-            <input type="file" accept=".cfg" class="custom-file-input" id="parameterLoad" style="display: none">Load
-        </label>
-    </div>
-    <div class="col-5 col-md-5">
-        <div class="btn-group float-right">
-          <button type="button" class="btn btn-primary" id="paramRefresh">Refresh</button>
-          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
-                  data-toggle="dropdown" aria-expanded="false">
-            <span class="sr-only">Toggle Dropdown</span>
-          </button>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="#" id="refresh1s">Live @1s</a>
-            <a class="dropdown-item" href="#" id="refresh3s">Live @3s</a>
-            <a class="dropdown-item" href="#" id="refresh5s">Live @5s</a>
-          </div>
+<div class="d-flex flex-column h-100">
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-md-3">
+            <select id="parameterSearch" class="form-select"></select>
+        </div>
+        <div class="col-6 col-md-2">
+            <button type="button" id="parameterSave" class="btn btn-secondary w-100">Save</button>
+        </div>
+        <div class="col-6 col-md-2">
+            <input type="file" accept=".cfg" class="d-none" id="parameterLoad">
+            <label for="parameterLoad" class="btn btn-secondary w-100">Load</label>
+        </div>
+        <div class="col-12 col-md-5">
+            <div class="btn-group float-md-end">
+                <button type="button" class="btn btn-primary" id="paramRefresh">Refresh</button>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" id="refresh1s">Live @1s</a></li>
+                    <li><a class="dropdown-item" href="#" id="refresh3s">Live @3s</a></li>
+                    <li><a class="dropdown-item" href="#" id="refresh5s">Live @5s</a></li>
+                </ul>
+            </div>
         </div>
     </div>
+
+    <div class="table-responsive flex-grow-1">
+        <table class="table table-hover mb-0" id="parameterTable">
+            <thead>
+                <tr>
+                    <th>Live</th>
+                    <th>Variable</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Scaling</th>
+                    <th>Offset</th>
+                    <th>Scaled Value</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="parameterTableBody" class="table-group-divider">
+            </tbody>
+        </table>
+    </div>
 </div>
-<br>
-<table class="table" style="width:100%" id="parameterTable">
-    <thead>
-        <tr>
-            <th>Live</th>
-            <th>Variable</th>
-            <th>Type</th>
-            <th>Value</th>
-            <th>Scaling</th>
-            <th>Offset</th>
-            <th>Scaled Value</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="parameterTableBody">
-    </tbody>
-</table>
 
