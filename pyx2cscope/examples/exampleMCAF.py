@@ -31,9 +31,14 @@ hardware_ui_enabled.set_value(0)
 stop_motor_request = x2c_scope.get_variable("motor.apiData.stopMotorRequest")
 stop_motor_request.set_value(1)
 
-# Set the speed to 500.0 RPM
+# define target speeds
+# Speed threshold in RPM (5000 = 500.0 RPM)
+TARGET_SPEED_1_RPM = 5000
+TARGET_SPEED_2_RPM = 15000
+
+# Set the speed to TARGET_SPEED_1_RPM
 velocity_reference = x2c_scope.get_variable("motor.apiData.velocityReference")
-velocity_reference.set_value(5000)
+velocity_reference.set_value(TARGET_SPEED_1_RPM)
 
 # Start the motor
 run_motor_request = x2c_scope.get_variable("motor.apiData.runMotorRequest")
@@ -43,11 +48,11 @@ run_motor_request.set_value(1)
 start_time = time.time()
 while True:
     speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")
-    if speed_measured.get_value() >= 5000:  # Check if the speed has reached 500.0
+    if speed_measured.get_value() >= TARGET_SPEED_1_RPM:
         break
 end_time = time.time()
-time_to_reach_speed_5000 = end_time - start_time
-print(f"Time to reach 500 RPM: {time_to_reach_speed_5000:.2f} seconds")
+time_to_reach_speed_1 = end_time - start_time
+print(f"Time to reach {TARGET_SPEED_1_RPM/10} RPM: {time_to_reach_speed_1:.2f} seconds")
 
 # Wait for 2 seconds
 time.sleep(2)
@@ -73,21 +78,21 @@ current_b = scope_data["motor.iabc.b"]
 # Calculate the RMS current
 rms_current_a = np.sqrt(np.mean(np.square(current_a))) * 0.1  # Convert to Amps
 rms_current_b = np.sqrt(np.mean(np.square(current_b))) * 0.1  # Convert to Amps
-average_current_5000 = (rms_current_a + rms_current_b) / 2
-print(f"Average current at 500.0 RPM: {average_current_5000:.2f} A")
+average_current_speed_1 = (rms_current_a + rms_current_b) / 2
+print(f"Average current at {TARGET_SPEED_1_RPM/10} RPM: {average_current_speed_1:.2f} A")
 
-# Increase the speed to 1500.0 RPM
-velocity_reference.set_value(15000)
+# Increase the speed to TARGET_SPEED_2_RPM
+velocity_reference.set_value(TARGET_SPEED_2_RPM)
 
 # Measure the time to reach the new speed
 start_time = time.time()
 while True:
     speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")
-    if speed_measured.get_value() >= 15000:  # Check if the speed has reached 15000
+    if speed_measured.get_value() >= TARGET_SPEED_2_RPM:
         break
 end_time = time.time()
-time_to_reach_speed_15000 = end_time - start_time
-print(f"Time to reach 1500.0 RPM: {time_to_reach_speed_15000:.2f} seconds")
+time_to_reach_speed_2 = end_time - start_time
+print(f"Time to reach {TARGET_SPEED_2_RPM/10} RPM: {time_to_reach_speed_2:.2f} seconds")
 
 # Wait for 2 seconds
 time.sleep(2)
@@ -107,8 +112,8 @@ current_b = scope_data["motor.iabc.b"]
 # Calculate the RMS current for the new speed
 rms_current_a = np.sqrt(np.mean(np.square(current_a))) * 0.1  # Convert to Amps
 rms_current_b = np.sqrt(np.mean(np.square(current_b))) * 0.1  # Convert to Amps
-average_current_15000 = (rms_current_a + rms_current_b) / 2
-print(f"Average current at 1500.0 RPM: {average_current_15000:.2f} A")
+average_current_speed_2 = (rms_current_a + rms_current_b) / 2
+print(f"Average current at {TARGET_SPEED_2_RPM/10} RPM: {average_current_speed_2:.2f} A")
 
 # Stop the motor
 stop_motor_request.set_value(1)

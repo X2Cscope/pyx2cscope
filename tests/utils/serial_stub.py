@@ -12,13 +12,24 @@ BIT_LENGTH_32 = 32
 
 class FrameBuilder(LNetFrame):
     """FrameBuilder class to build LNet frames."""
-
+    # Service IDs for different LNet operations
+    SERVICE_ID_PUT_RAM = 0x0A
+    SERVICE_ID_GET_RAM = 0x09
+    
+    # Status codes
+    STATUS_NO_ERROR = 0x00
+    
     def _get_data(self):
-        no_error = 0x00
-        return self.data.extend([self.service_id, no_error, *self.value])
+        return self.data.extend([self.service_id, self.STATUS_NO_ERROR, *self.value])
 
     def __init__(self, service_id: int, uc_width: int, value: None|bytes):
+        """Initialize FrameBuilder.
 
+        Args:
+            service_id (int): Service ID for the LNet frame.
+            uc_width (int): Microcontroller width (16 or 32 bits).
+            value (None|bytes): Optional value bytes for the frame.
+        """
         super().__init__()
         self.service_id = service_id
         self.uc_width = uc_width
@@ -26,7 +37,7 @@ class FrameBuilder(LNetFrame):
 
     def _deserialize(self):
         uc_width = 2 if self.uc_width == BIT_LENGTH_16 else 4  # 16-bit or 32-bit address
-        if self.service_id == 0x0A:
+        if self.service_id == self.SERVICE_ID_PUT_RAM:
             # Frame format: [SYNC(1)][SIZE(1)][NODE(1)][SERVICE_ID(1)=0x0A][ADDR(2/4)][SIZE(1)][DATA(N)][CRC(2)]
             frame = self.received
             addr_start = 4
@@ -38,7 +49,7 @@ class FrameBuilder(LNetFrame):
             value_bytes = frame[value_start:-1]  # Exclude CRC
             value = int.from_bytes(value_bytes, 'little')
             return addr, value
-        if self.service_id == 0x09:
+        if self.service_id == self.SERVICE_ID_GET_RAM:
             # Extract address and size from the frame
             # Frame format: [SYNC(1)][SIZE(1)][NODE(1)][SERVICE_ID(1)=0x09][ADDR(2/4)][SIZE(1)][TYPE(1)][CRC(2)]
             frame = self.received
@@ -112,9 +123,13 @@ class SerialStub:
         """Assert the received byte stream with implemented LNET functions."""
         self.data = buffer
 
+    # Frame format constants
+    MIN_FRAME_SIZE = 5
+    SERVICE_ID_INDEX = 3
+    
     def _get_lnet_service_id(self):
-        if len(self.data) >= 5:  # Minimum frame size
-            return self.data[3] if len(self.data) > 3 else 0
+        if len(self.data) >= self.MIN_FRAME_SIZE:
+            return self.data[self.SERVICE_ID_INDEX] if len(self.data) > self.SERVICE_ID_INDEX else 0
         return 0
 
     def lnet_serial_read(self) -> bytearray:
@@ -123,8 +138,8 @@ class SerialStub:
         service = {
             0x00: self._get_device_info,
             0x11: self._get_load_param,
-            0x09: self._get_ram,
-            0x0A: self._put_ram
+            FrameBuilder.SERVICE_ID_GET_RAM: self._get_ram,
+            FrameBuilder.SERVICE_ID_PUT_RAM: self._put_ram
         }
         return service.get(service_id, self._get_device_info)()
 

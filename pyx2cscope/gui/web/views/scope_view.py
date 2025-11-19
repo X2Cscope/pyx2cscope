@@ -2,7 +2,7 @@
 
 Calling the url {server_url}/scope-view, will render the scope-view page. 
 Attention: this page should be called only after a successful setup connection on the {server_url}
-""" ""
+"""
 import os
 
 from flask import Blueprint, Response, jsonify, render_template, request
@@ -24,30 +24,6 @@ def get_data():
     """
     result = [web_scope.variable_to_json(v) for v in web_scope.scope_vars]
     return {"data": result}
-
-def chart():
-    """Return the chart data ready for chart.js framework.
-
-    Calling the link {scope-view-url}/chart will execute this function.
-    For this function to return valid data, variables must be added on the scope channel and optional trigger
-    parameters. Finally, a command of burst or sample need to be called. Date will be returned only if data is
-    available. This function calls in the background x2cscope.is_scope_data_ready()
-    """
-    global scope_trigger, scope_burst
-    with get_x2c() as x2c:
-        ready = False if x2c is None else x2c.is_scope_data_ready()
-        finish = True if ready and scope_burst else False
-        datasets = []
-        label = []
-        if ready:
-            datasets = _get_datasets(x2c)
-            size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
-            label = _get_chart_label(size)
-            if scope_trigger:
-                x2c.request_scope_data()
-        return jsonify(
-            {"ready": ready, "finish": finish, "data": datasets, "labels": label}
-        )
 
 
 def chart_export():

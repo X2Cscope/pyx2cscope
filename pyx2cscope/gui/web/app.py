@@ -21,6 +21,11 @@ from pyx2cscope.gui.web.ws_handlers import socketio
 set_logger(logging.INFO)
 
 def create_app():
+    """Create and configure the Flask application.
+
+    Returns:
+        Flask: Configured Flask application instance.
+    """
     app = Flask(__name__)
 
     from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
