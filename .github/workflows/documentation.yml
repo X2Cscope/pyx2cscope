@@ -109,7 +109,7 @@ jobs:
         # Get version from pyproject.toml
         PYPROJECT_VERSION=$(grep -oP 'version\s*=\s*"\K[^"]+' pyproject.toml)
         # Get version from __init__.py
-        INIT_VERSION=$(grep -oP '__version__\s*=\s*["\x27]\K[^"\x27]+' mchplnet/__init__.py)
+        INIT_VERSION=$(grep -oP '__version__\s*=\s*["\x27]\K[^"\x27]+' pyx2cscope/__init__.py)
         
         if [ "$PYPROJECT_VERSION" != "$INIT_VERSION" ]; then
           echo "❌ Version mismatch between pyproject.toml ($PYPROJECT_VERSION) and __init__.py ($INIT_VERSION)"
