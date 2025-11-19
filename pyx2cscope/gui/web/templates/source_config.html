@@ -15,7 +15,7 @@
             <button class="btn btn-info dropdown-toggle w-100" type="button" id="chartMenuButton"
                     data-bs-toggle="dropdown" aria-expanded="false">Chart Actions
             </button>
-            <ul class="dropdown-menu dropdown-menu-end w-100" aria-labelledby="chartMenuButton">
+            <ul class="dropdown-menu dropdown-menu-end w-100" aria-labelledby="chartMenuButton" style="z-index: 20;">
                 <li><a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#" id="chartExport">Export data</a></li>
@@ -26,9 +26,9 @@
 
 <div class="card shadow-sm mb-4">
     <div class="card-body p-0">
-        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+        <div class="table-responsive position-relative" style="max-height: 60vh; overflow-y: auto;">
             <table class="table table-hover table-striped align-middle mb-0" id="scopeTable">
-                <thead class="table-light sticky-top">
+                <thead class="table-light sticky-top" style="z-index: 10;">
                     <tr>
                         <th class="text-nowrap">Trigger</th>
                         <th class="text-nowrap">Enable</th>
