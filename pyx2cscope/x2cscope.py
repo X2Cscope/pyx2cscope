@@ -479,8 +479,8 @@ class X2CScope:
         return {
             "processor_id": device_info.processor_id,
             "uc_width": uc_width_value,
-            "date": device_info.monitorDate,  ##TODO Change to APP date once implemented
-            "time": device_info.monitorTime,  # TODO Change to APP time once implemented
-            "AppVer": device_info.appVer,
+            "date": device_info.monitor_date,  ##TODO Change to APP date once implemented
+            "time": device_info.monitor_time,  # TODO Change to APP time once implemented
+            "AppVer": device_info.app_version,
             "dsp_state": device_info.dsp_state,
         }
