@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Dict, List
 
-from mchplnet.interfaces.abstract_interface import InterfaceABC
+from mchplnet.interfaces.abstract_interface import Interface
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
@@ -75,7 +75,7 @@ class X2CScope:
     requesting data, and processing received data.
 
     Attributes:
-        interface (InterfaceABC): Interface object for communication.
+        interface (Interface): Interface object for communication.
         lnet (LNet): LNet object for low-level network operations.
         variable_factory (VariableFactory): Factory to create Variable objects.
         scope_setup: Configuration for the scope setup.
@@ -88,23 +88,23 @@ class X2CScope:
 
         Args:
             elf_file (str): Path to the ELF file.
-            interface (InterfaceABC): Communication interface to be used, defaults to None.
+            interface (Interface): Communication interface to be used, defaults to None.
             **kwargs: Key defined arguments.
         """
-        i_type = interface if interface is not None else InterfaceType.SERIAL
-        self.interface = InterfaceFactory.get_interface(interface_type=i_type, **kwargs)
+        self.interface = InterfaceFactory.get_interface(interface, **kwargs)
         self.lnet = LNet(self.interface)
         self.variable_factory = VariableFactory(self.lnet, elf_file)
         self.scope_setup = self.lnet.get_scope_setup()
         self.convert_list = {}
         self.uc_width = self.variable_factory.device_info.uc_width
 
-    def set_interface(self, interface: InterfaceABC):
+    def set_interface(self, interface: Interface):
         """Set the communication interface for the scope.
 
         Args:
-            interface (InterfaceABC): The interface to be set for communication.
+            interface (Interface): The interface to be set for communication.
         """
+        self.interface = interface
         self.lnet = LNet(interface)
         self.scope_setup = self.lnet.get_scope_setup()
         self.variable_factory.set_lnet_interface(self.lnet)
