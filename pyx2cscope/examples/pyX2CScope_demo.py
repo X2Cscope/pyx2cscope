@@ -44,40 +44,37 @@ x2c_scope.add_scope_channel(variable3)
 x2c_scope.add_scope_channel(variable4)
 x2c_scope.add_scope_channel(variable5)
 
-
 # Setting up Trigger, any available variable can be selected.
 config = TriggerConfig(variable3, trigger_level=500, trigger_mode=1, trigger_delay=50, trigger_edge=1)
 x2c_scope.set_scope_trigger(config)
 
+# dictionary to store collected data to save later as CSV file.
+data_storage = {}
+nr_of_samples = 10
+
 # Request and Acquire Scope Data
 # This loop requests and receives data from the scope, storing it in a dictionary for later use.
 # It continues until a specified number of samples are collected.
-data_storage = {}
-sample_count = 0
-max_sample = 10
+x2c_scope.request_scope_data()
 
-while sample_count < max_sample:
-    try:
-        if x2c_scope.is_scope_data_ready():
-            sample_count += 1
-            logging.info("Scope data is ready.")
+while nr_of_samples > 0:
+    # check if scope data is already available
+    if x2c_scope.is_scope_data_ready():
+        logging.info("Scope data is ready.")
 
-            # Process and store data
-            for channel, data in x2c_scope.get_scope_channel_data(
-                valid_data=False
-            ).items():
-                if channel not in data_storage:
-                    data_storage[channel] = []
-                data_storage[channel].extend(data)
+        # get_scope_channel_data() returns a dictionary with buffered data
+        # collected according to the variables added to the scope and at
+        # the trigger position.
+        for channel, data in x2c_scope.get_scope_channel_data().items():
+            if channel not in data_storage:
+                data_storage[channel] = []
+            data_storage[channel].extend(data)
 
-            if sample_count >= max_sample:
-                break
-            x2c_scope.request_scope_data()
+        nr_of_samples -= 1
+        # request new data sample
+        x2c_scope.request_scope_data()
 
-    except Exception as e:
-        logging.error(f"Error in main loop: {str(e)}")
-        break
-
+    # always wait a short time between calls of is_scope_data_ready()
     time.sleep(0.1)
 
 # Data Visualization

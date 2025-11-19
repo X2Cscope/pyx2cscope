@@ -38,46 +38,38 @@ plt.ion()  # Turn on interactive mode
 fig, ax = plt.subplots()
 
 # Main loop
-sample_count = 0
-max_sample = 100  # Increase the number of samples if needed
+nr_of_samples = 10  # Increase the number of samples if needed
+data_storage = {}
 
 # request scope to start sampling data
 x2c_scope.request_scope_data()
 
-while sample_count < max_sample:
-    try:
-        if x2c_scope.is_scope_data_ready():
-            sample_count += 1
-            logging.info("Scope data is ready.")
+while nr_of_samples > 0:
+    # check if scope data is already available
+    if x2c_scope.is_scope_data_ready():
+        logging.info("Scope data is ready.")
 
-            data_storage = {}
-            for channel, data in x2c_scope.get_scope_channel_data(
-                valid_data=False
-            ).items():
-                data_storage[channel] = data
+        for channel, data in x2c_scope.get_scope_channel_data().items():
+            data_storage[channel] = data
 
-            ax.clear()
-            for channel, data in data_storage.items():
-                # Assuming data is sampled at 1 kHz, adjust as needed
-                time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
-                # time_values = [i * 0.000001 for i in range(len(data))]  # microseconds
-                ax.plot(time_values, data, label=f"Channel {channel}")
+        ax.clear()
+        for channel, data in data_storage.items():
+            # Assuming data is sampled at 1 kHz, adjust as needed
+            time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
+            # time_values = [i * 0.000001 for i in range(len(data))]  # microseconds
+            ax.plot(time_values, data, label=f"Channel {channel}")
 
-            ax.set_xlabel("Time (ms)")  # Change axis label accordingly
-            ax.set_ylabel("Value")
-            ax.set_title("Live Plot of Byte Data")
-            ax.legend()
+        ax.set_xlabel("Time (ms)")  # Change axis label accordingly
+        ax.set_ylabel("Value")
+        ax.set_title("Live Plot of Byte Data")
+        ax.legend()
 
-            plt.pause(0.001)  # Add a short pause to update the plot
+        plt.pause(0.001)  # Add a short pause to update the plot
 
-            if sample_count >= max_sample:
-                break
-            x2c_scope.request_scope_data()
+        nr_of_samples -= 1
+        x2c_scope.request_scope_data()
 
-    except Exception as e:
-        logging.error(f"Error in main loop: {str(e)}")
-        break
-
+    # wait for 100 ms before calling is_scope_data_ready() again
     time.sleep(0.1)
 
 plt.ioff()  # Turn off interactive mode after the loop
