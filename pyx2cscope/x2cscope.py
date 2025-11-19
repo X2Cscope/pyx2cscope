@@ -337,7 +337,6 @@ class X2CScope:
                 data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
-
                 logging.error(f"Error reading chunk {i}: {str(e)}")
         return chunk_data
 
