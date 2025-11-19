@@ -81,7 +81,7 @@ def remove():
     with get_x2c() as x2c:
         parameter = request.args.get("param", "")
         for data in scope_data:
-            if data["variable"].name == parameter:
+            if data["variable"].info.name == parameter:
                 scope_data.remove(data)
                 x2c.remove_scope_channel(data["variable"])
                 break
