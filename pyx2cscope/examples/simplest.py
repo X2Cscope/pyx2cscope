@@ -4,8 +4,8 @@ The script initializes the X2CScope class with a specified serial port and ELF f
 retrieves specific variables, reads their values, and writes new values to them.
 """
 
-from pyx2cscope.x2cscope import X2CScope
 from pyx2cscope.utils import get_com_port
+from pyx2cscope.x2cscope import X2CScope
 
 # initialize the X2CScope class with serial port, by default baud rate is 115200
 x2c_scope = X2CScope(port=get_com_port())

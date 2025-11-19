@@ -4,16 +4,17 @@ This module holds and handles the main url and forward the relative urls to the 
 pages (blueprints).
 """
 import eventlet
+
 eventlet.monkey_patch()
 
 import logging
 import os
 import webbrowser
-import serial.tools.list_ports
 
+import serial.tools.list_ports
 from flask import Flask, jsonify, render_template, request
 
-from pyx2cscope import set_logger, __version__
+from pyx2cscope import __version__, set_logger
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
 from pyx2cscope.gui.web.ws_handlers import socketio
@@ -28,8 +29,8 @@ def create_app():
     """
     app = Flask(__name__)
 
-    from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
     from pyx2cscope.gui.web.views.scope_view import sv_bp as scope_view
+    from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
 
     app.register_blueprint(watch_view, url_prefix="/watch-view")
     app.register_blueprint(scope_view, url_prefix="/scope-view")

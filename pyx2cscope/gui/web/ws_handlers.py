@@ -2,8 +2,9 @@
 
 This module contains all SocketIO event handlers for watch and scope views.
 """
-from flask_socketio import emit
 from urllib.parse import parse_qs
+
+from flask_socketio import emit
 
 from pyx2cscope.gui.web.extensions import socketio
 from pyx2cscope.gui.web.scope import web_scope

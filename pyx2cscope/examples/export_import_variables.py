@@ -9,9 +9,9 @@ files instead of the elf file.
 """
 import os
 
-from pyx2cscope.x2cscope import X2CScope
 from pyx2cscope.utils import get_com_port
 from pyx2cscope.variable.variable_factory import FileType
+from pyx2cscope.x2cscope import X2CScope
 
 # initialize the X2CScope class with serial port, by default baud rate is 115200
 com_port = get_com_port()  # Get the COM port from the utility function

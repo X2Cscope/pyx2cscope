@@ -8,7 +8,7 @@ import time
 from pandas.core.dtypes.inference import is_number
 
 from pyx2cscope.gui.web import extensions
-from pyx2cscope.x2cscope import X2CScope, TriggerConfig
+from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
 
 class WebScope:

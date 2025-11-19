@@ -5,8 +5,9 @@ from ELF files parsed by the two parsers. Differences and similarities between
 the variable mappings are analyzed and displayed.
 """
 
-from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.parser.elf16_parser import Elf16Parser
+from pyx2cscope.parser.generic_parser import GenericParser
+
 
 def compare_dicts_intelligently(dict1, dict2):
     """Compare two dictionaries of variables and analyze similarities and differences.

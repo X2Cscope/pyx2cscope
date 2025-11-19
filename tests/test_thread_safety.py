@@ -1,14 +1,15 @@
 """Thread safety tests for the X2CScope class."""
 
 import os
+import random
 import threading
 import time
-import random
+
 import pytest
 
 from pyx2cscope.x2cscope import X2CScope
 from tests import data
-from tests.utils.serial_stub import fake_serial, BIT_LENGTH_16
+from tests.utils.serial_stub import BIT_LENGTH_16, fake_serial
 
 # Global counter to track operation sequence
 operation_sequence = []

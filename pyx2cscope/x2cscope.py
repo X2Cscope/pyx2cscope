@@ -17,7 +17,7 @@ from mchplnet.lnet import LNet
 from mchplnet.services.frame_load_parameter import LoadScopeData
 from mchplnet.services.scope import ScopeChannel, ScopeTrigger
 from pyx2cscope.variable.variable import Variable, VariableInfo
-from pyx2cscope.variable.variable_factory import VariableFactory, FileType
+from pyx2cscope.variable.variable_factory import FileType, VariableFactory
 
 # Configure logging for debugging and tracking
 logging.basicConfig(

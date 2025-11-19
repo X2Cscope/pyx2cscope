@@ -10,8 +10,9 @@ x2c_scope.get_variable_raw(VariableInfo var_info) to retrieve variables directly
 device's memory.
 """
 
-from pyx2cscope.x2cscope import X2CScope
 from variable.variable import VariableInfo
+
+from pyx2cscope.x2cscope import X2CScope
 
 # initialize the X2CScope class with serial port, by default baud rate is 115200
 x2c_scope = X2CScope(port="COM32")

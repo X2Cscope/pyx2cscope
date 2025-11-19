@@ -1,6 +1,7 @@
 """Integration test to check if after install, PyX2CScope outputs the expected behavior."""
 
 import os
+
 import pyx2cscope
 from mchplnet.services.frame_device_info import DeviceInfo
 from mchplnet.services.frame_load_parameter import LoadScopeData

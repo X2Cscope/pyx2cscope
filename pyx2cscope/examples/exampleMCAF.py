@@ -10,10 +10,12 @@ calculates the RMS current at this speed. The script stops the motor and gives t
 control back to hardware UI.
 """
 
+import time
+
+import numpy as np
+
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
-import time
-import numpy as np
 
 # Configuration for serial port communication
 serial_port = get_com_port()  # Get the COM port from the utility function

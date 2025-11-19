@@ -3,8 +3,9 @@
 This module provides SocketIO configuration and lock creation functions
 that adapt to the current environment (production or debug mode).
 """
-from flask_socketio import SocketIO
 import os
+
+from flask_socketio import SocketIO
 
 # Only enable eventlet in production, not during debugging
 if os.environ.get('DEBUG', None) is None:  # None means production
