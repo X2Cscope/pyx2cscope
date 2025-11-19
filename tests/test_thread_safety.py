@@ -141,9 +141,9 @@ class TestX2CScopeThreadSafety:
             t.join(timeout=5.0)
 
         # Print operation sequence for debugging
-        print("\nOperation sequence:")
-        for op in operation_sequence:
-            print(f"  {op}")
+        # print("\nOperation sequence:")
+        # for op in operation_sequence:
+        #     print(f"  {op}")
 
         # Verify that operations don't overlap (start/end pairs should alternate)
         # This is a simple check - in practice, you'd want more sophisticated analysis
