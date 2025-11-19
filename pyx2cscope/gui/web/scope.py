@@ -186,18 +186,18 @@ class WebScope:
             for var in self.scope_vars:
                 if var["trigger"]:
                     trigger_config = TriggerConfig(var["variable"], **kwargs)
-                    print(trigger_config)
                     self.x2c_scope.set_scope_trigger(trigger_config)
                     return
         self.x2c_scope.reset_scope_trigger()
 
     def scope_set_sample(self, trigger_action, sample_time, sample_freq):
+        if self.x2c_scope is None:
+            return
         with self._lock:
             if self.scope_sample_time != sample_time:
                 self.scope_sample_time = sample_time
                 self.x2c_scope.set_sample_time(self.scope_sample_time)
-            self.scope_time_sampling = self.x2c_scope.get_scope_sample_time(1 / sample_freq)
-            print(self.scope_time_sampling, sample_freq)
+            self.scope_time_sampling = self.x2c_scope.get_scope_sample_time(1 / (sample_freq * 100))
             if "shot" in trigger_action:
                 self.scope_burst = True
             trigger_action = False if "off" in trigger_action else True
@@ -211,7 +211,7 @@ class WebScope:
             if self.scope_trigger:
                 if self.x2c_scope.is_scope_data_ready():
                     datasets = self.get_scope_datasets()
-                    size = len(datasets[0]["data"]) if len(datasets) > 0 else 100
+                    size = len(datasets[0]["data"]) if len(datasets) > 0 else 1000
                     labels = self.get_scope_chart_label(size)
 
                     if self.scope_burst:
