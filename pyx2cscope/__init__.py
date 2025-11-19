@@ -5,6 +5,7 @@ Version: 0.5.0
 
 # Apply eventlet monkey patch before any other imports if web interface is requested
 import sys
+
 if "-w" in sys.argv or "--web" in sys.argv:
     import eventlet
     eventlet.monkey_patch()

@@ -26,8 +26,6 @@ from dataclasses import dataclass
 from numbers import Number
 from typing import Dict, List
 
-from pyparsing import empty
-
 from mchplnet.lnet import LNet
 
 
@@ -349,7 +347,7 @@ class Variable:
         """
 
     def is_enum(self) -> bool:
-        """method to determine if the variable's data type is an enum.
+        """Method to determine if the variable's data type is an enum.
 
         Returns:
             bool: True if the variable is of an enum data type, False otherwise.
