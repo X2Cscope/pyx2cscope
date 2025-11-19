@@ -5,9 +5,10 @@ retrieves specific variables, reads their values, and writes new values to them.
 """
 
 from pyx2cscope.x2cscope import X2CScope
+from pyx2cscope.utils import get_com_port
 
 # initialize the X2CScope class with serial port, by default baud rate is 115200
-x2c_scope = X2CScope(port="COM8")
+x2c_scope = X2CScope(port=get_com_port())
 # instead of loading directly the elf file, we can import it after instantiating the X2CScope class
 x2c_scope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
 

@@ -1,30 +1,117 @@
 """exampleMCAF.py.
 
-this example is a basic example to retrieve the value of a variable from motorBench auto-generated code.
+This example demonstrate a HiL (Hardware-in-the-Loop) script using motorBench (MCAF).
+The script assumes the control of MCAF disabling the hardware UI, stop the motor if
+it is running. Then it sets the velocity reference to 500 RPM and starts the motor.
+After that it measures the time to reach the speed, waits 2 seconds and calculates
+the RMS current using the scope functionality. After that it increases the velocity
+reference to 1500 RPM and measures the time to reach the speed. Waits 2 seconds and
+calculates the RMS current at this speed. The script stops the motor and gives the
+control back to hardware UI.
 """
 
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
+import time
+import numpy as np
 
 # Configuration for serial port communication
 serial_port = get_com_port()  # Get the COM port from the utility function
-# Specify the path to the ELF file
 elf_file = get_elf_file_path()  # Get the path to the ELF file from the utility function
 
-# Initialize the X2CScope with the specified serial port and baud rate
-# The default baud rate is 115200
+# Initialize the X2CScope with the specified serial port and ELF file
 x2c_scope = X2CScope(port=serial_port, elf_file=elf_file)
 
-# Retrieve specific variables from the MCU
-# Get the speed reference variable
-speed_reference = x2c_scope.get_variable("motor.apiData.velocityReference")
-# Get the measured speed variable
-speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")
+# Set hardware UI enabled to 0
+# doing this we enable external control of the motor
+hardware_ui_enabled = x2c_scope.get_variable("app.hardwareUiEnabled")
+hardware_ui_enabled.set_value(0)
 
-# Attempt to read the value of the 'speedReference' variable and log the result
-try:
-    # Read the value of the speed reference variable
-    speed_reference_value = speed_reference.get_value()
-    print(f"Speed Reference Value: {speed_reference_value}")
-except Exception as e:
-    print(f"Error reading speed reference value: {e}")
+# Ensure the motor is stopped
+stop_motor_request = x2c_scope.get_variable("motor.apiData.stopMotorRequest")
+stop_motor_request.set_value(1)
+
+# Set the speed to 500.0 RPM
+velocity_reference = x2c_scope.get_variable("motor.apiData.velocityReference")
+velocity_reference.set_value(5000)
+
+# Start the motor
+run_motor_request = x2c_scope.get_variable("motor.apiData.runMotorRequest")
+run_motor_request.set_value(1)
+
+# Measure the time to reach the speed
+start_time = time.time()
+while True:
+    speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")
+    if speed_measured.get_value() >= 5000:  # Check if the speed has reached 500.0
+        break
+end_time = time.time()
+time_to_reach_speed_5000 = end_time - start_time
+print(f"Time to reach 500 RPM: {time_to_reach_speed_5000:.2f} seconds")
+
+# Wait for 2 seconds
+time.sleep(2)
+
+# Add current variables to the scope
+phase_current_a = x2c_scope.get_variable("motor.iabc.a")
+phase_current_b = x2c_scope.get_variable("motor.iabc.b")
+x2c_scope.add_scope_channel(phase_current_a)
+x2c_scope.add_scope_channel(phase_current_b)
+
+# Request scope data
+x2c_scope.request_scope_data()
+
+# Wait until the scope data is ready
+while not x2c_scope.is_scope_data_ready():
+    time.sleep(0.1)
+
+# Get the scope channel data
+scope_data = x2c_scope.get_scope_channel_data()
+current_a = scope_data["motor.iabc.a"]
+current_b = scope_data["motor.iabc.b"]
+
+# Calculate the RMS current
+rms_current_a = np.sqrt(np.mean(np.square(current_a))) * 0.1  # Convert to Amps
+rms_current_b = np.sqrt(np.mean(np.square(current_b))) * 0.1  # Convert to Amps
+average_current_5000 = (rms_current_a + rms_current_b) / 2
+print(f"Average current at 500.0 RPM: {average_current_5000:.2f} A")
+
+# Increase the speed to 1500.0 RPM
+velocity_reference.set_value(15000)
+
+# Measure the time to reach the new speed
+start_time = time.time()
+while True:
+    speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")
+    if speed_measured.get_value() >= 15000:  # Check if the speed has reached 15000
+        break
+end_time = time.time()
+time_to_reach_speed_15000 = end_time - start_time
+print(f"Time to reach 1500.0 RPM: {time_to_reach_speed_15000:.2f} seconds")
+
+# Wait for 2 seconds
+time.sleep(2)
+
+# Request scope data again
+x2c_scope.request_scope_data()
+
+# Wait until the scope data is ready
+while not x2c_scope.is_scope_data_ready():
+    time.sleep(0.1)
+
+# Get the scope channel data again
+scope_data = x2c_scope.get_scope_channel_data()
+current_a = scope_data["motor.iabc.a"]
+current_b = scope_data["motor.iabc.b"]
+
+# Calculate the RMS current for the new speed
+rms_current_a = np.sqrt(np.mean(np.square(current_a))) * 0.1  # Convert to Amps
+rms_current_b = np.sqrt(np.mean(np.square(current_b))) * 0.1  # Convert to Amps
+average_current_15000 = (rms_current_a + rms_current_b) / 2
+print(f"Average current at 1500.0 RPM: {average_current_15000:.2f} A")
+
+# Stop the motor
+stop_motor_request.set_value(1)
+
+# Set hardware UI enabled to 1. Doing this we give the control back to the hardware UI.
+hardware_ui_enabled.set_value(1)
