@@ -24,7 +24,7 @@ import struct
 from abc import abstractmethod
 from dataclasses import dataclass
 from numbers import Number
-from typing import List, Dict
+from typing import Dict, List
 
 from mchplnet.lnet import LNet
 
@@ -345,6 +345,14 @@ class Variable:
         Returns:
             bool: True if the variable is of an integer data type, False otherwise.
         """
+
+    def is_enum(self) -> bool:
+        """Method to determine if the variable's data type is an enum.
+
+        Returns:
+            bool: True if the variable is of an enum data type, False otherwise.
+        """
+        return bool(self.info.valid_values)
 
 
 # ------------------------------INT_8------------------------------
@@ -984,10 +992,33 @@ class VariableEnum(Variable):
         """
         return int.from_bytes(data, "little", signed=self.is_signed())
 
-    def get_enumerator_list(self) -> Dict[str, int]:
+    def get_enum_list(self) -> Dict[str, int]:
         """Get the valid values for the enum variable.
 
         Returns:
             Dict[str, int]: A dictionary of valid values for the enum variable.
         """
         return self.info.valid_values
+
+    def get_enum_value(self) -> str:
+        """Get the string representation of the enum variable.
+
+        Returns:
+            str: The string value of the enumerator variable.
+        """
+        value = self.get_value()
+        return [k for k, v in self.info.valid_values.items() if v == value][0]
+
+    def set_enum_value(self, new_value:str) -> str:
+        """Get the string representation of the enum variable.
+
+        Args:
+            new_value (str): The string value of a enum item.
+
+        Returns:
+            str: The string value of the enumerator variable.
+        """
+        if new_value in self.info.valid_values:
+            self.set_value(self.info.valid_values[new_value])
+        else:
+            raise ValueError("Invalid enum value")

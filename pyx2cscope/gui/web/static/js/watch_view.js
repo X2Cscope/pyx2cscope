@@ -1,30 +1,47 @@
 let parameterCardEnabled = true;
-let parameterRefreshInterval;
 let parameterTable;
+
+const socket_wv = io("/watch-view");
+
+socket_wv.on("connect", () => {
+    console.log("Connected to watch namespace:", socket_wv.id);
+});
+
+socket_wv.on("watch_data_update", (data) => {
+    console.log("Update from server:", data);
+    parameterTable.rows().every(function() {
+        const rowData = this.data();
+        const updatedVar = data.find(item => item.variable === rowData.variable);
+
+        if (updatedVar) {
+            // Update the row data with new values
+            Object.assign(rowData, updatedVar);
+            // Redraw the row with updated data
+            this.data(rowData).draw(false); // false means don't reset paging
+        }
+    });
+});
+
+socket_wv.on("watch_table_update", (data) => {
+    $('#parameterSearch').val(null).trigger('change');
+    console.log("contents of table have changed:", data);
+    parameterTable.ajax.reload();
+});
+
 
 function setParameterRefreshInterval(){
     // Handle the Refresh button click
     $('#paramRefresh').click(function() {
-        $.getJSON('/watch-view/update-non-live', function(data){})
-        .done(parameterTable.ajax.reload());
+        socket_wv.emit("refresh_watch_data");
     });
 
-    $('#refresh1s').click(function() {
-        clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(wv_periodic_update, 1000);
+    // Handle refresh rate buttons with data attributes
+    $('.refresh-rate-btn').click(function() {
+        const rate = $(this).data('rate');
+        if (rate) {
+            socket_wv.emit("set_watch_rate", { rate: rate });
+        }
     });
-
-    $('#refresh3s').click(function() {
-        clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(wv_periodic_update, 3000);
-    });
-
-    $('#refresh5s').click(function() {
-        clearInterval(parameterRefreshInterval);
-        parameterRefreshInterval = setInterval(wv_periodic_update, 5000);
-    });
-
-    $('#refresh1s').click();
 }
 
 function wv_periodic_update(){
@@ -40,15 +57,8 @@ function wv_periodic_update(){
 function setParameterTableListeners(){
     // delete Row on button click
     $('#parameterTableBody').on('click', '.remove', function () {
-
         parameter = $(this).parent().siblings()[1].textContent;
-        $.getJSON('/watch-view/remove',
-        {
-            param: parameter
-        },
-        function(data) {
-            parameterTable.ajax.reload();
-        });
+        socket_wv.emit("remove_watch_var", {var: parameter});
     });
 
     // update variable after loosing focus on element
@@ -70,7 +80,10 @@ function setParameterTableListeners(){
         }
     });
 
-    $("#parameterSave").attr("href", "/watch-view/save");
+    // Set up Save button click handler
+    $("#parameterSave").on("click", function() {
+        window.location.href = '/watch-view/save';
+    });
     $('#parameterLoad').on('change', function(event) {
         var file = event.target.files[0];
         var formData = new FormData();
@@ -115,14 +128,7 @@ function initParameterSelect(){
 
     $('#parameterSearch').on('select2:select', function(e){
         parameter = $('#parameterSearch').select2('data')[0]['text'];
-        $.getJSON('/watch-view/add',
-        {
-            param: parameter
-        },
-        function(data) {
-            $('#parameterSearch').val(null).trigger('change');
-            parameterTable.ajax.reload();
-        });
+        socket_wv.emit("add_watch_var", {var: parameter});
     });
 }
 
@@ -139,10 +145,10 @@ function wv_update_param(element) {
     {
         if(element.type == "checkbox") parameter_value = element.checked? "1":"0";
     }
-    $.getJSON('/watch-view/update',
+    socket_wv.emit("update_watch_var",
     {
         param: parameter,
-        field: parameter_field,
+        field: parameter_field.toLowerCase(),
         value: parameter_value
     });
 }
@@ -154,7 +160,7 @@ function wv_checkbox(data, type) {
 }
 
 function wv_remove(data, type){
-    return '<button class="btn btn-danger remove" type="button">Remove</button>';
+    return '<button class="btn btn-danger remove float-end" type="button">Remove</button>';
 }
 
 $(document).ready(function () {

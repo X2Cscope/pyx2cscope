@@ -5,13 +5,12 @@ It focuses on extracting structure members and variable information from DWARF d
 
 import logging
 
+from elftools.construct.lib import ListContainer
+from elftools.dwarf.dwarf_expr import DWARFExprParser
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import SymbolTableSection
 
 from pyx2cscope.parser.elf_parser import ElfParser
-from elftools.construct.lib import ListContainer
-from elftools.dwarf.dwarf_expr import DWARFExprParser
-
 from pyx2cscope.variable.variable import VariableInfo
 
 

@@ -1,7 +1,101 @@
 let scopeCardEnabled = true;
-let dataReadyInterval;
 let scopeTable;
 let scopeChart;
+
+const socket_sv = io("/scope-view");
+
+socket_sv.on("connect", () => {
+    console.log("Connected to scope namespace:", socket_sv.id);
+});
+
+socket_sv.on("scope_table_update", (data) => {
+    $('#scopeSearch').val(null).trigger('change');
+    scopeTable.ajax.reload();
+});
+
+socket_sv.on("scope_chart_update", (data) => {
+    // check which datasets are visible
+    const visibility = {};
+    scopeChart.data.datasets.forEach((ds, i) => {
+      visibility[ds.label] = scopeChart.isDatasetVisible(i);
+    });
+
+    // update datasets and labels
+    scopeChart.data.datasets = data.datasets;
+    scopeChart.data.labels = data.labels;
+
+    // restore visibility for matching labels
+    scopeChart.data.datasets.forEach((ds, i) => {
+      if (visibility[ds.label] === false) {
+        scopeChart.setDatasetVisibility(i, false);
+      }
+    });
+
+    // update chart
+    scopeChart.update('none');
+});
+
+socket_sv.on("sample_control_updated", function(response) {
+    if (response.status === "success") {
+        // Handle triggerAction radio buttons
+        if (response.data.triggerAction) {
+            document.querySelectorAll('input[name="triggerAction"]').forEach(radio => {
+                const isTarget = radio.value === response.data.triggerAction;
+                radio.checked = isTarget;
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                label.classList.toggle('active', isTarget);
+            });
+        }
+        // Handle sampleTime input
+        if (response.data.sampleTime) {
+            const sampleTimeInput = document.getElementById('sampleTime');
+            sampleTimeInput.value = response.data.sampleTime;
+        }
+        // Handle sampleFreq input
+        if (response.data.sampleFreq) {
+            const sampleFreqInput = document.getElementById('sampleFreq');
+            sampleFreqInput.value = response.data.sampleFreq;
+        }
+    } else {
+        console.error("Failed to update sample control:", response.message);
+    }
+});
+
+// Add this handler for the trigger control response
+socket_sv.on("trigger_control_updated", function(response) {
+    if (response.status === "success" && response.data) {
+        // Handle trigger_mode radio buttons
+        if (response.data.trigger_mode !== undefined) {
+            document.querySelectorAll('input[name="trigger_mode"]').forEach(radio => {
+                const isTarget = radio.value === response.data.trigger_mode.toString();
+                radio.checked = isTarget;
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                label.classList.toggle('active', isTarget);
+            });
+        }
+        // Handle trigger_edge radio buttons
+        if (response.data.trigger_edge !== undefined) {
+            document.querySelectorAll('input[name="trigger_edge"]').forEach(radio => {
+                const isTarget = radio.value === response.data.trigger_edge.toString();
+                radio.checked = isTarget;
+                const label = document.querySelector(`label[for="${radio.id}"]`);
+                label.classList.toggle('active', isTarget);
+            });
+        }
+        // Handle trigger_level input
+        if (response.data.trigger_level !== undefined) {
+            const triggerLevelInput = document.getElementById('triggerLevel');
+            triggerLevelInput.value = response.data.trigger_level;
+        }
+        // Handle trigger_delay input
+        if (response.data.trigger_delay !== undefined) {
+            const triggerDelayInput = document.getElementById('triggerDelay');
+            triggerDelayInput.value = response.data.trigger_delay;
+        }
+    } else if (response.status !== "success") {
+        console.error("Failed to update trigger control:", response.message);
+    }
+});
 
 function initScopeSelect(){
     $('#scopeSearch').select2({
@@ -24,37 +118,15 @@ function initScopeSelect(){
 
     $('#scopeSearch').on('select2:select', function(e){
         parameter = $('#scopeSearch').select2('data')[0]['text'];
-        $.getJSON('/scope-view/add',
-        {
-            param: parameter
-        },
-        function(data) {
-            $('#scopeSearch').val(null).trigger('change');
-            scopeTable.ajax.reload();
-        });
+        socket_sv.emit("add_scope_var", {var: parameter});
     });
-}
-
-function sv_remove_chart_data(parameter) {
-    scopeChart.data.labels.pop(parameter);
-    scopeChart.data.datasets.forEach((dataset) => {
-        if(dataset.data.id == parameter) dataset.data.pop();
-    });
-    scopeChart.update();
 }
 
 function setScopeTableListeners(){
     // delete Row on button click
     $('#scopeTableBody').on('click', '.remove', function () {
         parameter = $(this).parent().siblings()[2].textContent;
-        $.getJSON('/scope-view/remove',
-        {
-            param: parameter
-        },
-        function(data) {
-            scopeTable.ajax.reload();
-            sv_remove_chart_data(parameter);
-        });
+        socket_sv.emit("remove_scope_var", {var: parameter});
     });
 
     // update variable after loosing focus on element
@@ -92,25 +164,12 @@ function sv_update_param(element) {
         if(element.type == "color") parameter_value = element.value;
     }
 
-    $.getJSON('/scope-view/update',
+    socket_sv.emit("update_scope_var",
     {
         param: parameter,
-        field: parameter_field,
+        field: parameter_field.toLowerCase(),
         value: parameter_value
-    }, function (data){
-        scopeTable.ajax.reload();
     });
-}
-
-function sv_update_scope_data(data) {
-    scopeChart.data.datasets = data.data;
-    scopeChart.data.labels = data.labels;
-    scopeChart.update('none');
-}
-
-function initScopeCard(){
-    initScopeSelect();
-    setScopeTableListeners();
 }
 
 function sv_checkbox(data, type) {
@@ -148,8 +207,92 @@ const zoomOptions = {
     }
 }
 
+const getOrCreateLegendList = (chart, id) => {
+  const legendContainer = document.getElementById(id);
+  let listContainer = legendContainer.querySelector('ul');
+
+  if (!listContainer) {
+    listContainer = document.createElement('ul');
+    listContainer.style.display = 'flex';
+    listContainer.style.flexDirection = 'row';
+    listContainer.style.margin = 0;
+    listContainer.style.padding = 0;
+
+    legendContainer.appendChild(listContainer);
+  }
+
+  return listContainer;
+};
+
+const htmlLegendPlugin = {
+  id: 'htmlLegend',
+  afterUpdate(chart, args, options) {
+    const ul = getOrCreateLegendList(chart, options.containerID);
+
+    // Remove old legend items
+    while (ul.firstChild) {
+      ul.firstChild.remove();
+    }
+
+    // Reuse the built-in legendItems generator
+    const items = chart.options.plugins.legend.labels.generateLabels(chart);
+
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.style.alignItems = 'center';
+      li.style.cursor = 'pointer';
+      li.style.display = 'flex';
+      li.style.flexDirection = 'row';
+      li.style.marginLeft = '10px';
+
+      li.onclick = () => {
+        chart.setDatasetVisibility(
+          item.datasetIndex,
+          !chart.isDatasetVisible(item.datasetIndex) // toggle visibility
+        );
+        chart.update();
+      };
+
+      // Color box
+      const boxSpan = document.createElement('span');
+      boxSpan.style.background = item.fillStyle;
+      boxSpan.style.borderColor = item.strokeStyle;
+      boxSpan.style.borderWidth = item.lineWidth + 'px';
+      boxSpan.style.display = 'inline-block';
+      boxSpan.style.flexShrink = 0;
+      boxSpan.style.height = '20px';
+      boxSpan.style.marginRight = '10px';
+      boxSpan.style.width = '20px';
+
+      // Text
+      const textContainer = document.createElement('p');
+      textContainer.style.color = item.fontColor;
+      textContainer.style.margin = 0;
+      textContainer.style.padding = 0;
+
+      // ✅ use chart.isDatasetVisible() instead of item.hidden
+      const visible = chart.isDatasetVisible(item.datasetIndex);
+      textContainer.style.textDecoration = visible ? '' : 'line-through';
+
+      const text = document.createTextNode(item.text);
+      textContainer.appendChild(text);
+
+      li.appendChild(boxSpan);
+      li.appendChild(textContainer);
+      ul.appendChild(li);
+    });
+  }
+};
+
 function initScopeChart() {
-    let ctx = document.getElementById('scopeChart').getContext('2d');
+    const chartElement = document.getElementById('scopeChart');
+    const ctx = chartElement.getContext('2d');
+    
+    // Set the initial size of the canvas
+    const container = chartElement.parentElement;
+    chartElement.width = container.clientWidth;
+    chartElement.height = 300; // Fixed height as per your HTML
+    
     scopeChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -159,24 +302,78 @@ function initScopeChart() {
                 data: [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1,
+                pointRadius: 0, // Remove points for better performance
+                borderJoinStyle: 'round',
+                tension: 0.1
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false, // This is important for fixed height
+            animation: {
+                duration: 0 // Disable animations for better performance
+            },
             scales: {
                 x: {
-                    type: 'linear',
+                    type: 'category',
                     title: {
                         display: true,
                         text: 'Time (ms)'
+                    },
+                    grid: {
+                        display: true,
+                        drawBorder: true
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        includeBounds: true,
+                        callback: function(value, index, ticks) {
+                          const rawLabel = this.getLabelForValue(value);
+                          const num = parseFloat(rawLabel);
+                          if (isNaN(num)) return rawLabel;
+
+                          const tickCount = ticks.length;
+                          if (tickCount > 1000) return num.toFixed(2);
+                          if (tickCount > 500) return num.toFixed(3);
+                          if (tickCount > 100) return num.toFixed(4);
+                          if (tickCount == 11) return num.toFixed(1);
+                          return num.toFixed(5);
+                        }
                     }
                 },
+                y: {
+                    grid: {
+                        display: true,
+                        drawBorder: true
+                    }
+                }
             },
             plugins: {
                 zoom: zoomOptions,
-                legend: false,
+                htmlLegend: {
+                    containerID: 'legend-container',
+                },
+                legend: {
+                    display: false
+                }
+            },
+            elements: {
+                line: {
+                    borderWidth: 1.5
+                }
             }
-        }
+        },
+        plugins: [htmlLegendPlugin],
     });
+    
+    // Handle window resize
+    const resizeObserver = new ResizeObserver(entries => {
+        const { width } = entries[0].contentRect;
+        chartElement.width = width;
+        scopeChart.update('none'); // Update without animation
+    });
+    
+    resizeObserver.observe(container);
 
     $('#chartZoomReset').on('click', function() {
         scopeChart.resetZoom();
@@ -185,87 +382,47 @@ function initScopeChart() {
     $('#chartExport').attr("href", "/scope-view/export")
 }
 
-function sv_clear_stop_focus() {
-    $("#triggerStop").removeClass("active");
-    $("#triggerStop").removeClass("focus");
-}
-
-function sv_set_stop_focus() {
-    sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
-    sampleTriggerButtons.forEach(button => {
-        if(button.id == "triggerStop") {
-            button.parentElement.classList.add("active");
-            button.parentElement.classList.add("focus");
-        }
-        else {
-            button.parentElement.classList.remove("active");
-            button.parentElement.classList.remove("focus");
-        }
-    });
-}
-
-function sv_data_ready_check()
-{
-    $.getJSON('/scope-view/chart', function(data) {
-        if (data.length === 0) {
-            // There is no data to update, so, call refresh again later
-            if(dataReadyInterval) setTimeout(sv_data_ready_check, 200);
-        }
-        else if(data.finish) {
-            sv_set_stop_focus();
-            sv_update_scope_data(data);
-        }
-        else {
-            if(data.ready) sv_update_scope_data(data);
-            if(dataReadyInterval) setTimeout(sv_data_ready_check, 200);
-        }
-    });
-}
-
 function initScopeForms(){
     $("#sampleControlForm").submit(function(e) {
         e.preventDefault(); // avoid to execute the actual submit of the form.
-        var form = $(this);
-
-        $.ajax({
-            type: "POST",
-            url: "/scope-view/form-sample",
-            data: form.serialize(),
-            success: function(data)
-            {
-                if(data.trigger){
-                    dataReadyInterval = true;
-                    setTimeout(sv_data_ready_check, 200);
-                    sv_clear_stop_focus();
-                }
-                else {
-                    dataReadyInterval = false;
-                }
-            }
-        });
+        var formData = $(this).serialize();
+        socket_sv.emit("update_sample_control", formData);
     });
 
-    sampleTriggerButtons = document.querySelectorAll('input[name="triggerAction"]');
-    sampleTriggerButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            $("#sampleControlForm").submit();
-        });
+    // Add change event handlers for the sample control radio buttons
+    $('input[name="triggerAction"]').on('change', function() {
+        // Remove active class from all labels in the same button group
+        $(this).closest('.btn-group').find('.btn').removeClass('active');
+        // Add active class to the clicked button's label
+        $(`label[for="${this.id}"]`).addClass('active');
+        
+        // Submit the form
+        $("#sampleControlForm").submit();
     });
+    
+    // Initialize the active state of the stop button on page load
+    $('input[name="triggerAction"][checked]').trigger('change');
 
+    // Handle trigger control form submission
     $("#triggerControlForm").submit(function(e) {
-        e.preventDefault(); // avoid to execute the actual submit of the form.
-        var form = $(this);
-
-        $.ajax({
-            type: "POST",
-            url: "/scope-view/form-trigger",
-            data: form.serialize(), // serializes the form's elements.
-            success: function(data){
-            }
-        });
+        e.preventDefault();
+        var formData = $(this).serialize();
+        socket_sv.emit("update_trigger_control", formData);
     });
 
-    $("#scopeSave").attr("href", "/scope-view/save");
+    // Add change event handlers for the radio buttons to update their visual state
+    $('input[name="triggerEnable"]').on('change', function() {
+        // Remove active class from all labels in the same button group
+        $(this).closest('.btn-group').find('.btn').removeClass('active');
+        // Add active class to the clicked button's label
+        $(`label[for="${this.id}"]`).addClass('active');
+    });
+
+    // Set up Save button click handler
+    $("#scopeSave").on("click", function() {
+        window.location.href = '/scope-view/save';
+    });
+
     $("#scopeLoad").on("change", function(event) {
         var file = event.target.files[0];
         var formData = new FormData();
@@ -300,7 +457,7 @@ $(document).ready(function () {
         searching: false,
         paging: false,
         info: false,
-        responsive: false,
+        responsive: true,
         columns: [
             {data: 'trigger', render: sv_checkbox, orderable: false},
             {data: 'enable', render: sv_checkbox, orderable: false},

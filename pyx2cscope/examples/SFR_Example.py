@@ -3,9 +3,10 @@
 import logging
 import time
 
+from variable.variable import VariableInfo
+
 from pyx2cscope.utils import get_com_port, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
-from variable.variable import VariableInfo
 
 # Configuration for serial port communication
 serial_port = get_com_port()  # Select COM port

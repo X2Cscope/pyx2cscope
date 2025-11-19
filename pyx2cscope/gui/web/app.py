@@ -3,27 +3,57 @@
 This module holds and handles the main url and forward the relative urls to the specific
 pages (blueprints).
 """
+import eventlet
+
+eventlet.monkey_patch()
 
 import logging
 import os
 import webbrowser
-from threading import Timer
 
 import serial.tools.list_ports
-from flask import jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request
 
-from pyx2cscope import set_logger
+from pyx2cscope import __version__, set_logger
 from pyx2cscope.gui import web
-from pyx2cscope.gui.web import connect_x2c, create_app, disconnect_x2c, get_x2c
-from pyx2cscope.gui.web.views.scope_view import sv as scope_view
-from pyx2cscope.gui.web.views.watch_view import wv as watch_view
+from pyx2cscope.gui.web.scope import web_scope
+from pyx2cscope.gui.web.ws_handlers import socketio
 
-set_logger(logging.INFO)
+set_logger(logging.ERROR)
+
+def create_app():
+    """Create and configure the Flask application.
+
+    Returns:
+        Flask: Configured Flask application instance.
+    """
+    app = Flask(__name__)
+
+    from pyx2cscope.gui.web.views.scope_view import sv_bp as scope_view
+    from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
+
+    app.register_blueprint(watch_view, url_prefix="/watch-view")
+    app.register_blueprint(scope_view, url_prefix="/scope-view")
+
+    app.add_url_rule("/", view_func=index)
+    app.add_url_rule("/serial-ports", view_func=list_serial_ports)
+    app.add_url_rule("/connect", view_func=connect, methods=["POST"])
+    app.add_url_rule("/disconnect", view_func=disconnect)
+    app.add_url_rule("/is-connected", view_func=is_connected)
+    app.add_url_rule("/variables", view_func=variables_autocomplete, methods=["POST", "GET"])
+    app.add_url_rule("/variables/all", view_func=get_variables, methods=["POST", "GET"])
+
+    socketio.init_app(app)
+
+    # IMPORTANT: Import after socketio exists to register all @socketio.on handlers
+    from pyx2cscope.gui.web import ws_handlers  # noqa: F401
+
+    return app
 
 
 def index():
     """Web X2CScope url entry point. Calling the page {url_server} will render the web X2CScope view page."""
-    return render_template("index.html", title="pyX2Cscope")
+    return render_template("index.html", title="pyX2Cscope", version=__version__)
 
 
 def list_serial_ports():
@@ -49,7 +79,8 @@ def connect():
         file_name = os.path.join(web_lib_path, "elf_file.elf")
         try:
             elf_file.save(file_name)
-            connect_x2c(port=uart, import_file=file_name)
+            web_scope.connect(port=uart)
+            web_scope.set_file(file_name)
             return jsonify({"status": "success"})
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
@@ -63,8 +94,7 @@ def is_connected():
 
     call {server_url}/is_disconnect to execute.
     """
-    with get_x2c() as x2c:
-        return jsonify({"status": (x2c is not None)})
+    return jsonify({"status": web_scope.is_connected()})
 
 
 def disconnect():
@@ -72,7 +102,7 @@ def disconnect():
 
     call {server_url}/disconnect to execute.
     """
-    disconnect_x2c()
+    web_scope.disconnect()
     return jsonify({"status": "success"})
 
 
@@ -83,13 +113,14 @@ def variables_autocomplete():
     returning a list of possible candidates. Access this function over {server_url}/variables.
     """
     query = request.args.get("q", "")
-    with get_x2c() as x2c:
+    items = []
+    if web_scope.is_connected():
         items = [
             {"id": var, "text": var}
-            for var in x2c.list_variables()
+            for var in web_scope.list_variables()
             if query.lower() in var.lower()
         ]
-        return jsonify({"items": items})
+    return jsonify({"items": items})
 
 
 def get_variables():
@@ -98,9 +129,8 @@ def get_variables():
     Returns a list of all variables available on the elf file.
     Access this function over {server_url}/variables/all.
     """
-    with get_x2c() as x2c:
-        items = [{"id": var, "text": var} for var in x2c.list_variables()]
-        return jsonify({"items": items})
+    items = [{"id": var, "text": var} for var in web_scope.list_variables()]
+    return jsonify({"items": items})
 
 
 def open_browser(host="localhost", web_port=5000):
@@ -110,6 +140,7 @@ def open_browser(host="localhost", web_port=5000):
         host (str): the host address/name
         web_port (int): the host port.
     """
+    socketio.sleep(1)
     webbrowser.open("http://" + host + ":" + str(web_port))
 
 
@@ -124,16 +155,6 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
         **kwargs: additional keyed arguments supplied on program call.
     """
     app = create_app()
-    app.register_blueprint(watch_view, url_prefix="/watch-view")
-    app.register_blueprint(scope_view, url_prefix="/scope-view")
-
-    app.add_url_rule("/", view_func=index)
-    app.add_url_rule("/serial-ports", view_func=list_serial_ports)
-    app.add_url_rule("/connect", view_func=connect, methods=["POST"])
-    app.add_url_rule("/disconnect", view_func=disconnect)
-    app.add_url_rule("/is-connected", view_func=is_connected)
-    app.add_url_rule("/variables", view_func=variables_autocomplete, methods=["POST", "GET"])
-    app.add_url_rule("/variables/all", get_variables, methods=["POST", "GET"])
 
     log_level = kwargs["log_level"] if "log_level" in kwargs else "ERROR"
     app.logger.setLevel(log_level)
@@ -144,15 +165,21 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
         # check if both keys are not None
         if kwargs["elf"] and kwargs["port"]:
             print("Loading elf file...")
-            connect_x2c(port=kwargs["port"], elf_file=kwargs["elf"])
+            web_scope.connect(port=kwargs["port"])
+            web_scope.set_file(kwargs["elf"])
 
     if new:
-        Timer(1, open_browser, None, {"web_port": web_port}).start()
+         socketio.start_background_task(open_browser, web_port=web_port)
     print("Listening at http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(web_port))
+
     if host == "0.0.0.0":
         print("Server is open for external requests!")
-    app.run(debug=False, host=host, port=web_port)
 
+    if os.environ.get('DEBUG') != 'true':
+        socketio.run(app, debug=False, host=host, port=web_port)
+    else:
+        socketio.run(app, debug=True, host=host, port=web_port,
+                     allow_unsafe_werkzeug=True, use_reloader=False)
 
 if __name__ == "__main__":
     main(new=True, host="0.0.0.0")

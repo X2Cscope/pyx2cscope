@@ -3,17 +3,19 @@
 import logging
 import os
 import pickle
+from dataclasses import asdict
+from enum import Enum
 
 import yaml
-from enum import Enum
-from dataclasses import asdict
 
 from mchplnet.lnet import LNet
 from pyx2cscope.parser.elf_parser import DummyParser
 from pyx2cscope.parser.generic_parser import GenericParser
 from pyx2cscope.variable.variable import (
     Variable,
+    VariableEnum,
     VariableFloat,
+    VariableInfo,
     VariableInt8,
     VariableInt16,
     VariableInt32,
@@ -22,9 +24,8 @@ from pyx2cscope.variable.variable import (
     VariableUint16,
     VariableUint32,
     VariableUint64,
-    VariableEnum,
-    VariableInfo,
 )
+
 
 class FileType(Enum):
     """Enumeration of supported file types for import/export operations."""

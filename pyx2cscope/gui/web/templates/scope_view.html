@@ -1,27 +1,32 @@
-        <canvas class="chartView" id="scopeChart" width="400" height="200"></canvas>
-<div class="row">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                Sample Control
-            </div>
-            <div class="card-body">
-                {% include 'sample_control.html' %}
-            </div>
-        </div>
-        <br>
-        <div class="card">
-            <div class="card-header">
-                Trigger Control
-            </div>
-            <div class="card-body">
-                {% include 'trigger_control.html' %}
-            </div>
-        </div>
+<div class="container-fluid py-3">
+    <div class="chart-container">
+        <canvas class="chart-view w-100" id="scopeChart" height="300"></canvas>
     </div>
-    <div class="col-md-8">
-        {% include 'source_config.html' %}
+    <div class="row g-3 mt-2" id="legend-container"></div>
+
+    <div class="row g-3 mt-2">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Sample Control</h5>
+                </div>
+                <div class="card-body">
+                    {% include 'sample_control.html' %}
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Trigger Control</h5>
+                </div>
+                <div class="card-body">
+                    {% include 'trigger_control.html' %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            {% include 'source_config.html' %}
+        </div>
     </div>
 </div>
-
-
