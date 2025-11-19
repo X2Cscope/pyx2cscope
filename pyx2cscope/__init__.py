@@ -3,6 +3,12 @@
 Version: 0.4.5
 """
 
+# Apply eventlet monkey patch before any other imports if web interface is requested
+import sys
+if "-w" in sys.argv or "--web" in sys.argv:
+    import eventlet
+    eventlet.monkey_patch()
+
 import logging
 
 __version__ = "0.4.5"
