@@ -21,7 +21,7 @@ from pyx2cscope.variable.variable_factory import VariableFactory, FileType
 
 # Configure logging for debugging and tracking
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.ERROR,
     filename=__name__ + ".log",
 )
 
