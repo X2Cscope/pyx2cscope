@@ -117,19 +117,19 @@ Attributes
    requesting data, and processing received data.
 
    Attributes:
-       interface (InterfaceABC): Interface object for communication.
+       interface (Interface): Interface object for communication.
        lnet (LNet): LNet object for low-level network operations.
        variable_factory (VariableFactory): Factory to create Variable objects.
        scope_setup: Configuration for the scope setup.
        convert_list (dict): Dictionary to store variable conversion functions.
        uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.
 
-   .. py:method:: set_interface(interface: mchplnet.interfaces.abstract_interface.InterfaceABC)
+   .. py:method:: set_interface(interface: mchplnet.interfaces.abstract_interface.Interface)
 
       Set the communication interface for the scope.
 
       Args:
-          interface (InterfaceABC): The interface to be set for communication.
+          interface (Interface): The interface to be set for communication.
 
 
    .. py:method:: connect()

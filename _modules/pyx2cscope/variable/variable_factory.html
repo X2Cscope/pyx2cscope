@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.4.4 documentation</title>
+  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=90733dfc"></script>
+        <script src="../../../_static/documentation_options.js?v=1dd76d02"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.4
+                0.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -89,17 +89,19 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.lnet</span><span class="w"> </span><span class="kn">import</span> <span class="n">LNet</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.parser.elf_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyParser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.parser.generic_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericParser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Variable</span><span class="p">,</span>
+    <span class="n">VariableEnum</span><span class="p">,</span>
     <span class="n">VariableFloat</span><span class="p">,</span>
+    <span class="n">VariableInfo</span><span class="p">,</span>
     <span class="n">VariableInt8</span><span class="p">,</span>
     <span class="n">VariableInt16</span><span class="p">,</span>
     <span class="n">VariableInt32</span><span class="p">,</span>
@@ -108,9 +110,8 @@
     <span class="n">VariableUint16</span><span class="p">,</span>
     <span class="n">VariableUint32</span><span class="p">,</span>
     <span class="n">VariableUint64</span><span class="p">,</span>
-    <span class="n">VariableEnum</span><span class="p">,</span>
-    <span class="n">VariableInfo</span><span class="p">,</span>
 <span class="p">)</span>
+
 
 <div class="viewcode-block" id="FileType">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.FileType">[docs]</a>

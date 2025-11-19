@@ -313,6 +313,14 @@ Classes
           bool: True if the variable is of an integer data type, False otherwise.
 
 
+   .. py:method:: is_enum() -> bool
+
+      Method to determine if the variable's data type is an enum.
+
+      Returns:
+          bool: True if the variable is of an enum data type, False otherwise.
+
+
 
 .. py:class:: VariableInt8(l_net: mchplnet.lnet.LNet, info: VariableInfo)
 
@@ -900,12 +908,31 @@ Classes
           Number: The enum value.
 
 
-   .. py:method:: get_enumerator_list() -> Dict[str, int]
+   .. py:method:: get_enum_list() -> Dict[str, int]
 
       Get the valid values for the enum variable.
 
       Returns:
           Dict[str, int]: A dictionary of valid values for the enum variable.
+
+
+   .. py:method:: get_enum_value() -> str
+
+      Get the string representation of the enum variable.
+
+      Returns:
+          str: The string value of the enumerator variable.
+
+
+   .. py:method:: set_enum_value(new_value: str) -> str
+
+      Get the string representation of the enum variable.
+
+      Args:
+          new_value (str): The string value of a enum item.
+
+      Returns:
+          str: The string value of the enumerator variable.
 
 
 

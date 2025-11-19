@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.4.4 documentation</title>
+  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=90733dfc"></script>
+        <script src="../../../_static/documentation_options.js?v=1dd76d02"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.4
+                0.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -128,7 +128,7 @@ get_com_port(key=”com_port”) -&gt; str: Gets the COM port from the configura
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyx2cscope.utils.get_config_file">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_config_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/configparser.html#configparser.ConfigParser" title="(in Python v3.13)"><span class="pre">configparser.ConfigParser</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_config_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_config_file" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_config_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/configparser.html#configparser.ConfigParser" title="(in Python v3.14)"><span class="pre">configparser.ConfigParser</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_config_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_config_file" title="Link to this definition"></a></dt>
 <dd><p>Retrieves the configuration file. If the configuration file does not exist, it creates one with default values.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>ConfigParser: The configuration parser object.</p>
@@ -138,7 +138,7 @@ get_com_port(key=”com_port”) -&gt; str: Gets the COM port from the configura
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyx2cscope.utils.get_elf_file_path">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_elf_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'path'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_elf_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_elf_file_path" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_elf_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'path'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_elf_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_elf_file_path" title="Link to this definition"></a></dt>
 <dd><p>Gets the path to the ELF file from the configuration.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>key (str): The key for the ELF file path in the configuration. Default is “path”.</p>
@@ -150,7 +150,7 @@ get_com_port(key=”com_port”) -&gt; str: Gets the COM port from the configura
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pyx2cscope.utils.get_com_port">
-<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_com_port</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'com_port'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_com_port"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_com_port" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_com_port</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'com_port'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_com_port"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_com_port" title="Link to this definition"></a></dt>
 <dd><p>Gets the COM port from the configuration.</p>
 <dl class="simple">
 <dt>Args:</dt><dd><p>key (str): The key for the COM port in the configuration. Default is “com_port”.</p>

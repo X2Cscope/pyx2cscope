@@ -12,7 +12,7 @@ Create a virtual environment and install pyx2cscope using the following commands
 
 It is highly recommended to install python libraries underneath a virtual environment.
 
-Nevertheless, to install at system level, we advise to install it on user area. (Global insallation may not work.) 
+Nevertheless, to install at system level, we advise to install it on user area. (Global installation may not work.)
 Execute the following lines:
 
 .. code-block:: python

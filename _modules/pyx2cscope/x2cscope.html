@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.4.4 documentation</title>
+  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=90733dfc"></script>
+        <script src="../../_static/documentation_options.js?v=1dd76d02"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.4.4
+                0.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -97,17 +97,17 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.interfaces.abstract_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">InterfaceABC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.interfaces.abstract_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interface</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.interfaces.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">InterfaceFactory</span><span class="p">,</span> <span class="n">InterfaceType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.lnet</span><span class="w"> </span><span class="kn">import</span> <span class="n">LNet</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.services.frame_load_parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoadScopeData</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">mchplnet.services.scope</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScopeChannel</span><span class="p">,</span> <span class="n">ScopeTrigger</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable</span><span class="w"> </span><span class="kn">import</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">VariableInfo</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VariableFactory</span><span class="p">,</span> <span class="n">FileType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileType</span><span class="p">,</span> <span class="n">VariableFactory</span>
 
 <span class="c1"># Configure logging for debugging and tracking</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
-    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
     <span class="n">filename</span><span class="o">=</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;.log&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -190,7 +190,7 @@
 <span class="sd">    requesting data, and processing received data.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        interface (InterfaceABC): Interface object for communication.</span>
+<span class="sd">        interface (Interface): Interface object for communication.</span>
 <span class="sd">        lnet (LNet): LNet object for low-level network operations.</span>
 <span class="sd">        variable_factory (VariableFactory): Factory to create Variable objects.</span>
 <span class="sd">        scope_setup: Configuration for the scope setup.</span>
@@ -203,11 +203,10 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            elf_file (str): Path to the ELF file.</span>
-<span class="sd">            interface (InterfaceABC): Communication interface to be used, defaults to None.</span>
+<span class="sd">            interface (Interface): Communication interface to be used, defaults to None.</span>
 <span class="sd">            **kwargs: Key defined arguments.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">i_type</span> <span class="o">=</span> <span class="n">interface</span> <span class="k">if</span> <span class="n">interface</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">InterfaceType</span><span class="o">.</span><span class="n">SERIAL</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">InterfaceFactory</span><span class="o">.</span><span class="n">get_interface</span><span class="p">(</span><span class="n">interface_type</span><span class="o">=</span><span class="n">i_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">InterfaceFactory</span><span class="o">.</span><span class="n">get_interface</span><span class="p">(</span><span class="n">interface</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span> <span class="o">=</span> <span class="n">LNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span> <span class="o">=</span> <span class="n">VariableFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_scope_setup</span><span class="p">()</span>
@@ -216,12 +215,13 @@
 
 <div class="viewcode-block" id="X2CScope.set_interface">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_interface">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">InterfaceABC</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">Interface</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the communication interface for the scope.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            interface (InterfaceABC): The interface to be set for communication.</span>
+<span class="sd">            interface (Interface): The interface to be set for communication.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span> <span class="o">=</span> <span class="n">LNet</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_scope_setup</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">set_lnet_interface</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">)</span></div>
@@ -389,6 +389,10 @@
             <span class="n">trigger_edge</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">trigger_edge</span><span class="p">,</span>
             <span class="n">trigger_mode</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">trigger_mode</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="c1"># check if trigger level is within variable range</span>
+        <span class="n">min_value</span><span class="p">,</span> <span class="n">max_value</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">variable</span><span class="o">.</span><span class="n">_get_min_max_values</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">min_value</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">trigger_level</span> <span class="ow">or</span> <span class="n">max_value</span> <span class="o">&lt;</span> <span class="n">config</span><span class="o">.</span><span class="n">trigger_level</span><span class="p">:</span>
+            <span class="n">scope_trigger</span><span class="o">.</span><span class="n">trigger_level</span> <span class="o">=</span> <span class="n">min_value</span> <span class="k">if</span> <span class="n">min_value</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">trigger_level</span> <span class="k">else</span> <span class="n">max_value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">set_trigger</span><span class="p">(</span><span class="n">scope_trigger</span><span class="p">)</span></div>
 
 
@@ -520,7 +524,6 @@
                 <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
                 <span class="n">chunk_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">chunk_data</span></div>
 
@@ -677,9 +680,9 @@
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;processor_id&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span>
             <span class="s2">&quot;uc_width&quot;</span><span class="p">:</span> <span class="n">uc_width_value</span><span class="p">,</span>
-            <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitorDate</span><span class="p">,</span>  <span class="c1">##TODO Change to APP date once implemented</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitorTime</span><span class="p">,</span>  <span class="c1"># TODO Change to APP time once implemented</span>
-            <span class="s2">&quot;AppVer&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">appVer</span><span class="p">,</span>
+            <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitor_date</span><span class="p">,</span>  <span class="c1">##TODO Change to APP date once implemented</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitor_time</span><span class="p">,</span>  <span class="c1"># TODO Change to APP time once implemented</span>
+            <span class="s2">&quot;AppVer&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">app_version</span><span class="p">,</span>
             <span class="s2">&quot;dsp_state&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">dsp_state</span><span class="p">,</span>
         <span class="p">}</span></div>
 </div>
