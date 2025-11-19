@@ -1,6 +1,5 @@
 import time
 
-from numpy.matlib import empty
 from pandas.core.dtypes.inference import is_number
 
 from pyx2cscope.gui.web import extensions
@@ -23,9 +22,11 @@ class WebScope:
         self.x2c_scope :X2CScope | None = None
         self._lock = extensions.create_lock()
 
-    @staticmethod
-    def _get_watch_variable_as_dict(variable, value=0):
+    def _get_watch_variable_as_dict(self, variable, value=None):
         primitive = variable.__class__.__name__.lower().replace("variable", "")
+        if value is None:
+            with self._lock:
+                value = variable.get_value()
         value = round(value, 4) if primitive == "float" else value
         return {
             "live": 0,
