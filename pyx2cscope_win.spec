@@ -6,8 +6,15 @@ a = Analysis(
     ['pyx2cscope\\__main__.py'],
     pathex=[],
     binaries=[],
-    datas=[('pyx2cscope\\gui\\web\\static', 'pyx2cscope\\gui\\web\\static'), ('pyx2cscope\\gui\\web\\templates', 'pyx2cscope\\gui\\web\\templates'), ('pyx2cscope\\gui\\img', 'pyx2cscope\\gui\\img')],
-    hiddenimports=[],
+    datas=[
+      ('pyx2cscope\\gui\\web\\static', 'pyx2cscope\\gui\\web\\static'),
+      ('pyx2cscope\\gui\\web\\templates', 'pyx2cscope\\gui\\web\\templates'),
+      ('pyx2cscope\\gui\\img', 'pyx2cscope\\gui\\img'),
+      ],
+    hiddenimports=[
+      'engineio.async_threading',
+      'engineio.async_drivers.threading'
+      ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -35,6 +42,7 @@ exe = EXE(
     entitlements_file=None,
     icon=['pyx2cscope\\gui\\img\\pyx2cscope.ico'],
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
