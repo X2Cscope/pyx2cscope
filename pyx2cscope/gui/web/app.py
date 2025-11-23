@@ -3,10 +3,6 @@
 This module holds and handles the main url and forward the relative urls to the specific
 pages (blueprints).
 """
-import eventlet
-
-eventlet.monkey_patch()
-
 import logging
 import os
 import webbrowser
@@ -176,7 +172,8 @@ def main(host="localhost", web_port=5000, new=True, *args, **kwargs):
         print("Server is open for external requests!")
 
     if os.environ.get('DEBUG') != 'true':
-        socketio.run(app, debug=False, host=host, port=web_port)
+        socketio.run(app, debug=False, host=host, port=web_port,
+                     allow_unsafe_werkzeug=True)
     else:
         socketio.run(app, debug=True, host=host, port=web_port,
                      allow_unsafe_werkzeug=True, use_reloader=False)
