@@ -4,6 +4,8 @@ It focuses on extracting structure members and variable information from DWARF d
 """
 
 import logging
+import math
+from itertools import product
 
 from elftools.construct.lib import ListContainer
 from elftools.dwarf.dwarf_expr import DWARFExprParser
@@ -106,6 +108,7 @@ class GenericParser(ElfParser):
         if type_attr:
             ref_addr = type_attr.value + current_die.cu.cu_offset
             return self.dwarf_info.get_DIE_from_refaddr(ref_addr)
+        return None
 
     def _get_end_die(self, current_die):
         """Find the end DIE of a type iteratively."""
@@ -224,7 +227,8 @@ class GenericParser(ElfParser):
         """
         members = {}
         array_members = {}
-        array_size = self._get_array_length(end_die)
+        array_dimensions = self._get_array_dimensions(end_die)
+        array_size = math.prod(array_dimensions)
         base_type_die = self._get_base_type_die(end_die)
         self._process_end_die(members, base_type_die, member_name, offset)
         if members:
@@ -241,11 +245,13 @@ class GenericParser(ElfParser):
             }
 
             # Generate array members, e.g.: array[0], array[1], ..., array[i]
-            for i in range(array_size):
+            ranges = [range(d) for d in array_dimensions]
+            for idx, idx_tuple in enumerate(product(*ranges)):
+                idx_str = ''.join(f'[{i}]' for i in idx_tuple)
                 for name, values in members.items():
-                    element_name = name.replace(member_name, f"{member_name}[{i}]")
+                    element_name = name + idx_str
                     array_members[element_name] = values.copy()
-                    array_members[element_name]["address_offset"] += i * idx_size
+                    array_members[element_name]["address_offset"] += idx * idx_size
 
         return array_members
 
@@ -344,16 +350,18 @@ class GenericParser(ElfParser):
         return members
 
     @staticmethod
-    def _get_array_length(type_die):
-        """Gets the length of an array type."""
-        array_length = 0
+    def _get_array_dimensions(type_die):
+        """Gets the length of an array type.
+
+        Multidimensional arrays have multiple children with the tag DW_TAG_subrange_type.
+        """
+        dimensions = []
         for child in type_die.iter_children():
             if child.tag == "DW_TAG_subrange_type":
                 array_length_attr = child.attributes.get("DW_AT_upper_bound")
                 if array_length_attr:
-                    array_length = array_length_attr.value + 1
-                    break
-        return array_length
+                    dimensions.append(array_length_attr.value + 1)
+        return dimensions
 
     @staticmethod
     def _process_base_type(end_die, parent_name, offset):
