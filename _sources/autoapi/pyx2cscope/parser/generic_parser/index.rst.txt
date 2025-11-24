@@ -155,10 +155,12 @@ Attributes
       Recursively extracts structure members from a DWARF DIE, including arrays.
 
 
-   .. py:method:: _get_array_length(type_die)
+   .. py:method:: _get_array_dimensions(type_die)
       :staticmethod:
 
       Gets the length of an array type.
+
+      Multidimensional arrays have multiple children with the tag DW_TAG_subrange_type.
 
 
    .. py:method:: _process_base_type(end_die, parent_name, offset)
