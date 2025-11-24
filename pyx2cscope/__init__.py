@@ -1,19 +1,11 @@
 """This module contains the pyx2cscope package.
 
-Version: 0.5.0
+Version: 0.5.1
 """
-
-# Apply eventlet monkey patch before any other imports if web interface is requested
-import sys
-
-if "-w" in sys.argv or "--web" in sys.argv:
-    import eventlet
-    eventlet.monkey_patch()
 
 import logging
 
-__version__ = "0.5.0"
-
+__version__ = "0.5.1"
 
 def set_logger(
     level: int = logging.ERROR,

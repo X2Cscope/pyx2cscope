@@ -3,9 +3,8 @@
 This module provides the WebScope class for managing watch and scope variables
 through the web interface.
 """
+import numbers
 import time
-
-from pandas.core.dtypes.inference import is_number
 
 from pyx2cscope.gui.web import extensions
 from pyx2cscope.x2cscope import TriggerConfig, X2CScope
@@ -127,7 +126,7 @@ class WebScope:
         Args:
             rate (float): Polling rate in seconds (must be between 0 and MAX_WATCH_RATE).
         """
-        if is_number(rate) and 0 < rate < self.MAX_WATCH_RATE:
+        if isinstance(rate, numbers.Number) and 0 < rate < self.MAX_WATCH_RATE:
             self.watch_rate = rate
 
     def clear_watch_var(self):
