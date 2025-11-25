@@ -1,99 +1,96 @@
+"""This example can be used to try the scope functionality of pyX2Cscope and save the data acquisition in CSV file."""
+
+import csv
 import logging
+import time
 
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from xc2scope import X2CScope
 
-# Set up logging This sets up the logging system to capture information and errors, storing them in a log file with
-# the same name as this script.
+from pyx2cscope.utils import get_com_port, get_elf_file_path
+from pyx2cscope.x2cscope import X2CScope
+
+# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     filename=__file__ + ".log",
 )
 
-# X2C Scope Setup Initialize the X2C Scope for real-time data acquisition from a microcontroller. Specify the COM
-# port and path to the ELF file.
-elf_file = (
-    r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2"
-    r"\ZSMT_dsPIC33CK_MCLV_48_300.X\dist\default\production\ZSMT_dsPIC33CK_MCLV_48_300_Future.X.production.elf"
-)
-x2cScope = X2CScope(port="COM16", elf_file=elf_file)
+# X2C Scope Set up
+elf_file = get_elf_file_path()
+x2c_scope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
-# Initialize Variables for Monitoring
-# Define the variables that will be monitored and visualized in real-time.
+# Define variables
 variables = [
-    x2cScope.get_variable("motor.idq.q"),
-    x2cScope.get_variable("motor.vabc.a"),
-    x2cScope.get_variable("motor.vabc.b"),
-    x2cScope.get_variable("motor.vabc.c"),
-    x2cScope.get_variable("motor.apiData.velocityMeasured"),
+    "motor.idq.q",
+    "motor.vabc.a",
+    "motor.vabc.b",
+    "motor.vabc.c",
+    "motor.apiData.velocityMeasured",
 ]
 
-# Adding variables to scope's monitoring channels
-for variable in variables:
-    x2cScope.add_scope_channel(variable)
+for var in variables:
+    x2c_scope.add_scope_channel(x2c_scope.get_variable(var))
 
-# Initialize Data Storage
-# A dictionary to store the incoming data for each variable.
-data_storage = {var: [] for var in variables}
+x2c_scope.set_sample_time(1)
 
-# Window Size for Live Plot
-# Specifies the number of data points to display in the live plot at any given time.
-window_size = 250
+# Create the plot
+plt.ion()  # Turn on interactive mode
+fig, ax = plt.subplots()
 
+# Main loop
+nr_of_samples = 10  # Increase the number of samples if needed
+data_storage = {}
 
-def update_plot(frame):
-    """
-    Update Plot Function
-    This function is called periodically by the animation framework.
-    It fetches new data from the scope and updates the live plot.
-    """
-    try:
-        # Check if new scope data is available
-        if x2cScope.is_scope_data_ready():
-            logging.info("Scope data is ready.")
+# request scope to start sampling data
+x2c_scope.request_scope_data()
 
-            # Process and store new data
-            scope_data = x2cScope.get_scope_channel_data(valid_data=False)
-            for variable, data in scope_data.items():
-                variable_name = str(variable)  # Convert variable to a string identifier
-                data_storage[variable_name].extend(data)
+while nr_of_samples > 0:
+    # check if scope data is already available
+    if x2c_scope.is_scope_data_ready():
+        logging.info("Scope data is ready.")
 
-            # Request new data from the scope
-            x2cScope.request_scope_data()
+        for channel, data in x2c_scope.get_scope_channel_data().items():
+            data_storage[channel] = data
 
-    except Exception as e:
-        logging.error(f"Error in update_plot: {str(e)}")
+        ax.clear()
+        for channel, data in data_storage.items():
+            # Assuming data is sampled at 1 kHz, adjust as needed
+            time_values = [i * 0.001 for i in range(len(data))]  # milliseconds
+            # time_values = [i * 0.000001 for i in range(len(data))]  # microseconds
+            ax.plot(time_values, data, label=f"Channel {channel}")
 
-    # Clear the current plot for fresh drawing
-    plt.clf()
+        ax.set_xlabel("Time (ms)")  # Change axis label accordingly
+        ax.set_ylabel("Value")
+        ax.set_title("Live Plot of Byte Data")
+        ax.legend()
 
-    # Determine the current maximum index for x-axis
-    current_index = max(len(data) for data in data_storage.values())
+        plt.pause(0.001)  # Add a short pause to update the plot
 
-    # Plot data for each channel within the moving window
-    for variable_name, data in data_storage.items():
-        if data:
-            start_index = max(0, current_index - window_size)
-            end_index = current_index
-            plt.plot(
-                range(start_index, end_index), data[-window_size:], label=variable_name
+        nr_of_samples -= 1
+        x2c_scope.request_scope_data()
+
+    # wait for 100 ms before calling is_scope_data_ready() again
+    time.sleep(0.1)
+
+plt.ioff()  # Turn off interactive mode after the loop
+plt.show()
+
+logging.info("Data collection complete.")
+
+# Data Storage
+csv_file_path = "scope_data.csv"
+max_length = max(len(data) for data in data_storage.values())
+
+with open(csv_file_path, mode="w", newline="") as file:
+    writer = csv.DictWriter(file, fieldnames=data_storage.keys())
+    writer.writeheader()
+    for i in range(max_length):
+        row = {
+            channel: (
+                data_storage[channel][i] if i < len(data_storage[channel]) else None
             )
+            for channel in data_storage
+        }
+        writer.writerow(row)
 
-    # Adjust plot settings for the moving window effect
-    plt.xlim(current_index - window_size, current_index)
-    plt.xlabel("Data Index")
-    plt.ylabel("Value")
-    plt.title("Live Plot of Byte Data")
-    plt.legend(loc="upper right")
-    plt.draw()
-
-
-# Live Plot Setup
-# Initialize interactive mode for live updating and create a figure for the plot.
-plt.ion()
-fig = plt.figure()
-ani = FuncAnimation(fig, update_plot, interval=100, cache_frame_data=False)
-
-# Display the live plot
-plt.show(block=True)
+logging.info(f"Data saved in {csv_file_path}")

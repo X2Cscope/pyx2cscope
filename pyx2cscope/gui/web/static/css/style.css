@@ -1,0 +1,26 @@
+.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+a { color: inherit; }
+
+#update_com_port {
+    margin-top: 2em;
+}
+
+html {
+    font-size: 12px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+}
+
+.chart-view {
+    background-color: white;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}

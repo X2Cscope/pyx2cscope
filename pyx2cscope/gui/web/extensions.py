@@ -1,0 +1,18 @@
+"""Flask-SocketIO extensions and lock creation utilities.
+
+This module provides SocketIO configuration and lock creation functions
+that adapt to the current environment (production or debug mode).
+"""
+from flask_socketio import SocketIO
+
+socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
+import threading
+
+
+def create_lock():
+    """Create a threading-based lock.
+
+    Returns:
+        threading.Lock: A lock for thread synchronization.
+    """
+    return threading.Lock()

@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+    {% include 'header.html' %}
+  </head>
+  <body class="bg-light">
+    {% include 'navbar.html' %}
+    <div class="container-fluid py-3">
+      {% block content %}{% endblock %}
+      {% include 'modal.html' %}
+    </div>
+    <footer class="footer bg-secondary fixed-bottom">
+        <div class="container p-2 text-center">
+            {% include 'footer.html' %}
+        </div>
+    </footer>
+    {% include 'scripts.html' %}
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

@@ -1,16 +1,23 @@
+"""PyX2CScope example reference.
+
+This example get variable data using the scope functionality of X2Cscope and store it
+in CSV file as well as to visualise.
 """
-This example can be used as a reference
-to get variable data using the scope functionality of X2Cscope and store it in CSV file as well as to visualise.
-"""
+
 import csv
 import logging
 import time
 
 import matplotlib.pyplot as plt
-from xc2scope import X2CScope
+from x2cscope import TriggerConfig
 
-# Set up logging
-# This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
+from pyx2cscope import set_logger
+from pyx2cscope.utils import get_com_port, get_elf_file_path
+from pyx2cscope.x2cscope import X2CScope
+
+set_logger(
+    logging.INFO,
+)  # This sets up the logging system, storing logs in a file with the same name as this script but with a .log extension.
 logging.basicConfig(
     level=logging.INFO,
     filename=__file__ + ".log",
@@ -19,67 +26,55 @@ logging.basicConfig(
 # X2C Scope Set up
 # The X2C Scope is a tool for real-time data acquisition from a microcontroller.
 # Here, we specify the COM port and the path to the ELF file of the microcontroller project.
-elf_file = (
-    r"C:\_DESKTOP\_Projects\Motorbench_Projects\motorbench_FOC_PLL_PIC33CK256mp508_MCLV2"
-    r"\motorbench_FOC_PLL_dsPIC33CK_MCLV2_FH.X\dist\default\production\motorbench_FOC_PLL_dsPIC33CK_MCLV2.X"
-    r".production.elf"
-)
-x2cScope = X2CScope(port="COM16", elf_file=elf_file)
+elf_file = get_elf_file_path()
+x2c_scope = X2CScope(port=get_com_port(), elf_file=elf_file)
 
 # Scope Configuration Here, we set up the variables we want to monitor using the X2C Scope. Each variable corresponds
 # to a specific data point in the microcontroller.
-variable1 = x2cScope.get_variable("motor.idq.q")
-variable2 = x2cScope.get_variable("motor.vabc.a")
-variable3 = x2cScope.get_variable("motor.vabc.b")
-variable4 = x2cScope.get_variable("motor.vabc.c")
-variable5 = x2cScope.get_variable("motor.apiData.velocityMeasured")
+variable1 = x2c_scope.get_variable("motor.idq.q")
+variable2 = x2c_scope.get_variable("motor.vabc.a")
+variable3 = x2c_scope.get_variable("motor.vabc.b")
+variable4 = x2c_scope.get_variable("motor.vabc.c")
+variable5 = x2c_scope.get_variable("motor.apiData.velocityMeasured")
 
 # Adding variables to the scope's monitoring channels
-x2cScope.add_scope_channel(variable1)
-x2cScope.add_scope_channel(variable2)
-x2cScope.add_scope_channel(variable3)
-x2cScope.add_scope_channel(variable4)
-x2cScope.add_scope_channel(variable5)
-
+x2c_scope.add_scope_channel(variable1)
+x2c_scope.add_scope_channel(variable2)
+x2c_scope.add_scope_channel(variable3)
+x2c_scope.add_scope_channel(variable4)
+x2c_scope.add_scope_channel(variable5)
 
 # Setting up Trigger, any available variable can be selected.
-x2cScope.set_scope_trigger(
-    variable3,
-    trigger_level=500,
-    trigger_mode=1,
-    trigger_delay=50,
-    trigger_edge=1,
-)
+config = TriggerConfig(variable3, trigger_level=500, trigger_mode=1, trigger_delay=50, trigger_edge=1)
+x2c_scope.set_scope_trigger(config)
+
+# dictionary to store collected data to save later as CSV file.
+data_storage = {}
+nr_of_samples = 10
 
 # Request and Acquire Scope Data
 # This loop requests and receives data from the scope, storing it in a dictionary for later use.
 # It continues until a specified number of samples are collected.
-data_storage = {}
-sample_count = 0
-max_sample = 10
+x2c_scope.request_scope_data()
 
-while sample_count < max_sample:
-    try:
-        if x2cScope.is_scope_data_ready():
-            sample_count += 1
-            logging.info("Scope data is ready.")
+while nr_of_samples > 0:
+    # check if scope data is already available
+    if x2c_scope.is_scope_data_ready():
+        logging.info("Scope data is ready.")
 
-            # Process and store data
-            for channel, data in x2cScope.get_scope_channel_data(
-                valid_data=False
-            ).items():
-                if channel not in data_storage:
-                    data_storage[channel] = []
-                data_storage[channel].extend(data)
+        # get_scope_channel_data() returns a dictionary with buffered data
+        # collected according to the variables added to the scope and at
+        # the trigger position.
+        for channel, data in x2c_scope.get_scope_channel_data().items():
+            if channel not in data_storage:
+                data_storage[channel] = []
+            data_storage[channel].extend(data)
 
-            if sample_count >= max_sample:
-                break
-            x2cScope.request_scope_data()
+        nr_of_samples -= 1
+        # request new data sample
+        x2c_scope.request_scope_data()
 
-    except Exception as e:
-        logging.error(f"Error in main loop: {str(e)}")
-        break
-
+    # always wait a short time between calls of is_scope_data_ready()
     time.sleep(0.1)
 
 # Data Visualization
@@ -103,9 +98,9 @@ with open(csv_file_path, mode="w", newline="") as file:
     writer.writeheader()
     for i in range(max_length):
         row = {
-            channel: data_storage[channel][i]
-            if i < len(data_storage[channel])
-            else None
+            channel: (
+                data_storage[channel][i] if i < len(data_storage[channel]) else None
+            )
             for channel in data_storage
         }
         writer.writerow(row)
