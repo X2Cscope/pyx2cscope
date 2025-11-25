@@ -69,7 +69,7 @@ class GenericParser(ElfParser):
         elif die_struct.attributes.get("DW_AT_external") and die_struct.attributes.get("DW_AT_name") is not None:
             if die_struct.tag != "DW_TAG_variable":
                 return
-            self.die_variable = die_struct        
+            self.die_variable = die_struct
             self.is_sfr = True
         else:
             return
@@ -90,6 +90,9 @@ class GenericParser(ElfParser):
 
         members = {}
         self._process_end_die(members, self.die_variable, self.var_name, 0)
+        # Uncomment and use if base type processing is needed
+        # base_type_die = self._get_base_type_die(self.die_variable)
+        # self._process_end_die(members, base_type_die, self.var_name, 0)
 
         target_map = self.register_map if self.is_sfr else self.variable_map
         for member_name, member_data in members.items():
@@ -411,11 +414,16 @@ class GenericParser(ElfParser):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
                 self._process_die(die)
 
+        # #Update type _Bool to bool
+        # for var_info in self.variable_map.values():
+        #     if var_info.type == "_Bool":
+        #         var_info.type = "bool"
+
         return self.variable_map
 
 
 if __name__ == "__main__":
- 
+
     # elf_file = r"..\..\tests\data\qspin_foc_same54.elf"
     elf_file = r"..\..\..\tests\data\dsPIC33ak128mc106_foc.elf"
     elf_reader = GenericParser(elf_file)
@@ -425,13 +433,13 @@ if __name__ == "__main__":
     print(variable_map)
     print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
-    
+
     print("Array variables:")
     for var_info in variable_map.values():
         if var_info.array_size > 0:
             print(var_info)
     print("'''''''''''''''''''''''''''''''''''''''' ")
-    
+
     print("register variables:")
     print(register_map)
     print(len(register_map))

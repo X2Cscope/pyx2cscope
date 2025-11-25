@@ -31,6 +31,3 @@ tmr1_value = tmr1_register.get_value()
 print(f"LATD: 0x{latd_value:04X} ({latd_value})")
 print(f"TMR1: 0x{tmr1_value:04X} ({tmr1_value})")
 print("-" * 40)
-
-
-
