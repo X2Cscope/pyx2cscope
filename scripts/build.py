@@ -84,12 +84,17 @@ def create_zip_archive(source_dir, version):
     if os.path.exists(zip_path):
         os.remove(zip_path)
 
-    # Create zip file.
+    # Create zip file while preserving directory structure
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, _dirs, files in os.walk(source_dir):
+        # Get the parent directory of source_dir to maintain relative paths
+        base_dir = os.path.dirname(source_dir)
+        for root, dirs, files in os.walk(source_dir):
+            # Calculate the relative path from the base directory
+            rel_path = os.path.relpath(root, base_dir)
             for file in files:
                 file_path = os.path.join(root, file)
-                arcname = os.path.join("pyX2Cscope", os.path.basename(file))
+                # Create the path inside the zip file
+                arcname = os.path.join(rel_path, file)
                 zipf.write(file_path, arcname)
 
     print(f"Created archive: {zip_path}")
