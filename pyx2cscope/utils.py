@@ -60,3 +60,17 @@ def get_com_port(key="com_port") -> str:
     if not config["COM_PORT"][key] or "your" in config["COM_PORT"][key]:
         return ""
     return config["COM_PORT"][key]
+
+def get_host_address(key="host_ip") -> str:
+    """Gets the Host IP Address from the configuration.
+
+    Args:
+        key (str): The key for the Host IP Address in the configuration. Default is "host_ip".
+
+    Returns:
+        str: The IP address.
+    """
+    config = get_config_file()
+    if not config["HOST_IP"][key] or "your" in config["HOST_IP"][key]:
+        return ""
+    return config["HOST_IP"][key]
