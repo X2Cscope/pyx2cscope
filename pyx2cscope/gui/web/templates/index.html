@@ -23,6 +23,9 @@
     <li class="nav-item">
         <button class="nav-link" id="tabScope" data-bs-toggle="tab" data-bs-target="#scopeView">Scope View</button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link" id="tabDashboard" data-bs-toggle="tab" data-bs-target="#dashboardView">Dashboard</button>
+    </li>
 </ul>
 
 <!-- Desktop Toggles -->
@@ -31,10 +34,26 @@
     <label class="btn btn-outline-primary" for="toggleWatch">Watch View</label>
     <input type="checkbox" class="btn-check" id="toggleScope" checked autocomplete="off">
     <label class="btn btn-outline-primary" for="toggleScope">Scope View</label>
+    <input type="checkbox" class="btn-check" id="toggleDashboard" autocomplete="off">
+    <label class="btn btn-outline-primary" for="toggleDashboard">Dashboard</label>
 </div>
 
 <!-- Views -->
 <div class="row g-3" id="viewsContainer">
+    <div class="col-12" id="dashboardCol">
+        <div class="card h-100">
+            <div class="card-header">
+                <strong>Dashboard</strong>
+                <a href="/dashboard-view" target="_blank" class="float-end" title="Open this card in a new window">
+                    <span class="material-icons md-18">open_in_new</span></a>
+                <a href="#" class="float-end" title="Get QR-Code address" id="dashboardQRCode">
+                    <span class="material-icons md-18">qr_code_2</span></a>
+            </div>
+            <div class="card-body p-0" style="min-height: 600px;">
+                {% include 'dashboard_view.html' %}
+            </div>
+        </div>
+    </div>
     <div class="col-12 col-lg-12 col-xxl-6" id="watchCol">
         <div class="card h-100">
             <div class="card-header">
@@ -72,4 +91,5 @@
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script src="{{ url_for('static', filename='js/watch_view.js') }}"></script>
 <script src="{{ url_for('static', filename='js/scope_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard_view.js') }}"></script>
 {% endblock scripts %}

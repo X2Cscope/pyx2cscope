@@ -27,9 +27,11 @@ def create_app():
 
     from pyx2cscope.gui.web.views.scope_view import sv_bp as scope_view
     from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
+    from pyx2cscope.gui.web.views.dashboard_view import dv_bp as dashboard_view
 
     app.register_blueprint(watch_view, url_prefix="/watch-view")
     app.register_blueprint(scope_view, url_prefix="/scope-view")
+    app.register_blueprint(dashboard_view, url_prefix="/dashboard-view")
 
     app.add_url_rule("/", view_func=index)
     app.add_url_rule("/serial-ports", view_func=list_serial_ports)
