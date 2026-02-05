@@ -1,23 +1,5 @@
 <div class="d-flex flex-column h-100" style="position: relative; min-height: 600px;">
-    <!-- Dashboard Toolbar -->
-    <div class="d-flex flex-wrap gap-2 mb-3 p-2 bg-light rounded">
-        <button type="button" class="btn btn-sm btn-success" id="dashboardModeBtn" onclick="toggleDashboardMode()">
-            <span class="material-icons md-18">edit</span> Edit Mode
-        </button>
-        <button type="button" class="btn btn-sm btn-primary" onclick="saveDashboardLayout()">
-            <span class="material-icons md-18">save</span> Save
-        </button>
-        <button type="button" class="btn btn-sm btn-primary" onclick="loadDashboardLayout()">
-            <span class="material-icons md-18">folder_open</span> Load
-        </button>
-        <button type="button" class="btn btn-sm btn-secondary" onclick="exportDashboardLayout()">
-            <span class="material-icons md-18">upload</span> Export
-        </button>
-        <button type="button" class="btn btn-sm btn-secondary" onclick="importDashboardLayout()">
-            <span class="material-icons md-18">download</span> Import
-        </button>
-        <input type="file" id="dashboardFileInput" style="display: none;" accept=".json">
-    </div>
+    <input type="file" id="dashboardFileInput" style="display: none;" accept=".json">
 
     <!-- Widget Palette (Edit Mode Only) -->
     <div class="row flex-grow-1" id="dashboardContainer">
@@ -40,11 +22,17 @@
                         <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('text')">
                             <span class="material-icons md-18">text_fields</span> Text
                         </button>
+                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('label')">
+                            <span class="material-icons md-18">label</span> Label
+                        </button>
                         <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('gauge')">
                             <span class="material-icons md-18">speed</span> Gauge
                         </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('plot')">
-                            <span class="material-icons md-18">show_chart</span> Plot
+                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('plot_logger')">
+                            <span class="material-icons md-18">timeline</span> Logger
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('plot_scope')">
+                            <span class="material-icons md-18">show_chart</span> Scope
                         </button>
                     </div>
                 </div>
@@ -82,7 +70,3 @@
         </div>
     </div>
 </div>
-
-<style>
-
-</style>

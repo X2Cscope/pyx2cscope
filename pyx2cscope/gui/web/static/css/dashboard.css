@@ -49,8 +49,23 @@
 }
 
 .widget-controls .btn {
-    padding: 2px 6px;
-    font-size: 0.75rem;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+}
+
+.widget-controls .btn:hover {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.widget-controls .btn .material-icons {
+    font-size: 18px;
 }
 
 .view-mode .widget-controls {

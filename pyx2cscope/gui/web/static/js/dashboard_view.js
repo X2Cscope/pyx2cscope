@@ -3,7 +3,7 @@
 
 let dashboardWidgets = [];
 let selectedWidget = null;
-let isDashboardEditMode = false;
+let isDashboardEditMode = true;
 let draggedWidget = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
@@ -43,23 +43,26 @@ function initializeDashboard() {
 function toggleDashboardMode() {
     isDashboardEditMode = !isDashboardEditMode;
     const btn = document.getElementById('dashboardModeBtn');
+    const icon = btn.querySelector('.material-icons');
     const palette = document.getElementById('widgetPalette');
     const canvasCol = document.getElementById('dashboardCanvasCol');
     const canvas = document.getElementById('dashboardCanvas');
 
     if (isDashboardEditMode) {
-        btn.innerHTML = '<span class="material-icons md-18">edit</span> Edit Mode';
-        btn.classList.remove('btn-secondary');
-        btn.classList.add('btn-success');
+        icon.textContent = 'edit';
+        icon.classList.remove('text-secondary');
+        icon.classList.add('text-success');
+        btn.title = 'Edit Mode (Active)';
         palette.style.display = 'block';
         canvasCol.classList.remove('col-12');
         canvasCol.classList.add('col-12', 'col-md-9', 'col-lg-10');
         canvas.classList.remove('view-mode');
         canvas.classList.add('edit-mode');
     } else {
-        btn.innerHTML = '<span class="material-icons md-18">visibility</span> View Mode';
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-secondary');
+        icon.textContent = 'visibility';
+        icon.classList.remove('text-success');
+        icon.classList.add('text-secondary');
+        btn.title = 'View Mode';
         palette.style.display = 'none';
         canvasCol.classList.remove('col-md-9', 'col-lg-10');
         canvasCol.classList.add('col-12');
@@ -71,87 +74,231 @@ function toggleDashboardMode() {
     dashboardWidgets.forEach(w => renderDashboardWidget(w));
 }
 
-function showWidgetConfig(type) {
+function showWidgetConfig(type, editWidget = null) {
     currentWidgetType = type;
     const extraConfig = document.getElementById('widgetExtraConfig');
+    const varNameInput = document.getElementById('widgetVarName');
+    const modalTitle = document.querySelector('#widgetConfigModal .modal-title');
+
     extraConfig.innerHTML = '';
+
+    // If editing existing widget, populate fields
+    if (editWidget) {
+        varNameInput.value = editWidget.variable;
+        varNameInput.disabled = true; // Don't allow changing variable name
+        modalTitle.textContent = 'Edit Widget Configuration';
+    } else {
+        varNameInput.value = '';
+        varNameInput.disabled = false;
+        modalTitle.textContent = 'Configure Widget';
+    }
 
     // Add type-specific configuration
     if (type === 'slider') {
         extraConfig.innerHTML = `
             <div class="mb-3">
                 <label class="form-label">Min Value</label>
-                <input type="number" class="form-control" id="widgetMinValue" value="0">
+                <input type="number" class="form-control" id="widgetMinValue" value="${editWidget?.min || 0}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Max Value</label>
-                <input type="number" class="form-control" id="widgetMaxValue" value="100">
+                <input type="number" class="form-control" id="widgetMaxValue" value="${editWidget?.max || 100}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Step</label>
-                <input type="number" class="form-control" id="widgetStepValue" value="1">
+                <input type="number" class="form-control" id="widgetStepValue" value="${editWidget?.step || 1}">
             </div>
         `;
+    } else if (type === 'button') {
+        extraConfig.innerHTML = `
+            <div class="mb-3">
+                <label class="form-label">Button Color</label>
+                <select class="form-select" id="widgetButtonColor">
+                    <option value="primary" ${editWidget?.buttonColor === 'primary' ? 'selected' : ''}>Primary (Blue)</option>
+                    <option value="secondary" ${editWidget?.buttonColor === 'secondary' ? 'selected' : ''}>Secondary (Gray)</option>
+                    <option value="success" ${editWidget?.buttonColor === 'success' ? 'selected' : ''}>Success (Green)</option>
+                    <option value="danger" ${editWidget?.buttonColor === 'danger' ? 'selected' : ''}>Danger (Red)</option>
+                    <option value="warning" ${editWidget?.buttonColor === 'warning' ? 'selected' : ''}>Warning (Yellow)</option>
+                    <option value="info" ${editWidget?.buttonColor === 'info' ? 'selected' : ''}>Info (Cyan)</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Value on Press</label>
+                <input type="text" class="form-control" id="widgetPressValue" value="${editWidget?.pressValue !== undefined ? editWidget.pressValue : 1}" placeholder="e.g., 1 or true">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Toggle Button</label>
+                <select class="form-select" id="widgetToggleMode">
+                    <option value="false" ${!editWidget?.toggleMode ? 'selected' : ''}>No (Momentary)</option>
+                    <option value="true" ${editWidget?.toggleMode ? 'selected' : ''}>Yes (Toggle On/Off)</option>
+                </select>
+            </div>
+            <div class="mb-3" id="releaseValueContainer" style="${editWidget?.toggleMode ? 'display: none;' : ''}">
+                <label class="form-label">Value on Release</label>
+                <input type="text" class="form-control" id="widgetReleaseValue" value="${editWidget?.releaseValue !== undefined ? editWidget.releaseValue : 0}" placeholder="e.g., 0 or false">
+            </div>
+            <div class="mb-3" id="pressedColorContainer" style="${editWidget?.toggleMode ? '' : 'display: none;'}">
+                <label class="form-label">Color When Pressed (Toggle)</label>
+                <select class="form-select" id="widgetPressedColor">
+                    <option value="success" ${editWidget?.pressedColor === 'success' ? 'selected' : ''}>Success (Green)</option>
+                    <option value="danger" ${editWidget?.pressedColor === 'danger' ? 'selected' : ''}>Danger (Red)</option>
+                    <option value="warning" ${editWidget?.pressedColor === 'warning' ? 'selected' : ''}>Warning (Yellow)</option>
+                    <option value="info" ${editWidget?.pressedColor === 'info' ? 'selected' : ''}>Info (Cyan)</option>
+                    <option value="primary" ${editWidget?.pressedColor === 'primary' ? 'selected' : ''}>Primary (Blue)</option>
+                </select>
+            </div>
+        `;
+
+        // Add event listener to toggle visibility
+        setTimeout(() => {
+            document.getElementById('widgetToggleMode').addEventListener('change', function() {
+                const isToggle = this.value === 'true';
+                document.getElementById('releaseValueContainer').style.display = isToggle ? 'none' : 'block';
+                document.getElementById('pressedColorContainer').style.display = isToggle ? 'block' : 'none';
+            });
+        }, 0);
     } else if (type === 'gauge') {
         extraConfig.innerHTML = `
             <div class="mb-3">
                 <label class="form-label">Min Value</label>
-                <input type="number" class="form-control" id="widgetMinValue" value="0">
+                <input type="number" class="form-control" id="widgetMinValue" value="${editWidget?.min || 0}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Max Value</label>
-                <input type="number" class="form-control" id="widgetMaxValue" value="100">
+                <input type="number" class="form-control" id="widgetMaxValue" value="${editWidget?.max || 100}">
             </div>
         `;
-    } else if (type === 'plot') {
+    } else if (type === 'plot_logger' || type === 'plot_scope') {
+        const isLogger = type === 'plot_logger';
         extraConfig.innerHTML = `
             <div class="mb-3">
+                <label class="form-label">Variables (comma-separated)</label>
+                <input type="text" class="form-control" id="widgetVariables" value="${editWidget?.variables?.join(', ') || ''}" placeholder="e.g., temp, pressure, speed">
+                <small class="form-text text-muted">Enter multiple variable names separated by commas</small>
+            </div>
+            ${isLogger ? `
+            <div class="mb-3">
                 <label class="form-label">Max Data Points</label>
-                <input type="number" class="form-control" id="widgetMaxPoints" value="50">
+                <input type="number" class="form-control" id="widgetMaxPoints" value="${editWidget?.maxPoints || 50}">
+            </div>
+            ` : ''}
+        `;
+    } else if (type === 'label') {
+        extraConfig.innerHTML = `
+            <div class="mb-3">
+                <label class="form-label">Label Text</label>
+                <input type="text" class="form-control" id="widgetLabelText" value="${editWidget?.labelText || ''}" placeholder="Enter text to display">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Font Size</label>
+                <select class="form-select" id="widgetFontSize">
+                    <option value="small" ${editWidget?.fontSize === 'small' ? 'selected' : ''}>Small</option>
+                    <option value="medium" ${!editWidget?.fontSize || editWidget?.fontSize === 'medium' ? 'selected' : ''}>Medium</option>
+                    <option value="large" ${editWidget?.fontSize === 'large' ? 'selected' : ''}>Large</option>
+                    <option value="xlarge" ${editWidget?.fontSize === 'xlarge' ? 'selected' : ''}>Extra Large</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Text Alignment</label>
+                <select class="form-select" id="widgetTextAlign">
+                    <option value="left" ${editWidget?.textAlign === 'left' ? 'selected' : ''}>Left</option>
+                    <option value="center" ${!editWidget?.textAlign || editWidget?.textAlign === 'center' ? 'selected' : ''}>Center</option>
+                    <option value="right" ${editWidget?.textAlign === 'right' ? 'selected' : ''}>Right</option>
+                </select>
             </div>
         `;
     }
 
     const modal = new bootstrap.Modal(document.getElementById('widgetConfigModal'));
     modal.show();
+
+    // Store reference to widget being edited
+    window.editingWidget = editWidget;
 }
 
 function addDashboardWidget() {
-    const varName = document.getElementById('widgetVarName').value.trim();
-    if (!varName) {
-        alert('Please enter a variable name');
-        return;
+    const editWidget = window.editingWidget;
+
+    let widget;
+    if (editWidget) {
+        // Editing existing widget
+        widget = editWidget;
+    } else {
+        // Creating new widget
+        const varName = document.getElementById('widgetVarName').value.trim();
+        if (!varName && currentWidgetType !== 'label') {
+            alert('Please enter a variable name');
+            return;
+        }
+
+        widget = {
+            id: widgetIdCounter++,
+            type: currentWidgetType,
+            variable: varName,
+            x: 50,
+            y: 50,
+            value: currentWidgetType === 'text' ? '' : 0
+        };
     }
 
-    const widget = {
-        id: widgetIdCounter++,
-        type: currentWidgetType,
-        variable: varName,
-        x: 50,
-        y: 50,
-        value: currentWidgetType === 'text' ? '' : 0
-    };
-
-    // Add type-specific properties
+    // Update type-specific properties
     if (currentWidgetType === 'slider') {
         widget.min = parseFloat(document.getElementById('widgetMinValue').value);
         widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
         widget.step = parseFloat(document.getElementById('widgetStepValue').value);
+    } else if (currentWidgetType === 'button') {
+        widget.buttonColor = document.getElementById('widgetButtonColor').value;
+        widget.pressValue = parseValue(document.getElementById('widgetPressValue').value);
+        widget.toggleMode = document.getElementById('widgetToggleMode').value === 'true';
+        widget.buttonState = false; // Track toggle state
+        if (widget.toggleMode) {
+            widget.pressedColor = document.getElementById('widgetPressedColor').value;
+        } else {
+            widget.releaseValue = parseValue(document.getElementById('widgetReleaseValue').value);
+        }
     } else if (currentWidgetType === 'gauge') {
         widget.min = parseFloat(document.getElementById('widgetMinValue').value);
         widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
-    } else if (currentWidgetType === 'plot') {
-        widget.maxPoints = parseInt(document.getElementById('widgetMaxPoints').value);
-        widget.data = [];
+    } else if (currentWidgetType === 'plot_logger' || currentWidgetType === 'plot_scope') {
+        const varsInput = document.getElementById('widgetVariables').value;
+        widget.variables = varsInput.split(',').map(v => v.trim()).filter(v => v);
+        if (widget.variables.length === 0) {
+            alert('Please enter at least one variable name');
+            return;
+        }
+        widget.data = {}; // Object to store data for each variable
+        widget.variables.forEach(v => widget.data[v] = []);
+
+        if (currentWidgetType === 'plot_logger') {
+            widget.maxPoints = parseInt(document.getElementById('widgetMaxPoints').value);
+        }
+    } else if (currentWidgetType === 'label') {
+        widget.labelText = document.getElementById('widgetLabelText').value;
+        widget.fontSize = document.getElementById('widgetFontSize').value;
+        widget.textAlign = document.getElementById('widgetTextAlign').value;
+        widget.variable = 'label_' + widget.id; // Generate unique variable name
     }
 
-    dashboardWidgets.push(widget);
+    if (!editWidget) {
+        dashboardWidgets.push(widget);
+    }
+
     renderDashboardWidget(widget);
 
     // Close modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('widgetConfigModal'));
     modal.hide();
     document.getElementById('widgetVarName').value = '';
+    window.editingWidget = null;
+}
+
+// Helper function to parse values that might be numbers, booleans, or strings
+function parseValue(val) {
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    const num = parseFloat(val);
+    if (!isNaN(num)) return num;
+    return val;
 }
 
 function renderDashboardWidget(widget) {
@@ -201,16 +348,25 @@ function renderDashboardWidget(widget) {
         button: '<span class="material-icons md-18">radio_button_checked</span>',
         number: '<span class="material-icons md-18">pin</span>',
         text: '<span class="material-icons md-18">text_fields</span>',
+        label: '<span class="material-icons md-18">label</span>',
         gauge: '<span class="material-icons md-18">speed</span>',
-        plot: '<span class="material-icons md-18">show_chart</span>'
+        plot_logger: '<span class="material-icons md-18">timeline</span>',
+        plot_scope: '<span class="material-icons md-18">show_chart</span>'
     };
+
+    const displayName = widget.type === 'plot_logger' || widget.type === 'plot_scope'
+        ? widget.variables?.join(', ') || widget.variable
+        : widget.variable;
 
     const header = `
         <div class="widget-header">
-            <span class="widget-title">${typeIcons[widget.type]} ${widget.variable}</span>
+            <span class="widget-title">${typeIcons[widget.type]} ${displayName}</span>
             <div class="widget-controls">
-                <button class="btn btn-sm btn-danger" onclick="deleteDashboardWidget(${widget.id})">
-                    <span class="material-icons md-18">delete</span>
+                <button class="btn btn-sm" onclick="showWidgetConfig('${widget.type}', dashboardWidgets.find(w => w.id === ${widget.id}))" title="Edit">
+                    <span class="material-icons text-primary">settings</span>
+                </button>
+                <button class="btn btn-sm" onclick="deleteDashboardWidget(${widget.id})" title="Delete">
+                    <span class="material-icons text-danger">delete</span>
                 </button>
             </div>
         </div>
@@ -233,9 +389,17 @@ function renderDashboardWidget(widget) {
             break;
 
         case 'button':
+            const btnColor = widget.toggleMode && widget.buttonState
+                ? widget.pressedColor
+                : widget.buttonColor;
             content = `
                 ${header}
-                <button class="btn btn-primary" onclick="triggerDashboardButton('${widget.variable}')">
+                <button class="btn btn-${btnColor} w-100"
+                        id="btn-${widget.id}"
+                        onmousedown="handleDashboardButtonPress(${widget.id})"
+                        onmouseup="handleDashboardButtonRelease(${widget.id})"
+                        ontouchstart="handleDashboardButtonPress(${widget.id})"
+                        ontouchend="handleDashboardButtonRelease(${widget.id})">
                     ${widget.variable}
                 </button>
                 </div>
@@ -262,6 +426,18 @@ function renderDashboardWidget(widget) {
             `;
             break;
 
+        case 'label':
+            const fontSizes = { small: '0.875rem', medium: '1rem', large: '1.5rem', xlarge: '2rem' };
+            const fontSize = fontSizes[widget.fontSize] || fontSizes.medium;
+            content = `
+                ${header}
+                <div style="font-size: ${fontSize}; text-align: ${widget.textAlign}; padding: 10px; font-weight: 500;">
+                    ${widget.labelText}
+                </div>
+                </div>
+            `;
+            break;
+
         case 'gauge':
             content = `
                 ${header}
@@ -276,7 +452,8 @@ function renderDashboardWidget(widget) {
             }, 100);
             break;
 
-        case 'plot':
+        case 'plot_logger':
+        case 'plot_scope':
             content = `
                 ${header}
                 <div class="plot-container" id="dashboard-plot-${widget.id}"></div>
@@ -322,7 +499,7 @@ function renderDashboardGauge(widget) {
 }
 
 function renderDashboardPlot(widget) {
-    if (!widget.data) widget.data = [];
+    if (!widget.data) widget.data = {};
 
     const plotDiv = document.getElementById(`dashboard-plot-${widget.id}`);
     if (!plotDiv) {
@@ -330,19 +507,39 @@ function renderDashboardPlot(widget) {
         return;
     }
 
-    const data = [{
-        y: widget.data,
-        type: 'scatter',
-        mode: 'lines+markers',
-        line: { color: '#0d6efd', width: 2 },
-        marker: { size: 4 }
-    }];
+    // Initialize data arrays for each variable if not exists
+    if (widget.variables) {
+        widget.variables.forEach(varName => {
+            if (!widget.data[varName]) {
+                widget.data[varName] = [];
+            }
+        });
+    }
+
+    // Create traces for each variable
+    const traces = [];
+    const colors = ['#0d6efd', '#dc3545', '#198754', '#ffc107', '#0dcaf0', '#6f42c1', '#fd7e14'];
+
+    if (widget.variables && widget.variables.length > 0) {
+        widget.variables.forEach((varName, index) => {
+            traces.push({
+                name: varName,
+                y: widget.data[varName] || [],
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: colors[index % colors.length], width: 2 },
+                marker: { size: 4 }
+            });
+        });
+    }
 
     const layout = {
-        margin: { t: 20, b: 40, l: 50, r: 20 },
-        xaxis: { title: 'Time' },
-        yaxis: { title: widget.variable },
-        autosize: true
+        margin: { t: 30, b: 40, l: 50, r: 20 },
+        xaxis: { title: 'Sample' },
+        yaxis: { title: 'Value' },
+        autosize: true,
+        showlegend: widget.variables && widget.variables.length > 1,
+        legend: { x: 0, y: 1, orientation: 'h' }
     };
 
     const config = {
@@ -350,69 +547,132 @@ function renderDashboardPlot(widget) {
         responsive: true
     };
 
-    Plotly.react(`dashboard-plot-${widget.id}`, data, layout, config);
+    Plotly.react(`dashboard-plot-${widget.id}`, traces, layout, config);
+}
+
+function handleDashboardButtonPress(id) {
+    const widget = dashboardWidgets.find(w => w.id === id);
+    if (!widget) return;
+
+    if (widget.toggleMode) {
+        // Toggle mode: switch state
+        widget.buttonState = !widget.buttonState;
+        const value = widget.buttonState ? widget.pressValue : widget.releaseValue || 0;
+        updateDashboardVariable(widget.variable, value);
+        renderDashboardWidget(widget);
+    } else {
+        // Momentary mode: send press value
+        updateDashboardVariable(widget.variable, widget.pressValue);
+    }
+}
+
+function handleDashboardButtonRelease(id) {
+    const widget = dashboardWidgets.find(w => w.id === id);
+    if (!widget || widget.toggleMode) return; // Don't handle release for toggle mode
+
+    // Momentary mode: send release value
+    updateDashboardVariable(widget.variable, widget.releaseValue);
 }
 
 function updateDashboardVariable(varName, value) {
-    const widget = dashboardWidgets.find(w => w.variable === varName);
-    if (widget) {
-        widget.value = value;
+    // Find all widgets that use this variable
+    const widgets = dashboardWidgets.filter(w => {
+        if (w.type === 'plot_logger' || w.type === 'plot_scope') {
+            return w.variables && w.variables.includes(varName);
+        }
+        return w.variable === varName;
+    });
 
-        // Update plot data
-        if (widget.type === 'plot') {
-            if (!widget.data) widget.data = [];
-            widget.data.push(value);
-            if (widget.data.length > widget.maxPoints) {
-                widget.data.shift();
+    widgets.forEach(widget => {
+        // Handle plot data differently
+        if (widget.type === 'plot_logger') {
+            // Logger mode: append and scroll
+            if (!widget.data) widget.data = {};
+            if (!widget.data[varName]) widget.data[varName] = [];
+
+            widget.data[varName].push(value);
+            if (widget.data[varName].length > widget.maxPoints) {
+                widget.data[varName].shift();
             }
+        } else if (widget.type === 'plot_scope') {
+            // Scope mode: receive array and replace completely
+            if (!widget.data) widget.data = {};
+
+            // If value is an array, use it directly
+            if (Array.isArray(value)) {
+                widget.data[varName] = [...value];
+            } else {
+                // Single value - replace with single point
+                widget.data[varName] = [value];
+            }
+        } else {
+            // Regular widgets
+            widget.value = value;
         }
 
         renderDashboardWidget(widget);
+    });
 
-        // Send to server via Socket.IO or HTTP
-        if (dashboardSocket && dashboardSocket.connected) {
-            dashboardSocket.emit('widget_interaction', {
-                variable: varName,
-                value: value
-            });
-        } else {
-            // Fallback to HTTP
-            fetch('/dashboard-view/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ variable: varName, value: value })
-            });
-        }
+    // Send to server via Socket.IO or HTTP
+    if (dashboardSocket && dashboardSocket.connected) {
+        dashboardSocket.emit('widget_interaction', {
+            variable: varName,
+            value: value
+        });
+    } else {
+        // Fallback to HTTP
+        fetch('/dashboard-view/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ variable: varName, value: value })
+        });
     }
 }
 
 function updateDashboardWidgetValue(varName, value) {
-    const widget = dashboardWidgets.find(w => w.variable === varName);
-    if (widget) {
-        widget.value = value;
+    // Find all widgets that use this variable
+    const widgets = dashboardWidgets.filter(w => {
+        if (w.type === 'plot_logger' || w.type === 'plot_scope') {
+            return w.variables && w.variables.includes(varName);
+        }
+        return w.variable === varName;
+    });
 
-        // Update plot data
-        if (widget.type === 'plot') {
-            if (!widget.data) widget.data = [];
-            widget.data.push(value);
-            if (widget.data.length > widget.maxPoints) {
-                widget.data.shift();
+    widgets.forEach(widget => {
+        // Handle plot data differently
+        if (widget.type === 'plot_logger') {
+            // Logger mode: append and scroll
+            if (!widget.data) widget.data = {};
+            if (!widget.data[varName]) widget.data[varName] = [];
+
+            widget.data[varName].push(value);
+            if (widget.data[varName].length > widget.maxPoints) {
+                widget.data[varName].shift();
             }
+        } else if (widget.type === 'plot_scope') {
+            // Scope mode: receive array and replace completely
+            if (!widget.data) widget.data = {};
+
+            // If value is an array, use it directly
+            if (Array.isArray(value)) {
+                widget.data[varName] = [...value];
+            } else {
+                // Single value - replace with single point
+                widget.data[varName] = [value];
+            }
+        } else {
+            // Regular widgets
+            widget.value = value;
         }
 
         renderDashboardWidget(widget);
-    }
+    });
 }
 
 function updateDashboardWidgetsFromData(data) {
     for (let varName in data) {
         updateDashboardWidgetValue(varName, data[varName]);
     }
-}
-
-function triggerDashboardButton(varName) {
-    const timestamp = Date.now();
-    updateDashboardVariable(varName, timestamp);
 }
 
 function deleteDashboardWidget(id) {
