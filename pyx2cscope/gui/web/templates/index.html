@@ -17,14 +17,16 @@
 <!-- Tabs for Mobile -->
 <ul class="nav nav-tabs d-md-none mb-3" id="mobileTabs">
     <li class="nav-item">
-        <button class="nav-link active" id="tabWatch" data-bs-toggle="tab" data-bs-target="#watchView">Watch View
-        </button>
+        <button class="nav-link active" id="tabWatch" data-bs-toggle="tab" data-bs-target="#watchView">Watch View</button>
     </li>
     <li class="nav-item">
         <button class="nav-link" id="tabScope" data-bs-toggle="tab" data-bs-target="#scopeView">Scope View</button>
     </li>
     <li class="nav-item">
         <button class="nav-link" id="tabDashboard" data-bs-toggle="tab" data-bs-target="#dashboardView">Dashboard</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" id="tabScript" data-bs-toggle="tab" data-bs-target="#scriptView">Scripting</button>
     </li>
 </ul>
 
@@ -36,10 +38,26 @@
     <label class="btn btn-outline-primary" for="toggleScope">Scope View</label>
     <input type="checkbox" class="btn-check" id="toggleDashboard" autocomplete="off">
     <label class="btn btn-outline-primary" for="toggleDashboard">Dashboard</label>
+    <input type="checkbox" class="btn-check" id="toggleScript" autocomplete="off">
+    <label class="btn btn-outline-primary" for="toggleScript">Scripting</label>
 </div>
 
 <!-- Views -->
 <div class="row g-3" id="viewsContainer">
+    <div class="col-6 col-md-8 col-sm-12 col-xs-12" id="scriptCol">
+        <div class="card">
+            <div class="card-header">
+                <strong>Scripting</strong>
+                <a href="/script-view" target="_blank" class="float-end" title="Open this card in a new window">
+                    <span class="material-icons md-18">open_in_new</span></a>
+                <a href="#" class="float-end" title="Get QR-Code address" id="scriptQRCode">
+                    <span class="material-icons md-18">qr_code_2</span></a>
+            </div>
+            <div class="card-body">
+                {% include 'scripting.html' %}
+            </div>
+        </div>
+    </div>
     <div class="col-12" id="dashboardCol">
         <div class="card h-100">
             <div class="card-header">

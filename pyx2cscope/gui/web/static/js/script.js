@@ -132,6 +132,11 @@ function initQRCodes() {
         insertQRCode("dashboard-view");
         $('#x2cModal').modal('show');
     });
+    $("#scriptQRCode").on("click", function() {
+        $('#x2cModalTitle').html('Script - Scan QR Code');
+        insertQRCode("script-view");
+        $('#x2cModal').modal('show');
+    });
 }
 
 $(document).ready(function() {
@@ -143,9 +148,11 @@ $(document).ready(function() {
     const toggleWatch = document.getElementById('toggleWatch');
     const toggleScope = document.getElementById('toggleScope');
     const toggleDashboard = document.getElementById('toggleDashboard');
+    const toggleScript = document.getElementById('toggleScript');
     const watchCol = document.getElementById('watchCol');
     const scopeCol = document.getElementById('scopeCol');
     const dashboardCol = document.getElementById('dashboardCol');
+    const scriptCol = document.getElementById('scriptCol');
 
     // Mobile view (tabs)
     // Mobile tab click handlers
@@ -153,27 +160,44 @@ $(document).ready(function() {
         watchCol.classList.remove('d-none');
         scopeCol.classList.add('d-none');
         dashboardCol.classList.add('d-none');
+        scriptCol.classList.add('d-none');
         this.classList.add('active');
         document.getElementById('tabScope').classList.remove('active');
         document.getElementById('tabDashboard').classList.remove('active');
+        document.getElementById('tabScript').classList.remove('active');
     });
 
     document.getElementById('tabScope').addEventListener('click', function() {
         watchCol.classList.add('d-none');
         scopeCol.classList.remove('d-none');
         dashboardCol.classList.add('d-none');
+        scriptCol.classList.add('d-none');
         this.classList.add('active');
         document.getElementById('tabWatch').classList.remove('active');
         document.getElementById('tabDashboard').classList.remove('active');
+        document.getElementById('tabScript').classList.remove('active');
     });
 
     document.getElementById('tabDashboard').addEventListener('click', function() {
         scopeCol.classList.add('d-none');
         watchCol.classList.add('d-none');
         dashboardCol.classList.remove('d-none');
+        scriptCol.classList.add('d-none');
         this.classList.add('active');
         document.getElementById('tabWatch').classList.remove('active');
         document.getElementById('tabScope').classList.remove('active');
+        document.getElementById('tabScript').classList.remove('active');
+    });
+
+    document.getElementById('tabScript').addEventListener('click', function() {
+        scopeCol.classList.add('d-none');
+        watchCol.classList.add('d-none');
+        dashboardCol.classList.add('d-none');
+        scriptCol.classList.remove('d-none');
+        this.classList.add('active');
+        document.getElementById('tabWatch').classList.remove('active');
+        document.getElementById('tabScope').classList.remove('active');
+        document.getElementById('tabDashboard').classList.remove('active');
     });
 
     // Desktop view (toggles)
@@ -181,14 +205,17 @@ $(document).ready(function() {
     toggleWatch.checked = false;
     toggleScope.checked = false;
     toggleDashboard.checked = false;
+    toggleScript.checked = false;
     watchCol.classList.add('d-none');
     scopeCol.classList.add('d-none');
     dashboardCol.classList.add('d-none');
+    scriptCol.classList.add('d-none');
 
     // Update toggle button states
     document.querySelector('label[for="toggleWatch"]').classList.remove('active');
     document.querySelector('label[for="toggleScope"]').classList.remove('active');
     document.querySelector('label[for="toggleDashboard"]').classList.remove('active');
+    document.querySelector('label[for="toggleScript"]').classList.remove('active');
 
     // Toggle event listeners for desktop
     toggleWatch.addEventListener('change', () => {
@@ -204,6 +231,11 @@ $(document).ready(function() {
     toggleDashboard.addEventListener('change', () => {
         dashboardCol.classList.toggle('d-none', !toggleDashboard.checked);
         document.querySelector('label[for="toggleDashboard"]').classList.toggle('active', toggleDashboard.checked);
+    });
+
+    toggleScript.addEventListener('change', () => {
+        scriptCol.classList.toggle('d-none', !toggleScript.checked);
+        document.querySelector('label[for="toggleScript"]').classList.toggle('active', toggleScript.checked);
     });
 
     $.getJSON('/is-connected', function(data) {
