@@ -1,9 +1,21 @@
 <div id="setupControl" class="container mt-3">
+    <div class="row mb-3">
+        <div class="col-12">
+            <label for="interfaceType" class="form-label">Interface</label>
+            <select class="form-select" id="interfaceType">
+                <option value="SERIAL" selected>Serial</option>
+                <option value="TCP_IP">TCP/IP</option>
+                <option value="CAN">CAN</option>
+                <option value="LIN">LIN</option>
+            </select>
+        </div>
+    </div>
+
     <!-- UART Selection Row -->
-    <div class="row mb-3 align-items-end">
+    <div class="row mb-3 align-items-end" id="uartRow">
         <div class="col-md-8">
-            <label for="uart" class="form-label">UART</label>
-            <select class="form-select" id="uart">
+            <label for="port" class="form-label">UART</label>
+            <select class="form-select" id="port">
                 <option value="default">Select UART</option>
             </select>
         </div>
@@ -11,6 +23,27 @@
             <button type="button" class="btn btn-outline-primary w-100" id="update_com_port">
                 Refresh
             </button>
+        </div>
+    </div>
+
+    <div class="row mb-3 d-none" id="hostRow">
+        <div class="col-12">
+            <label for="host" class="form-label">Host</label>
+            <input type="text" class="form-control" id="host" placeholder="localhost">
+        </div>
+    </div>
+
+    <div class="row mb-3 d-none" id="busRow">
+        <div class="col-12">
+            <label for="bus" class="form-label">Bus</label>
+            <input type="text" class="form-control" id="bus" placeholder="0">
+        </div>
+    </div>
+
+    <div class="row mb-3 d-none" id="linIdRow">
+        <div class="col-12">
+            <label for="id" class="form-label">ID</label>
+            <input type="text" class="form-control" id="id" placeholder="0">
         </div>
     </div>
 

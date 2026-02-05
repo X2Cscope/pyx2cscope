@@ -1,7 +1,24 @@
 function connect(){
 
     let formData = new FormData();
-    formData.append('uart', $('#uart').val());
+    const interfaceType = $('#interfaceType').val();
+    formData.append('interfaceType', interfaceType);
+
+    // Map interfaceType to expected argument key
+    const argMap = {
+      'SERIAL': 'port',
+      'TCP_IP': 'host',
+      'CAN': 'bus',
+      'LIN': 'id'
+    };
+
+    if (interfaceType in argMap) {
+        const paramKey = argMap[interfaceType];
+        const paramValue = $('#' + paramKey).val();
+        formData.append('interfaceArgument', paramKey);
+        formData.append('interfaceValue', paramValue);
+    }
+
     formData.append('elfFile', $('#elfFile')[0].files[0]);
 
     $.ajax({
@@ -33,13 +50,36 @@ function disconnect(){
 
 function load_uart() {
     $.getJSON('/serial-ports', function(data) {
-        uart = $('#uart');
+        uart = $('#port');
         uart.empty();
         uart.append('<option value="default">Select UART</option>');
         data.forEach(function(item) {
             uart.append($('<option></option>').val(item).html(item));
         });
     });
+}
+
+function setInterfaceSetupFields() {
+    const interfaceType = $('#interfaceType').val();
+
+    $('#uartRow').addClass('d-none');
+    $('#hostRow').addClass('d-none');
+    $('#busRow').addClass('d-none');
+    $('#linIdRow').addClass('d-none');
+
+    if (interfaceType === 'SERIAL') {
+        $('#uartRow').removeClass('d-none');
+        load_uart();
+    }
+    else if (interfaceType === 'TCP_IP') {
+        $('#hostRow').removeClass('d-none');
+    }
+    else if (interfaceType === 'CAN') {
+        $('#busRow').removeClass('d-none');
+    }
+    else if (interfaceType === 'LIN') {
+        $('#linIdRow').removeClass('d-none');
+    }
 }
 
 function setConnectState(status) {
@@ -80,10 +120,12 @@ function setConnectState(status) {
 
 function initSetupCard(){
     $('#update_com_port').on('click', load_uart);
+    $('#interfaceType').on('change', setInterfaceSetupFields);
     $('#btnConnect').on('click', function() {
         if($('#btnConnect').html() === "Connect") connect();
         else disconnect();
     });
+
     $('#connection-status').on('click', function() {
         if($('#connection-status').html() === "Disconnected") connect();
         else disconnect();
@@ -141,7 +183,7 @@ function initQRCodes() {
 
 $(document).ready(function() {
     initSetupCard();
-    load_uart();
+    setInterfaceSetupFields();
     initQRCodes();
 
     // Toggles for views

@@ -68,23 +68,27 @@ def connect():
 
     call {server_url}/connect to execute.
     """
-    uart = request.form.get("uart")
+    # interface_type_str = request.form.get("interfaceType")
+    interface_arg_str = request.form.get("interfaceArgument")
+    interface_value_str = request.form.get("interfaceValue")
     elf_file = request.files.get("elfFile")
-    if "default" not in uart and elf_file and elf_file.filename.endswith(".elf"):
+
+    interface_kwargs = {interface_arg_str: interface_value_str}
+    if elf_file and elf_file.filename.endswith((".elf", ".pkl", ".yml")):
         web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
         if not os.path.exists(web_lib_path):
             os.makedirs(web_lib_path)
-        file_name = os.path.join(web_lib_path, "elf_file.elf")
+        file_name = os.path.join(web_lib_path, os.path.basename(elf_file.filename))
         try:
             elf_file.save(file_name)
-            web_scope.connect(port=uart)
+            web_scope.connect(**interface_kwargs)
             web_scope.set_file(file_name)
             return jsonify({"status": "success"})
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
         except ValueError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
-    return jsonify({"status": "error", "msg": "COM Port or ELF file invalid."}), 400
+    return jsonify({"status": "error", "msg": "Interface argument or import file invalid."}), 400
 
 
 def is_connected():
