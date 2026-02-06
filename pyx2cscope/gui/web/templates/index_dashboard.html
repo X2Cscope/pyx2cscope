@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     <strong>Dashboard View</strong>
-                    {% include 'dashboard_palette.html' %}
+                    {% include 'dashboard_toolbar.html' %}
                 </div>
                 <div class="card-body p-0" style="min-height: calc(100vh - 150px);">
                     {% include 'dashboard_view.html' %}
@@ -20,5 +20,4 @@
 
 {% block scripts %}
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-<script src="{{ url_for('static', filename='js/dashboard_view.js') }}"></script>
 {% endblock scripts %}

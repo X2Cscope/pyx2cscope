@@ -10,7 +10,7 @@ from flask import Blueprint, Response, jsonify, render_template, request
 from flask_socketio import emit
 
 # Assuming you have a similar structure as watch_view
-# from pyx2cscope.gui import web
+from pyx2cscope.gui import web
 # from pyx2cscope.gui.web.scope import web_scope
 
 dv_bp = Blueprint("dashboard_view", __name__, template_folder="templates")
@@ -60,10 +60,9 @@ def save_layout():
     """
     try:
         layout = request.json
-        # Save to a configuration directory if available
-        # web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
-        # For now, save to a default location
-        with open('dashboard_layout.json', 'w') as f:
+        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        os.path.join(web_lib_path, "dashboard_layout.json")
+        with open(os.path.join(web_lib_path, "dashboard_layout.json"), 'w') as f:
             json.dump(layout, f, indent=2)
         return jsonify({'status': 'success', 'message': 'Layout saved successfully'})
     except Exception as e:
@@ -76,8 +75,10 @@ def load_layout():
     Calling the link {dashboard-view-url}/load-layout will load the saved layout.
     """
     try:
-        if os.path.exists('dashboard_layout.json'):
-            with open('dashboard_layout.json', 'r') as f:
+        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        dashboard_file = os.path.join(web_lib_path, "dashboard_layout.json")
+        if os.path.exists(dashboard_file):
+            with open(dashboard_file, 'r') as f:
                 layout = json.load(f)
             return jsonify({'status': 'success', 'layout': layout})
         else:

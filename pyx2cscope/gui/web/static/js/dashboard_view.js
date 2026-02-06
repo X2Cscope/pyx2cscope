@@ -3,7 +3,7 @@
 
 let dashboardWidgets = [];
 let selectedWidget = null;
-let isDashboardEditMode = true;
+let isDashboardEditMode = false;
 let draggedWidget = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
