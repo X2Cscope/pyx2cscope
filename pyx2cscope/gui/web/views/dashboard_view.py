@@ -6,17 +6,12 @@ Attention: this page should be called only after a successful setup connection o
 import os
 import json
 
-from flask import Blueprint, Response, jsonify, render_template, request
-from flask_socketio import emit
+from flask import Blueprint, jsonify, render_template, request
 
-# Assuming you have a similar structure as watch_view
 from pyx2cscope.gui import web
-# from pyx2cscope.gui.web.scope import web_scope
+from pyx2cscope.gui.web.scope import web_scope
 
 dv_bp = Blueprint("dashboard_view", __name__, template_folder="templates")
-
-# Store for widget variables
-dashboard_data = {}
 
 
 def index():
@@ -29,7 +24,13 @@ def get_data():
 
     Calling the link {dashboard-view-url}/data will return all current widget variable values.
     """
-    return jsonify(dashboard_data)
+    result = {}
+    for name, variable in web_scope.dashboard_vars.items():
+        try:
+            result[name] = variable.get_value()
+        except Exception:
+            result[name] = 0
+    return jsonify(result)
 
 
 def update_variable():
@@ -44,9 +45,7 @@ def update_variable():
         value = data.get('value')
 
         if var_name:
-            dashboard_data[var_name] = value
-            # Emit socket event if socketio is available
-            # socketio.emit('variable_update', {'variable': var_name, 'value': value}, namespace='/dashboard')
+            web_scope.write_dashboard_var(var_name, value)
             return jsonify({'status': 'success'})
         return jsonify({'status': 'error', 'message': 'Variable name required'}), 400
     except Exception as e:

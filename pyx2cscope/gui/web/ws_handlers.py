@@ -15,7 +15,8 @@ def background_x2cscope_task():
     """Background x2cScope thread."""
     while True:
         watch_values = web_scope.watch_poll()
-        scope_values = web_scope.scope_poll()
+        scope_values, dashboard_scope_data = web_scope.scope_poll()
+        dashboard_values = web_scope.dashboard_poll()
         if watch_values:
             socketio.emit("watch_data_update", watch_values, namespace="/watch-view")
         if scope_values:
@@ -24,6 +25,10 @@ def background_x2cscope_task():
                 socketio.emit("sample_control_updated", {
                     "status": "success", "data": {"triggerAction": "off"}
                 },  namespace="/scope-view")
+        if dashboard_values:
+            socketio.emit("dashboard_data_update", dashboard_values, namespace="/dashboard")
+        if dashboard_scope_data:
+            socketio.emit("dashboard_scope_update", dashboard_scope_data, namespace="/dashboard")
         socketio.sleep(0.1)
 
 @socketio.on("connect")
@@ -189,3 +194,82 @@ def handle_update_trigger_control(data):
         "message": "Trigger settings updated successfully",
         "data": data
     }, broadcast=True)
+
+# Dashboard handlers
+@socketio.on("connect", namespace="/dashboard")
+def handle_connect_dashboard():
+    """Handle client connection to the dashboard namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (dashboard)")
+    if not hasattr(socketio, "bg_thread"):
+        socketio.bg_thread = socketio.start_background_task(background_x2cscope_task)
+
+@socketio.on("disconnect", namespace="/dashboard")
+def handle_disconnect_dashboard():
+    """Handle client disconnection from the dashboard namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client disconnected (dashboard)")
+
+@socketio.on("add_dashboard_var", namespace="/dashboard")
+def handle_add_dashboard_var(data):
+    """Handle adding a variable to dashboard polling.
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.add_dashboard_var(var)
+
+@socketio.on("remove_dashboard_var", namespace="/dashboard")
+def handle_remove_dashboard_var(data):
+    """Handle removing a variable from dashboard polling.
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.remove_dashboard_var(var)
+
+@socketio.on("register_scope_channel", namespace="/dashboard")
+def handle_register_scope_channel(data):
+    """Register a scope channel from a dashboard plot_scope widget.
+
+    Uses the shared scope_vars pool (max 8 channels, shared with scope-view).
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.add_scope_var(var)
+        # Notify scope-view so its table stays in sync
+        socketio.emit("scope_table_update", {"var": var}, namespace="/scope-view")
+
+@socketio.on("unregister_scope_channel", namespace="/dashboard")
+def handle_unregister_scope_channel(data):
+    """Register a scope channel from a dashboard plot_scope widget.
+
+    Uses the shared scope_vars pool (max 8 channels, shared with scope-view).
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.remove_scope_var(var)
+        # Notify scope-view so its table stays in sync
+        socketio.emit("scope_table_update", {"var": var}, namespace="/scope-view")
+
+@socketio.on("widget_interaction", namespace="/dashboard")
+def handle_widget_interaction(data):
+    """Handle a dashboard widget user interaction (write value to device).
+
+    Args:
+        data (dict): Dictionary containing variable name and value.
+    """
+    var = data.get("variable")
+    value = data.get("value")
+    if var and value is not None:
+        web_scope.write_dashboard_var(var, value)

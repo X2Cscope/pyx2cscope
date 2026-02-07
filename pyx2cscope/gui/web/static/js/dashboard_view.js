@@ -26,21 +26,83 @@ function initializeDashboard() {
 
         dashboardSocket.on('connect', () => {
             console.log('Dashboard connected to server');
+            registerAllDashboardVariables();
         });
 
-        dashboardSocket.on('variable_update', (data) => {
-            console.log('Variable update:', data);
-            updateDashboardWidgetValue(data.variable, data.value);
+        dashboardSocket.on('dashboard_data_update', (data) => {
+            // data is {var1: value1, var2: value2, ...} — for watch-like widgets only
+            for (let varName in data) {
+                updateDashboardWatchWidgets(varName, data[varName]);
+            }
         });
 
-        dashboardSocket.on('initial_data', (data) => {
-            console.log('Received initial data:', data);
-            updateDashboardWidgetsFromData(data);
+        dashboardSocket.on('dashboard_scope_update', (data) => {
+            // data is {var1: [...], var2: [...]} — for plot_scope widgets only
+            for (let varName in data) {
+                updateDashboardScopeWidgets(varName, data[varName]);
+            }
         });
     }
 
     // Set up file input for import
     document.getElementById('dashboardFileInput').addEventListener('change', handleDashboardFileImport);
+}
+
+function registerAllDashboardVariables() {
+    dashboardWidgets.forEach(widget => registerWidgetVariables(widget));
+}
+
+function removeAllDashboardVariables() {
+    dashboardWidgets.forEach(widget => unregisterWidgetVariables(widget));
+}
+
+function registerWidgetVariables(widget) {
+    if (!dashboardSocket || !dashboardSocket.connected) return;
+
+    if (widget.type === 'plot_scope') {
+        // Register as shared scope channels so data flows when scope is triggered
+        widget.variables?.forEach(varName => {
+            dashboardSocket.emit('register_scope_channel', {var: varName});
+        });
+    } else if (widget.type === 'plot_logger') {
+        widget.variables?.forEach(varName => {
+            dashboardSocket.emit('add_dashboard_var', {var: varName});
+        });
+    } else if (widget.type !== 'label') {
+        dashboardSocket.emit('add_dashboard_var', {var: widget.variable});
+    }
+}
+
+function isVarUsedByOtherWidgets(widget, varName) {
+    return dashboardWidgets.some(w => {
+        if (w.id === widget.id) return false;
+        if (w.type === 'plot_logger' || w.type === 'plot_scope') {
+            return w.variables && w.variables.includes(varName);
+        }
+        return w.variable === varName;
+    });
+}
+
+function unregisterWidgetVariables(widget) {
+    if (!dashboardSocket || !dashboardSocket.connected) return;
+
+    if (widget.type === 'plot_scope') {
+        widget.variables?.forEach(varName => {
+            if (!isVarUsedByOtherWidgets(widget, varName)) {
+                dashboardSocket.emit('unregister_scope_channel', {var: varName});
+            }
+        });
+    } else if (widget.type === 'plot_logger') {
+        widget.variables?.forEach(varName => {
+            if (!isVarUsedByOtherWidgets(widget, varName)) {
+                dashboardSocket.emit('remove_dashboard_var', {var: varName});
+            }
+        });
+    } else if (widget.type !== 'label') {
+        if (!isVarUsedByOtherWidgets(widget, widget.variable)) {
+            dashboardSocket.emit('remove_dashboard_var', {var: widget.variable});
+        }
+    }
 }
 
 function toggleDashboardMode() {
@@ -77,23 +139,50 @@ function toggleDashboardMode() {
     dashboardWidgets.forEach(w => renderDashboardWidget(w));
 }
 
+function initWidgetVarSelect2(options = {}) {
+    const defaults = {
+        placeholder: "Select a variable",
+        allowClear: true,
+        dropdownParent: $('#widgetConfigModal'),
+        ajax: {
+            url: '/variables',
+            dataType: 'json',
+            delay: 250,
+            processResults: function (data) {
+                return { results: data.items };
+            },
+            cache: true
+        },
+        minimumInputLength: 3
+    };
+    return $.extend(true, {}, defaults, options);
+}
+
 function showWidgetConfig(type, editWidget = null) {
     currentWidgetType = type;
     const extraConfig = document.getElementById('widgetExtraConfig');
-    const varNameInput = document.getElementById('widgetVarName');
+    const varNameContainer = document.getElementById('widgetVarNameContainer');
     const modalTitle = document.querySelector('#widgetConfigModal .modal-title');
+    const isPlotType = (type === 'plot_logger' || type === 'plot_scope');
 
     extraConfig.innerHTML = '';
+    modalTitle.textContent = editWidget ? 'Edit Widget Configuration' : 'Configure Widget';
 
-    // If editing existing widget, populate fields
-    if (editWidget) {
-        varNameInput.value = editWidget.variable;
-        varNameInput.disabled = true; // Don't allow changing variable name
-        modalTitle.textContent = 'Edit Widget Configuration';
+    // Destroy previous Select2 instances
+    if ($('#widgetVarName').data('select2')) {
+        $('#widgetVarName').select2('destroy');
+    }
+
+    // Show/hide the single variable selector based on widget type
+    if (isPlotType || type === 'label') {
+        varNameContainer.style.display = 'none';
     } else {
-        varNameInput.value = '';
-        varNameInput.disabled = false;
-        modalTitle.textContent = 'Configure Widget';
+        varNameContainer.style.display = '';
+        // Reset and populate for edit mode
+        $('#widgetVarName').empty();
+        if (editWidget) {
+            $('#widgetVarName').append(new Option(editWidget.variable, editWidget.variable, true, true));
+        }
     }
 
     // Add type-specific configuration
@@ -130,17 +219,24 @@ function showWidgetConfig(type, editWidget = null) {
                 <input type="text" class="form-control" id="widgetPressValue" value="${editWidget?.pressValue !== undefined ? editWidget.pressValue : 1}" placeholder="e.g., 1 or true">
             </div>
             <div class="mb-3">
+                <label class="form-label">Write Value on Release</label>
+                <select class="form-select" id="widgetReleaseWrite">
+                    <option value="false" ${!editWidget?.releaseWrite ? 'selected' : ''}>No</option>
+                    <option value="true" ${editWidget?.releaseWrite ? 'selected' : ''}>Yes</option>
+                </select>
+            </div>
+            <div class="mb-3" id="releaseValueContainer">
+                <label class="form-label">Value on Release</label>
+                <input type="text" class="form-control" id="widgetReleaseValue" value="${editWidget?.releaseValue !== undefined ? editWidget.releaseValue : 0}" placeholder="e.g., 0 or false">
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Toggle Button</label>
                 <select class="form-select" id="widgetToggleMode">
                     <option value="false" ${!editWidget?.toggleMode ? 'selected' : ''}>No (Momentary)</option>
                     <option value="true" ${editWidget?.toggleMode ? 'selected' : ''}>Yes (Toggle On/Off)</option>
                 </select>
             </div>
-            <div class="mb-3" id="releaseValueContainer" style="${editWidget?.toggleMode ? 'display: none;' : ''}">
-                <label class="form-label">Value on Release</label>
-                <input type="text" class="form-control" id="widgetReleaseValue" value="${editWidget?.releaseValue !== undefined ? editWidget.releaseValue : 0}" placeholder="e.g., 0 or false">
-            </div>
-            <div class="mb-3" id="pressedColorContainer" style="${editWidget?.toggleMode ? '' : 'display: none;'}">
+            <div class="mb-3" id="pressedColorContainer">
                 <label class="form-label">Color When Pressed (Toggle)</label>
                 <select class="form-select" id="widgetPressedColor">
                     <option value="success" ${editWidget?.pressedColor === 'success' ? 'selected' : ''}>Success (Green)</option>
@@ -152,14 +248,6 @@ function showWidgetConfig(type, editWidget = null) {
             </div>
         `;
 
-        // Add event listener to toggle visibility
-        setTimeout(() => {
-            document.getElementById('widgetToggleMode').addEventListener('change', function() {
-                const isToggle = this.value === 'true';
-                document.getElementById('releaseValueContainer').style.display = isToggle ? 'none' : 'block';
-                document.getElementById('pressedColorContainer').style.display = isToggle ? 'block' : 'none';
-            });
-        }, 0);
     } else if (type === 'gauge') {
         extraConfig.innerHTML = `
             <div class="mb-3">
@@ -171,13 +259,13 @@ function showWidgetConfig(type, editWidget = null) {
                 <input type="number" class="form-control" id="widgetMaxValue" value="${editWidget?.max || 100}">
             </div>
         `;
-    } else if (type === 'plot_logger' || type === 'plot_scope') {
+    } else if (isPlotType) {
         const isLogger = type === 'plot_logger';
         extraConfig.innerHTML = `
             <div class="mb-3">
-                <label class="form-label">Variables (comma-separated)</label>
-                <input type="text" class="form-control" id="widgetVariables" value="${editWidget?.variables?.join(', ') || ''}" placeholder="e.g., temp, pressure, speed">
-                <small class="form-text text-muted">Enter multiple variable names separated by commas</small>
+                <label class="form-label">Variables</label>
+                <select class="form-control" id="widgetVariables" multiple="multiple" style="width: 100%;"></select>
+                <small class="form-text text-muted">Search and select one or more variables</small>
             </div>
             ${isLogger ? `
             <div class="mb-3">
@@ -215,6 +303,29 @@ function showWidgetConfig(type, editWidget = null) {
     const modal = new bootstrap.Modal(document.getElementById('widgetConfigModal'));
     modal.show();
 
+    // Initialize Select2 after modal is shown so dropdown renders correctly
+    $('#widgetConfigModal').one('shown.bs.modal', function() {
+        if (!isPlotType && type !== 'label') {
+            $('#widgetVarName').select2(initWidgetVarSelect2());
+            if (editWidget) {
+                $('#widgetVarName').prop('disabled', true);
+            }
+        }
+        if (isPlotType) {
+            $('#widgetVariables').select2(initWidgetVarSelect2({
+                placeholder: "Search and select variables",
+                multiple: true
+            }));
+            // Pre-populate existing variables when editing
+            if (editWidget?.variables) {
+                editWidget.variables.forEach(v => {
+                    $('#widgetVariables').append(new Option(v, v, true, true));
+                });
+                $('#widgetVariables').trigger('change');
+            }
+        }
+    });
+
     // Store reference to widget being edited
     window.editingWidget = editWidget;
 }
@@ -228,9 +339,10 @@ function addDashboardWidget() {
         widget = editWidget;
     } else {
         // Creating new widget
-        const varName = document.getElementById('widgetVarName').value.trim();
-        if (!varName && currentWidgetType !== 'label') {
-            alert('Please enter a variable name');
+        const isPlotType = (currentWidgetType === 'plot_logger' || currentWidgetType === 'plot_scope');
+        const varName = isPlotType ? '' : ($('#widgetVarName').val() || '');
+        if (!varName && currentWidgetType !== 'label' && !isPlotType) {
+            alert('Please select a variable name');
             return;
         }
 
@@ -253,18 +365,17 @@ function addDashboardWidget() {
         widget.buttonColor = document.getElementById('widgetButtonColor').value;
         widget.pressValue = parseValue(document.getElementById('widgetPressValue').value);
         widget.toggleMode = document.getElementById('widgetToggleMode').value === 'true';
+        widget.releaseWrite = document.getElementById('widgetReleaseWrite').value === 'true';
+        widget.releaseValue = parseValue(document.getElementById('widgetReleaseValue').value);
         widget.buttonState = false; // Track toggle state
         if (widget.toggleMode) {
             widget.pressedColor = document.getElementById('widgetPressedColor').value;
-        } else {
-            widget.releaseValue = parseValue(document.getElementById('widgetReleaseValue').value);
         }
     } else if (currentWidgetType === 'gauge') {
         widget.min = parseFloat(document.getElementById('widgetMinValue').value);
         widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
     } else if (currentWidgetType === 'plot_logger' || currentWidgetType === 'plot_scope') {
-        const varsInput = document.getElementById('widgetVariables').value;
-        widget.variables = varsInput.split(',').map(v => v.trim()).filter(v => v);
+        widget.variables = $('#widgetVariables').val() || [];
         if (widget.variables.length === 0) {
             alert('Please enter at least one variable name');
             return;
@@ -284,14 +395,20 @@ function addDashboardWidget() {
 
     if (!editWidget) {
         dashboardWidgets.push(widget);
+        registerWidgetVariables(widget);
     }
 
     renderDashboardWidget(widget);
 
-    // Close modal
+    // Close modal and clean up Select2
     const modal = bootstrap.Modal.getInstance(document.getElementById('widgetConfigModal'));
     modal.hide();
-    document.getElementById('widgetVarName').value = '';
+    if ($('#widgetVarName').data('select2')) {
+        $('#widgetVarName').val(null).trigger('change');
+    }
+    if ($('#widgetVariables').data('select2')) {
+        $('#widgetVariables').val(null).trigger('change');
+    }
     window.editingWidget = null;
 }
 
@@ -600,11 +717,11 @@ function handleDashboardButtonPress(id) {
     if (!widget) return;
 
     if (widget.toggleMode) {
-        // Toggle mode: switch state
+        // Toggle mode: switch state — needs full re-render for button color change
         widget.buttonState = !widget.buttonState;
         const value = widget.buttonState ? widget.pressValue : widget.releaseValue || 0;
         updateDashboardVariable(widget.variable, value);
-        renderDashboardWidget(widget);
+        renderDashboardWidget(widget); // button color change requires re-render
     } else {
         // Momentary mode: send press value
         updateDashboardVariable(widget.variable, widget.pressValue);
@@ -613,14 +730,15 @@ function handleDashboardButtonPress(id) {
 
 function handleDashboardButtonRelease(id) {
     const widget = dashboardWidgets.find(w => w.id === id);
-    if (!widget || widget.toggleMode) return; // Don't handle release for toggle mode
+    // Don't handle release for toggle mode or if release is not enabled
+    if (!widget || widget.toggleMode || !widget.releaseWrite) return;
 
     // Momentary mode: send release value
     updateDashboardVariable(widget.variable, widget.releaseValue);
 }
 
 function updateDashboardVariable(varName, value) {
-    // Find all widgets that use this variable
+    // Update local widget state
     const widgets = dashboardWidgets.filter(w => {
         if (w.type === 'plot_logger' || w.type === 'plot_scope') {
             return w.variables && w.variables.includes(varName);
@@ -629,33 +747,20 @@ function updateDashboardVariable(varName, value) {
     });
 
     widgets.forEach(widget => {
-        // Handle plot data differently
         if (widget.type === 'plot_logger') {
-            // Logger mode: append and scroll
             if (!widget.data) widget.data = {};
             if (!widget.data[varName]) widget.data[varName] = [];
-
             widget.data[varName].push(value);
             if (widget.data[varName].length > widget.maxPoints) {
                 widget.data[varName].shift();
             }
         } else if (widget.type === 'plot_scope') {
-            // Scope mode: receive array and replace completely
             if (!widget.data) widget.data = {};
-
-            // If value is an array, use it directly
-            if (Array.isArray(value)) {
-                widget.data[varName] = [...value];
-            } else {
-                // Single value - replace with single point
-                widget.data[varName] = [value];
-            }
+            widget.data[varName] = Array.isArray(value) ? value : [value];
         } else {
-            // Regular widgets
             widget.value = value;
         }
-
-        renderDashboardWidget(widget);
+        refreshWidgetInPlace(widget);
     });
 
     // Send to server via Socket.IO or HTTP
@@ -674,8 +779,100 @@ function updateDashboardVariable(varName, value) {
     }
 }
 
+// Fix 4: Separate routing — watch data only updates non-scope widgets
+function updateDashboardWatchWidgets(varName, value) {
+    dashboardWidgets.forEach(widget => {
+        if (widget.type === 'plot_scope') return; // scope data handled separately
+        if (widget.type === 'plot_logger') {
+            if (!widget.variables || !widget.variables.includes(varName)) return;
+            if (!widget.data) widget.data = {};
+            if (!widget.data[varName]) widget.data[varName] = [];
+            widget.data[varName].push(value);
+            if (widget.data[varName].length > widget.maxPoints) {
+                widget.data[varName].shift();
+            }
+            refreshWidgetInPlace(widget);
+        } else if (widget.variable === varName && widget.type !== 'label') {
+            widget.value = value;
+            refreshWidgetInPlace(widget);
+        }
+    });
+}
+
+// Fix 4: Scope data only updates plot_scope widgets
+function updateDashboardScopeWidgets(varName, value) {
+    dashboardWidgets.forEach(widget => {
+        if (widget.type !== 'plot_scope') return;
+        if (!widget.variables || !widget.variables.includes(varName)) return;
+        if (!widget.data) widget.data = {};
+        widget.data[varName] = Array.isArray(value) ? value : [value];
+        refreshWidgetInPlace(widget);
+    });
+}
+
+// Fix 3: In-place update without full re-render to avoid chart blinking
+function refreshWidgetInPlace(widget) {
+    const widgetEl = document.getElementById(`dashboard-widget-${widget.id}`);
+    if (!widgetEl) {
+        renderDashboardWidget(widget);
+        return;
+    }
+
+    if (widget.type === 'gauge') {
+        const chart = dashboardCharts[widget.id];
+        if (!chart) { renderDashboardWidget(widget); return; }
+        const percent = Math.max(0, Math.min(1, (widget.value - widget.min) / (widget.max - widget.min)));
+        const color = percent > 0.8 ? '#dc3545' : percent > 0.6 ? '#ffc107' : '#198754';
+        chart.data.datasets[0].data = [percent, 1 - percent];
+        chart.data.datasets[0].backgroundColor = [color, '#e9ecef'];
+        chart.options.plugins.annotation.annotations.annotation.color = [color, '#6c757d'];
+        chart.options.plugins.annotation.annotations.annotation.content = [
+            (percent * 100).toFixed(1) + '%',
+            widget.variable || 'Value'
+        ];
+        chart.update('none');
+        return;
+    }
+
+    if (widget.type === 'plot_logger' || widget.type === 'plot_scope') {
+        const chart = dashboardCharts[widget.id];
+        if (!chart) { renderDashboardWidget(widget); return; }
+        if (widget.variables) {
+            widget.variables.forEach((varName, idx) => {
+                if (chart.data.datasets[idx]) {
+                    chart.data.datasets[idx].data = widget.data[varName] || [];
+                }
+            });
+            const maxLen = Math.max(0, ...widget.variables.map(v => (widget.data[v]?.length || 0)));
+            chart.data.labels = Array.from({length: maxLen}, (_, i) => i + 1);
+        }
+        chart.update('none');
+        return;
+    }
+
+    if (widget.type === 'slider') {
+        const display = widgetEl.querySelector('.value-display');
+        const input = widgetEl.querySelector('input[type="range"]');
+        if (display) display.textContent = widget.value;
+        if (input) input.value = widget.value;
+        return;
+    }
+
+    if (widget.type === 'number') {
+        const input = widgetEl.querySelector('input[type="number"]');
+        if (input && document.activeElement !== input) input.value = widget.value;
+        return;
+    }
+
+    if (widget.type === 'text') {
+        const input = widgetEl.querySelector('input[type="text"]');
+        if (input && document.activeElement !== input) input.value = widget.value;
+        return;
+    }
+}
+
+// Legacy function kept for updateDashboardVariable (user interactions)
 function updateDashboardWidgetValue(varName, value) {
-    // Find all widgets that use this variable
     const widgets = dashboardWidgets.filter(w => {
         if (w.type === 'plot_logger' || w.type === 'plot_scope') {
             return w.variables && w.variables.includes(varName);
@@ -684,33 +881,20 @@ function updateDashboardWidgetValue(varName, value) {
     });
 
     widgets.forEach(widget => {
-        // Handle plot data differently
         if (widget.type === 'plot_logger') {
-            // Logger mode: append and scroll
             if (!widget.data) widget.data = {};
             if (!widget.data[varName]) widget.data[varName] = [];
-
             widget.data[varName].push(value);
             if (widget.data[varName].length > widget.maxPoints) {
                 widget.data[varName].shift();
             }
         } else if (widget.type === 'plot_scope') {
-            // Scope mode: receive array and replace completely
             if (!widget.data) widget.data = {};
-
-            // If value is an array, use it directly
-            if (Array.isArray(value)) {
-                widget.data[varName] = [...value];
-            } else {
-                // Single value - replace with single point
-                widget.data[varName] = [value];
-            }
+            widget.data[varName] = Array.isArray(value) ? value : [value];
         } else {
-            // Regular widgets
             widget.value = value;
         }
-
-        renderDashboardWidget(widget);
+        refreshWidgetInPlace(widget);
     });
 }
 
@@ -724,6 +908,7 @@ function deleteDashboardWidget(id) {
     if (confirm('Delete this widget?')) {
         const index = dashboardWidgets.findIndex(w => w.id === id);
         if (index > -1) {
+            unregisterWidgetVariables(dashboardWidgets[index]);
             dashboardWidgets.splice(index, 1);
             const el = document.getElementById(`dashboard-widget-${id}`);
             if (el) el.remove();
@@ -797,10 +982,12 @@ function loadDashboardLayout() {
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
+            removeAllDashboardVariables();
             dashboardWidgets = data.layout;
             widgetIdCounter = Math.max(...dashboardWidgets.map(w => w.id), 0) + 1;
             document.getElementById('dashboardCanvas').innerHTML = '';
             dashboardWidgets.forEach(w => renderDashboardWidget(w));
+            registerAllDashboardVariables();
             alert('Layout loaded successfully');
         } else {
             alert(data.message || 'No saved layout found');
@@ -833,10 +1020,12 @@ function handleDashboardFileImport(e) {
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
+                removeAllDashboardVariables();
                 dashboardWidgets = JSON.parse(event.target.result);
                 widgetIdCounter = Math.max(...dashboardWidgets.map(w => w.id), 0) + 1;
                 document.getElementById('dashboardCanvas').innerHTML = '';
                 dashboardWidgets.forEach(w => renderDashboardWidget(w));
+                registerAllDashboardVariables();
                 alert('Layout imported successfully');
             } catch (err) {
                 console.error('Import error:', err);

@@ -25,6 +25,9 @@ class WebScope:
         self.scope_sample_time = 1
         self.scope_time_sampling = 50e-3
 
+        self.dashboard_vars = {}  # {var_name: Variable object}
+        self.dashboard_next = time.time()
+
         self.x2c_scope :X2CScope | None = None
         self._lock = extensions.create_lock()
 
@@ -60,7 +63,7 @@ class WebScope:
             "trigger": 0,
             "enable": 1,
             "variable": variable,
-            "color": colors[len(self.scope_vars)],
+            "color": colors[len(self.scope_vars) % len(colors)],
             "gain": 1,
             "offset": 0,
             "remove": 0,
@@ -184,6 +187,64 @@ class WebScope:
 
         return result
 
+    # Dashboard variable methods
+    def add_dashboard_var(self, name):
+        """Add a variable to the dashboard polling list.
+
+        Args:
+            name (str): Variable name to add.
+
+        Returns:
+            bool: True if variable was added successfully.
+        """
+        if name not in self.dashboard_vars:
+            variable = self.x2c_scope.get_variable(name)
+            if variable is not None:
+                self.dashboard_vars[name] = variable
+                return True
+        return False
+
+    def remove_dashboard_var(self, name):
+        """Remove a variable from the dashboard polling list.
+
+        Args:
+            name (str): Variable name to remove.
+        """
+        self.dashboard_vars.pop(name, None)
+
+    def write_dashboard_var(self, name, value):
+        """Write a value to a device variable from a dashboard widget.
+
+        Args:
+            name (str): Variable name.
+            value: Value to write.
+        """
+        variable = self.dashboard_vars.get(name)
+        if variable is not None:
+            with self._lock:
+                variable.set_value(float(value))
+
+    def dashboard_poll(self):
+        """Poll all dashboard variables and return updated values.
+
+        Returns:
+            dict: Dictionary of {var_name: value} for all dashboard variables.
+        """
+        if not self.dashboard_vars:
+            return {}
+        current_time = time.time()
+        if current_time < self.dashboard_next:
+            return {}
+        self.dashboard_next = current_time + self.watch_rate
+        result = {}
+        with self._lock:
+            for name, variable in self.dashboard_vars.items():
+                try:
+                    result[name] = variable.get_value()
+                except Exception:
+                    pass
+        return result
+
     def clear_scope_var(self):
         """Clear all scope variables."""
         with self._lock:
@@ -299,14 +360,27 @@ class WebScope:
         """Poll scope data and return datasets when ready.
 
         Returns:
-            dict: Dictionary containing datasets and labels, or empty dict.
+            tuple: (scope_view_data, dashboard_scope_data) where scope_view_data is
+                a dict with datasets and labels (or empty dict), and dashboard_scope_data
+                is a dict of {var_name: [samples]} with raw data for all scope channels.
         """
         with self._lock:
             if self.scope_trigger:
                 if self.x2c_scope.is_scope_data_ready():
-                    datasets = self.get_scope_datasets()
+                    channel_data = self.x2c_scope.get_scope_channel_data()
+                    datasets = self._get_scope_datasets(channel_data, self.scope_vars)
                     size = len(datasets[0]["data"]) if len(datasets) > 0 else 1000
                     labels = self.get_scope_chart_label(size)
+
+                    # Build raw data dict for dashboard (gain/offset applied per channel)
+                    dashboard_data = {}
+                    for channel in self.scope_vars:
+                        name = channel["variable"].info.name
+                        if name in channel_data:
+                            dashboard_data[name] = [
+                                sample * channel["gain"] + channel["offset"]
+                                for sample in channel_data[name]
+                            ]
 
                     if self.scope_burst:
                         self.scope_burst = False
@@ -314,19 +388,22 @@ class WebScope:
                     else:
                         self.x2c_scope.request_scope_data()
 
-                    return {"datasets": datasets, "labels": labels}
-            return {}
+                    return {"datasets": datasets, "labels": labels}, dashboard_data
+            return {}, {}
 
-    def get_scope_datasets(self):
-        """Get scope channel datasets.
+    @staticmethod
+    def _get_scope_datasets(channel_data, scope_vars):
+        """Build scope chart datasets from channel data.
+
+        Args:
+            channel_data (dict): Raw channel data from X2CScope.
+            scope_vars (list): List of scope variable dictionaries.
 
         Returns:
             list: List of dataset dictionaries for each channel.
         """
         data = []
-        channel_data = self.x2c_scope.get_scope_channel_data()
-        for channel in self.scope_vars:
-            # if variable is disabled on scope_data, it is not available on channel_data
+        for channel in scope_vars:
             if channel["variable"].info.name in channel_data:
                 variable = channel["variable"].info.name
                 data_line = [
@@ -341,6 +418,15 @@ class WebScope:
                 }
                 data.append(item)
         return data
+
+    def get_scope_datasets(self):
+        """Get scope channel datasets.
+
+        Returns:
+            list: List of dataset dictionaries for each channel.
+        """
+        channel_data = self.x2c_scope.get_scope_channel_data()
+        return self._get_scope_datasets(channel_data, self.scope_vars)
 
     def get_scope_chart_label(self, size=100):
         """Generate time labels for scope chart.
