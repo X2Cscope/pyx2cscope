@@ -185,6 +185,20 @@ function showWidgetConfig(type, editWidget = null) {
         }
     }
 
+    // Gain/offset fields for value-based widgets
+    const gainOffsetHtml = `
+        <div class="mb-3">
+            <label class="form-label">Gain</label>
+            <input type="number" class="form-control" id="widgetGain" step="any"
+                   value="${editWidget?.gain !== undefined ? editWidget.gain : 1}" placeholder="1">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Offset</label>
+            <input type="number" class="form-control" id="widgetOffset" step="any"
+                   value="${editWidget?.offset !== undefined ? editWidget.offset : 0}" placeholder="0">
+        </div>
+    `;
+
     // Add type-specific configuration
     if (type === 'slider') {
         extraConfig.innerHTML = `
@@ -200,6 +214,7 @@ function showWidgetConfig(type, editWidget = null) {
                 <label class="form-label">Step</label>
                 <input type="number" class="form-control" id="widgetStepValue" value="${editWidget?.step || 1}">
             </div>
+            ${gainOffsetHtml}
         `;
     } else if (type === 'button') {
         extraConfig.innerHTML = `
@@ -251,14 +266,55 @@ function showWidgetConfig(type, editWidget = null) {
     } else if (type === 'gauge') {
         extraConfig.innerHTML = `
             <div class="mb-3">
+                <label class="form-label">Display Name</label>
+                <input type="text" class="form-control" id="widgetDisplayName" value="${editWidget?.displayName || ''}" placeholder="Enter display name (optional)">
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Min Value</label>
-                <input type="number" class="form-control" id="widgetMinValue" value="${editWidget?.min || 0}">
+                <div class="d-flex gap-2">
+                    <input type="number" class="form-control" id="widgetMinValue" value="${editWidget?.min || 0}">
+                    <input type="color" class="form-control form-control-color" id="widgetLowColor"
+                               value="${editWidget?.lowColor || '#198754'}"
+                               title="Choose low threshold color">
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Max Value</label>
                 <input type="number" class="form-control" id="widgetMaxValue" value="${editWidget?.max || 100}">
             </div>
+            <div class="mb-3">
+                <label class="form-label">Low Threshold</label>
+                <div class="d-flex gap-2">
+                    <input type="number" class="form-control" id="widgetLowThreshold"
+                           value="${editWidget?.lowThreshold !== undefined ? editWidget.lowThreshold : ''}"
+                           placeholder="Default: 60% of range">
+                    <input type="color" class="form-control form-control-color" id="widgetMidColor"
+                           value="${editWidget?.midColor || '#ffc107'}"
+                           title="Choose mid threshold color">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">High Threshold</label>
+                <div class="d-flex gap-2">
+                    <input type="number" class="form-control" id="widgetHighThreshold"
+                           value="${editWidget?.highThreshold !== undefined ? editWidget.highThreshold : ''}"
+                           placeholder="Default: 80% of range">
+                    <input type="color" class="form-control form-control-color" id="widgetHighColor"
+                               value="${editWidget?.highColor || '#dc3545'}"
+                               title="Choose high threshold color">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Display Mode</label>
+                <select class="form-select" id="widgetDisplayMode">
+                    <option value="percent" ${!editWidget?.displayMode || editWidget?.displayMode === 'percent' ? 'selected' : ''}>Percent</option>
+                    <option value="number" ${editWidget?.displayMode === 'number' ? 'selected' : ''}>Number</option>
+                </select>
+            </div>
+            ${gainOffsetHtml}
         `;
+    } else if (type === 'number' || type === 'text') {
+        extraConfig.innerHTML = gainOffsetHtml;
     } else if (isPlotType) {
         const isLogger = type === 'plot_logger';
         extraConfig.innerHTML = `
@@ -372,8 +428,17 @@ function addDashboardWidget() {
             widget.pressedColor = document.getElementById('widgetPressedColor').value;
         }
     } else if (currentWidgetType === 'gauge') {
+        widget.displayName = document.getElementById('widgetDisplayName').value;
         widget.min = parseFloat(document.getElementById('widgetMinValue').value);
         widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
+        const lowVal = document.getElementById('widgetLowThreshold').value;
+        const highVal = document.getElementById('widgetHighThreshold').value;
+        widget.lowThreshold = lowVal !== '' ? parseFloat(lowVal) : undefined;
+        widget.lowColor = document.getElementById('widgetLowColor').value;
+        widget.midColor = document.getElementById('widgetMidColor').value;
+        widget.highColor = document.getElementById('widgetHighColor').value;
+        widget.highThreshold = highVal !== '' ? parseFloat(highVal) : undefined;
+        widget.displayMode = document.getElementById('widgetDisplayMode').value;
     } else if (currentWidgetType === 'plot_logger' || currentWidgetType === 'plot_scope') {
         widget.variables = $('#widgetVariables').val() || [];
         if (widget.variables.length === 0) {
@@ -391,6 +456,15 @@ function addDashboardWidget() {
         widget.fontSize = document.getElementById('widgetFontSize').value;
         widget.textAlign = document.getElementById('widgetTextAlign').value;
         widget.variable = 'label_' + widget.id; // Generate unique variable name
+    }
+
+    // Read gain/offset for types that show the fields
+    const gainOffsetTypes = ['slider', 'number', 'text', 'gauge'];
+    if (gainOffsetTypes.includes(currentWidgetType)) {
+        const gainEl = document.getElementById('widgetGain');
+        const offsetEl = document.getElementById('widgetOffset');
+        widget.gain = gainEl ? parseFloat(gainEl.value) || 1 : 1;
+        widget.offset = offsetEl ? parseFloat(offsetEl.value) || 0 : 0;
     }
 
     if (!editWidget) {
@@ -563,7 +637,13 @@ function renderDashboardWidget(widget) {
         case 'gauge':
             content = `
                 ${header}
-                <canvas class="gauge-container" id="dashboard-gauge-${widget.id}"></canvas>
+                <div style="position: relative;">
+                    <canvas class="gauge-container" id="dashboard-gauge-${widget.id}"></canvas>
+                    <div class="gauge-label-overlay" id="gauge-label-${widget.id}">
+                        <div class="gauge-value" style="font-size: 30px; font-weight: bold; color: #000;">${widget.value}</div>
+                        <div class="gauge-variable" style="font-size: 14px; color: #000;">${widget.displayName || widget.variable || 'Value'}</div>
+                    </div>
+                </div>
                 </div>
             `;
             setTimeout(() => {
@@ -594,46 +674,42 @@ function renderDashboardWidget(widget) {
     widgetEl.innerHTML = content;
 }
 
-// Chart.js gauge via doughnut chart with annotations
+// Get gauge color based on value and configurable thresholds
+function getGaugeColor(value, widget) {
+    const range = widget.max - widget.min;
+    const low = widget.lowThreshold !== undefined ? widget.lowThreshold : widget.min + range * 0.6;
+    const high = widget.highThreshold !== undefined ? widget.highThreshold : widget.min + range * 0.8;
+    if (value >= high) return widget.highColor;
+    if (value >= low) return widget.midColor;
+    return widget.lowColor;
+}
+
+// Get gauge display text based on display mode
+function getGaugeDisplayText(value, percent, widget) {
+    if (widget.displayMode === 'number') {
+        return Number.isInteger(value) ? value.toString() : value.toFixed(2);
+    }
+    return (percent * 100).toFixed(1) + '%';
+}
+
+// Chart.js gauge via doughnut chart with overlay labels
 function renderDashboardGauge(widget, gaugeCanvas) {
-    // Code generated by MCHP Chatbot
     if (dashboardCharts[widget.id]) {
         dashboardCharts[widget.id].destroy();
     }
 
     let value = widget.value;
-    let min = widget.min;
-    let max = widget.max;
-    let percent = ((value - min) / (max - min));
+    let percent = ((value - widget.min) / (widget.max - widget.min));
     percent = Math.max(0, Math.min(1, percent));
 
-    // Color based on percentage
-    const getColor = (percent) => {
-        if (percent > 0.8) return '#dc3545'; // red
-        if (percent > 0.6) return '#ffc107'; // yellow
-        return '#198754'; // green
-    };
-
-    const annotation = {
-        type: 'doughnutLabel',
-        content: ({chart}) => [
-            (percent * 100).toFixed(1) + '%',
-            widget.variable || 'Value'
-        ],
-        drawTime: 'beforeDraw',
-        position: {
-            y: '-50%'
-        },
-        font: [{size: 30, weight: 'bold'}, {size: 14}],
-        color: ({chart}) => [getColor(percent), '#6c757d']
-    };
+    const color = getGaugeColor(value, widget);
 
     const config = {
         type: 'doughnut',
         data: {
             datasets: [{
                 data: [percent, 1 - percent],
-                backgroundColor: [getColor(percent), '#e9ecef'],
+                backgroundColor: [color, '#e9ecef'],
                 borderWidth: 0
             }]
         },
@@ -643,17 +719,29 @@ function renderDashboardGauge(widget, gaugeCanvas) {
             rotation: -90,
             plugins: {
                 legend: { display: false },
-                tooltip: { enabled: false },
-                annotation: {
-                    annotations: {
-                        annotation
-                    }
-                }
+                tooltip: { enabled: false }
             }
         }
     };
 
     dashboardCharts[widget.id] = new Chart(gaugeCanvas, config);
+    
+    // Position the overlay labels
+    setTimeout(() => {
+        const overlay = document.getElementById(`gauge-label-${widget.id}`);
+        const canvas = gaugeCanvas;
+        if (overlay && canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2 + rect.height / 4; // Adjust for semi-circle
+            overlay.style.position = 'absolute';
+            overlay.style.left = centerX + 'px';
+            overlay.style.top = centerY + 'px';
+            overlay.style.transform = 'translate(-50%, -50%)';
+            overlay.style.textAlign = 'center';
+            overlay.style.pointerEvents = 'none';
+        }
+    }, 50);
 }
 
 // Chart.js plot rendering (line)
@@ -746,6 +834,10 @@ function updateDashboardVariable(varName, value) {
         return w.variable === varName;
     });
 
+    // Find the first matching widget with gain/offset to reverse for device write
+    const refWidget = widgets.find(w => w.variable === varName && w.type !== 'plot_logger' && w.type !== 'plot_scope');
+    const rawValue = refWidget ? reverseGainOffset(value, refWidget) : value;
+
     widgets.forEach(widget => {
         if (widget.type === 'plot_logger') {
             if (!widget.data) widget.data = {};
@@ -763,23 +855,36 @@ function updateDashboardVariable(varName, value) {
         refreshWidgetInPlace(widget);
     });
 
-    // Send to server via Socket.IO or HTTP
+    // Send raw (reversed) value to server via Socket.IO or HTTP
     if (dashboardSocket && dashboardSocket.connected) {
         dashboardSocket.emit('widget_interaction', {
             variable: varName,
-            value: value
+            value: rawValue
         });
     } else {
-        // Fallback to HTTP
         fetch('/dashboard-view/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ variable: varName, value: value })
+            body: JSON.stringify({ variable: varName, value: rawValue })
         });
     }
 }
 
-// Fix 4: Separate routing — watch data only updates non-scope widgets
+// Apply gain/offset: displayed = raw * gain + offset
+function applyGainOffset(rawValue, widget) {
+    const gain = widget.gain !== undefined ? widget.gain : 1;
+    const offset = widget.offset !== undefined ? widget.offset : 0;
+    return rawValue * gain + offset;
+}
+
+// Reverse gain/offset for writing: raw = (displayed - offset) / gain
+function reverseGainOffset(displayedValue, widget) {
+    const gain = widget.gain !== undefined ? widget.gain : 1;
+    const offset = widget.offset !== undefined ? widget.offset : 0;
+    return gain !== 0 ? (displayedValue - offset) / gain : displayedValue;
+}
+
+// Separate routing — watch data only updates non-scope widgets
 function updateDashboardWatchWidgets(varName, value) {
     dashboardWidgets.forEach(widget => {
         if (widget.type === 'plot_scope') return; // scope data handled separately
@@ -787,13 +892,13 @@ function updateDashboardWatchWidgets(varName, value) {
             if (!widget.variables || !widget.variables.includes(varName)) return;
             if (!widget.data) widget.data = {};
             if (!widget.data[varName]) widget.data[varName] = [];
-            widget.data[varName].push(value);
+            widget.data[varName].push(applyGainOffset(value, widget));
             if (widget.data[varName].length > widget.maxPoints) {
                 widget.data[varName].shift();
             }
             refreshWidgetInPlace(widget);
         } else if (widget.variable === varName && widget.type !== 'label') {
-            widget.value = value;
+            widget.value = applyGainOffset(value, widget);
             refreshWidgetInPlace(widget);
         }
     });
@@ -822,15 +927,20 @@ function refreshWidgetInPlace(widget) {
         const chart = dashboardCharts[widget.id];
         if (!chart) { renderDashboardWidget(widget); return; }
         const percent = Math.max(0, Math.min(1, (widget.value - widget.min) / (widget.max - widget.min)));
-        const color = percent > 0.8 ? '#dc3545' : percent > 0.6 ? '#ffc107' : '#198754';
+        const color = getGaugeColor(widget.value, widget);
+        const displayText = getGaugeDisplayText(widget.value, percent, widget);
         chart.data.datasets[0].data = [percent, 1 - percent];
         chart.data.datasets[0].backgroundColor = [color, '#e9ecef'];
-        chart.options.plugins.annotation.annotations.annotation.color = [color, '#6c757d'];
-        chart.options.plugins.annotation.annotations.annotation.content = [
-            (percent * 100).toFixed(1) + '%',
-            widget.variable || 'Value'
-        ];
         chart.update('none');
+        
+        // Update overlay labels
+        const overlay = document.getElementById(`gauge-label-${widget.id}`);
+        if (overlay) {
+            const valueEl = overlay.querySelector('.gauge-value');
+            const varEl = overlay.querySelector('.gauge-variable');
+            if (valueEl) valueEl.textContent = displayText;
+            if (varEl) varEl.textContent = widget.displayName || widget.variable || 'Value';
+        }
         return;
     }
 
@@ -924,9 +1034,15 @@ function deleteDashboardWidget(id) {
 function startDashboardDrag(e) {
     if (!isDashboardEditMode) return;
 
+    const rect = e.currentTarget.getBoundingClientRect();
+    const resizeZone = 20; // px from bottom-right corner
+
+    // Don't start drag if clicking near the resize handle (bottom-right corner)
+    if (e.clientX > rect.right - resizeZone && e.clientY > rect.bottom - resizeZone) {
+        return;
+    }
+
     draggedWidget = e.currentTarget;
-    const rect = draggedWidget.getBoundingClientRect();
-    const canvas = document.getElementById('dashboardCanvas').getBoundingClientRect();
 
     dragOffsetX = e.clientX - rect.left;
     dragOffsetY = e.clientY - rect.top;
