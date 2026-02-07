@@ -733,7 +733,7 @@ function renderDashboardGauge(widget, gaugeCanvas) {
         if (overlay && canvas) {
             const rect = canvas.getBoundingClientRect();
             const centerX = rect.width / 2;
-            const centerY = rect.height / 2 + rect.height / 4; // Adjust for semi-circle
+            const centerY = rect.height / 2 + rect.height / 3; // Adjust for semi-circle and move 10px down
             overlay.style.position = 'absolute';
             overlay.style.left = centerX + 'px';
             overlay.style.top = centerY + 'px';
