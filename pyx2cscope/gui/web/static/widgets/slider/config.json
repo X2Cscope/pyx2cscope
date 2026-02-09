@@ -1,0 +1,12 @@
+{
+  "id": "slider",
+  "name": "Slider",
+  "icon": "tune",
+  "description": "Range slider for adjusting numeric values with configurable min, max, and step.",
+  "category": "input",
+  "features": [
+    "Configurable min/max/step",
+    "Real-time value display",
+    "Gain/offset transformation support"
+  ]
+}

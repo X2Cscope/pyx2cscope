@@ -1,0 +1,11 @@
+{
+  "id": "text",
+  "name": "Text Input",
+  "icon": "text_fields",
+  "description": "Text input field for string values with gain/offset transformation support.",
+  "category": "input",
+  "features": [
+    "String/text entry",
+    "Gain/offset transformation support"
+  ]
+}

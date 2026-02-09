@@ -1,0 +1,15 @@
+{
+  "id": "gauge",
+  "name": "Gauge",
+  "icon": "speed",
+  "description": "Semi-circular gauge with customizable color zones and thresholds. Displays values as percentage or number.",
+  "category": "display",
+  "features": [
+    "Semi-circular Chart.js visualization",
+    "Customizable color zones (low/mid/high)",
+    "Custom threshold values",
+    "Percent or number display mode",
+    "Gain/offset transformation support"
+  ],
+  "dependencies": ["Chart.js"]
+}

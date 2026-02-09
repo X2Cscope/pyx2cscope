@@ -1,0 +1,11 @@
+{
+  "id": "number",
+  "name": "Number Input",
+  "icon": "pin",
+  "description": "Direct numeric input field with gain/offset transformation support.",
+  "category": "input",
+  "features": [
+    "Direct number entry",
+    "Gain/offset transformation support"
+  ]
+}

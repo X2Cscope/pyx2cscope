@@ -1,0 +1,12 @@
+{
+  "id": "label",
+  "name": "Label",
+  "icon": "label",
+  "description": "Static text label with customizable font size and alignment.",
+  "category": "display",
+  "features": [
+    "Customizable text",
+    "Font size selection (small/medium/large/xlarge)",
+    "Text alignment (left/center/right)"
+  ]
+}

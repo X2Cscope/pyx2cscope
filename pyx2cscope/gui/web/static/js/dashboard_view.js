@@ -163,7 +163,13 @@ function showWidgetConfig(type, editWidget = null) {
     const extraConfig = document.getElementById('widgetExtraConfig');
     const varNameContainer = document.getElementById('widgetVarNameContainer');
     const modalTitle = document.querySelector('#widgetConfigModal .modal-title');
-    const isPlotType = (type === 'plot_logger' || type === 'plot_scope');
+
+    // Get widget type definition from modular system
+    const widgetDef = window.dashboardWidgetTypes[type];
+    if (!widgetDef) {
+        console.error(`Unknown widget type: ${type}`);
+        return;
+    }
 
     extraConfig.innerHTML = '';
     modalTitle.textContent = editWidget ? 'Edit Widget Configuration' : 'Configure Widget';
@@ -174,7 +180,7 @@ function showWidgetConfig(type, editWidget = null) {
     }
 
     // Show/hide the single variable selector based on widget type
-    if (isPlotType || type === 'label') {
+    if (widgetDef.requiresMultipleVariables || !widgetDef.requiresVariable) {
         varNameContainer.style.display = 'none';
     } else {
         varNameContainer.style.display = '';
@@ -185,175 +191,9 @@ function showWidgetConfig(type, editWidget = null) {
         }
     }
 
-    // Gain/offset fields for value-based widgets
-    const gainOffsetHtml = `
-        <div class="mb-3">
-            <label class="form-label">Gain</label>
-            <input type="number" class="form-control" id="widgetGain" step="any"
-                   value="${editWidget?.gain !== undefined ? editWidget.gain : 1}" placeholder="1">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Offset</label>
-            <input type="number" class="form-control" id="widgetOffset" step="any"
-                   value="${editWidget?.offset !== undefined ? editWidget.offset : 0}" placeholder="0">
-        </div>
-    `;
-
-    // Add type-specific configuration
-    if (type === 'slider') {
-        extraConfig.innerHTML = `
-            <div class="mb-3">
-                <label class="form-label">Min Value</label>
-                <input type="number" class="form-control" id="widgetMinValue" value="${editWidget?.min || 0}">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Max Value</label>
-                <input type="number" class="form-control" id="widgetMaxValue" value="${editWidget?.max || 100}">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Step</label>
-                <input type="number" class="form-control" id="widgetStepValue" value="${editWidget?.step || 1}">
-            </div>
-            ${gainOffsetHtml}
-        `;
-    } else if (type === 'button') {
-        extraConfig.innerHTML = `
-            <div class="mb-3">
-                <label class="form-label">Button Color</label>
-                <select class="form-select" id="widgetButtonColor">
-                    <option value="primary" ${editWidget?.buttonColor === 'primary' ? 'selected' : ''}>Primary (Blue)</option>
-                    <option value="secondary" ${editWidget?.buttonColor === 'secondary' ? 'selected' : ''}>Secondary (Gray)</option>
-                    <option value="success" ${editWidget?.buttonColor === 'success' ? 'selected' : ''}>Success (Green)</option>
-                    <option value="danger" ${editWidget?.buttonColor === 'danger' ? 'selected' : ''}>Danger (Red)</option>
-                    <option value="warning" ${editWidget?.buttonColor === 'warning' ? 'selected' : ''}>Warning (Yellow)</option>
-                    <option value="info" ${editWidget?.buttonColor === 'info' ? 'selected' : ''}>Info (Cyan)</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Value on Press</label>
-                <input type="text" class="form-control" id="widgetPressValue" value="${editWidget?.pressValue !== undefined ? editWidget.pressValue : 1}" placeholder="e.g., 1 or true">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Write Value on Release</label>
-                <select class="form-select" id="widgetReleaseWrite">
-                    <option value="false" ${!editWidget?.releaseWrite ? 'selected' : ''}>No</option>
-                    <option value="true" ${editWidget?.releaseWrite ? 'selected' : ''}>Yes</option>
-                </select>
-            </div>
-            <div class="mb-3" id="releaseValueContainer">
-                <label class="form-label">Value on Release</label>
-                <input type="text" class="form-control" id="widgetReleaseValue" value="${editWidget?.releaseValue !== undefined ? editWidget.releaseValue : 0}" placeholder="e.g., 0 or false">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Toggle Button</label>
-                <select class="form-select" id="widgetToggleMode">
-                    <option value="false" ${!editWidget?.toggleMode ? 'selected' : ''}>No (Momentary)</option>
-                    <option value="true" ${editWidget?.toggleMode ? 'selected' : ''}>Yes (Toggle On/Off)</option>
-                </select>
-            </div>
-            <div class="mb-3" id="pressedColorContainer">
-                <label class="form-label">Color When Pressed (Toggle)</label>
-                <select class="form-select" id="widgetPressedColor">
-                    <option value="success" ${editWidget?.pressedColor === 'success' ? 'selected' : ''}>Success (Green)</option>
-                    <option value="danger" ${editWidget?.pressedColor === 'danger' ? 'selected' : ''}>Danger (Red)</option>
-                    <option value="warning" ${editWidget?.pressedColor === 'warning' ? 'selected' : ''}>Warning (Yellow)</option>
-                    <option value="info" ${editWidget?.pressedColor === 'info' ? 'selected' : ''}>Info (Cyan)</option>
-                    <option value="primary" ${editWidget?.pressedColor === 'primary' ? 'selected' : ''}>Primary (Blue)</option>
-                </select>
-            </div>
-        `;
-
-    } else if (type === 'gauge') {
-        extraConfig.innerHTML = `
-            <div class="mb-3">
-                <label class="form-label">Display Name</label>
-                <input type="text" class="form-control" id="widgetDisplayName" value="${editWidget?.displayName || ''}" placeholder="Enter display name (optional)">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Min Value</label>
-                <div class="d-flex gap-2">
-                    <input type="number" class="form-control" id="widgetMinValue" value="${editWidget?.min || 0}">
-                    <input type="color" class="form-control form-control-color" id="widgetLowColor"
-                               value="${editWidget?.lowColor || '#198754'}"
-                               title="Choose low threshold color">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Max Value</label>
-                <input type="number" class="form-control" id="widgetMaxValue" value="${editWidget?.max || 100}">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Low Threshold</label>
-                <div class="d-flex gap-2">
-                    <input type="number" class="form-control" id="widgetLowThreshold"
-                           value="${editWidget?.lowThreshold !== undefined ? editWidget.lowThreshold : ''}"
-                           placeholder="Default: 60% of range">
-                    <input type="color" class="form-control form-control-color" id="widgetMidColor"
-                           value="${editWidget?.midColor || '#ffc107'}"
-                           title="Choose mid threshold color">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">High Threshold</label>
-                <div class="d-flex gap-2">
-                    <input type="number" class="form-control" id="widgetHighThreshold"
-                           value="${editWidget?.highThreshold !== undefined ? editWidget.highThreshold : ''}"
-                           placeholder="Default: 80% of range">
-                    <input type="color" class="form-control form-control-color" id="widgetHighColor"
-                               value="${editWidget?.highColor || '#dc3545'}"
-                               title="Choose high threshold color">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Display Mode</label>
-                <select class="form-select" id="widgetDisplayMode">
-                    <option value="percent" ${!editWidget?.displayMode || editWidget?.displayMode === 'percent' ? 'selected' : ''}>Percent</option>
-                    <option value="number" ${editWidget?.displayMode === 'number' ? 'selected' : ''}>Number</option>
-                </select>
-            </div>
-            ${gainOffsetHtml}
-        `;
-    } else if (type === 'number' || type === 'text') {
-        extraConfig.innerHTML = gainOffsetHtml;
-    } else if (isPlotType) {
-        const isLogger = type === 'plot_logger';
-        extraConfig.innerHTML = `
-            <div class="mb-3">
-                <label class="form-label">Variables</label>
-                <select class="form-control" id="widgetVariables" multiple="multiple" style="width: 100%;"></select>
-                <small class="form-text text-muted">Search and select one or more variables</small>
-            </div>
-            ${isLogger ? `
-            <div class="mb-3">
-                <label class="form-label">Max Data Points</label>
-                <input type="number" class="form-control" id="widgetMaxPoints" value="${editWidget?.maxPoints || 50}">
-            </div>
-            ` : ''}
-        `;
-    } else if (type === 'label') {
-        extraConfig.innerHTML = `
-            <div class="mb-3">
-                <label class="form-label">Label Text</label>
-                <input type="text" class="form-control" id="widgetLabelText" value="${editWidget?.labelText || ''}" placeholder="Enter text to display">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Font Size</label>
-                <select class="form-select" id="widgetFontSize">
-                    <option value="small" ${editWidget?.fontSize === 'small' ? 'selected' : ''}>Small</option>
-                    <option value="medium" ${!editWidget?.fontSize || editWidget?.fontSize === 'medium' ? 'selected' : ''}>Medium</option>
-                    <option value="large" ${editWidget?.fontSize === 'large' ? 'selected' : ''}>Large</option>
-                    <option value="xlarge" ${editWidget?.fontSize === 'xlarge' ? 'selected' : ''}>Extra Large</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Text Alignment</label>
-                <select class="form-select" id="widgetTextAlign">
-                    <option value="left" ${editWidget?.textAlign === 'left' ? 'selected' : ''}>Left</option>
-                    <option value="center" ${!editWidget?.textAlign || editWidget?.textAlign === 'center' ? 'selected' : ''}>Center</option>
-                    <option value="right" ${editWidget?.textAlign === 'right' ? 'selected' : ''}>Right</option>
-                </select>
-            </div>
-        `;
+    // Get widget-specific configuration HTML
+    if (widgetDef.getConfig) {
+        extraConfig.innerHTML = widgetDef.getConfig(editWidget);
     }
 
     const modal = new bootstrap.Modal(document.getElementById('widgetConfigModal'));
@@ -361,24 +201,14 @@ function showWidgetConfig(type, editWidget = null) {
 
     // Initialize Select2 after modal is shown so dropdown renders correctly
     $('#widgetConfigModal').one('shown.bs.modal', function() {
-        if (!isPlotType && type !== 'label') {
+        if (widgetDef.requiresVariable && !widgetDef.requiresMultipleVariables) {
             $('#widgetVarName').select2(initWidgetVarSelect2());
             if (editWidget) {
                 $('#widgetVarName').prop('disabled', true);
             }
         }
-        if (isPlotType) {
-            $('#widgetVariables').select2(initWidgetVarSelect2({
-                placeholder: "Search and select variables",
-                multiple: true
-            }));
-            // Pre-populate existing variables when editing
-            if (editWidget?.variables) {
-                editWidget.variables.forEach(v => {
-                    $('#widgetVariables').append(new Option(v, v, true, true));
-                });
-                $('#widgetVariables').trigger('change');
-            }
+        if (widgetDef.initSelect2) {
+            widgetDef.initSelect2(editWidget);
         }
     });
 
@@ -388,6 +218,12 @@ function showWidgetConfig(type, editWidget = null) {
 
 function addDashboardWidget() {
     const editWidget = window.editingWidget;
+    const widgetDef = window.dashboardWidgetTypes[currentWidgetType];
+
+    if (!widgetDef) {
+        console.error(`Unknown widget type: ${currentWidgetType}`);
+        return;
+    }
 
     let widget;
     if (editWidget) {
@@ -395,9 +231,8 @@ function addDashboardWidget() {
         widget = editWidget;
     } else {
         // Creating new widget
-        const isPlotType = (currentWidgetType === 'plot_logger' || currentWidgetType === 'plot_scope');
-        const varName = isPlotType ? '' : ($('#widgetVarName').val() || '');
-        if (!varName && currentWidgetType !== 'label' && !isPlotType) {
+        const varName = widgetDef.requiresMultipleVariables ? '' : ($('#widgetVarName').val() || '');
+        if (!varName && widgetDef.requiresVariable) {
             alert('Please select a variable name');
             return;
         }
@@ -412,59 +247,10 @@ function addDashboardWidget() {
         };
     }
 
-    // Update type-specific properties
-    if (currentWidgetType === 'slider') {
-        widget.min = parseFloat(document.getElementById('widgetMinValue').value);
-        widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
-        widget.step = parseFloat(document.getElementById('widgetStepValue').value);
-    } else if (currentWidgetType === 'button') {
-        widget.buttonColor = document.getElementById('widgetButtonColor').value;
-        widget.pressValue = parseValue(document.getElementById('widgetPressValue').value);
-        widget.toggleMode = document.getElementById('widgetToggleMode').value === 'true';
-        widget.releaseWrite = document.getElementById('widgetReleaseWrite').value === 'true';
-        widget.releaseValue = parseValue(document.getElementById('widgetReleaseValue').value);
-        widget.buttonState = false; // Track toggle state
-        if (widget.toggleMode) {
-            widget.pressedColor = document.getElementById('widgetPressedColor').value;
-        }
-    } else if (currentWidgetType === 'gauge') {
-        widget.displayName = document.getElementById('widgetDisplayName').value;
-        widget.min = parseFloat(document.getElementById('widgetMinValue').value);
-        widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
-        const lowVal = document.getElementById('widgetLowThreshold').value;
-        const highVal = document.getElementById('widgetHighThreshold').value;
-        widget.lowThreshold = lowVal !== '' ? parseFloat(lowVal) : undefined;
-        widget.lowColor = document.getElementById('widgetLowColor').value;
-        widget.midColor = document.getElementById('widgetMidColor').value;
-        widget.highColor = document.getElementById('widgetHighColor').value;
-        widget.highThreshold = highVal !== '' ? parseFloat(highVal) : undefined;
-        widget.displayMode = document.getElementById('widgetDisplayMode').value;
-    } else if (currentWidgetType === 'plot_logger' || currentWidgetType === 'plot_scope') {
-        widget.variables = $('#widgetVariables').val() || [];
-        if (widget.variables.length === 0) {
-            alert('Please enter at least one variable name');
-            return;
-        }
-        widget.data = {}; // Object to store data for each variable
-        widget.variables.forEach(v => widget.data[v] = []);
-
-        if (currentWidgetType === 'plot_logger') {
-            widget.maxPoints = parseInt(document.getElementById('widgetMaxPoints').value);
-        }
-    } else if (currentWidgetType === 'label') {
-        widget.labelText = document.getElementById('widgetLabelText').value;
-        widget.fontSize = document.getElementById('widgetFontSize').value;
-        widget.textAlign = document.getElementById('widgetTextAlign').value;
-        widget.variable = 'label_' + widget.id; // Generate unique variable name
-    }
-
-    // Read gain/offset for types that show the fields
-    const gainOffsetTypes = ['slider', 'number', 'text', 'gauge'];
-    if (gainOffsetTypes.includes(currentWidgetType)) {
-        const gainEl = document.getElementById('widgetGain');
-        const offsetEl = document.getElementById('widgetOffset');
-        widget.gain = gainEl ? parseFloat(gainEl.value) || 1 : 1;
-        widget.offset = offsetEl ? parseFloat(offsetEl.value) || 0 : 0;
+    // Call widget-specific save config
+    if (widgetDef.saveConfig) {
+        const result = widgetDef.saveConfig(widget);
+        if (result === false) return; // Config validation failed
     }
 
     if (!editWidget) {
@@ -537,6 +323,13 @@ function renderDashboardWidget(widget) {
         widgetEl.classList.add('view-mode');
     }
 
+    // Get widget definition from modular system
+    const widgetDef = window.dashboardWidgetTypes[widget.type];
+    if (!widgetDef) {
+        console.error(`Unknown widget type: ${widget.type}`);
+        return;
+    }
+
     let content = '';
     const typeIcons = {
         slider: '<span class="material-icons md-18">tune</span>',
@@ -568,110 +361,15 @@ function renderDashboardWidget(widget) {
         <div class="widget-content">
     `;
 
-    switch (widget.type) {
-        case 'slider':
-            content = `
-                ${header}
-                <div class="value-display">${widget.value}</div>
-                <input type="range" class="form-range"
-                       min="${widget.min}"
-                       max="${widget.max}"
-                       step="${widget.step}"
-                       value="${widget.value}"
-                       onchange="updateDashboardVariable('${widget.variable}', parseFloat(this.value))">
-                </div>
-            `;
-            break;
-
-        case 'button':
-            const btnColor = widget.toggleMode && widget.buttonState
-                ? widget.pressedColor
-                : widget.buttonColor;
-            content = `
-                ${header}
-                <button class="btn btn-${btnColor} w-100"
-                        id="btn-${widget.id}"
-                        onmousedown="handleDashboardButtonPress(${widget.id})"
-                        onmouseup="handleDashboardButtonRelease(${widget.id})"
-                        ontouchstart="handleDashboardButtonPress(${widget.id})"
-                        ontouchend="handleDashboardButtonRelease(${widget.id})">
-                    ${widget.variable}
-                </button>
-                </div>
-            `;
-            break;
-
-        case 'number':
-            content = `
-                ${header}
-                <input type="number" class="form-control"
-                       value="${widget.value}"
-                       onchange="updateDashboardVariable('${widget.variable}', parseFloat(this.value))">
-                </div>
-            `;
-            break;
-
-        case 'text':
-            content = `
-                ${header}
-                <input type="text" class="form-control"
-                       value="${widget.value}"
-                       onchange="updateDashboardVariable('${widget.variable}', this.value)">
-                </div>
-            `;
-            break;
-
-        case 'label':
-            const fontSizes = { small: '0.875rem', medium: '1rem', large: '1.5rem', xlarge: '2rem' };
-            const fontSize = fontSizes[widget.fontSize] || fontSizes.medium;
-            content = `
-                ${header}
-                <div style="font-size: ${fontSize}; text-align: ${widget.textAlign}; padding: 10px; font-weight: 500;">
-                    ${widget.labelText}
-                </div>
-                </div>
-            `;
-            break;
-
-        // Use Chart.js for gauge
-        case 'gauge':
-            content = `
-                ${header}
-                <div style="position: relative;">
-                    <canvas class="gauge-container" id="dashboard-gauge-${widget.id}"></canvas>
-                    <div class="gauge-label-overlay" id="gauge-label-${widget.id}">
-                        <div class="gauge-value" style="font-size: 30px; font-weight: bold; color: #000;">${widget.value}</div>
-                        <div class="gauge-variable" style="font-size: 14px; color: #000;">${widget.displayName || widget.variable || 'Value'}</div>
-                    </div>
-                </div>
-                </div>
-            `;
-            setTimeout(() => {
-                const gaugeCanvas = document.getElementById(`dashboard-gauge-${widget.id}`);
-                if (gaugeCanvas && typeof Chart !== 'undefined') {
-                    renderDashboardGauge(widget, gaugeCanvas);
-                }
-            }, 100);
-            break;
-
-        // Use Chart.js for plots
-        case 'plot_logger':
-        case 'plot_scope':
-            content = `
-                ${header}
-                <canvas class="plot-container" id="dashboard-plot-${widget.id}"></canvas>
-                </div>
-            `;
-            setTimeout(() => {
-                const plotCanvas = document.getElementById(`dashboard-plot-${widget.id}`);
-                if (plotCanvas && typeof Chart !== 'undefined') {
-                    renderDashboardPlot(widget, plotCanvas);
-                }
-            }, 100);
-            break;
-    }
+    // Use modular widget's create function
+    content = header + widgetDef.create(widget) + '</div>';
 
     widgetEl.innerHTML = content;
+
+    // Call afterRender if widget has it
+    if (widgetDef.afterRender) {
+        widgetDef.afterRender(widget);
+    }
 }
 
 // Get gauge color based on value and configurable thresholds
@@ -725,7 +423,7 @@ function renderDashboardGauge(widget, gaugeCanvas) {
     };
 
     dashboardCharts[widget.id] = new Chart(gaugeCanvas, config);
-    
+
     // Position the overlay labels
     setTimeout(() => {
         const overlay = document.getElementById(`gauge-label-${widget.id}`);
@@ -923,61 +621,9 @@ function refreshWidgetInPlace(widget) {
         return;
     }
 
-    if (widget.type === 'gauge') {
-        const chart = dashboardCharts[widget.id];
-        if (!chart) { renderDashboardWidget(widget); return; }
-        const percent = Math.max(0, Math.min(1, (widget.value - widget.min) / (widget.max - widget.min)));
-        const color = getGaugeColor(widget.value, widget);
-        const displayText = getGaugeDisplayText(widget.value, percent, widget);
-        chart.data.datasets[0].data = [percent, 1 - percent];
-        chart.data.datasets[0].backgroundColor = [color, '#e9ecef'];
-        chart.update('none');
-        
-        // Update overlay labels
-        const overlay = document.getElementById(`gauge-label-${widget.id}`);
-        if (overlay) {
-            const valueEl = overlay.querySelector('.gauge-value');
-            const varEl = overlay.querySelector('.gauge-variable');
-            if (valueEl) valueEl.textContent = displayText;
-            if (varEl) varEl.textContent = widget.displayName || widget.variable || 'Value';
-        }
-        return;
-    }
-
-    if (widget.type === 'plot_logger' || widget.type === 'plot_scope') {
-        const chart = dashboardCharts[widget.id];
-        if (!chart) { renderDashboardWidget(widget); return; }
-        if (widget.variables) {
-            widget.variables.forEach((varName, idx) => {
-                if (chart.data.datasets[idx]) {
-                    chart.data.datasets[idx].data = widget.data[varName] || [];
-                }
-            });
-            const maxLen = Math.max(0, ...widget.variables.map(v => (widget.data[v]?.length || 0)));
-            chart.data.labels = Array.from({length: maxLen}, (_, i) => i + 1);
-        }
-        chart.update('none');
-        return;
-    }
-
-    if (widget.type === 'slider') {
-        const display = widgetEl.querySelector('.value-display');
-        const input = widgetEl.querySelector('input[type="range"]');
-        if (display) display.textContent = widget.value;
-        if (input) input.value = widget.value;
-        return;
-    }
-
-    if (widget.type === 'number') {
-        const input = widgetEl.querySelector('input[type="number"]');
-        if (input && document.activeElement !== input) input.value = widget.value;
-        return;
-    }
-
-    if (widget.type === 'text') {
-        const input = widgetEl.querySelector('input[type="text"]');
-        if (input && document.activeElement !== input) input.value = widget.value;
-        return;
+    const widgetDef = window.dashboardWidgetTypes[widget.type];
+    if (widgetDef && widgetDef.refresh) {
+        widgetDef.refresh(widget, widgetEl);
     }
 }
 

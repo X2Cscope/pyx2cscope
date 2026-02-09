@@ -1,0 +1,15 @@
+{
+  "id": "plot_scope",
+  "name": "Plot Scope",
+  "icon": "show_chart",
+  "description": "Triggered oscilloscope-style plot for capturing complete waveforms.",
+  "category": "display",
+  "features": [
+    "Multiple variables on one plot",
+    "Triggered data capture (replaces buffer)",
+    "Auto-scaling",
+    "Color-coded traces",
+    "Chart.js visualization"
+  ],
+  "dependencies": ["Chart.js"]
+}
