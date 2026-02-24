@@ -1,12 +1,37 @@
 /**
  * Button Widget - Push button with toggle mode support
- * 
+ *
  * Features:
  * - Momentary or Toggle mode
  * - Configurable press/release values
  * - Color change on press (toggle mode)
  * - Supports touch and mouse events
  */
+
+function handleDashboardButtonPress(id) {
+    const widget = dashboardWidgets.find(w => w.id === id);
+    if (!widget) return;
+
+    if (widget.toggleMode) {
+        // Toggle mode: switch state — needs full re-render for button color change
+        widget.buttonState = !widget.buttonState;
+        const value = widget.buttonState ? widget.pressValue : widget.releaseValue || 0;
+        updateDashboardVariable(widget.variable, value);
+        renderDashboardWidget(widget); // button color change requires re-render
+    } else {
+        // Momentary mode: send press value
+        updateDashboardVariable(widget.variable, widget.pressValue);
+    }
+}
+
+function handleDashboardButtonRelease(id) {
+    const widget = dashboardWidgets.find(w => w.id === id);
+    // Don't handle release for toggle mode or if release is not enabled
+    if (!widget || widget.toggleMode || !widget.releaseWrite) return;
+
+    // Momentary mode: send release value
+    updateDashboardVariable(widget.variable, widget.releaseValue);
+}
 
 function createButtonWidget(widget) {
     const btnColor = widget.toggleMode && widget.buttonState
