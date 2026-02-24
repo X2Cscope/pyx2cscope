@@ -241,6 +241,7 @@ function addDashboardWidget() {
             id: widgetIdCounter++,
             type: currentWidgetType,
             variable: varName,
+            icon: widgetDef.icon,
             x: 50,
             y: 50,
             value: currentWidgetType === 'text' ? '' : 0
@@ -331,24 +332,14 @@ function renderDashboardWidget(widget) {
     }
 
     let content = '';
-    const typeIcons = {
-        slider: '<span class="material-icons md-18">tune</span>',
-        button: '<span class="material-icons md-18">radio_button_checked</span>',
-        number: '<span class="material-icons md-18">pin</span>',
-        text: '<span class="material-icons md-18">text_fields</span>',
-        label: '<span class="material-icons md-18">label</span>',
-        gauge: '<span class="material-icons md-18">speed</span>',
-        plot_logger: '<span class="material-icons md-18">timeline</span>',
-        plot_scope: '<span class="material-icons md-18">show_chart</span>'
-    };
-
+    const typeIcons = `<span class="material-icons md-18">${widget.icon}</span>`;
     const displayName = widget.type === 'plot_logger' || widget.type === 'plot_scope'
         ? widget.variables?.join(', ') || widget.variable
         : widget.variable;
 
     const header = `
         <div class="widget-header">
-            <span class="widget-title">${typeIcons[widget.type]} ${displayName}</span>
+            <span class="widget-title">${typeIcons} ${displayName}</span>
             <div class="widget-controls">
                 <button class="btn btn-sm" onclick="showWidgetConfig('${widget.type}', dashboardWidgets.find(w => w.id === ${widget.id}))" title="Edit">
                     <span class="material-icons text-primary">settings</span>
@@ -602,7 +593,7 @@ function updateDashboardWatchWidgets(varName, value) {
     });
 }
 
-// Fix 4: Scope data only updates plot_scope widgets
+// Scope data only updates plot_scope widgets
 function updateDashboardScopeWidgets(varName, value) {
     dashboardWidgets.forEach(widget => {
         if (widget.type !== 'plot_scope') return;
@@ -613,7 +604,7 @@ function updateDashboardScopeWidgets(varName, value) {
     });
 }
 
-// Fix 3: In-place update without full re-render to avoid chart blinking
+// In-place update without full re-render to avoid chart blinking
 function refreshWidgetInPlace(widget) {
     const widgetEl = document.getElementById(`dashboard-widget-${widget.id}`);
     if (!widgetEl) {
@@ -624,39 +615,6 @@ function refreshWidgetInPlace(widget) {
     const widgetDef = window.dashboardWidgetTypes[widget.type];
     if (widgetDef && widgetDef.refresh) {
         widgetDef.refresh(widget, widgetEl);
-    }
-}
-
-// Legacy function kept for updateDashboardVariable (user interactions)
-function updateDashboardWidgetValue(varName, value) {
-    const widgets = dashboardWidgets.filter(w => {
-        if (w.type === 'plot_logger' || w.type === 'plot_scope') {
-            return w.variables && w.variables.includes(varName);
-        }
-        return w.variable === varName;
-    });
-
-    widgets.forEach(widget => {
-        if (widget.type === 'plot_logger') {
-            if (!widget.data) widget.data = {};
-            if (!widget.data[varName]) widget.data[varName] = [];
-            widget.data[varName].push(value);
-            if (widget.data[varName].length > widget.maxPoints) {
-                widget.data[varName].shift();
-            }
-        } else if (widget.type === 'plot_scope') {
-            if (!widget.data) widget.data = {};
-            widget.data[varName] = Array.isArray(value) ? value : [value];
-        } else {
-            widget.value = value;
-        }
-        refreshWidgetInPlace(widget);
-    });
-}
-
-function updateDashboardWidgetsFromData(data) {
-    for (let varName in data) {
-        updateDashboardWidgetValue(varName, data[varName]);
     }
 }
 

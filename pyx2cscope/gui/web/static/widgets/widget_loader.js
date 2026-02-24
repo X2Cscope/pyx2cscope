@@ -6,10 +6,8 @@
  * This loads widget files from /static/widgets/ folder structure:
  * widgets/
  *   button/
- *     config.json
  *     widget.js
  *   slider/
- *     config.json
  *     widget.js
  *   ...etc
  */
