@@ -187,8 +187,8 @@ def handle_update_trigger_control(data):
     Args:
         data (str): URL-encoded query string with trigger control parameters.
     """
-    data = {k: int(v[0]) if v else 0 for k, v in parse_qs(data).items()}
-    web_scope.scope_set_trigger(**data)
+    parsed_data = {k: (float(v[0]) if k == 'trigger_level' else int(v[0])) if v else 0 for k, v in parse_qs(data).items()}
+    web_scope.scope_set_trigger(**parsed_data)
     emit("trigger_control_updated", {
         "status": "success",
         "message": "Trigger settings updated successfully",

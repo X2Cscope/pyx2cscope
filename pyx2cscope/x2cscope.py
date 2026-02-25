@@ -62,7 +62,7 @@ class TriggerConfig:
     """
 
     variable: Variable
-    trigger_level: int = 0
+    trigger_level: float = 0
     trigger_mode: int = 1
     trigger_delay: int = 0
     trigger_edge: int = 0
