@@ -411,7 +411,7 @@ function initScopeForms(){
     });
 
     // Add change event handlers for the radio buttons to update their visual state
-    $('input[name="triggerEnable"]').on('change', function() {
+    $('input[name="trigger_mode"]').on('change', function() {
         // Remove active class from all labels in the same button group
         $(this).closest('.btn-group').find('.btn').removeClass('active');
         // Add active class to the clicked button's label
