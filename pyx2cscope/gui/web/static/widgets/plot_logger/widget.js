@@ -25,6 +25,14 @@ function getPlotLoggerConfig(editWidget) {
             <label class="form-label">Max Data Points</label>
             <input type="number" class="form-control" id="widgetMaxPoints" value="${editWidget?.maxPoints || 50}">
         </div>
+        <div class="mb-3">
+            <label class="form-label">X Axis Label</label>
+            <input type="text" class="form-control" id="widgetXLabel" value="${editWidget?.xLabel || 'Sample'}" placeholder="Sample">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Y Axis Label</label>
+            <input type="text" class="form-control" id="widgetYLabel" value="${editWidget?.yLabel || 'Value'}" placeholder="Value">
+        </div>
     `;
 }
 
@@ -37,6 +45,8 @@ function savePlotLoggerConfig(widget) {
     widget.data = {}; // Object to store data for each variable
     widget.variables.forEach(v => widget.data[v] = []);
     widget.maxPoints = parseInt(document.getElementById('widgetMaxPoints').value);
+    widget.xLabel = document.getElementById('widgetXLabel').value || 'Sample';
+    widget.yLabel = document.getElementById('widgetYLabel').value || 'Value';
     return true;
 }
 
