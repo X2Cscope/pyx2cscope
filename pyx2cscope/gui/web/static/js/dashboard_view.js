@@ -679,20 +679,30 @@ function renderDashboardPlot(widget, plotCanvas) {
     if (dashboardCharts[widget.id]) {
         dashboardCharts[widget.id].destroy();
     }
-    // Build datasets for each variable
-    const colors = ['#0d6efd', '#dc3545', '#198754', '#ffc107', '#0dcaf0', '#6f42c1', '#fd7e14'];
+    // Default colors if no custom settings
+    const defaultColors = ['#0d6efd', '#dc3545', '#198754', '#ffc107', '#0dcaf0', '#6f42c1', '#fd7e14', '#20c997'];
     let datasets = [];
-    let labels = [];
+    let maxLen = 0;
+
     if (widget.variables && widget.variables.length > 0) {
         widget.variables.forEach((varName, idx) => {
-            if (!labels || labels.length < (widget.data[varName]?.length || 0)) {
-                labels = Array.from({length: widget.data[varName]?.length || 0}, (_, i) => i + 1);
-            }
+            const rawData = widget.data[varName] || [];
+            if (rawData.length > maxLen) maxLen = rawData.length;
+
+            // Get per-variable settings (color, gain, offset)
+            const settings = widget.varSettings?.[varName] || {};
+            const color = settings.color || defaultColors[idx % defaultColors.length];
+            const gain = settings.gain !== undefined ? settings.gain : 1;
+            const offset = settings.offset !== undefined ? settings.offset : 0;
+
+            // Apply gain and offset to data
+            const processedData = rawData.map(v => (v * gain) + offset);
+
             datasets.push({
                 label: varName,
-                data: widget.data[varName] || [],
-                borderColor: colors[idx % colors.length],
-                backgroundColor: colors[idx % colors.length],
+                data: processedData,
+                borderColor: color,
+                backgroundColor: color,
                 tension: 0.1,
                 pointRadius: 0,
                 fill: false,
@@ -700,9 +710,20 @@ function renderDashboardPlot(widget, plotCanvas) {
         });
     }
 
-    // Use custom axis labels if configured, otherwise use defaults
-    const xLabel = widget.xLabel || 'Sample';
+    // Generate X-axis labels
+    let labels = [];
+    let xLabel = widget.xLabel || 'Sample';
+
+    if (widget.type === 'plot_scope' && typeof generateTimeLabels === 'function') {
+        const timeData = generateTimeLabels(maxLen);
+        labels = timeData.labels;
+        xLabel = `Time (${timeData.unit})`;
+    } else {
+        labels = Array.from({length: maxLen}, (_, i) => i + 1);
+    }
+
     const yLabel = widget.yLabel || 'Value';
+    const showLegend = widget.showLegend !== false; // default true
 
     dashboardCharts[widget.id] = new Chart(plotCanvas, {
         type: 'line',
@@ -714,7 +735,7 @@ function renderDashboardPlot(widget, plotCanvas) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {display: true, position: 'top'},
+                legend: {display: showLegend, position: 'top'},
                 zoom: (window.Chart && Chart.HasOwnProperty && Chart.hasOwnProperty('zoom')) ? {
                     pan: {enabled: true, modifierKey: 'ctrl'},
                     zoom: {wheel: {enabled: true}, pinch: {enabled: true}, mode: 'xy'}
@@ -724,7 +745,7 @@ function renderDashboardPlot(widget, plotCanvas) {
             scales: {
                 x: {
                     title: {display: true, text: xLabel},
-                    ticks: {autoSkip: true, maxTicksLimit: 100}
+                    ticks: {autoSkip: true, maxTicksLimit: 20}
                 },
                 y: {
                     title: {display: true, text: yLabel}
