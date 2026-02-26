@@ -1058,7 +1058,7 @@ class X2cscopeGui(QMainWindow):
                 return
 
             data_storage = {}
-            for channel, data in self.x2cscope.get_scope_channel_data(valid_data=True).items():
+            for channel, data in self.x2cscope.get_scope_channel_data().items():
                 data_storage[channel] = data
 
             self.scope_plot_widget.clear()
@@ -1069,16 +1069,10 @@ class X2cscopeGui(QMainWindow):
                     f"Channel {channel}: Checkbox is {'checked' if checkbox_state else 'unchecked'}"
                 )
                 if checkbox_state:  # Check if the checkbox is checked
-                    scale_factor = float(
-                        self.scope_scaling_boxes[i].text()
-                    )  # Get the scaling factor
-                    # time_values = self.real_sampletime  # Generate time values in ms
-                    # start = self.real_sampletime / len(data)
+                    scale_factor = float(self.scope_scaling_boxes[i].text())  # Get the scaling factor
                     start = 0
                     time_values = np.linspace(start, self.real_sampletime, len(data))
-                    data_scaled = (
-                        np.array(data, dtype=float) * scale_factor
-                    )  # Apply the scaling factor
+                    data_scaled = np.array(data, dtype=float) * scale_factor  # Apply the scaling factor
                     self.scope_plot_widget.plot(
                         time_values,
                         data_scaled,
@@ -1595,11 +1589,10 @@ class X2cscopeGui(QMainWindow):
                 trigger_delay_text = self.trigger_delay_edit.text().strip()
 
                 if not trigger_level_text:
-                    trigger_level = 0
+                    trigger_level = 0.0
                 else:
                     try:
-                        trigger_level = int(trigger_level_text)  # YA
-                        logging.debug(trigger_level)
+                        trigger_level = float(trigger_level_text)
                     except ValueError:
                         logging.error(
                             f"Invalid trigger level value: {trigger_level_text}"
@@ -1623,12 +1616,8 @@ class X2cscopeGui(QMainWindow):
                         )
                         return
 
-                trigger_edge = (
-                    0 if self.trigger_edge_combo.currentText() == "Rising" else 1
-                )
-                trigger_mode = (
-                    2 if self.trigger_mode_combo.currentText() == "Auto" else 1
-                )
+                trigger_edge = 1 if self.trigger_edge_combo.currentText() == "Rising" else 0
+                trigger_mode = 2 if self.trigger_mode_combo.currentText() == "Auto" else 1
 
                 trigger_config = TriggerConfig(
                     variable=variable,
