@@ -146,7 +146,8 @@ function updateScopeControlVariables() {
             // Update trigger variable dropdown
             const dropdown = document.getElementById(`scopeCtrlTriggerVar-${widget.id}`);
             if (dropdown) {
-                const currentValue = dropdown.value;
+                // Use saved widget.triggerVar if dropdown is empty (initial load)
+                const currentValue = dropdown.value || widget.triggerVar || '';
                 dropdown.innerHTML = '<option value="">None</option>';
                 (window.scopeVariablesList || []).forEach(v => {
                     const opt = document.createElement('option');
@@ -216,6 +217,76 @@ function updateScopeControlTriggerState(data) {
                 if (delayEl) delayEl.value = data.trigger_delay;
             }
         });
+}
+
+// Sync scope control settings to backend after loading dashboard
+function syncScopeControlToBackend() {
+    if (!scopeSocket || !scopeSocket.connected) {
+        // Retry after a short delay if socket not ready
+        setTimeout(syncScopeControlToBackend, 500);
+        return;
+    }
+
+    // First: Register plot_scope variables with scope view
+    dashboardWidgets
+        .filter(w => w.type === 'plot_scope')
+        .forEach(widget => {
+            if (widget.variables) {
+                widget.variables.forEach(v => {
+                    // Check if not already in scope view
+                    if (!window.scopeVariablesList.includes(v)) {
+                        scopeSocket.emit('add_scope_var', { var: v });
+                    }
+                });
+            }
+        });
+
+    // Find scope_control widgets and sync their settings
+    const scopeControlWidget = dashboardWidgets.find(w => w.type === 'scope_control');
+    if (scopeControlWidget) {
+        // Sync sample control settings
+        const sampleTime = scopeControlWidget.sampleTime || 1;
+        const sampleFreq = scopeControlWidget.sampleFreq || 20;
+        const sampleFormData = `triggerAction=off&sampleTime=${sampleTime}&sampleFreq=${sampleFreq}`;
+        scopeSocket.emit('update_sample_control', sampleFormData);
+
+        // Sync trigger control settings
+        const triggerMode = scopeControlWidget.triggerMode || '0';
+        const triggerEdge = scopeControlWidget.triggerEdge || '1';
+        const triggerLevel = scopeControlWidget.triggerLevel || 0;
+        const triggerDelay = scopeControlWidget.triggerDelay || 0;
+        const triggerFormData = `trigger_mode=${triggerMode}&trigger_edge=${triggerEdge}&trigger_level=${triggerLevel}&trigger_delay=${triggerDelay}`;
+        scopeSocket.emit('update_trigger_control', triggerFormData);
+
+        // Sync trigger variable selection (wait for variables to be registered first)
+        const triggerVar = scopeControlWidget.triggerVar || '';
+        if (triggerVar) {
+            // Wait for scope variables to be registered, then set trigger
+            setTimeout(() => {
+                // Refetch scope variables to ensure we have the latest list
+                fetch('/scope-view/data')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.data) {
+                            const scopeVars = data.data.map(v => v.variable);
+                            scopeVars.forEach(varName => {
+                                scopeSocket.emit('update_scope_var', {
+                                    param: varName,
+                                    field: 'trigger',
+                                    value: varName === triggerVar ? '1' : '0'
+                                });
+                            });
+                            // Re-send trigger control settings after setting trigger variable
+                            // This ensures the backend properly initializes the trigger
+                            setTimeout(() => {
+                                scopeSocket.emit('update_trigger_control', triggerFormData);
+                            }, 500);
+                        }
+                    })
+                    .catch(err => console.log('Could not sync trigger variable:', err));
+            }, 1500);
+        }
+    }
 }
 
 function populateWidgetPalette() {
@@ -861,6 +932,7 @@ function loadDashboardLayout() {
             document.getElementById('dashboardCanvas').innerHTML = '';
             dashboardWidgets.forEach(w => renderDashboardWidget(w));
             registerAllDashboardVariables();
+            syncScopeControlToBackend();
             alert('Layout loaded successfully');
         } else {
             alert(data.message || 'No saved layout found');
@@ -920,6 +992,7 @@ function handleDashboardFileImport(e) {
                 document.getElementById('dashboardCanvas').innerHTML = '';
                 dashboardWidgets.forEach(w => renderDashboardWidget(w));
                 registerAllDashboardVariables();
+                syncScopeControlToBackend();
                 alert('Layout imported successfully');
             } catch (err) {
                 console.error('Import error:', err);
