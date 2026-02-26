@@ -9,31 +9,8 @@
                     <strong>Widgets</strong>
                 </div>
                 <div class="card-body p-2">
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('slider')">
-                            <span class="material-icons md-18">tune</span> Slider
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('button')">
-                            <span class="material-icons md-18">radio_button_checked</span> Button
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('number')">
-                            <span class="material-icons md-18">pin</span> Number
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('text')">
-                            <span class="material-icons md-18">text_fields</span> Text
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('label')">
-                            <span class="material-icons md-18">label</span> Label
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('gauge')">
-                            <span class="material-icons md-18">speed</span> Gauge
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('plot_logger')">
-                            <span class="material-icons md-18">timeline</span> Logger
-                        </button>
-                        <button class="btn btn-sm btn-outline-primary text-start" onclick="showWidgetConfig('plot_scope')">
-                            <span class="material-icons md-18">show_chart</span> Scope
-                        </button>
+                    <div class="d-grid gap-2" id="widgetPaletteButtons">
+                        <!-- Dynamically populated from registered widget types -->
                     </div>
                 </div>
             </div>

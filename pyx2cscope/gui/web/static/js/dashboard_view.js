@@ -14,12 +14,20 @@ let dashboardSocket = null;
 // Track chart.js instances per-widget
 let dashboardCharts = {};
 
-// Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize widget types registry (widgets register themselves here)
+if (typeof window.dashboardWidgetTypes === 'undefined') {
+    window.dashboardWidgetTypes = {};
+}
+
+// Initialize dashboard when page loads (use 'load' to ensure widget scripts have registered)
+window.addEventListener('load', function() {
     initializeDashboard();
 });
 
 function initializeDashboard() {
+    // Populate widget palette from registered widget types
+    populateWidgetPalette();
+
     // Initialize Socket.IO if available
     if (typeof io !== 'undefined') {
         dashboardSocket = io('/dashboard');
@@ -46,6 +54,22 @@ function initializeDashboard() {
 
     // Set up file input for import
     document.getElementById('dashboardFileInput').addEventListener('change', handleDashboardFileImport);
+}
+
+function populateWidgetPalette() {
+    const container = document.getElementById('widgetPaletteButtons');
+    if (!container || !window.dashboardWidgetTypes) return;
+
+    container.innerHTML = '';
+
+    for (const [type, def] of Object.entries(window.dashboardWidgetTypes)) {
+        const displayName = def.name || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm btn-outline-primary text-start';
+        btn.onclick = () => showWidgetConfig(type);
+        btn.innerHTML = `<span class="material-icons md-18">${def.icon}</span> ${displayName}`;
+        container.appendChild(btn);
+    }
 }
 
 function registerAllDashboardVariables() {
