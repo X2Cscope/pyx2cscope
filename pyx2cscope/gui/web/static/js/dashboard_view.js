@@ -3,7 +3,7 @@
 
 let dashboardWidgets = [];
 let selectedWidget = null;
-let isDashboardEditMode = false;
+let isDashboardEditMode = true;
 let draggedWidget = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
@@ -56,7 +56,31 @@ function initializeDashboard() {
         scopeSocket = io('/scope-view');
         scopeSocket.on('connect', () => {
             console.log('Dashboard connected to scope-view namespace');
+            // Fetch current scope variables via HTTP
+            fetchScopeVariables();
         });
+
+        // Listen for scope table updates (variables added/removed)
+        scopeSocket.on('scope_table_update', (data) => {
+            console.log('Scope table update:', data);
+            // Refetch variables when scope table changes
+            fetchScopeVariables();
+        });
+
+        // Listen for sample control updates
+        scopeSocket.on('sample_control_updated', (response) => {
+            if (response.status === 'success' && response.data) {
+                updateScopeControlSampleState(response.data);
+            }
+        });
+
+        // Listen for trigger control updates
+        scopeSocket.on('trigger_control_updated', (response) => {
+            if (response.status === 'success' && response.data) {
+                updateScopeControlTriggerState(response.data);
+            }
+        });
+
     }
 
     // Set up file input for import
@@ -64,6 +88,134 @@ function initializeDashboard() {
 
     // Set up canvas click handler for deselecting widgets
     initCanvasClickHandler();
+
+    // Fetch scope variables via HTTP
+    fetchScopeVariables();
+
+    // Initialize UI for edit mode (default state)
+    initEditModeUI();
+}
+
+function initEditModeUI() {
+    const btn = document.getElementById('dashboardModeBtn');
+    const icon = btn?.querySelector('.material-icons');
+    const palette = document.getElementById('widgetPalette');
+    const canvasCol = document.getElementById('dashboardCanvasCol');
+    const canvas = document.getElementById('dashboardCanvas');
+
+    if (isDashboardEditMode) {
+        if (icon) {
+            icon.textContent = 'edit';
+            icon.classList.remove('text-secondary');
+            icon.classList.add('text-success');
+        }
+        if (btn) btn.title = 'Edit Mode (Active)';
+        if (palette) palette.style.display = 'block';
+        if (canvasCol) {
+            canvasCol.classList.remove('col-12');
+            canvasCol.classList.add('col-12', 'col-md-9', 'col-lg-10');
+        }
+        if (canvas) {
+            canvas.classList.remove('view-mode');
+            canvas.classList.add('edit-mode');
+        }
+    }
+}
+
+// Track scope variables list from scope-view
+window.scopeVariablesList = [];
+
+// Fetch scope variables from server
+function fetchScopeVariables() {
+    fetch('/scope-view/data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.data) {
+                window.scopeVariablesList = data.data.map(v => v.variable);
+                updateScopeControlVariables();
+            }
+        })
+        .catch(err => console.log('Could not fetch scope variables:', err));
+}
+
+// Update scope control widgets when variables change
+function updateScopeControlVariables() {
+    dashboardWidgets
+        .filter(w => w.type === 'scope_control')
+        .forEach(widget => {
+            // Update trigger variable dropdown
+            const dropdown = document.getElementById(`scopeCtrlTriggerVar-${widget.id}`);
+            if (dropdown) {
+                const currentValue = dropdown.value;
+                dropdown.innerHTML = '<option value="">None</option>';
+                (window.scopeVariablesList || []).forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = v;
+                    if (v === currentValue) opt.selected = true;
+                    dropdown.appendChild(opt);
+                });
+            }
+        });
+}
+
+// Update scope control sample state
+function updateScopeControlSampleState(data) {
+    if (data.triggerAction) {
+        scopeControlState = data.triggerAction;
+    }
+    dashboardWidgets
+        .filter(w => w.type === 'scope_control')
+        .forEach(widget => {
+            // Update sample time/freq if elements exist
+            const sampleTimeEl = document.getElementById('scopeCtrlSampleTime');
+            const sampleFreqEl = document.getElementById('scopeCtrlSampleFreq');
+            if (sampleTimeEl && data.sampleTime) sampleTimeEl.value = data.sampleTime;
+            if (sampleFreqEl && data.sampleFreq) sampleFreqEl.value = data.sampleFreq;
+
+            // Update button states
+            const widgetEl = document.getElementById(`dashboard-widget-${widget.id}`);
+            if (widgetEl) {
+                const widgetDef = window.dashboardWidgetTypes[widget.type];
+                if (widgetDef?.refresh) widgetDef.refresh(widget, widgetEl);
+            }
+        });
+}
+
+// Update scope control trigger state
+function updateScopeControlTriggerState(data) {
+    dashboardWidgets
+        .filter(w => w.type === 'scope_control')
+        .forEach(widget => {
+            // Update trigger mode
+            if (data.trigger_mode !== undefined) {
+                const enableRadio = document.getElementById(`scopeCtrlTriggerEnable-${widget.id}`);
+                const disableRadio = document.getElementById(`scopeCtrlTriggerDisable-${widget.id}`);
+                if (enableRadio && disableRadio) {
+                    enableRadio.checked = data.trigger_mode === '1' || data.trigger_mode === 1;
+                    disableRadio.checked = data.trigger_mode === '0' || data.trigger_mode === 0;
+                }
+            }
+            // Update trigger edge
+            if (data.trigger_edge !== undefined) {
+                const risingRadio = document.getElementById(`scopeCtrlEdgeRising-${widget.id}`);
+                const fallingRadio = document.getElementById(`scopeCtrlEdgeFalling-${widget.id}`);
+                if (risingRadio && fallingRadio) {
+                    risingRadio.checked = data.trigger_edge === '1' || data.trigger_edge === 1;
+                    fallingRadio.checked = data.trigger_edge === '0' || data.trigger_edge === 0;
+                }
+            }
+            // Update trigger level (snake_case from backend)
+            if (data.trigger_level !== undefined) {
+                const levelEl = document.getElementById(`scopeCtrlTriggerLevel-${widget.id}`);
+                if (levelEl) levelEl.value = data.trigger_level;
+            }
+            // Update trigger delay (snake_case from backend)
+            if (data.trigger_delay !== undefined) {
+                const delayEl = document.getElementById(`scopeCtrlTriggerDelay-${widget.id}`);
+                if (delayEl) delayEl.value = data.trigger_delay;
+            }
+        });
 }
 
 function populateWidgetPalette() {
@@ -98,48 +250,12 @@ function registerWidgetVariables(widget) {
         widget.variables?.forEach(varName => {
             dashboardSocket.emit('register_scope_channel', {var: varName});
         });
-        // Configure trigger settings
-        updateScopeTriggerSettings(widget);
     } else if (widget.type === 'plot_logger') {
         widget.variables?.forEach(varName => {
             dashboardSocket.emit('add_dashboard_var', {var: varName});
         });
     } else if (widget.type !== 'label') {
         dashboardSocket.emit('add_dashboard_var', {var: widget.variable});
-    }
-}
-
-// Update scope trigger settings for a plot_scope widget
-function updateScopeTriggerSettings(widget) {
-    if (widget.type !== 'plot_scope') return;
-
-    // If scopeSocket not ready, retry after a short delay
-    if (!scopeSocket || !scopeSocket.connected) {
-        setTimeout(() => updateScopeTriggerSettings(widget), 500);
-        return;
-    }
-
-    // Set trigger flag on each variable (1 for trigger var, 0 for others)
-    widget.variables?.forEach(varName => {
-        scopeSocket.emit('update_scope_var', {
-            param: varName,
-            field: 'trigger',
-            value: widget.triggerVar && varName === widget.triggerVar ? '1' : '0'
-        });
-        // Also enable the variable
-        scopeSocket.emit('update_scope_var', {
-            param: varName,
-            field: 'enable',
-            value: '1'
-        });
-    });
-
-    // Set trigger edge and level (only if trigger var is selected)
-    if (widget.triggerVar) {
-        const triggerEdgeValue = widget.triggerEdge === 'falling' ? '1' : '0'; // 0=rising, 1=falling
-        scopeSocket.emit('update_trigger_control',
-            `trigger_mode=0&trigger_edge=${triggerEdgeValue}&triggerLevel=${widget.triggerLevel || 0}&triggerDelay=0`
-        );
     }
 }
 
@@ -328,9 +444,6 @@ function addDashboardWidget() {
     if (!editWidget) {
         dashboardWidgets.push(widget);
         registerWidgetVariables(widget);
-    } else if (widget.type === 'plot_scope') {
-        // Update trigger settings when editing a plot_scope widget
-        updateScopeTriggerSettings(widget);
     }
 
     renderDashboardWidget(widget);

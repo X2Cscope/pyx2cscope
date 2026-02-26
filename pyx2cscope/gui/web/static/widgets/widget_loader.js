@@ -25,7 +25,8 @@ const widgetsList = [
     'text',
     'label',
     'plot_logger',
-    'plot_scope'
+    'plot_scope',
+    'scope_control'
 ];
 
 // Load all widgets on page load

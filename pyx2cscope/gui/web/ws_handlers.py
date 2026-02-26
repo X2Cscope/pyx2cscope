@@ -192,7 +192,7 @@ def handle_update_trigger_control(data):
     emit("trigger_control_updated", {
         "status": "success",
         "message": "Trigger settings updated successfully",
-        "data": data
+        "data": parsed_data
     }, broadcast=True)
 
 # Dashboard handlers
