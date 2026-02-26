@@ -19,5 +19,6 @@
 {% endblock content %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='widgets/widget_loader.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard_view.js') }}"></script>
 {% endblock scripts %}

@@ -54,6 +54,9 @@ function initializeDashboard() {
 
     // Set up file input for import
     document.getElementById('dashboardFileInput').addEventListener('change', handleDashboardFileImport);
+
+    // Set up canvas click handler for deselecting widgets
+    initCanvasClickHandler();
 }
 
 function populateWidgetPalette() {
@@ -131,6 +134,7 @@ function unregisterWidgetVariables(widget) {
 
 function toggleDashboardMode() {
     isDashboardEditMode = !isDashboardEditMode;
+    selectedWidget = null; // Deselect any selected widget when switching modes
     const btn = document.getElementById('dashboardModeBtn');
     const icon = btn.querySelector('.material-icons');
     const palette = document.getElementById('widgetPalette');
@@ -306,9 +310,49 @@ function parseValue(val) {
     return val;
 }
 
+// Select a widget in edit mode
+function selectDashboardWidget(id) {
+    if (!isDashboardEditMode) return;
+
+    const prevSelectedId = selectedWidget;
+
+    // Update selection state first (before re-rendering)
+    if (selectedWidget === id) {
+        selectedWidget = null; // Toggle off if clicking same widget
+    } else {
+        selectedWidget = id;
+    }
+
+    // Re-render previous widget (now deselected)
+    if (prevSelectedId !== null && prevSelectedId !== id) {
+        const prevWidget = dashboardWidgets.find(w => w.id === prevSelectedId);
+        if (prevWidget) renderDashboardWidget(prevWidget);
+    }
+
+    // Re-render clicked widget (selected or deselected)
+    const widget = dashboardWidgets.find(w => w.id === id);
+    if (widget) renderDashboardWidget(widget);
+}
+
+// Deselect widget when clicking on canvas background
+function initCanvasClickHandler() {
+    const canvas = document.getElementById('dashboardCanvas');
+    if (canvas) {
+        canvas.addEventListener('click', (e) => {
+            if (e.target === canvas && selectedWidget !== null) {
+                const prevSelectedId = selectedWidget;
+                selectedWidget = null; // Update state first
+                const prevWidget = dashboardWidgets.find(w => w.id === prevSelectedId);
+                if (prevWidget) renderDashboardWidget(prevWidget);
+            }
+        });
+    }
+}
+
 // This is the major override for rendering widgets and using Chart.js for gauge/plot
 function renderDashboardWidget(widget) {
     let widgetEl = document.getElementById(`dashboard-widget-${widget.id}`);
+    const isSelected = selectedWidget === widget.id;
 
     if (!widgetEl) {
         widgetEl = document.createElement('div');
@@ -322,6 +366,10 @@ function renderDashboardWidget(widget) {
         if (widget.height) widgetEl.style.height = widget.height + 'px';
 
         widgetEl.addEventListener('mousedown', startDashboardDrag);
+        widgetEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectDashboardWidget(widget.id);
+        });
 
         // Save dimensions on resize
         const resizeObserver = new ResizeObserver(entries => {
@@ -339,12 +387,17 @@ function renderDashboardWidget(widget) {
         document.getElementById('dashboardCanvas').appendChild(widgetEl);
     }
 
-    // Update widget classes based on mode
+    // Update widget classes based on mode and selection
     if (isDashboardEditMode) {
         widgetEl.classList.add('edit-mode');
         widgetEl.classList.remove('view-mode');
+        if (isSelected) {
+            widgetEl.classList.add('selected');
+        } else {
+            widgetEl.classList.remove('selected');
+        }
     } else {
-        widgetEl.classList.remove('edit-mode');
+        widgetEl.classList.remove('edit-mode', 'selected');
         widgetEl.classList.add('view-mode');
     }
 
@@ -361,23 +414,27 @@ function renderDashboardWidget(widget) {
         ? widget.variables?.join(', ') || widget.variable
         : widget.variable;
 
-    const header = `
-        <div class="widget-header">
-            <span class="widget-title">${typeIcons} ${displayName}</span>
-            <div class="widget-controls">
-                <button class="btn btn-sm" onclick="showWidgetConfig('${widget.type}', dashboardWidgets.find(w => w.id === ${widget.id}))" title="Edit">
-                    <span class="material-icons text-primary">settings</span>
-                </button>
-                <button class="btn btn-sm" onclick="deleteDashboardWidget(${widget.id})" title="Delete">
-                    <span class="material-icons text-danger">delete</span>
-                </button>
+    // Show header only in edit mode when widget is selected
+    if (isDashboardEditMode && isSelected) {
+        const header = `
+            <div class="widget-header">
+                <span class="widget-title">${typeIcons} ${displayName}</span>
+                <div class="widget-controls">
+                    <button class="btn btn-sm" onclick="event.stopPropagation(); showWidgetConfig('${widget.type}', dashboardWidgets.find(w => w.id === ${widget.id}))" title="Edit">
+                        <span class="material-icons text-primary">settings</span>
+                    </button>
+                    <button class="btn btn-sm" onclick="event.stopPropagation(); deleteDashboardWidget(${widget.id})" title="Delete">
+                        <span class="material-icons text-danger">delete</span>
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="widget-content">
-    `;
-
-    // Use modular widget's create function
-    content = header + widgetDef.create(widget) + '</div>';
+            <div class="widget-content">
+        `;
+        content = header + widgetDef.create(widget) + '</div>';
+    } else {
+        // View mode or unselected edit mode: show only widget content
+        content = `<div class="widget-content-only">${widgetDef.create(widget)}</div>`;
+    }
 
     widgetEl.innerHTML = content;
 
@@ -551,6 +608,10 @@ function deleteDashboardWidget(id) {
     if (confirm('Delete this widget?')) {
         const index = dashboardWidgets.findIndex(w => w.id === id);
         if (index > -1) {
+            // Deselect if this widget is selected
+            if (selectedWidget === id) {
+                selectedWidget = null;
+            }
             unregisterWidgetVariables(dashboardWidgets[index]);
             dashboardWidgets.splice(index, 1);
             const el = document.getElementById(`dashboard-widget-${id}`);
