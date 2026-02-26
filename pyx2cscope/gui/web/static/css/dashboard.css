@@ -136,3 +136,8 @@
 .view-mode .dashboard-widget::after {
     display: none;
 }
+
+/* Label widgets don't block interactions with widgets underneath in view mode */
+.dashboard-widget.widget-type-label.view-mode {
+    pointer-events: none;
+}

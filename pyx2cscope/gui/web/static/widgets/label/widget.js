@@ -11,7 +11,7 @@ function createLabelWidget(widget) {
     const fontSizes = { small: '0.875rem', medium: '1rem', large: '1.5rem', xlarge: '2rem' };
     const fontSize = fontSizes[widget.fontSize] || fontSizes.medium;
     return `
-        <div style="font-size: ${fontSize}; text-align: ${widget.textAlign}; padding: 10px; font-weight: 500;">
+        <div style="font-size: ${fontSize}; text-align: ${widget.textAlign}; padding: 10px; font-weight: 500; pointer-events: none;">
             ${widget.labelText}
         </div>
     `;

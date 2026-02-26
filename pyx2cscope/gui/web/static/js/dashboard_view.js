@@ -403,7 +403,7 @@ function renderDashboardWidget(widget) {
     if (!widgetEl) {
         widgetEl = document.createElement('div');
         widgetEl.id = `dashboard-widget-${widget.id}`;
-        widgetEl.className = 'dashboard-widget';
+        widgetEl.className = `dashboard-widget widget-type-${widget.type}`;
         widgetEl.style.left = widget.x + 'px';
         widgetEl.style.top = widget.y + 'px';
 
