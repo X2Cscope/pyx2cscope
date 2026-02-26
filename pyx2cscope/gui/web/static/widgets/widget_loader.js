@@ -18,6 +18,7 @@ window.dashboardWidgetTypes = {};
 // List of widgets to load
 const widgetsList = [
     'button',
+    'switch',
     'slider',
     'gauge',
     'number',

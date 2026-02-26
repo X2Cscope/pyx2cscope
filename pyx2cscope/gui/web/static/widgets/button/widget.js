@@ -37,7 +37,7 @@ function createButtonWidget(widget) {
     const btnColor = widget.toggleMode && widget.buttonState
         ? widget.pressedColor
         : widget.buttonColor;
-    
+
     return `
         <button class="btn btn-${btnColor} w-100"
                 id="btn-${widget.id}"
@@ -46,13 +46,17 @@ function createButtonWidget(widget) {
                 ontouchstart="handleDashboardButtonPress(${widget.id})"
                 ontouchend="handleDashboardButtonRelease(${widget.id})"
                 ${isDashboardEditMode ? 'disabled' : ''}>
-            ${widget.variable}
+            ${widget.displayName || widget.variable}
         </button>
     `;
 }
 
 function getButtonConfig(editWidget) {
     return `
+        <div class="mb-3">
+            <label class="form-label">Display Name</label>
+            <input type="text" class="form-control" id="widgetDisplayName" value="${editWidget?.displayName || ''}" placeholder="Enter display name (optional)">
+        </div>
         <div class="mb-3">
             <label class="form-label">Button Color</label>
             <select class="form-select" id="widgetButtonColor">
@@ -100,6 +104,7 @@ function getButtonConfig(editWidget) {
 }
 
 function saveButtonConfig(widget) {
+    widget.displayName = document.getElementById('widgetDisplayName').value;
     widget.buttonColor = document.getElementById('widgetButtonColor').value;
     widget.pressValue = parseValue(document.getElementById('widgetPressValue').value);
     widget.toggleMode = document.getElementById('widgetToggleMode').value === 'true';
