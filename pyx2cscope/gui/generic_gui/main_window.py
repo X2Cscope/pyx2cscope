@@ -85,19 +85,19 @@ class MainWindow(QMainWindow):
         self._tab_widget = QTabWidget()
         main_layout.addWidget(self._tab_widget)
 
-        # Tab 1: WatchPlot
+        # Tab 1: Setup (formerly WatchPlot)
         self._watch_plot_tab = WatchPlotTab(self._app_state, self)
-        self._tab_widget.addTab(self._watch_plot_tab, "WatchPlot")
+        self._tab_widget.addTab(self._watch_plot_tab, "Setup")
 
-        # Tab 2: ScopeView
-        self._scope_view_tab = ScopeViewTab(self._app_state, self)
-        self._tab_widget.addTab(self._scope_view_tab, "ScopeView")
-
-        # Tab 3: WatchView
+        # Tab 2: WatchView
         self._watch_view_tab = WatchViewTab(self._app_state, self)
         self._tab_widget.addTab(self._watch_view_tab, "WatchView")
 
-        # Add connection controls to WatchPlot tab (top of layout)
+        # Tab 3: ScopeView
+        self._scope_view_tab = ScopeViewTab(self._app_state, self)
+        self._tab_widget.addTab(self._scope_view_tab, "ScopeView")
+
+        # Add connection controls to Setup tab (top of layout)
         self._add_connection_controls()
 
         # Window properties

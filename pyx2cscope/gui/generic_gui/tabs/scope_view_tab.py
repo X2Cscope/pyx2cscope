@@ -7,6 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QColor, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -65,8 +66,19 @@ class ScopeViewTab(BaseTab):
         self._color_combos: List[QComboBox] = []
         self._visible_checkboxes: List[QCheckBox] = []
 
-        # Available colors for channels
-        self._color_names = ["Blue", "Green", "Red", "Cyan", "Magenta", "Yellow", "Orange", "Purple"]
+        # Available colors for channels (name -> RGB tuple)
+        self._colors = {
+            "Blue": (0, 0, 255),
+            "Green": (0, 255, 0),
+            "Red": (255, 0, 0),
+            "Cyan": (0, 255, 255),
+            "Magenta": (255, 0, 255),
+            "Yellow": (255, 255, 0),
+            "Orange": (255, 165, 0),
+            "Purple": (128, 0, 128),
+            "Black": (0, 0, 0),
+            "White": (255, 255, 255),
+        }
 
         self._setup_ui()
 
@@ -75,7 +87,14 @@ class ScopeViewTab(BaseTab):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        # Main grid for trigger config and variable selection
+        # Plot widget (at the top)
+        self._plot_widget = pg.PlotWidget()
+        self._plot_widget.setBackground("w")
+        self._plot_widget.showGrid(x=True, y=True)
+        self._plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
+        layout.addWidget(self._plot_widget, stretch=2)
+
+        # Main grid for trigger config and variable selection (below plot)
         main_grid = QGridLayout()
         layout.addLayout(main_grid)
 
@@ -90,14 +109,6 @@ class ScopeViewTab(BaseTab):
         # Set column stretch
         main_grid.setColumnStretch(0, 1)
         main_grid.setColumnStretch(1, 3)
-
-        # Plot widget
-        self._plot_widget = pg.PlotWidget(title="Scope Plot")
-        self._plot_widget.setBackground("w")
-        self._plot_widget.addLegend()
-        self._plot_widget.showGrid(x=True, y=True)
-        self._plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
-        layout.addWidget(self._plot_widget)
 
         # Save/Load buttons
         button_layout = QHBoxLayout()
@@ -134,41 +145,36 @@ class ScopeViewTab(BaseTab):
         self._scope_sampletime_edit.setValidator(self.decimal_validator)
         grid.addWidget(self._scope_sampletime_edit, 2, 1)
 
-        # Total time (read-only)
-        grid.addWidget(QLabel("Total Time (ms):"), 3, 0)
-        self._total_time_edit = QLineEdit("0")
-        self._total_time_edit.setReadOnly(True)
-        grid.addWidget(self._total_time_edit, 3, 1)
-
         # Trigger mode
-        grid.addWidget(QLabel("Trigger Mode:"), 4, 0)
+        grid.addWidget(QLabel("Trigger Mode:"), 3, 0)
         self._trigger_mode_combo = QComboBox()
         self._trigger_mode_combo.addItems(["Auto", "Triggered"])
-        grid.addWidget(self._trigger_mode_combo, 4, 1)
+        grid.addWidget(self._trigger_mode_combo, 3, 1)
 
         # Trigger edge
-        grid.addWidget(QLabel("Trigger Edge:"), 5, 0)
+        grid.addWidget(QLabel("Trigger Edge:"), 4, 0)
         self._trigger_edge_combo = QComboBox()
         self._trigger_edge_combo.addItems(["Rising", "Falling"])
-        grid.addWidget(self._trigger_edge_combo, 5, 1)
+        grid.addWidget(self._trigger_edge_combo, 4, 1)
 
         # Trigger level
-        grid.addWidget(QLabel("Trigger Level:"), 6, 0)
+        grid.addWidget(QLabel("Trigger Level:"), 5, 0)
         self._trigger_level_edit = QLineEdit("0")
         self._trigger_level_edit.setValidator(self.decimal_validator)
-        grid.addWidget(self._trigger_level_edit, 6, 1)
+        grid.addWidget(self._trigger_level_edit, 5, 1)
 
-        # Trigger delay
-        grid.addWidget(QLabel("Trigger Delay:"), 7, 0)
-        self._trigger_delay_edit = QLineEdit("0")
-        self._trigger_delay_edit.setValidator(self.decimal_validator)
-        grid.addWidget(self._trigger_delay_edit, 7, 1)
+        # Trigger delay (combo box with -50% to +50% in 10% steps)
+        grid.addWidget(QLabel("Trigger Delay (%):"), 6, 0)
+        self._trigger_delay_combo = QComboBox()
+        self._trigger_delay_combo.addItems(["-50", "-40", "-30", "-20", "-10", "0", "10", "20", "30", "40", "50"])
+        self._trigger_delay_combo.setCurrentText("0")
+        grid.addWidget(self._trigger_delay_combo, 6, 1)
 
         # Sample button
         self._sample_button = QPushButton("Sample")
         self._sample_button.setFixedSize(100, 30)
         self._sample_button.clicked.connect(self._on_sample_clicked)
-        grid.addWidget(self._sample_button, 8, 0, 1, 2)
+        grid.addWidget(self._sample_button, 7, 0, 1, 2)
 
         return group
 
@@ -226,11 +232,11 @@ class ScopeViewTab(BaseTab):
             self._offset_edits.append(offset_edit)
             grid.addWidget(offset_edit, row, 3)
 
-            # Color combo
+            # Color combo with colored squares
             color_combo = QComboBox()
-            color_combo.addItems(self._color_names)
-            color_combo.setCurrentIndex(i % len(self._color_names))
-            color_combo.setFixedSize(80, 20)
+            self._populate_color_combo(color_combo)
+            color_combo.setCurrentIndex(i % len(self._colors))
+            color_combo.setFixedSize(50, 20)
             color_combo.currentIndexChanged.connect(lambda idx: self._update_plot())
             self._color_combos.append(color_combo)
             grid.addWidget(color_combo, row, 4)
@@ -244,6 +250,25 @@ class ScopeViewTab(BaseTab):
             grid.addWidget(visible_cb, row, 5)
 
         return group
+
+    def _populate_color_combo(self, combo: QComboBox):
+        """Populate a combobox with colored square icons."""
+        for name, rgb in self._colors.items():
+            pixmap = QPixmap(16, 16)
+            pixmap.fill(QColor(*rgb))
+            combo.addItem(QIcon(pixmap), "", name)  # Store color name as item data
+
+    def _get_color_from_combo(self, combo: QComboBox) -> tuple:
+        """Get the RGB color tuple from a color combo box."""
+        color_name = combo.currentData()
+        if color_name and color_name in self._colors:
+            return self._colors[color_name]
+        # Fallback to index-based lookup
+        idx = combo.currentIndex()
+        color_names = list(self._colors.keys())
+        if 0 <= idx < len(color_names):
+            return self._colors[color_names[idx]]
+        return (0, 0, 255)  # Default to blue
 
     def on_connection_changed(self, connected: bool):
         """Handle connection state changes."""
@@ -323,7 +348,6 @@ class ScopeViewTab(BaseTab):
             # Get real sample time
             scope_sample_time_us = self.safe_int(self._scope_sampletime_edit.text(), 50)
             self._real_sampletime = x2cscope.get_scope_sample_time(scope_sample_time_us)
-            self._total_time_edit.setText(str(self._real_sampletime))
 
             # Configure trigger
             self._configure_trigger()
@@ -379,7 +403,7 @@ class ScopeViewTab(BaseTab):
                 return
 
             trigger_level = self.safe_float(self._trigger_level_edit.text())
-            trigger_delay = self.safe_int(self._trigger_delay_edit.text())
+            trigger_delay = self.safe_int(self._trigger_delay_combo.currentText())
 
             # Rising = 0, Falling = 1 (per TriggerConfig spec)
             trigger_edge = 1 if self._trigger_edge_combo.currentText() == "Rising" else 0
@@ -410,12 +434,6 @@ class ScopeViewTab(BaseTab):
 
         self._plot_widget.clear()
 
-        # Map color names to pyqtgraph colors
-        color_map = {
-            "Blue": "b", "Green": "g", "Red": "r", "Cyan": "c",
-            "Magenta": "m", "Yellow": "y", "Orange": (255, 165, 0), "Purple": (128, 0, 128)
-        }
-
         for i, (channel, values) in enumerate(data.items()):
             if i >= self.MAX_CHANNELS:
                 break
@@ -426,9 +444,8 @@ class ScopeViewTab(BaseTab):
                 time_values = np.linspace(0, self._real_sampletime, len(values))
                 data_scaled = (np.array(values, dtype=float) * scale_factor) + offset
 
-                # Get color from combo box
-                color_name = self._color_combos[i].currentText()
-                color = color_map.get(color_name, self.PLOT_COLORS[i % len(self.PLOT_COLORS)])
+                # Get color from combo box (RGB tuple)
+                color = self._get_color_from_combo(self._color_combos[i])
 
                 self._plot_widget.plot(
                     time_values,
@@ -468,11 +485,11 @@ class ScopeViewTab(BaseTab):
             "trigger": [cb.isChecked() for cb in self._trigger_checkboxes],
             "scale": [sc.text() for sc in self._scaling_edits],
             "offset": [off.text() for off in self._offset_edits],
-            "color": [cb.currentText() for cb in self._color_combos],
+            "color": [cb.currentData() or list(self._colors.keys())[cb.currentIndex()] for cb in self._color_combos],
             "show": [cb.isChecked() for cb in self._visible_checkboxes],
             "trigger_variable": self._trigger_variable,
             "trigger_level": self._trigger_level_edit.text(),
-            "trigger_delay": self._trigger_delay_edit.text(),
+            "trigger_delay": self._trigger_delay_combo.currentText(),
             "trigger_edge": self._trigger_edge_combo.currentText(),
             "trigger_mode": self._trigger_mode_combo.currentText(),
             "sample_time_factor": self._sample_time_factor_edit.text(),
@@ -499,15 +516,19 @@ class ScopeViewTab(BaseTab):
             sc.setText(scale)
         for off, offset in zip(self._offset_edits, offsets):
             off.setText(offset)
-        for cb, color in zip(self._color_combos, colors):
-            cb.setCurrentText(color)
+        for cb, color_name in zip(self._color_combos, colors):
+            # Find the index of the color by name in item data
+            for idx in range(cb.count()):
+                if cb.itemData(idx) == color_name:
+                    cb.setCurrentIndex(idx)
+                    break
         for i, (cb, show) in enumerate(zip(self._visible_checkboxes, shows)):
             cb.setChecked(show)
             self._app_state.update_scope_channel_field(i, "visible", show)
 
         self._trigger_variable = config.get("trigger_variable", "")
         self._trigger_level_edit.setText(config.get("trigger_level", "0"))
-        self._trigger_delay_edit.setText(config.get("trigger_delay", "0"))
+        self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
         self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Auto"))
         self._sample_time_factor_edit.setText(config.get("sample_time_factor", "1"))
