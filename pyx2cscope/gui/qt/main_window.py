@@ -1,18 +1,14 @@
-"""Main window for the generic GUI application."""
+"""Main window for the Qt GUI application."""
 
 import logging
 import os
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QFileInfo, QSettings, Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QSettings, Qt
 from PyQt5.QtWidgets import (
     QApplication,
-    QComboBox,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QMainWindow,
     QMessageBox,
     QPushButton,
@@ -23,14 +19,15 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+import pyx2cscope
 from pyx2cscope.gui import img as img_src
-from pyx2cscope.gui.generic_gui.controllers.config_manager import ConfigManager
-from pyx2cscope.gui.generic_gui.controllers.connection_manager import ConnectionManager
-from pyx2cscope.gui.generic_gui.models.app_state import AppState
-from pyx2cscope.gui.generic_gui.tabs.scope_view_tab import ScopeViewTab
-from pyx2cscope.gui.generic_gui.tabs.watch_plot_tab import WatchPlotTab
-from pyx2cscope.gui.generic_gui.tabs.watch_view_tab import WatchViewTab
-from pyx2cscope.gui.generic_gui.workers.data_poller import DataPoller
+from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
+from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
+from pyx2cscope.gui.qt.models.app_state import AppState
+from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
+from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
+from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
+from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 
 
 class MainWindow(QMainWindow):
@@ -60,9 +57,6 @@ class MainWindow(QMainWindow):
         # Initialize data poller (but don't start yet)
         self._data_poller = DataPoller(self._app_state, self)
 
-        # Device info labels
-        self._device_info_labels = {}
-
         # Setup UI
         self._setup_ui()
         self._setup_connections()
@@ -86,9 +80,9 @@ class MainWindow(QMainWindow):
         self._tab_widget = QTabWidget()
         main_layout.addWidget(self._tab_widget)
 
-        # Tab 1: Setup (formerly WatchPlot)
-        self._watch_plot_tab = WatchPlotTab(self._app_state, self)
-        self._tab_widget.addTab(self._watch_plot_tab, "Setup")
+        # Tab 1: Setup
+        self._setup_tab = SetupTab(self._app_state, self)
+        self._tab_widget.addTab(self._setup_tab, "Setup")
 
         # Tab 2: Data Views (contains WatchView and/or ScopeView)
         self._data_views_tab = QWidget()
@@ -185,98 +179,14 @@ class MainWindow(QMainWindow):
         # Set initial view (Both selected)
         self._on_view_toggle_changed()
 
-        # Add connection controls to Setup tab (top of layout)
-        self._add_connection_controls()
-
         # Window properties
-        self.setWindowTitle("pyX2Cscope")
+        self.setWindowTitle(f"pyX2Cscope - v{pyx2cscope.__version__}")
         icon_path = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
         if os.path.exists(icon_path):
             self.setWindowIcon(QtGui.QIcon(icon_path))
 
         # Restore window state from settings
         self._restore_window_state()
-
-    def _add_connection_controls(self):
-        """Add connection controls to the top of the WatchPlot tab."""
-        # Get the WatchPlot tab's layout
-        watch_layout = self._watch_plot_tab.layout()
-
-        # Create connection controls widget
-        controls_widget = QWidget()
-        controls_layout = QHBoxLayout(controls_widget)
-        controls_layout.setContentsMargins(0, 0, 0, 0)
-
-        # Device info section (left)
-        device_info_layout = QGridLayout()
-        self._device_info_labels = {
-            "processor_id": QLabel("Loading Processor ID..."),
-            "uc_width": QLabel("Loading UC Width..."),
-            "date": QLabel("Loading Date..."),
-            "time": QLabel("Loading Time..."),
-            "appVer": QLabel("Loading App Version..."),
-            "dsp_state": QLabel("Loading DSP State..."),
-        }
-
-        for i, (key, label) in enumerate(self._device_info_labels.items()):
-            info_label = QLabel(key.replace("_", " ").capitalize() + ":")
-            info_label.setAlignment(Qt.AlignLeft)
-            device_info_layout.addWidget(info_label, i, 0, Qt.AlignRight)
-            device_info_layout.addWidget(label, i, 1, Qt.AlignLeft)
-
-        controls_layout.addLayout(device_info_layout)
-
-        # Connection settings section (right)
-        settings_layout = QGridLayout()
-
-        # Port selection
-        settings_layout.addWidget(QLabel("Select Port:"), 0, 0, Qt.AlignRight)
-        self._port_combo = QComboBox()
-        self._port_combo.setFixedSize(100, 25)
-        settings_layout.addWidget(self._port_combo, 0, 1)
-
-        # Refresh button
-        refresh_btn = QPushButton()
-        refresh_btn.setFixedSize(25, 25)
-        refresh_icon = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
-        if os.path.exists(refresh_icon):
-            refresh_btn.setIcon(QIcon(refresh_icon))
-        refresh_btn.clicked.connect(self._refresh_ports)
-        settings_layout.addWidget(refresh_btn, 0, 2)
-
-        # Baud rate selection
-        settings_layout.addWidget(QLabel("Select Baud Rate:"), 1, 0, Qt.AlignRight)
-        self._baud_combo = QComboBox()
-        self._baud_combo.setFixedSize(100, 25)
-        self._baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
-        self._baud_combo.setCurrentText("115200")
-        settings_layout.addWidget(self._baud_combo, 1, 1)
-
-        # Sample time for WatchPlot
-        settings_layout.addWidget(QLabel("Sample Time WatchPlot:"), 2, 0, Qt.AlignRight)
-        self._sampletime_edit = QLineEdit("500")
-        self._sampletime_edit.setFixedSize(100, 30)
-        self._sampletime_edit.editingFinished.connect(self._on_sampletime_changed)
-        settings_layout.addWidget(self._sampletime_edit, 2, 1)
-        settings_layout.addWidget(QLabel("ms"), 2, 2)
-
-        # Connect button
-        self._connect_btn = QPushButton("Connect")
-        self._connect_btn.setFixedSize(100, 30)
-        self._connect_btn.clicked.connect(self._on_connect_clicked)
-        settings_layout.addWidget(self._connect_btn, 3, 1)
-
-        controls_layout.addLayout(settings_layout)
-
-        # ELF file selection
-        elf_layout = QHBoxLayout()
-        self._elf_button = QPushButton("Select elf file")
-        self._elf_button.clicked.connect(self._on_select_elf)
-        elf_layout.addWidget(self._elf_button)
-
-        # Insert controls at the top of WatchPlot tab
-        watch_layout.insertWidget(0, controls_widget)
-        watch_layout.insertLayout(1, elf_layout)
 
     def _setup_connections(self):
         """Set up signal/slot connections."""
@@ -290,8 +200,6 @@ class MainWindow(QMainWindow):
         self._app_state.variable_list_updated.connect(self._on_variable_list_updated)
 
         # Data poller signals
-        self._data_poller.watch_var_updated.connect(self._watch_plot_tab.on_watch_var_updated)
-        self._data_poller.plot_data_ready.connect(self._watch_plot_tab.on_plot_data_ready)
         self._data_poller.scope_data_ready.connect(self._scope_view_tab.on_scope_data_ready)
         self._data_poller.live_var_updated.connect(self._watch_view_tab.on_live_var_updated)
         self._data_poller.error_occurred.connect(self._show_error)
@@ -299,8 +207,12 @@ class MainWindow(QMainWindow):
         # Config manager signals
         self._config_manager.error_occurred.connect(self._show_error)
 
+        # Setup tab signals
+        self._setup_tab.connect_requested.connect(self._on_connect_clicked)
+        self._setup_tab.elf_file_selected.connect(self._on_elf_file_selected)
+        self._setup_tab.refresh_btn.clicked.connect(self._refresh_ports)
+
         # Tab polling control signals -> DataPoller
-        self._watch_plot_tab.live_polling_changed.connect(self._on_watch_live_changed)
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
         self._watch_view_tab.live_polling_changed.connect(self._on_live_watch_changed)
 
@@ -310,46 +222,43 @@ class MainWindow(QMainWindow):
 
     def _on_ports_refreshed(self, ports: list):
         """Handle ports refreshed signal."""
-        self._port_combo.clear()
-        self._port_combo.addItems(ports)
+        self._setup_tab.set_ports(ports)
 
-    def _on_select_elf(self):
-        """Handle ELF file selection."""
-        file_path = self._config_manager.prompt_for_elf_file()
-        if file_path:
-            self._elf_file_path = file_path
-            self._elf_button.setText(QFileInfo(file_path).fileName())
-            self._settings.setValue("elf_file_path", file_path)
+    def _on_elf_file_selected(self, file_path: str):
+        """Handle ELF file selection from setup tab."""
+        self._settings.setValue("elf_file_path", file_path)
 
     def _on_connect_clicked(self):
         """Handle connect button click."""
-        if not hasattr(self, "_elf_file_path") or not self._elf_file_path:
+        elf_path = self._setup_tab.elf_file_path
+        if not elf_path:
             # Try to load from settings
-            self._elf_file_path = self._settings.value("elf_file_path", "", type=str)
+            elf_path = self._settings.value("elf_file_path", "", type=str)
+            if elf_path:
+                self._setup_tab.elf_file_path = elf_path
 
-        if not self._elf_file_path:
+        if not elf_path:
             self._show_error("Please select an ELF file first.")
             return
 
-        port = self._port_combo.currentText()
-        baud_rate = int(self._baud_combo.currentText())
+        # Get connection parameters based on selected interface
+        conn_params = self._setup_tab.get_connection_params()
 
         connected = self._connection_manager.toggle_connection(
-            port, baud_rate, self._elf_file_path
+            elf_path, **conn_params
         )
 
         if connected:
-            self._connect_btn.setText("Disconnect")
+            self._setup_tab.set_connected(True)
             self._update_device_info()
         else:
-            self._connect_btn.setText("Connect")
+            self._setup_tab.set_connected(False)
 
     def _on_connection_changed(self, connected: bool):
         """Handle connection state change."""
-        self._connect_btn.setText("Disconnect" if connected else "Connect")
+        self._setup_tab.set_connected(connected)
 
         # Update tabs
-        self._watch_plot_tab.on_connection_changed(connected)
         self._scope_view_tab.on_connection_changed(connected)
         self._watch_view_tab.on_connection_changed(connected)
 
@@ -360,18 +269,8 @@ class MainWindow(QMainWindow):
 
     def _on_variable_list_updated(self, variables: list):
         """Handle variable list update."""
-        self._watch_plot_tab.on_variable_list_updated(variables)
         self._scope_view_tab.on_variable_list_updated(variables)
         self._watch_view_tab.on_variable_list_updated(variables)
-
-    def _on_sampletime_changed(self):
-        """Handle sample time change."""
-        try:
-            interval = int(self._sampletime_edit.text())
-            self._data_poller.set_watch_interval(interval)
-            self._data_poller.set_live_interval(interval)
-        except ValueError:
-            pass
 
     def _on_view_toggle_changed(self):
         """Handle view toggle button changes."""
@@ -401,13 +300,6 @@ class MainWindow(QMainWindow):
             self._view_splitter.hide()
             self._instruction_widget.show()
 
-    def _on_watch_live_changed(self, index: int, is_live: bool):
-        """Handle watch variable live polling state change (Tab1)."""
-        if is_live:
-            self._data_poller.add_active_watch_index(index)
-        else:
-            self._data_poller.remove_active_watch_index(index)
-
     def _on_scope_sampling_changed(self, is_sampling: bool, is_single_shot: bool):
         """Handle scope sampling state change (Tab2)."""
         self._data_poller.set_scope_polling_enabled(is_sampling, is_single_shot)
@@ -422,18 +314,11 @@ class MainWindow(QMainWindow):
     def _update_device_info(self):
         """Update device info labels."""
         device_info = self._app_state.update_device_info()
-        if device_info:
-            self._device_info_labels["processor_id"].setText(device_info.processor_id)
-            self._device_info_labels["uc_width"].setText(device_info.uc_width)
-            self._device_info_labels["date"].setText(device_info.date)
-            self._device_info_labels["time"].setText(device_info.time)
-            self._device_info_labels["appVer"].setText(device_info.app_ver)
-            self._device_info_labels["dsp_state"].setText(device_info.dsp_state)
+        self._setup_tab.update_device_info(device_info)
 
     def _clear_device_info(self):
         """Clear device info labels."""
-        for label in self._device_info_labels.values():
-            label.setText("Not connected")
+        self._setup_tab.clear_device_info()
 
     def _save_config(self):
         """Save current configuration."""
@@ -449,11 +334,12 @@ class MainWindow(QMainWindow):
         else:
             view_mode = "None"
 
+        # Get connection parameters
+        conn_params = self._setup_tab.get_connection_params()
+
         config = ConfigManager.build_config(
-            elf_file=getattr(self, "_elf_file_path", ""),
-            com_port=self._port_combo.currentText(),
-            baud_rate=self._baud_combo.currentText(),
-            watch_view=self._watch_plot_tab.get_config(),
+            elf_file=self._setup_tab.elf_file_path,
+            connection=conn_params,
             scope_view=self._scope_view_tab.get_config(),
             tab3_view=self._watch_view_tab.get_config(),
             view_mode=view_mode,
@@ -470,29 +356,38 @@ class MainWindow(QMainWindow):
         elf_path = config.get("elf_file", "")
         if elf_path:
             if self._config_manager.validate_elf_file(elf_path):
-                self._elf_file_path = elf_path
-                self._elf_button.setText(QFileInfo(elf_path).fileName())
+                self._setup_tab.elf_file_path = elf_path
             else:
                 self._config_manager.show_file_not_found_warning(elf_path)
                 new_path = self._config_manager.prompt_for_elf_file()
                 if new_path:
-                    self._elf_file_path = new_path
-                    self._elf_button.setText(QFileInfo(new_path).fileName())
+                    self._setup_tab.elf_file_path = new_path
 
-        # Load connection settings
-        self._baud_combo.setCurrentText(config.get("baud_rate", "115200"))
+        # Load connection settings (new format with interface support)
+        conn_params = config.get("connection", {})
+        if conn_params:
+            self._setup_tab.set_connection_params(conn_params)
+
+            # For UART, also set the port if available
+            if conn_params.get("interface") == "UART":
+                com_port = conn_params.get("port", "")
+                port_combo = self._setup_tab.port_combo
+                if com_port and com_port in [port_combo.itemText(i) for i in range(port_combo.count())]:
+                    port_combo.setCurrentText(com_port)
+        else:
+            # Legacy config format support
+            baud_rate = config.get("baud_rate", "115200")
+            self._setup_tab.baud_combo.setCurrentText(baud_rate)
+            com_port = config.get("com_port", "")
+            port_combo = self._setup_tab.port_combo
+            if com_port and com_port in [port_combo.itemText(i) for i in range(port_combo.count())]:
+                port_combo.setCurrentText(com_port)
 
         # Try to connect (only if not already connected)
-        com_port = config.get("com_port", "")
-        if com_port and com_port in [self._port_combo.itemText(i) for i in range(self._port_combo.count())]:
-            self._port_combo.setCurrentText(com_port)
-            if hasattr(self, "_elf_file_path") and self._elf_file_path:
-                # Only connect if not already connected to avoid toggle disconnect
-                if not self._app_state.is_connected():
-                    self._on_connect_clicked()
+        if self._setup_tab.elf_file_path and not self._app_state.is_connected():
+            self._on_connect_clicked()
 
         # Load tab configurations
-        self._watch_plot_tab.load_config(config.get("watch_view", {}))
         self._scope_view_tab.load_config(config.get("scope_view", {}))
         self._watch_view_tab.load_config(config.get("tab3_view", {}))
 
@@ -515,14 +410,12 @@ class MainWindow(QMainWindow):
         # Re-enable widgets after loading config (for dynamically created widgets)
         is_connected = self._app_state.is_connected()
         if is_connected:
-            self._watch_plot_tab.on_connection_changed(True)
             self._scope_view_tab.on_connection_changed(True)
             self._watch_view_tab.on_connection_changed(True)
 
             # Also ensure variable list is populated in tabs
             variables = self._app_state.get_variable_list()
             if variables:
-                self._watch_plot_tab.on_variable_list_updated(variables)
                 self._scope_view_tab.on_variable_list_updated(variables)
                 self._watch_view_tab.on_variable_list_updated(variables)
 
@@ -531,12 +424,7 @@ class MainWindow(QMainWindow):
 
     def _activate_loaded_polling(self):
         """Activate polling for any live checkboxes that were loaded as checked."""
-        # WatchPlot tab (Tab1) - check live checkboxes
-        for i, cb in enumerate(self._watch_plot_tab._live_checkboxes):
-            if cb.isChecked():
-                self._data_poller.add_active_watch_index(i)
-
-        # WatchView tab (Tab3) - check live checkboxes
+        # WatchView tab - check live checkboxes
         for i, cb in enumerate(self._watch_view_tab._live_checkboxes):
             if cb.isChecked():
                 self._data_poller.add_active_live_index(i)
@@ -582,9 +470,8 @@ class MainWindow(QMainWindow):
         self._scope_view_btn.setChecked(scope_checked)
         self._on_view_toggle_changed()
 
-        # Restore current tab
-        current_tab = self._settings.value("window/current_tab", 0, type=int)
-        self._tab_widget.setCurrentIndex(current_tab)
+        # Always start on Setup tab
+        self._tab_widget.setCurrentIndex(0)
 
     def closeEvent(self, event):
         """Handle window close event."""

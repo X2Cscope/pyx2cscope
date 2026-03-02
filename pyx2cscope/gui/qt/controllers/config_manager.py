@@ -166,9 +166,7 @@ class ConfigManager(QObject):
     @staticmethod
     def build_config(
         elf_file: str,
-        com_port: str,
-        baud_rate: str,
-        watch_view: Dict[str, Any],
+        connection: Dict[str, Any],
         scope_view: Dict[str, Any],
         tab3_view: Dict[str, Any],
         view_mode: str = "Both",
@@ -177,21 +175,17 @@ class ConfigManager(QObject):
 
         Args:
             elf_file: Path to the ELF file.
-            com_port: COM port name.
-            baud_rate: Baud rate as string.
-            watch_view: WatchPlot tab configuration.
+            connection: Connection parameters (interface type, port, etc.).
             scope_view: ScopeView tab configuration.
             tab3_view: WatchView tab configuration.
-            view_mode: Monitor view mode (WatchView, ScopeView, Both).
+            view_mode: Monitor view mode (WatchView, ScopeView, Both, None).
 
         Returns:
             Complete configuration dictionary.
         """
         return {
             "elf_file": elf_file,
-            "com_port": com_port,
-            "baud_rate": baud_rate,
-            "watch_view": watch_view,
+            "connection": connection,
             "scope_view": scope_view,
             "tab3_view": tab3_view,
             "view_mode": view_mode,

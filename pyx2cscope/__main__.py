@@ -49,7 +49,7 @@ def parse_arguments():
         "-q",
         "--qt",
         action="store_false",
-        help="Start the Qt user interface, pyx2cscope.gui.generic_gui.generic_gui.X2Cscope",
+        help="Start the Qt user interface, pyx2cscope.gui.qt.main_window.MainWindow",
     )
     parser.add_argument(
         "-w",

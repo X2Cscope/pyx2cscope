@@ -1,4 +1,4 @@
-"""Base tab class for the generic GUI tabs."""
+"""Base tab class for the Qt GUI tabs."""
 
 from typing import TYPE_CHECKING
 
@@ -7,7 +7,7 @@ from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import QWidget
 
 if TYPE_CHECKING:
-    from pyx2cscope.gui.generic_gui.models.app_state import AppState
+    from pyx2cscope.gui.qt.models.app_state import AppState
 
 
 class BaseTab(QWidget):

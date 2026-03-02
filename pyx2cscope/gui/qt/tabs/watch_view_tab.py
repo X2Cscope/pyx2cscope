@@ -19,11 +19,11 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from pyx2cscope.gui.generic_gui.dialogs.variable_selection import VariableSelectionDialog
-from pyx2cscope.gui.generic_gui.tabs.base_tab import BaseTab
+from pyx2cscope.gui.qt.dialogs.variable_selection import VariableSelectionDialog
+from pyx2cscope.gui.qt.tabs.base_tab import BaseTab
 
 if TYPE_CHECKING:
-    from pyx2cscope.gui.generic_gui.models.app_state import AppState
+    from pyx2cscope.gui.qt.models.app_state import AppState
 
 
 class WatchViewTab(BaseTab):
