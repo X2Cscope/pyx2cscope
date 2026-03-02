@@ -173,16 +173,6 @@ class WatchPlotTab(BaseTab):
         self._plot_widget.getViewBox().setMouseMode(pg.ViewBox.RectMode)
         layout.addWidget(self._plot_widget)
 
-        # Save/Load buttons
-        button_layout = QHBoxLayout()
-        self._save_button = QPushButton("Save Config")
-        self._save_button.setFixedSize(100, 30)
-        self._load_button = QPushButton("Load Config")
-        self._load_button.setFixedSize(100, 30)
-        button_layout.addWidget(self._save_button)
-        button_layout.addWidget(self._load_button)
-        layout.addLayout(button_layout)
-
     def on_connection_changed(self, connected: bool):
         """Handle connection state changes."""
         for i in range(self.MAX_VARS):
@@ -200,6 +190,7 @@ class WatchPlotTab(BaseTab):
             if isinstance(source, QLineEdit) and source in self._line_edits:
                 index = self._line_edits.index(source)
                 self._on_variable_click(index)
+                return True  # Consume the event after handling
         return super().eventFilter(source, event)
 
     def _on_variable_click(self, index: int):
@@ -356,13 +347,3 @@ class WatchPlotTab(BaseTab):
             cb.setChecked(live)
             # Update app state with live state
             self._app_state.update_watch_var_field(i, "live", live)
-
-    @property
-    def save_button(self) -> QPushButton:
-        """Get the save button."""
-        return self._save_button
-
-    @property
-    def load_button(self) -> QPushButton:
-        """Get the load button."""
-        return self._load_button

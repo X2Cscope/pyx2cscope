@@ -110,16 +110,6 @@ class ScopeViewTab(BaseTab):
         main_grid.setColumnStretch(0, 1)
         main_grid.setColumnStretch(1, 3)
 
-        # Save/Load buttons
-        button_layout = QHBoxLayout()
-        self._save_button = QPushButton("Save Config")
-        self._save_button.setFixedSize(100, 30)
-        self._load_button = QPushButton("Load Config")
-        self._load_button.setFixedSize(100, 30)
-        button_layout.addWidget(self._save_button)
-        button_layout.addWidget(self._load_button)
-        layout.addLayout(button_layout)
-
     def _create_trigger_group(self) -> QGroupBox:
         """Create the trigger configuration group box."""
         group = QGroupBox("Trigger Configuration")
@@ -286,6 +276,7 @@ class ScopeViewTab(BaseTab):
             if isinstance(source, QLineEdit) and source in self._var_line_edits:
                 index = self._var_line_edits.index(source)
                 self._on_variable_click(index)
+                return True  # Consume the event after handling
         return super().eventFilter(source, event)
 
     def _on_variable_click(self, index: int):
@@ -533,13 +524,3 @@ class ScopeViewTab(BaseTab):
         self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Auto"))
         self._sample_time_factor_edit.setText(config.get("sample_time_factor", "1"))
         self._single_shot_checkbox.setChecked(config.get("single_shot", False))
-
-    @property
-    def save_button(self) -> QPushButton:
-        """Get the save button."""
-        return self._save_button
-
-    @property
-    def load_button(self) -> QPushButton:
-        """Get the load button."""
-        return self._load_button

@@ -171,6 +171,7 @@ class ConfigManager(QObject):
         watch_view: Dict[str, Any],
         scope_view: Dict[str, Any],
         tab3_view: Dict[str, Any],
+        view_mode: str = "Both",
     ) -> Dict[str, Any]:
         """Build a configuration dictionary from component data.
 
@@ -181,6 +182,7 @@ class ConfigManager(QObject):
             watch_view: WatchPlot tab configuration.
             scope_view: ScopeView tab configuration.
             tab3_view: WatchView tab configuration.
+            view_mode: Monitor view mode (WatchView, ScopeView, Both).
 
         Returns:
             Complete configuration dictionary.
@@ -192,4 +194,5 @@ class ConfigManager(QObject):
             "watch_view": watch_view,
             "scope_view": scope_view,
             "tab3_view": tab3_view,
+            "view_mode": view_mode,
         }

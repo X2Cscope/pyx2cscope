@@ -64,11 +64,16 @@ class WatchViewTab(BaseTab):
 
     def _setup_ui(self):
         """Set up the user interface."""
+        # Set white background
+        self.setAutoFillBackground(True)
+        self.setStyleSheet("background-color: white;")
+
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
 
         # Scroll area
         scroll_area = QScrollArea()
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout(scroll_widget)
         scroll_area.setWidget(scroll_widget)
@@ -103,16 +108,6 @@ class WatchViewTab(BaseTab):
         self._add_button.clicked.connect(self._add_variable_row)
         scroll_layout.addWidget(self._add_button)
 
-        # Save/Load buttons
-        button_layout = QHBoxLayout()
-        self._save_button = QPushButton("Save Config")
-        self._save_button.setFixedSize(100, 30)
-        self._load_button = QPushButton("Load Config")
-        self._load_button.setFixedSize(100, 30)
-        button_layout.addWidget(self._save_button)
-        button_layout.addWidget(self._load_button)
-        scroll_layout.addLayout(button_layout)
-
         # Add stretch to push content to top
         scroll_layout.addStretch()
 
@@ -134,6 +129,7 @@ class WatchViewTab(BaseTab):
             if isinstance(source, QLineEdit) and source in self._variable_edits:
                 index = self._variable_edits.index(source)
                 self._on_variable_click(index)
+                return True  # Consume the event after handling
         return super().eventFilter(source, event)
 
     def _add_variable_row(self):
@@ -148,6 +144,7 @@ class WatchViewTab(BaseTab):
         var_edit = QLineEdit()
         var_edit.setPlaceholderText("Search Variable")
         var_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        var_edit.setEnabled(self._app_state.is_connected())  # Enable based on connection state
         var_edit.installEventFilter(self)
 
         value_edit = QLineEdit()
@@ -366,16 +363,6 @@ class WatchViewTab(BaseTab):
                 self._live_checkboxes[i].setChecked(lives[i])
                 # Update app state with live state
                 self._app_state.update_live_watch_var_field(i, "live", lives[i])
-
-    @property
-    def save_button(self) -> QPushButton:
-        """Get the save button."""
-        return self._save_button
-
-    @property
-    def load_button(self) -> QPushButton:
-        """Get the load button."""
-        return self._load_button
 
     @property
     def row_count(self) -> int:

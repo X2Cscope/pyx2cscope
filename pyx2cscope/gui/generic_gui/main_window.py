@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSplitter,
     QStyleFactory,
     QTabWidget,
     QVBoxLayout,
@@ -89,13 +90,100 @@ class MainWindow(QMainWindow):
         self._watch_plot_tab = WatchPlotTab(self._app_state, self)
         self._tab_widget.addTab(self._watch_plot_tab, "Setup")
 
-        # Tab 2: WatchView
-        self._watch_view_tab = WatchViewTab(self._app_state, self)
-        self._tab_widget.addTab(self._watch_view_tab, "WatchView")
+        # Tab 2: Data Views (contains WatchView and/or ScopeView)
+        self._data_views_tab = QWidget()
+        data_views_layout = QVBoxLayout(self._data_views_tab)
+        data_views_layout.setContentsMargins(5, 5, 5, 5)  # left, top, right, bottom
 
-        # Tab 3: ScopeView
+        # Top bar: Toggle buttons and Save/Load buttons
+        top_bar_layout = QHBoxLayout()
+        top_bar_layout.setContentsMargins(10, 10, 10, 10)  # Add bottom padding
+
+        # Toggle button style
+        toggle_style = """
+            QPushButton {
+                border: 1px solid #999;
+                border-radius: 4px;
+                padding: 4px 8px;
+                background-color: #f0f0f0;
+            }
+            QPushButton:checked {
+                background-color: #0078d4;
+                color: white;
+                border: 1px solid #0078d4;
+            }
+            QPushButton:hover {
+                border: 1px solid #0078d4;
+            }
+        """
+
+        # WatchView toggle button
+        self._watch_view_btn = QPushButton("WatchView")
+        self._watch_view_btn.setCheckable(True)
+        self._watch_view_btn.setChecked(False)  # Start disabled
+        self._watch_view_btn.setFixedSize(100, 28)
+        self._watch_view_btn.setStyleSheet(toggle_style)
+        self._watch_view_btn.clicked.connect(self._on_view_toggle_changed)
+        top_bar_layout.addWidget(self._watch_view_btn)
+
+        # ScopeView toggle button
+        self._scope_view_btn = QPushButton("ScopeView")
+        self._scope_view_btn.setCheckable(True)
+        self._scope_view_btn.setChecked(False)  # Start disabled
+        self._scope_view_btn.setFixedSize(100, 28)
+        self._scope_view_btn.setStyleSheet(toggle_style)
+        self._scope_view_btn.clicked.connect(self._on_view_toggle_changed)
+        top_bar_layout.addWidget(self._scope_view_btn)
+
+        top_bar_layout.addStretch()
+
+        # Save/Load buttons
+        self._save_button = QPushButton("Save Config")
+        self._save_button.setFixedSize(100, 28)
+        self._save_button.clicked.connect(self._save_config)
+        self._load_button = QPushButton("Load Config")
+        self._load_button.setFixedSize(100, 28)
+        self._load_button.clicked.connect(self._load_config)
+        top_bar_layout.addWidget(self._save_button)
+        top_bar_layout.addWidget(self._load_button)
+        data_views_layout.addLayout(top_bar_layout)
+
+        # Create the views
+        self._watch_view_tab = WatchViewTab(self._app_state, self)
         self._scope_view_tab = ScopeViewTab(self._app_state, self)
-        self._tab_widget.addTab(self._scope_view_tab, "ScopeView")
+
+        # Instruction screen (shown when no view is selected)
+        self._instruction_widget = QWidget()
+        instruction_layout = QVBoxLayout(self._instruction_widget)
+        instruction_layout.setAlignment(Qt.AlignCenter)
+        instruction_label = QLabel(
+            "<h2>Select a View</h2>"
+            "<p>Use the toggle buttons above to select which views to display:</p>"
+            "<p><b>WatchView:</b> Monitor and modify variable values in real-time.<br>"
+            "Add variables, set scaling/offset, and write values directly.</p>"
+            "<p><b>ScopeView:</b> Capture and visualize variable waveforms.<br>"
+            "Configure trigger settings and sample multiple channels.</p>"
+            "<p><i>Select both buttons to display a split view.</i></p>"
+        )
+        instruction_label.setAlignment(Qt.AlignCenter)
+        instruction_label.setWordWrap(True)
+        instruction_label.setStyleSheet("color: #666; padding: 40px;")
+        instruction_layout.addWidget(instruction_label)
+
+        # Splitter for combined view (horizontal for better usability)
+        self._view_splitter = QSplitter(Qt.Horizontal)
+        self._view_splitter.addWidget(self._watch_view_tab)
+        self._view_splitter.addWidget(self._scope_view_tab)
+        self._view_splitter.setStretchFactor(0, 1)  # 50/50 split
+        self._view_splitter.setStretchFactor(1, 1)
+
+        data_views_layout.addWidget(self._instruction_widget)
+        data_views_layout.addWidget(self._view_splitter)
+
+        self._tab_widget.addTab(self._data_views_tab, "Data Views")
+
+        # Set initial view (Both selected)
+        self._on_view_toggle_changed()
 
         # Add connection controls to Setup tab (top of layout)
         self._add_connection_controls()
@@ -105,6 +193,9 @@ class MainWindow(QMainWindow):
         icon_path = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
         if os.path.exists(icon_path):
             self.setWindowIcon(QtGui.QIcon(icon_path))
+
+        # Restore window state from settings
+        self._restore_window_state()
 
     def _add_connection_controls(self):
         """Add connection controls to the top of the WatchPlot tab."""
@@ -208,14 +299,6 @@ class MainWindow(QMainWindow):
         # Config manager signals
         self._config_manager.error_occurred.connect(self._show_error)
 
-        # Tab save/load button connections
-        self._watch_plot_tab.save_button.clicked.connect(self._save_config)
-        self._watch_plot_tab.load_button.clicked.connect(self._load_config)
-        self._scope_view_tab.save_button.clicked.connect(self._save_config)
-        self._scope_view_tab.load_button.clicked.connect(self._load_config)
-        self._watch_view_tab.save_button.clicked.connect(self._save_config)
-        self._watch_view_tab.load_button.clicked.connect(self._load_config)
-
         # Tab polling control signals -> DataPoller
         self._watch_plot_tab.live_polling_changed.connect(self._on_watch_live_changed)
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
@@ -290,6 +373,34 @@ class MainWindow(QMainWindow):
         except ValueError:
             pass
 
+    def _on_view_toggle_changed(self):
+        """Handle view toggle button changes."""
+        watch_selected = self._watch_view_btn.isChecked()
+        scope_selected = self._scope_view_btn.isChecked()
+
+        if watch_selected and scope_selected:
+            # Both views - show splitter with both
+            self._instruction_widget.hide()
+            self._view_splitter.show()
+            self._watch_view_tab.show()
+            self._scope_view_tab.show()
+        elif watch_selected:
+            # Only WatchView
+            self._instruction_widget.hide()
+            self._view_splitter.show()
+            self._watch_view_tab.show()
+            self._scope_view_tab.hide()
+        elif scope_selected:
+            # Only ScopeView
+            self._instruction_widget.hide()
+            self._view_splitter.show()
+            self._watch_view_tab.hide()
+            self._scope_view_tab.show()
+        else:
+            # No view selected - show instruction screen
+            self._view_splitter.hide()
+            self._instruction_widget.show()
+
     def _on_watch_live_changed(self, index: int, is_live: bool):
         """Handle watch variable live polling state change (Tab1)."""
         if is_live:
@@ -326,6 +437,18 @@ class MainWindow(QMainWindow):
 
     def _save_config(self):
         """Save current configuration."""
+        # Determine view mode from toggle buttons
+        watch_on = self._watch_view_btn.isChecked()
+        scope_on = self._scope_view_btn.isChecked()
+        if watch_on and scope_on:
+            view_mode = "Both"
+        elif watch_on:
+            view_mode = "WatchView"
+        elif scope_on:
+            view_mode = "ScopeView"
+        else:
+            view_mode = "None"
+
         config = ConfigManager.build_config(
             elf_file=getattr(self, "_elf_file_path", ""),
             com_port=self._port_combo.currentText(),
@@ -333,6 +456,7 @@ class MainWindow(QMainWindow):
             watch_view=self._watch_plot_tab.get_config(),
             scope_view=self._scope_view_tab.get_config(),
             tab3_view=self._watch_view_tab.get_config(),
+            view_mode=view_mode,
         )
         self._config_manager.save_config(config)
 
@@ -372,6 +496,22 @@ class MainWindow(QMainWindow):
         self._scope_view_tab.load_config(config.get("scope_view", {}))
         self._watch_view_tab.load_config(config.get("tab3_view", {}))
 
+        # Load view mode and set toggle buttons
+        view_mode = config.get("view_mode", "Both")
+        if view_mode == "Both":
+            self._watch_view_btn.setChecked(True)
+            self._scope_view_btn.setChecked(True)
+        elif view_mode == "WatchView":
+            self._watch_view_btn.setChecked(True)
+            self._scope_view_btn.setChecked(False)
+        elif view_mode == "ScopeView":
+            self._watch_view_btn.setChecked(False)
+            self._scope_view_btn.setChecked(True)
+        else:  # None
+            self._watch_view_btn.setChecked(False)
+            self._scope_view_btn.setChecked(False)
+        self._on_view_toggle_changed()
+
         # Re-enable widgets after loading config (for dynamically created widgets)
         is_connected = self._app_state.is_connected()
         if is_connected:
@@ -406,8 +546,51 @@ class MainWindow(QMainWindow):
         logging.error(message)
         QMessageBox.critical(self, "Error", message)
 
+    def _save_window_state(self):
+        """Save window geometry and state to settings."""
+        self._settings.setValue("window/geometry", self.saveGeometry())
+        self._settings.setValue("window/state", self.saveState())
+        self._settings.setValue("window/splitter_sizes", self._view_splitter.sizes())
+        self._settings.setValue("window/watch_view_checked", self._watch_view_btn.isChecked())
+        self._settings.setValue("window/scope_view_checked", self._scope_view_btn.isChecked())
+        self._settings.setValue("window/current_tab", self._tab_widget.currentIndex())
+
+    def _restore_window_state(self):
+        """Restore window geometry and state from settings."""
+        # Restore window geometry
+        geometry = self._settings.value("window/geometry")
+        if geometry:
+            self.restoreGeometry(geometry)
+
+        # Restore window state
+        state = self._settings.value("window/state")
+        if state:
+            self.restoreState(state)
+
+        # Restore splitter sizes
+        splitter_sizes = self._settings.value("window/splitter_sizes")
+        if splitter_sizes:
+            # Convert to list of ints if needed
+            if isinstance(splitter_sizes, list):
+                sizes = [int(s) for s in splitter_sizes]
+                self._view_splitter.setSizes(sizes)
+
+        # Restore toggle button states
+        watch_checked = self._settings.value("window/watch_view_checked", False, type=bool)
+        scope_checked = self._settings.value("window/scope_view_checked", False, type=bool)
+        self._watch_view_btn.setChecked(watch_checked)
+        self._scope_view_btn.setChecked(scope_checked)
+        self._on_view_toggle_changed()
+
+        # Restore current tab
+        current_tab = self._settings.value("window/current_tab", 0, type=int)
+        self._tab_widget.setCurrentIndex(current_tab)
+
     def closeEvent(self, event):
         """Handle window close event."""
+        # Save window state before closing
+        self._save_window_state()
+
         # Stop data poller
         self._data_poller.stop()
 
