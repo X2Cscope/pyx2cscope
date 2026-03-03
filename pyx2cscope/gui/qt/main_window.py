@@ -238,11 +238,15 @@ class MainWindow(QMainWindow):
                 self._setup_tab.elf_file_path = elf_path
 
         if not elf_path:
+            self._setup_tab.set_loading(False)
             self._show_error("Please select an ELF file first.")
             return
 
         # Get connection parameters based on selected interface
         conn_params = self._setup_tab.get_connection_params()
+
+        # Process events to show loading indicator before blocking operation
+        QApplication.processEvents()
 
         connected = self._connection_manager.toggle_connection(
             elf_path, **conn_params

@@ -97,12 +97,23 @@ class SetupTab(QWidget):
         connection_layout.addWidget(self._interface_combo, row, 1)
         row += 1
 
-        # Connect button
+        # Connect button and loading indicator row
+        connect_layout = QHBoxLayout()
         self._connect_btn = QPushButton("Connect")
         self._connect_btn.setFixedSize(100, 30)
-        self._connect_btn.clicked.connect(self.connect_requested.emit)
-        connection_layout.addWidget(self._connect_btn, row, 1)
+        self._connect_btn.clicked.connect(self._on_connect_clicked)
+        connect_layout.addWidget(self._connect_btn)
 
+        # Loading indicator (simple text label)
+        self._loading_label = QLabel("Loading...")
+        self._loading_label.setStyleSheet("color: #666; font-style: italic;")
+        self._loading_label.hide()
+        connect_layout.addWidget(self._loading_label)
+        connect_layout.addStretch()
+
+        connection_layout.addLayout(connect_layout, row, 1, 1, 2)
+
+        self._connection_group = connection_group
         left_layout.addWidget(connection_group)
 
         # === UART Settings Group ===
@@ -382,10 +393,34 @@ class SetupTab(QWidget):
 
     def set_connected(self, connected: bool):
         """Update UI for connection state."""
+        # Hide loading label
+        self._loading_label.hide()
+        self._connect_btn.setEnabled(True)
+
         self._connect_btn.setText("Disconnect" if connected else "Connect")
-        # Disable interface selection when connected
+
+        # Disable/enable interface selection and ELF button
         self._interface_combo.setEnabled(not connected)
         self._elf_button.setEnabled(not connected)
+
+        # Disable/enable interface settings groups when connected
+        self._uart_group.setEnabled(not connected)
+        self._tcp_group.setEnabled(not connected)
+        self._can_group.setEnabled(not connected)
+
+    def set_loading(self, loading: bool):
+        """Show or hide the loading indicator."""
+        if loading:
+            self._loading_label.show()
+            self._connect_btn.setEnabled(False)
+        else:
+            self._loading_label.hide()
+            self._connect_btn.setEnabled(True)
+
+    def _on_connect_clicked(self):
+        """Handle connect button click - show loading and emit signal."""
+        self.set_loading(True)
+        self.connect_requested.emit()
 
     def update_device_info(self, device_info):
         """Update device info labels."""
