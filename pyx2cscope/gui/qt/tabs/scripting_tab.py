@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QTabWidget,
+    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
@@ -38,32 +39,32 @@ class ScriptHelpDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Script Help")
-        self.setMinimumSize(600, 500)
+        self.setMinimumSize(700, 600)
         self._setup_ui()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
 
-        help_text = QPlainTextEdit()
-        help_text.setReadOnly(True)
-        help_text.setStyleSheet(
-            "QPlainTextEdit { font-family: Consolas, monospace; font-size: 10pt; }"
+        help_browser = QTextBrowser()
+        help_browser.setOpenExternalLinks(True)
+        help_browser.setStyleSheet(
+            "QTextBrowser { font-family: Segoe UI, Arial, sans-serif; font-size: 10pt; }"
         )
-        help_text.setPlainText(self._load_help_content())
-        layout.addWidget(help_text)
+        help_browser.setMarkdown(self._load_help_content())
+        layout.addWidget(help_browser)
 
         button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         button_box.accepted.connect(self.accept)
         layout.addWidget(button_box)
 
     def _load_help_content(self) -> str:
-        """Load help content from external file."""
+        """Load help content from external markdown file."""
         try:
-            help_path = get_resource_path("script_help.txt")
+            help_path = get_resource_path("script_help.md")
             with open(help_path, "r", encoding="utf-8") as f:
                 return f.read()
         except Exception as e:
-            return f"Error loading help file: {e}\n\nPlease check that script_help.txt exists in the resources folder."
+            return f"# Error\n\nCould not load help file: {e}\n\nPlease check that `script_help.md` exists in the resources folder."
 
 
 class ScriptWorker(QThread):
