@@ -80,7 +80,7 @@ class ConnectionManager(QObject):
             self._app_state.set_x2cscope(None)
             return False
 
-    def connect_tcp(self, host: str, port: int, elf_file: str) -> bool:
+    def connect_tcp(self, host: str, tcp_port: int, elf_file: str) -> bool:
         """Connect to the device via TCP/IP.
 
         Args:
@@ -94,14 +94,14 @@ class ConnectionManager(QObject):
         try:
             x2cscope = X2CScope(
                 host=host,
-                port=port,
+                tcp_port=tcp_port,
                 elf_file=elf_file,
             )
 
             self._app_state.elf_file = elf_file
             self._app_state.set_x2cscope(x2cscope)
 
-            logging.info(f"Connected via TCP/IP to {host}:{port}")
+            logging.info(f"Connected via TCP/IP to {host}:{tcp_port}")
             self.connection_changed.emit(True)
             return True
 
@@ -112,26 +112,65 @@ class ConnectionManager(QObject):
             self._app_state.set_x2cscope(None)
             return False
 
-    def connect_can(self, bus: str, elf_file: str) -> bool:
+    def connect_can(
+        self,
+        elf_file: str,
+        bus_type: str = "USB",
+        channel: int = 1,
+        baudrate: str = "125K",
+        mode: str = "Standard",
+        tx_id: str = "7F1",
+        rx_id: str = "7F0",
+    ) -> bool:
         """Connect to the device via CAN.
 
         Args:
-            bus: CAN bus identifier.
             elf_file: Path to the ELF file for variable information.
+            bus_type: CAN bus type ("USB" or "LAN").
+            channel: CAN channel number.
+            baudrate: CAN baudrate ("125K", "250K", "500K", "1M").
+            mode: CAN mode ("Standard" or "Extended").
+            tx_id: Transmit ID in hex.
+            rx_id: Receive ID in hex.
 
         Returns:
             True if connection successful, False otherwise.
         """
         try:
+            # Convert baudrate string to numeric value
+            baudrate_map = {
+                "125K": 125000,
+                "250K": 250000,
+                "500K": 500000,
+                "1M": 1000000,
+            }
+            baud_value = baudrate_map.get(baudrate, 500000)
+
+            # Convert hex IDs to integers
+            tx_id_int = int(tx_id, 16)
+            rx_id_int = int(rx_id, 16)
+
+            # Determine if extended mode
+            is_extended = mode == "Extended"
+
             x2cscope = X2CScope(
-                bus=bus,
                 elf_file=elf_file,
+                interface_type="CAN",
+                can_bus_type=bus_type.lower(),
+                can_channel=channel,
+                can_baudrate=baud_value,
+                can_tx_id=tx_id_int,
+                can_rx_id=rx_id_int,
+                can_extended=is_extended,
             )
 
             self._app_state.elf_file = elf_file
             self._app_state.set_x2cscope(x2cscope)
 
-            logging.info(f"Connected via CAN on bus {bus}")
+            logging.info(
+                f"Connected via CAN - {bus_type} ch{channel} @ {baudrate}, "
+                f"Tx:{tx_id} Rx:{rx_id} ({mode})"
+            )
             self.connection_changed.emit(True)
             return True
 
@@ -151,7 +190,7 @@ class ConnectionManager(QObject):
                 - interface: "UART", "TCP/IP", or "CAN"
                 - UART: port, baud_rate
                 - TCP/IP: host, port
-                - CAN: bus
+                - CAN: bus_type, channel, baudrate, mode, tx_id, rx_id
 
         Returns:
             True if connection successful, False otherwise.
@@ -175,8 +214,15 @@ class ConnectionManager(QObject):
             port = params.get("port", 12666)
             return self.connect_tcp(host, port, elf_file)
         elif interface == "CAN":
-            bus = params.get("bus", "0")
-            return self.connect_can(bus, elf_file)
+            return self.connect_can(
+                elf_file=elf_file,
+                bus_type=params.get("bus_type", "USB"),
+                channel=params.get("channel", 1),
+                baudrate=params.get("baudrate", "125K"),
+                mode=params.get("mode", "Standard"),
+                tx_id=params.get("tx_id", "7F1"),
+                rx_id=params.get("rx_id", "7F0"),
+            )
         else:
             self.error_occurred.emit(f"Unknown interface type: {interface}")
             return False

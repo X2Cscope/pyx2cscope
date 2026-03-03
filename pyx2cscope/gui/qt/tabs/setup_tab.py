@@ -3,12 +3,11 @@
 import os
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QRegExp, QSettings, Qt, pyqtSignal
+from PyQt5.QtGui import QIcon, QIntValidator, QRegExpValidator
 from PyQt5.QtWidgets import (
     QComboBox,
     QFileDialog,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -31,9 +30,9 @@ class SetupTab(QWidget):
 
     Features:
     - Interface selection (UART, TCP/IP, CAN)
-    - COM port selection (UART)
-    - IP address and port (TCP/IP)
-    - Bus ID (CAN)
+    - UART settings (Port, Baud Rate)
+    - TCP/IP settings (IP Address, Port)
+    - CAN settings (Bus Type, Channel, Baudrate, Mode, Tx-ID, Rx-ID)
     - ELF file selection
     - Device info display
     """
@@ -52,11 +51,13 @@ class SetupTab(QWidget):
         super().__init__(parent)
         self._app_state = app_state
         self._elf_file_path = ""
+        self._settings = QSettings("Microchip", "pyX2Cscope")
 
         # Device info labels
         self._device_info_labels = {}
 
         self._setup_ui()
+        self._restore_connection_settings()
 
     def _setup_ui(self):
         """Set up the user interface."""
@@ -66,6 +67,10 @@ class SetupTab(QWidget):
         self.setLayout(main_layout)
 
         # Left side: Connection settings
+        left_layout = QVBoxLayout()
+        left_layout.setAlignment(Qt.AlignTop)
+
+        # === Connection Settings Group (ELF file + Interface selection) ===
         connection_group = QGroupBox("Connection Settings")
         connection_layout = QGridLayout()
         connection_layout.setSpacing(8)
@@ -92,66 +97,147 @@ class SetupTab(QWidget):
         connection_layout.addWidget(self._interface_combo, row, 1)
         row += 1
 
-        # === Connection parameter row (changes based on interface) ===
-        # Label for connection param 1
-        self._param1_label = QLabel("Port:")
-        connection_layout.addWidget(self._param1_label, row, 0, Qt.AlignRight)
-
-        # UART: Port combo
-        self._port_combo = QComboBox()
-        self._port_combo.setFixedWidth(120)
-        connection_layout.addWidget(self._port_combo, row, 1)
-
-        # TCP/IP: IP Address
-        self._ip_edit = QLineEdit("192.168.1.100")
-        self._ip_edit.setFixedWidth(120)
-        self._ip_edit.setPlaceholderText("e.g., 192.168.1.100")
-        connection_layout.addWidget(self._ip_edit, row, 1)
-
-        # CAN: Bus ID
-        self._can_bus_edit = QLineEdit("0")
-        self._can_bus_edit.setFixedWidth(120)
-        connection_layout.addWidget(self._can_bus_edit, row, 1)
-
-        # Refresh button (UART only)
-        self._refresh_btn = QPushButton()
-        self._refresh_btn.setFixedSize(25, 25)
-        refresh_icon = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
-        if os.path.exists(refresh_icon):
-            self._refresh_btn.setIcon(QIcon(refresh_icon))
-        connection_layout.addWidget(self._refresh_btn, row, 2)
-        row += 1
-
-        # === Connection parameter row 2 (for interfaces that need it) ===
-        # Label for connection param 2
-        self._param2_label = QLabel("Baud Rate:")
-        connection_layout.addWidget(self._param2_label, row, 0, Qt.AlignRight)
-
-        # UART: Baud rate combo
-        self._baud_combo = QComboBox()
-        self._baud_combo.setFixedWidth(120)
-        self._baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
-        self._baud_combo.setCurrentText("115200")
-        connection_layout.addWidget(self._baud_combo, row, 1)
-
-        # TCP/IP: Port
-        self._tcp_port_edit = QLineEdit("12666")
-        self._tcp_port_edit.setFixedWidth(120)
-        connection_layout.addWidget(self._tcp_port_edit, row, 1)
-        row += 1
-
         # Connect button
         self._connect_btn = QPushButton("Connect")
         self._connect_btn.setFixedSize(100, 30)
         self._connect_btn.clicked.connect(self.connect_requested.emit)
         connection_layout.addWidget(self._connect_btn, row, 1)
 
-        main_layout.addWidget(connection_group)
+        left_layout.addWidget(connection_group)
+
+        # === UART Settings Group ===
+        self._uart_group = QGroupBox("UART Settings")
+        uart_layout = QGridLayout()
+        uart_layout.setSpacing(8)
+        uart_layout.setContentsMargins(10, 15, 10, 10)
+        self._uart_group.setLayout(uart_layout)
+        self._uart_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        uart_row = 0
+
+        # Port
+        uart_layout.addWidget(QLabel("Port:"), uart_row, 0, Qt.AlignRight)
+        self._port_combo = QComboBox()
+        self._port_combo.setFixedWidth(120)
+        uart_layout.addWidget(self._port_combo, uart_row, 1)
+
+        # Refresh button
+        self._refresh_btn = QPushButton()
+        self._refresh_btn.setFixedSize(25, 25)
+        refresh_icon = os.path.join(os.path.dirname(img_src.__file__), "refresh.png")
+        if os.path.exists(refresh_icon):
+            self._refresh_btn.setIcon(QIcon(refresh_icon))
+        uart_layout.addWidget(self._refresh_btn, uart_row, 2)
+        uart_row += 1
+
+        # Baud Rate
+        uart_layout.addWidget(QLabel("Baud Rate:"), uart_row, 0, Qt.AlignRight)
+        self._baud_combo = QComboBox()
+        self._baud_combo.setFixedWidth(120)
+        self._baud_combo.addItems(["38400", "115200", "230400", "460800", "921600"])
+        self._baud_combo.setCurrentText("115200")
+        uart_layout.addWidget(self._baud_combo, uart_row, 1)
+
+        left_layout.addWidget(self._uart_group)
+
+        # === TCP/IP Settings Group ===
+        self._tcp_group = QGroupBox("TCP/IP Settings")
+        tcp_layout = QGridLayout()
+        tcp_layout.setSpacing(8)
+        tcp_layout.setContentsMargins(10, 15, 10, 10)
+        self._tcp_group.setLayout(tcp_layout)
+        self._tcp_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        tcp_row = 0
+
+        # Host (IP address or hostname)
+        tcp_layout.addWidget(QLabel("Host:"), tcp_row, 0, Qt.AlignRight)
+        self._ip_edit = QLineEdit("192.168.0.100")
+        self._ip_edit.setFixedWidth(120)
+        self._ip_edit.setPlaceholderText("IP or hostname")
+        # Validator for IP address or hostname (alphanumeric, dots, hyphens)
+        host_regex = QRegExp(r"^[a-zA-Z0-9][a-zA-Z0-9.\-]*$")
+        self._ip_edit.setValidator(QRegExpValidator(host_regex))
+        tcp_layout.addWidget(self._ip_edit, tcp_row, 1)
+        tcp_row += 1
+
+        # Port (numbers only, 1-65535)
+        tcp_layout.addWidget(QLabel("Port:"), tcp_row, 0, Qt.AlignRight)
+        self._tcp_port_edit = QLineEdit("12666")
+        self._tcp_port_edit.setFixedWidth(120)
+        self._tcp_port_edit.setValidator(QIntValidator(1, 65535))
+        tcp_layout.addWidget(self._tcp_port_edit, tcp_row, 1)
+
+        left_layout.addWidget(self._tcp_group)
+
+        # === CAN Settings Group ===
+        self._can_group = QGroupBox("CAN Settings")
+        can_layout = QGridLayout()
+        can_layout.setSpacing(8)
+        can_layout.setContentsMargins(10, 15, 10, 10)
+        self._can_group.setLayout(can_layout)
+        self._can_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        can_row = 0
+
+        # Bus Type
+        can_layout.addWidget(QLabel("Bus Type:"), can_row, 0, Qt.AlignRight)
+        self._can_bus_type_combo = QComboBox()
+        self._can_bus_type_combo.addItems(["USB", "LAN"])
+        self._can_bus_type_combo.setFixedWidth(120)
+        can_layout.addWidget(self._can_bus_type_combo, can_row, 1)
+        can_row += 1
+
+        # Channel (numbers only)
+        can_layout.addWidget(QLabel("Channel:"), can_row, 0, Qt.AlignRight)
+        self._can_channel_edit = QLineEdit("1")
+        self._can_channel_edit.setFixedWidth(120)
+        self._can_channel_edit.setValidator(QIntValidator(0, 255))
+        can_layout.addWidget(self._can_channel_edit, can_row, 1)
+        can_row += 1
+
+        # Baudrate
+        can_layout.addWidget(QLabel("Baudrate:"), can_row, 0, Qt.AlignRight)
+        self._can_baudrate_combo = QComboBox()
+        self._can_baudrate_combo.addItems(["125K", "250K", "500K", "1M"])
+        self._can_baudrate_combo.setCurrentText("125K")
+        self._can_baudrate_combo.setFixedWidth(120)
+        can_layout.addWidget(self._can_baudrate_combo, can_row, 1)
+        can_row += 1
+
+        # Mode
+        can_layout.addWidget(QLabel("Mode:"), can_row, 0, Qt.AlignRight)
+        self._can_mode_combo = QComboBox()
+        self._can_mode_combo.addItems(["Standard", "Extended"])
+        self._can_mode_combo.setFixedWidth(120)
+        can_layout.addWidget(self._can_mode_combo, can_row, 1)
+        can_row += 1
+
+        # Tx-ID (hex)
+        can_layout.addWidget(QLabel("Tx-ID (hex):"), can_row, 0, Qt.AlignRight)
+        self._can_tx_id_edit = QLineEdit("7F1")
+        self._can_tx_id_edit.setFixedWidth(120)
+        can_layout.addWidget(self._can_tx_id_edit, can_row, 1)
+        can_row += 1
+
+        # Rx-ID (hex)
+        can_layout.addWidget(QLabel("Rx-ID (hex):"), can_row, 0, Qt.AlignRight)
+        self._can_rx_id_edit = QLineEdit("7F0")
+        self._can_rx_id_edit.setFixedWidth(120)
+        can_layout.addWidget(self._can_rx_id_edit, can_row, 1)
+
+        left_layout.addWidget(self._can_group)
+        left_layout.addStretch()
+
+        main_layout.addLayout(left_layout)
 
         # Add spacing between groups
         main_layout.addSpacing(20)
 
-        # Right side: Device info
+        # Right side: Device info (aligned to top)
+        right_layout = QVBoxLayout()
+        right_layout.setAlignment(Qt.AlignTop)
+
         device_group = QGroupBox("Device Information")
         device_layout = QGridLayout()
         device_layout.setSpacing(5)
@@ -184,7 +270,10 @@ class SetupTab(QWidget):
             label.setMinimumWidth(150)
             device_layout.addWidget(label, i, 1, Qt.AlignLeft)
 
-        main_layout.addWidget(device_group)
+        right_layout.addWidget(device_group)
+        right_layout.addStretch()
+
+        main_layout.addLayout(right_layout)
 
         # Add stretch to push everything to the left
         main_layout.addStretch()
@@ -194,44 +283,34 @@ class SetupTab(QWidget):
 
     def _on_interface_changed(self, interface: str):
         """Handle interface selection change."""
-        # Hide all interface-specific widgets
-        self._port_combo.hide()
-        self._ip_edit.hide()
-        self._can_bus_edit.hide()
-        self._refresh_btn.hide()
-        self._baud_combo.hide()
-        self._tcp_port_edit.hide()
-        self._param2_label.hide()
+        # Hide all interface settings groups
+        self._uart_group.hide()
+        self._tcp_group.hide()
+        self._can_group.hide()
 
-        # Show relevant widgets based on interface
+        # Show relevant group based on interface
         if interface == "UART":
-            self._param1_label.setText("Port:")
-            self._port_combo.show()
-            self._refresh_btn.show()
-            self._param2_label.setText("Baud Rate:")
-            self._param2_label.show()
-            self._baud_combo.show()
+            self._uart_group.show()
         elif interface == "TCP/IP":
-            self._param1_label.setText("IP Address:")
-            self._ip_edit.show()
-            self._param2_label.setText("Port:")
-            self._param2_label.show()
-            self._tcp_port_edit.show()
+            self._tcp_group.show()
         elif interface == "CAN":
-            self._param1_label.setText("Bus ID:")
-            self._can_bus_edit.show()
-            # CAN has no second parameter
+            self._can_group.show()
 
     def _on_select_elf(self):
         """Handle ELF file selection."""
+        # Get last directory from settings
+        last_dir = self._settings.value("elf_file_dir", "", type=str)
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select ELF File",
-            "",
+            last_dir,
             "ELF Files (*.elf);;All Files (*.*)",
         )
         if file_path:
             self._elf_file_path = file_path
+            # Save the directory for next time
+            self._settings.setValue("elf_file_dir", os.path.dirname(file_path))
             # Show shortened filename
             basename = os.path.basename(file_path)
             if len(basename) > 25:
@@ -269,11 +348,6 @@ class SetupTab(QWidget):
             return int(self._tcp_port_edit.text())
         except ValueError:
             return 12666
-
-    @property
-    def can_bus_id(self) -> str:
-        """Get the CAN bus ID."""
-        return self._can_bus_edit.text()
 
     @property
     def connect_btn(self) -> QPushButton:
@@ -338,9 +412,14 @@ class SetupTab(QWidget):
             params["baud_rate"] = int(self._baud_combo.currentText())
         elif interface == "TCP/IP":
             params["host"] = self._ip_edit.text()
-            params["port"] = self.tcp_port
+            params["tcp_port"] = self.tcp_port
         elif interface == "CAN":
-            params["bus"] = self._can_bus_edit.text()
+            params["bus_type"] = self._can_bus_type_combo.currentText()
+            params["channel"] = int(self._can_channel_edit.text())
+            params["baudrate"] = self._can_baudrate_combo.currentText()
+            params["mode"] = self._can_mode_combo.currentText()
+            params["tx_id"] = self._can_tx_id_edit.text()
+            params["rx_id"] = self._can_rx_id_edit.text()
 
         return params
 
@@ -364,5 +443,64 @@ class SetupTab(QWidget):
             if "port" in params:
                 self._tcp_port_edit.setText(str(params["port"]))
         elif interface == "CAN":
-            if "bus" in params:
-                self._can_bus_edit.setText(params["bus"])
+            if "bus_type" in params:
+                self._can_bus_type_combo.setCurrentText(params["bus_type"])
+            if "channel" in params:
+                self._can_channel_edit.setText(str(params["channel"]))
+            if "baudrate" in params:
+                self._can_baudrate_combo.setCurrentText(params["baudrate"])
+            if "mode" in params:
+                self._can_mode_combo.setCurrentText(params["mode"])
+            if "tx_id" in params:
+                self._can_tx_id_edit.setText(params["tx_id"])
+            if "rx_id" in params:
+                self._can_rx_id_edit.setText(params["rx_id"])
+
+    def save_connection_settings(self):
+        """Save current connection settings to persistent storage."""
+        self._settings.setValue("connection/interface", self._interface_combo.currentText())
+
+        # UART settings
+        self._settings.setValue("connection/uart_baud", self._baud_combo.currentText())
+
+        # TCP/IP settings
+        self._settings.setValue("connection/tcp_host", self._ip_edit.text())
+        self._settings.setValue("connection/tcp_port", self._tcp_port_edit.text())
+
+        # CAN settings
+        self._settings.setValue("connection/can_bus_type", self._can_bus_type_combo.currentText())
+        self._settings.setValue("connection/can_channel", self._can_channel_edit.text())
+        self._settings.setValue("connection/can_baudrate", self._can_baudrate_combo.currentText())
+        self._settings.setValue("connection/can_mode", self._can_mode_combo.currentText())
+        self._settings.setValue("connection/can_tx_id", self._can_tx_id_edit.text())
+        self._settings.setValue("connection/can_rx_id", self._can_rx_id_edit.text())
+
+    def _restore_connection_settings(self):
+        """Restore connection settings from persistent storage."""
+        # Restore interface type
+        interface = self._settings.value("connection/interface", "UART", type=str)
+        self.set_interface(interface)
+
+        # Restore UART settings
+        baud = self._settings.value("connection/uart_baud", "115200", type=str)
+        self._baud_combo.setCurrentText(baud)
+
+        # Restore TCP/IP settings
+        host = self._settings.value("connection/tcp_host", "192.168.0.100", type=str)
+        self._ip_edit.setText(host)
+        tcp_port = self._settings.value("connection/tcp_port", "12666", type=str)
+        self._tcp_port_edit.setText(tcp_port)
+
+        # Restore CAN settings
+        bus_type = self._settings.value("connection/can_bus_type", "USB", type=str)
+        self._can_bus_type_combo.setCurrentText(bus_type)
+        channel = self._settings.value("connection/can_channel", "1", type=str)
+        self._can_channel_edit.setText(channel)
+        baudrate = self._settings.value("connection/can_baudrate", "125K", type=str)
+        self._can_baudrate_combo.setCurrentText(baudrate)
+        mode = self._settings.value("connection/can_mode", "Standard", type=str)
+        self._can_mode_combo.setCurrentText(mode)
+        tx_id = self._settings.value("connection/can_tx_id", "7F1", type=str)
+        self._can_tx_id_edit.setText(tx_id)
+        rx_id = self._settings.value("connection/can_rx_id", "7F0", type=str)
+        self._can_rx_id_edit.setText(rx_id)

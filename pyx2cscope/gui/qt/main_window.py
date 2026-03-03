@@ -250,6 +250,7 @@ class MainWindow(QMainWindow):
 
         if connected:
             self._setup_tab.set_connected(True)
+            self._setup_tab.save_connection_settings()
             self._update_device_info()
         else:
             self._setup_tab.set_connected(False)
