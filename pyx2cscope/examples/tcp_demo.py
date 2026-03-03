@@ -2,23 +2,25 @@
 import time
 
 from pyx2cscope.x2cscope import X2CScope
+from pyx2cscope.utils import get_host_address, get_elf_file_path
 
-elf_file = r"path to your elf file.elf"
-host_address = r"IP address of your device"
-# The device should have a TCP server enabled listening at port 12666
+# Check if x2cscope was injected by the Scripting tab, otherwise create our own
+if globals().get("x2cscope") is None:
+    x2cscope = X2CScope(host=get_host_address(), elf_file=get_elf_file_path())
 
-x2cscope = X2CScope(host=host_address, elf_file=elf_file)
+# Get stop_requested function if running from Scripting tab, otherwise use a dummy
+stop_requested = globals().get("stop_requested", lambda: False)
 
-phase_current = x2cscope.get_variable("motor.iabc.a")
-phase_voltage = x2cscope.get_variable("motor.vabc.a")
+phase_current = x2cscope.get_variable("my_counter")
 
 x2cscope.add_scope_channel(phase_current)
-x2cscope.add_scope_channel(phase_voltage)
 
 x2cscope.request_scope_data()
 
-while True:
+while not stop_requested():
     if x2cscope.is_scope_data_ready():
         print(x2cscope.get_scope_channel_data())
         x2cscope.request_scope_data()
     time.sleep(0.1)
+
+print("Script stopped.")

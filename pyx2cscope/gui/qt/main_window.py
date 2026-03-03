@@ -25,6 +25,7 @@ from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
 from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
 from pyx2cscope.gui.qt.models.app_state import AppState
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
+from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab
 from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
@@ -176,6 +177,10 @@ class MainWindow(QMainWindow):
 
         self._tab_widget.addTab(self._data_views_tab, "Data Views")
 
+        # Tab 3: Scripting
+        self._scripting_tab = ScriptingTab(self._app_state, self)
+        self._tab_widget.addTab(self._scripting_tab, "Scripting")
+
         # Set initial view (Both selected)
         self._on_view_toggle_changed()
 
@@ -266,6 +271,7 @@ class MainWindow(QMainWindow):
         # Update tabs
         self._scope_view_tab.on_connection_changed(connected)
         self._watch_view_tab.on_connection_changed(connected)
+        self._scripting_tab.on_connection_changed(connected)
 
         if connected:
             self._update_device_info()
