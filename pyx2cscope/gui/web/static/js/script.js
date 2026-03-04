@@ -4,19 +4,21 @@ function connect(){
     const interfaceType = $('#interfaceType').val();
     formData.append('interfaceType', interfaceType);
 
-    // Map interfaceType to expected argument key
-    const argMap = {
-      'SERIAL': 'port',
-      'TCP_IP': 'host',
-      'CAN': 'bus',
-      'LIN': 'id'
-    };
-
-    if (interfaceType in argMap) {
-        const paramKey = argMap[interfaceType];
-        const paramValue = $('#' + paramKey).val();
-        formData.append('interfaceArgument', paramKey);
-        formData.append('interfaceValue', paramValue);
+    if (interfaceType === 'SERIAL') {
+        formData.append('interfaceArgument', 'port');
+        formData.append('interfaceValue', $('#port').val());
+    }
+    else if (interfaceType === 'TCP_IP') {
+        formData.append('host', $('#host').val());
+        formData.append('tcpPort', $('#tcpPort').val());
+    }
+    else if (interfaceType === 'CAN') {
+        formData.append('canBusType', $('#canBusType').val());
+        formData.append('canChannel', $('#canChannel').val());
+        formData.append('canBaudrate', $('#canBaudrate').val());
+        formData.append('canMode', $('#canMode').val());
+        formData.append('canTxId', $('#canTxId').val());
+        formData.append('canRxId', $('#canRxId').val());
     }
 
     formData.append('elfFile', $('#elfFile')[0].files[0]);
@@ -64,8 +66,7 @@ function setInterfaceSetupFields() {
 
     $('#uartRow').addClass('d-none');
     $('#hostRow').addClass('d-none');
-    $('#busRow').addClass('d-none');
-    $('#linIdRow').addClass('d-none');
+    $('#canRow').addClass('d-none');
 
     if (interfaceType === 'SERIAL') {
         $('#uartRow').removeClass('d-none');
@@ -75,10 +76,7 @@ function setInterfaceSetupFields() {
         $('#hostRow').removeClass('d-none');
     }
     else if (interfaceType === 'CAN') {
-        $('#busRow').removeClass('d-none');
-    }
-    else if (interfaceType === 'LIN') {
-        $('#linIdRow').removeClass('d-none');
+        $('#canRow').removeClass('d-none');
     }
 }
 

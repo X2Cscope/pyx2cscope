@@ -68,12 +68,48 @@ def connect():
 
     call {server_url}/connect to execute.
     """
-    # interface_type_str = request.form.get("interfaceType")
-    interface_arg_str = request.form.get("interfaceArgument")
-    interface_value_str = request.form.get("interfaceValue")
+    interface_type = request.form.get("interfaceType")
     elf_file = request.files.get("elfFile")
 
-    interface_kwargs = {interface_arg_str: interface_value_str}
+    interface_kwargs = {}
+
+    if interface_type == "CAN":
+        # CAN baudrate string to numeric mapping
+        baudrate_map = {
+            "125K": 125000,
+            "250K": 250000,
+            "500K": 500000,
+            "1M": 1000000,
+        }
+        can_bus_type = request.form.get("canBusType", "USB")
+        can_channel = int(request.form.get("canChannel", 1))
+        can_baudrate = request.form.get("canBaudrate", "125K")
+        can_mode = request.form.get("canMode", "Standard")
+        can_tx_id = request.form.get("canTxId", "7F1")
+        can_rx_id = request.form.get("canRxId", "7F0")
+
+        interface_kwargs = {
+            "bus": can_bus_type.lower(),
+            "channel": can_channel,
+            "baudrate": baudrate_map.get(can_baudrate, 125000),
+            "tx_id": int(can_tx_id, 16),
+            "rx_id": int(can_rx_id, 16),
+            "extended": can_mode == "Extended",
+        }
+    elif interface_type == "TCP_IP":
+        host = request.form.get("host", "localhost")
+        tcp_port = int(request.form.get("tcpPort", 12666))
+        interface_kwargs = {
+            "host": host,
+            "tcp_port": tcp_port,
+        }
+    else:
+        # SERIAL
+        interface_arg_str = request.form.get("interfaceArgument")
+        interface_value_str = request.form.get("interfaceValue")
+        if interface_arg_str and interface_value_str:
+            interface_kwargs = {interface_arg_str: interface_value_str}
+
     if elf_file and elf_file.filename.endswith((".elf", ".pkl", ".yml")):
         web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
         if not os.path.exists(web_lib_path):

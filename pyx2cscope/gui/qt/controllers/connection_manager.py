@@ -155,13 +155,12 @@ class ConnectionManager(QObject):
 
             x2cscope = X2CScope(
                 elf_file=elf_file,
-                interface_type="CAN",
-                can_bus_type=bus_type.lower(),
-                can_channel=channel,
-                can_baudrate=baud_value,
-                can_tx_id=tx_id_int,
-                can_rx_id=rx_id_int,
-                can_extended=is_extended,
+                bus=bus_type.lower(),
+                channel=channel,
+                baudrate=baud_value,
+                tx_id=tx_id_int,
+                rx_id=rx_id_int,
+                extended=is_extended,
             )
 
             self._app_state.elf_file = elf_file
