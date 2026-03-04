@@ -61,7 +61,7 @@ sphinx-build -M html doc build --keep-going
 pyinstaller --noconfirm .\pyx2cscope_win.spec 
 ```
 
-## Creating artifacts to upload to github release page
+## Creating artifacts to upload to Github release page
 This script will execute the pyinstaller command listed above,
 include the script file to start the web interface, zip
 the contents of the dist folder and add the whell file
@@ -70,5 +70,3 @@ available on pypi in the dist folder.
 ```bash
 python -m scripts/build.py
 ```
-
-## Creating artifacts to upload to GitHu

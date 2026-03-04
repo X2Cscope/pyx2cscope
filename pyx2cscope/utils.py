@@ -19,6 +19,7 @@ def get_config_file() -> ConfigParser:
     config_file = "config.ini"
     default_path = {"path": "path_to_your_elf_file"}
     default_com = {"com_port": "your_com_port, ex:COM3"}
+    default_host_ip = {"host_ip": "your_host_ip, ex:192.168.1.100"}
     config = ConfigParser()
     if os.path.exists(config_file):
         config.read(config_file)
@@ -26,6 +27,7 @@ def get_config_file() -> ConfigParser:
         # Create the config file with the default value
         config["ELF_FILE"] = default_path
         config["COM_PORT"] = default_com
+        config["HOST_IP"] = default_host_ip
         with open(config_file, "w") as configfile:
             config.write(configfile)
         logging.debug(f"Config file '{config_file}' created with default values")

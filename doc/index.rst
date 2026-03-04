@@ -8,7 +8,7 @@ This comprehensive package offers developers a powerful toolkit for embedded sof
 combining real-time debugging capabilities with advanced data visualization features directly within
 the Python environment.
 pyx2cscope makes use of lnet protocol to communicate with the embedded hardware via different communication interfaces
-like UART, CAN, LIN, USB, TCP/IP, etc.
+like UART and TCP/IP. CAN support is coming soon.
 
 pyX2Cscope
 ==========
