@@ -12,7 +12,6 @@ Tests cover:
 import argparse
 import subprocess
 import sys
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -94,7 +93,7 @@ class TestCLIArgumentParsing:
         assert args.port is None
         assert args.qt is True  # Default (store_false means True when not provided)
         assert args.web is False
-        assert args.web_port == 5000
+        assert args.web_port == 5000  # noqa: PLR2004
         assert args.host == "localhost"
 
     def test_parse_web_mode_arguments(self):
@@ -111,7 +110,7 @@ class TestCLIArgumentParsing:
         args, unknown = parser.parse_known_args(["-w", "-wp", "8080"])
 
         assert args.web is True
-        assert args.web_port == 8080
+        assert args.web_port == 8080  # noqa: PLR2004
 
     def test_parse_web_mode_with_host(self):
         """Test web mode with custom host."""
@@ -175,7 +174,7 @@ class TestCLIVersionFlag:
             [sys.executable, "-m", "pyx2cscope", "-v"],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=10, check=False,
         )
 
         assert result.returncode == 0
@@ -187,7 +186,7 @@ class TestCLIVersionFlag:
             [sys.executable, "-m", "pyx2cscope", "--version"],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=10, check=False,
         )
 
         assert result.returncode == 0
@@ -203,7 +202,7 @@ class TestCLIHelpFlag:
             [sys.executable, "-m", "pyx2cscope", "-h"],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=10, check=False,
         )
 
         assert result.returncode == 0
@@ -217,7 +216,7 @@ class TestCLIHelpFlag:
             [sys.executable, "-m", "pyx2cscope", "--help"],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=10, check=False,
         )
 
         assert result.returncode == 0
@@ -248,7 +247,7 @@ class TestCLIExecutionModes:
 
     def test_web_mode_called_with_w_flag(self, mocker):
         """Test Web GUI is launched with -w flag."""
-        mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
+        _mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
         mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
 
         args = argparse.Namespace(

@@ -10,7 +10,7 @@ Tests cover:
 """
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -66,7 +66,7 @@ class TestAppStateModel:
         retrieved = app_state.get_watch_var(0)
 
         assert retrieved.name == "test_var"
-        assert retrieved.value == 10.0
+        assert retrieved.value == 10.0  # noqa: PLR2004
 
     def test_set_watch_variable_bounds(self, app_state):
         """Test watch variable index bounds checking."""
@@ -131,7 +131,7 @@ class TestWatchVariableDataclass:
         )
 
         # scaled_value = (value * scaling) + offset = (10 * 2) + 5 = 25
-        assert watch_var.scaled_value == 25.0
+        assert watch_var.scaled_value == 25.0  # noqa: PLR2004
 
     def test_scaled_value_with_defaults(self):
         """Test scaled value with default scaling and offset."""
@@ -140,7 +140,7 @@ class TestWatchVariableDataclass:
         watch_var = WatchVariable(name="test", value=10.0)
 
         # With default scaling=1.0 and offset=0.0
-        assert watch_var.scaled_value == 10.0
+        assert watch_var.scaled_value == 10.0  # noqa: PLR2004
 
     def test_var_ref_property(self):
         """Test var_ref property get/set."""
@@ -177,7 +177,7 @@ class TestScopeChannelDataclass:
 
         assert channel.name == "test_channel"
         assert channel.trigger is True
-        assert channel.gain == 2.5
+        assert channel.gain == 2.5  # noqa: PLR2004
         assert channel.visible is False
 
 

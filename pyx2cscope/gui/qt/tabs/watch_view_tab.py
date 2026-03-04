@@ -1,7 +1,7 @@
 """WatchView tab (Tab3) - Dynamic watch variables without plotting."""
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Tuple
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QDialog,
     QGridLayout,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -123,7 +122,7 @@ class WatchViewTab(BaseTab):
         """Handle variable list updates."""
         self._variable_list = variables
 
-    def eventFilter(self, source, event):
+    def eventFilter(self, source, event):  # noqa: N802
         """Event filter to handle line edit click events for variable selection."""
         if event.type() == QtCore.QEvent.MouseButtonPress:
             if isinstance(source, QLineEdit) and source in self._variable_edits:

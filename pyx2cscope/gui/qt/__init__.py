@@ -18,6 +18,9 @@ Models:
     - AppState: Centralized application state management
 """
 
+from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
+from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
+from pyx2cscope.gui.qt.dialogs.variable_selection import VariableSelectionDialog
 from pyx2cscope.gui.qt.main_window import MainWindow, execute_qt
 from pyx2cscope.gui.qt.models.app_state import (
     AppState,
@@ -25,14 +28,11 @@ from pyx2cscope.gui.qt.models.app_state import (
     TriggerSettings,
     WatchVariable,
 )
-from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
-from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
-from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 from pyx2cscope.gui.qt.tabs.base_tab import BaseTab
-from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
+from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
-from pyx2cscope.gui.qt.dialogs.variable_selection import VariableSelectionDialog
+from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 
 __all__ = [
     # Main

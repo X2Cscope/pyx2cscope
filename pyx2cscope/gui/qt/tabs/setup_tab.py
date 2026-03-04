@@ -37,6 +37,9 @@ class SetupTab(QWidget):
     - Device info display
     """
 
+    # Constants
+    MAX_FILENAME_DISPLAY_LENGTH = 25
+
     # Signals
     connect_requested = pyqtSignal()
     elf_file_selected = pyqtSignal(str)
@@ -59,7 +62,7 @@ class SetupTab(QWidget):
         self._setup_ui()
         self._restore_connection_settings()
 
-    def _setup_ui(self):
+    def _setup_ui(self):  # noqa: PLR0915
         """Set up the user interface."""
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
@@ -324,8 +327,8 @@ class SetupTab(QWidget):
             self._settings.setValue("elf_file_dir", os.path.dirname(file_path))
             # Show shortened filename
             basename = os.path.basename(file_path)
-            if len(basename) > 25:
-                basename = basename[:22] + "..."
+            if len(basename) > self.MAX_FILENAME_DISPLAY_LENGTH:
+                basename = basename[: self.MAX_FILENAME_DISPLAY_LENGTH - 3] + "..."
             self._elf_button.setText(basename)
             self._elf_button.setToolTip(file_path)
             self.elf_file_selected.emit(file_path)
@@ -381,8 +384,8 @@ class SetupTab(QWidget):
         self._elf_file_path = path
         if path:
             basename = os.path.basename(path)
-            if len(basename) > 25:
-                basename = basename[:22] + "..."
+            if len(basename) > self.MAX_FILENAME_DISPLAY_LENGTH:
+                basename = basename[: self.MAX_FILENAME_DISPLAY_LENGTH - 3] + "..."
             self._elf_button.setText(basename)
             self._elf_button.setToolTip(path)
 

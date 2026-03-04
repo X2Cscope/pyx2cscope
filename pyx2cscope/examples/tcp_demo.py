@@ -1,8 +1,8 @@
 """Demo scripting for user to get started with TCP-IP."""
 import time
 
+from pyx2cscope.utils import get_elf_file_path, get_host_address
 from pyx2cscope.x2cscope import X2CScope
-from pyx2cscope.utils import get_host_address, get_elf_file_path
 
 # Check if x2cscope was injected by the Scripting tab, otherwise create our own
 if globals().get("x2cscope") is None:

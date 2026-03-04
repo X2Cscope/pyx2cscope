@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import (
     QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -168,7 +167,7 @@ class ScopeViewTab(BaseTab):
 
         return group
 
-    def _create_variable_group(self) -> QGroupBox:
+    def _create_variable_group(self) -> QGroupBox:  # noqa: PLR0915
         """Create the variable selection group box."""
         group = QGroupBox("Variable Selection")
         layout = QVBoxLayout()
@@ -270,7 +269,7 @@ class ScopeViewTab(BaseTab):
         """Handle variable list updates."""
         self._variable_list = variables
 
-    def eventFilter(self, source, event):
+    def eventFilter(self, source, event):  # noqa: N802
         """Event filter to handle line edit click events for variable selection."""
         if event.type() == QtCore.QEvent.MouseButtonPress:
             if isinstance(source, QLineEdit) and source in self._var_line_edits:

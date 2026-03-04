@@ -43,7 +43,7 @@ class TestPyX2CScope:
             scope = X2CScope(elf_file=self.elf_file)
 
             # Verify the warning was raised
-            assert len(w) == 2
+            assert len(w) == 2  # noqa: PLR2004
             assert issubclass(w[-1].category, Warning) is True
             assert "No interface select, setting Serial as default." in str(w[0].message)
 
@@ -65,7 +65,7 @@ class TestPyX2CScope:
             scope = X2CScope(elf_file=self.elf_file)
 
             # Verify the warning was raised
-            assert len(w) == 2
+            assert len(w) == 2  # noqa: PLR2004
             assert issubclass(w[-1].category, Warning) is True
             assert "No port provided, using default COM1" in str(w[-1].message)
 

@@ -85,7 +85,7 @@ class ConnectionManager(QObject):
 
         Args:
             host: IP address of the target.
-            port: TCP port number.
+            tcp_port: TCP port number.
             elf_file: Path to the ELF file for variable information.
 
         Returns:

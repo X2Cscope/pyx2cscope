@@ -4,7 +4,6 @@ This module provides common fixtures for CLI, Qt GUI, and Web GUI testing.
 """
 
 import os
-import sys
 
 import pytest
 

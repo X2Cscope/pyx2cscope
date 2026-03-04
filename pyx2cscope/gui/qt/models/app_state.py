@@ -7,7 +7,6 @@ inspired by the WebScope pattern from the web GUI.
 import logging
 from collections import deque
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from PyQt5.QtCore import QMutex, QObject, pyqtSignal
@@ -100,6 +99,7 @@ class AppState(QObject):
     PLOT_DATA_MAXLEN = 250
 
     def __init__(self, parent=None):
+        """Initialize the application state."""
         super().__init__(parent)
         self._mutex = QMutex()
         self._x2cscope: Optional[X2CScope] = None
@@ -220,6 +220,7 @@ class AppState(QObject):
 
     @property
     def port(self) -> str:
+        """Get the current port."""
         return self._port
 
     @port.setter
@@ -230,6 +231,7 @@ class AppState(QObject):
 
     @property
     def baud_rate(self) -> int:
+        """Get the current baud rate."""
         return self._baud_rate
 
     @baud_rate.setter
@@ -240,6 +242,7 @@ class AppState(QObject):
 
     @property
     def elf_file(self) -> str:
+        """Get the current ELF file path."""
         return self._elf_file
 
     @elf_file.setter
@@ -593,6 +596,7 @@ class AppState(QObject):
 
     @property
     def scope_single_shot(self) -> bool:
+        """Get the scope single shot mode setting."""
         return self._scope_single_shot
 
     @scope_single_shot.setter
@@ -603,6 +607,7 @@ class AppState(QObject):
 
     @property
     def sample_time_factor(self) -> int:
+        """Get the sample time factor."""
         return self._sample_time_factor
 
     @sample_time_factor.setter
@@ -613,6 +618,7 @@ class AppState(QObject):
 
     @property
     def scope_sample_time_us(self) -> int:
+        """Get the scope sample time in microseconds."""
         return self._scope_sample_time_us
 
     @scope_sample_time_us.setter
@@ -623,6 +629,7 @@ class AppState(QObject):
 
     @property
     def real_sample_time(self) -> float:
+        """Get the real sample time."""
         return self._real_sample_time
 
     # ============= Tab3 Live Variables =============
@@ -746,6 +753,7 @@ class AppState(QObject):
 
     @property
     def watch_poll_interval_ms(self) -> int:
+        """Get the watch poll interval in milliseconds."""
         return self._watch_poll_interval_ms
 
     @watch_poll_interval_ms.setter

@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         # Refresh ports on startup
         self._refresh_ports()
 
-    def _setup_ui(self):
+    def _setup_ui(self):  # noqa: PLR0915
         """Set up the user interface."""
         QApplication.setStyle(QStyleFactory.create("Fusion"))
 
@@ -357,7 +357,7 @@ class MainWindow(QMainWindow):
         )
         self._config_manager.save_config(config)
 
-    def _load_config(self):
+    def _load_config(self):  # noqa: PLR0912, PLR0915
         """Load configuration from file."""
         config = self._config_manager.load_config()
         if not config:
@@ -484,7 +484,7 @@ class MainWindow(QMainWindow):
         # Always start on Setup tab
         self._tab_widget.setCurrentIndex(0)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event):  # noqa: N802
         """Handle window close event."""
         # Save window state before closing
         self._save_window_state()
@@ -502,6 +502,7 @@ class MainWindow(QMainWindow):
 def execute_qt():
     """Entry point for the Qt application."""
     import sys
+
     from PyQt5.QtWidgets import QApplication
 
     app = QApplication(sys.argv)

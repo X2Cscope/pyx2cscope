@@ -9,9 +9,12 @@ Tests cover:
 """
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
+
+# HTTP status codes for test assertions
+HTTP_OK = 200
 
 
 class TestFlaskAppCreation:
@@ -50,7 +53,7 @@ class TestFlaskRoutes:
         """Test index route returns HTML."""
         response = flask_client.get("/")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         assert b"html" in response.data.lower()
 
     def test_serial_ports_route(self, flask_client, mocker):
@@ -65,7 +68,7 @@ class TestFlaskRoutes:
 
         response = flask_client.get("/serial-ports")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert isinstance(data, list)
 
@@ -73,7 +76,7 @@ class TestFlaskRoutes:
         """Test is-connected route returns False when disconnected."""
         response = flask_client.get("/is-connected")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         # Response might be {"status": False} or {"connected": False}
         assert data.get("status", data.get("connected", None)) is False
@@ -86,13 +89,13 @@ class TestFlaskRoutes:
         mocker.patch.object(web_scope, "disconnect", return_value=None)
 
         response = flask_client.get("/disconnect")
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     def test_variables_route_not_connected(self, flask_client):
         """Test variables route when not connected."""
         response = flask_client.get("/variables?q=test")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert "items" in data
         assert data["items"] == []
@@ -105,7 +108,7 @@ class TestWatchViewRoutes:
         """Test watch data route returns JSON."""
         response = flask_client.get("/watch/data")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert "data" in data
 
@@ -114,7 +117,7 @@ class TestWatchViewRoutes:
         # Use trailing slash or follow redirects
         response = flask_client.get("/watch/", follow_redirects=True)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
 
 class TestScopeViewRoutes:
@@ -124,7 +127,7 @@ class TestScopeViewRoutes:
         """Test scope data route returns JSON."""
         response = flask_client.get("/scope/data")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert "data" in data
 
@@ -133,7 +136,7 @@ class TestScopeViewRoutes:
         # Use trailing slash or follow redirects
         response = flask_client.get("/scope/", follow_redirects=True)
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
     def test_scope_export_no_data(self, flask_client, mocker):
         """Test scope export with no data."""
@@ -149,7 +152,7 @@ class TestScopeViewRoutes:
         response = flask_client.get("/scope/export")
 
         # Should return CSV even if empty
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
 
 
 class TestDashboardRoutes:
@@ -159,7 +162,7 @@ class TestDashboardRoutes:
         """Test dashboard data route."""
         response = flask_client.get("/dashboard/data")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert isinstance(data, dict)
 
@@ -167,7 +170,7 @@ class TestDashboardRoutes:
         """Test load layout when no file exists."""
         response = flask_client.get("/dashboard/load-layout")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         # Should return empty or default layout
         assert isinstance(data, (dict, list))
@@ -180,7 +183,7 @@ class TestScriptViewRoutes:
         """Test script help route returns markdown."""
         response = flask_client.get("/scripting/help")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert "markdown" in data
 
@@ -210,7 +213,7 @@ class TestWebScopeClass:
     def test_set_watch_rate_valid(self, web_scope):
         """Test setting valid watch rate."""
         web_scope.set_watch_rate(2.5)
-        assert web_scope.watch_rate == 2.5
+        assert web_scope.watch_rate == 2.5  # noqa: PLR2004
 
     def test_set_watch_rate_invalid_too_high(self, web_scope):
         """Test setting watch rate above max is ignored."""
@@ -338,7 +341,7 @@ class TestWebScopeVariableManagement:
             web_scope_connected.add_scope_var(f"var_{i}")
 
         # Verify 8 were added
-        assert len(web_scope_connected.scope_vars) == 8
+        assert len(web_scope_connected.scope_vars) == 8  # noqa: PLR2004
 
         # Note: WebScope doesn't enforce a max limit in the web GUI
         # The x2c_scope backend enforces the limit when actually using scope
@@ -369,7 +372,7 @@ class TestWebScopeScaledValue:
         WebScope._update_watch_fields(data)
 
         # scaled_value = (value * scaling) + offset = (10 * 2) + 5 = 25
-        assert data["scaled_value"] == 25.0
+        assert data["scaled_value"] == 25.0  # noqa: PLR2004
 
     def test_update_watch_fields_integer(self):
         """Test scaled value calculation for integer."""
@@ -384,7 +387,7 @@ class TestWebScopeScaledValue:
 
         WebScope._update_watch_fields(data)
 
-        assert data["scaled_value"] == 25.0
+        assert data["scaled_value"] == 25.0  # noqa: PLR2004
 
     def test_variable_to_json(self):
         """Test variable_to_json conversion."""
@@ -402,7 +405,7 @@ class TestWebScopeScaledValue:
         result = WebScope.variable_to_json(data)
 
         assert result["variable"] == "test_var"
-        assert result["value"] == 10.0
+        assert result["value"] == 10.0  # noqa: PLR2004
 
 
 class TestWebScopeDashboard:

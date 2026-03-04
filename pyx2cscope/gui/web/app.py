@@ -25,10 +25,10 @@ def create_app():
     """
     app = Flask(__name__)
 
-    from pyx2cscope.gui.web.views.scope_view import sv_bp as scope_view
-    from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
     from pyx2cscope.gui.web.views.dashboard_view import dv_bp as dashboard_view
+    from pyx2cscope.gui.web.views.scope_view import sv_bp as scope_view
     from pyx2cscope.gui.web.views.script_view import script_bp as script_view
+    from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
 
     app.register_blueprint(watch_view, url_prefix="/watch")
     app.register_blueprint(scope_view, url_prefix="/scope")

@@ -280,9 +280,9 @@ def handle_widget_interaction(data):
 # =============================================================================
 
 import io
-import traceback
 import threading
-from contextlib import redirect_stdout, redirect_stderr
+import traceback
+from contextlib import redirect_stderr, redirect_stdout
 
 # Global script execution state
 _script_worker = None
@@ -293,28 +293,30 @@ class ScriptOutputCapture(io.StringIO):
     """Captures stdout/stderr and emits to socket."""
 
     def __init__(self, socketio_instance, namespace):
+        """Initialize the output capture with socketio instance."""
         super().__init__()
         self._socketio = socketio_instance
         self._namespace = namespace
 
     def write(self, text):
+        """Write text to the socket output."""
         if text:
             self._socketio.emit("script_output", {"output": text}, namespace=self._namespace)
         return len(text) if text else 0
 
     def flush(self):
+        """Flush the output buffer (no-op for socket output)."""
         pass
 
 
 def _is_stop_requested():
     """Check if script stop has been requested."""
-    global _script_stop_requested
     return _script_stop_requested
 
 
 def _execute_script_thread(script_content, filename, namespace):
     """Execute script in a background thread."""
-    global _script_stop_requested, _script_worker
+    global _script_worker  # noqa: PLW0603
 
     exit_code = 0
     stdout_capture = ScriptOutputCapture(socketio, namespace)
@@ -370,7 +372,7 @@ def handle_execute_script(data):
     Args:
         data (dict): Dictionary containing script content and options.
     """
-    global _script_worker, _script_stop_requested
+    global _script_worker, _script_stop_requested  # noqa: PLW0603
 
     if _script_worker is not None and _script_worker.is_alive():
         emit("script_error", {"error": "A script is already running"})
@@ -398,6 +400,6 @@ def handle_execute_script(data):
 @socketio.on("stop_script", namespace="/scripting")
 def handle_stop_script():
     """Handle script stop request."""
-    global _script_stop_requested
+    global _script_stop_requested  # noqa: PLW0603
     _script_stop_requested = True
     emit("script_output", {"output": "\n[Stop requested - waiting for script to check stop_requested()...]\n"})

@@ -6,7 +6,7 @@ replacing the 7 separate QTimer instances from the original implementation.
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from PyQt5.QtCore import QMutex, QThread, pyqtSignal
 

@@ -5,11 +5,11 @@ import os
 import subprocess
 import sys
 import traceback
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QSettings, QThread, Qt, pyqtSignal
+from PyQt5.QtCore import QSettings, Qt, QThread, pyqtSignal
 from PyQt5.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -37,6 +37,7 @@ class ScriptHelpDialog(QDialog):
     """Dialog showing help for writing scripts."""
 
     def __init__(self, parent=None):
+        """Initialize the script help dialog."""
         super().__init__(parent)
         self.setWindowTitle("Script Help")
         self.setMinimumSize(700, 600)
@@ -178,7 +179,7 @@ class ScriptingTab(QWidget):
 
         self._setup_ui()
 
-    def _setup_ui(self):
+    def _setup_ui(self):  # noqa: PLR0915
         """Set up the user interface."""
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)

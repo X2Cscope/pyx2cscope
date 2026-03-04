@@ -3,8 +3,8 @@
 Calling the URL {server_url}/dashboard-view will render the dashboard-view page.
 Attention: this page should be called only after a successful setup connection on the {server_url}
 """
-import os
 import json
+import os
 
 from flask import Blueprint, jsonify, render_template, request
 
