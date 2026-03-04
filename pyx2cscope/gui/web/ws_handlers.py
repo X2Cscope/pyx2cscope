@@ -273,3 +273,131 @@ def handle_widget_interaction(data):
     value = data.get("value")
     if var and value is not None:
         web_scope.write_dashboard_var(var, value)
+
+
+# =============================================================================
+# Scripting handlers
+# =============================================================================
+
+import io
+import traceback
+import threading
+from contextlib import redirect_stdout, redirect_stderr
+
+# Global script execution state
+_script_worker = None
+_script_stop_requested = False
+
+
+class ScriptOutputCapture(io.StringIO):
+    """Captures stdout/stderr and emits to socket."""
+
+    def __init__(self, socketio_instance, namespace):
+        super().__init__()
+        self._socketio = socketio_instance
+        self._namespace = namespace
+
+    def write(self, text):
+        if text:
+            self._socketio.emit("script_output", {"output": text}, namespace=self._namespace)
+        return len(text) if text else 0
+
+    def flush(self):
+        pass
+
+
+def _is_stop_requested():
+    """Check if script stop has been requested."""
+    global _script_stop_requested
+    return _script_stop_requested
+
+
+def _execute_script_thread(script_content, filename, namespace):
+    """Execute script in a background thread."""
+    global _script_stop_requested, _script_worker
+
+    exit_code = 0
+    stdout_capture = ScriptOutputCapture(socketio, namespace)
+    stderr_capture = ScriptOutputCapture(socketio, namespace)
+
+    try:
+        # Get x2cscope instance
+        x2cscope = web_scope.x2c_scope if web_scope.is_connected() else None
+
+        # Create namespace for script execution
+        script_namespace = {
+            "__name__": "__main__",
+            "__file__": filename,
+            "x2cscope": x2cscope,
+            "stop_requested": _is_stop_requested,
+        }
+
+        # Execute with captured output
+        with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
+            exec(compile(script_content, filename, "exec"), script_namespace)
+
+    except SystemExit as e:
+        exit_code = e.code if isinstance(e.code, int) else 1
+    except StopIteration:
+        exit_code = 0
+    except Exception as e:
+        socketio.emit("script_output", {"output": f"\nScript error: {e}\n"}, namespace=namespace)
+        socketio.emit("script_output", {"output": traceback.format_exc()}, namespace=namespace)
+        exit_code = 1
+
+    _script_worker = None
+    socketio.emit("script_finished", {"exit_code": exit_code}, namespace=namespace)
+
+
+@socketio.on("connect", namespace="/scripting")
+def handle_connect_scripting():
+    """Handle client connection to the scripting namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (scripting)")
+
+
+@socketio.on("disconnect", namespace="/scripting")
+def handle_disconnect_scripting():
+    """Handle client disconnection from the scripting namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client disconnected (scripting)")
+
+
+@socketio.on("execute_script", namespace="/scripting")
+def handle_execute_script(data):
+    """Handle script execution request.
+
+    Args:
+        data (dict): Dictionary containing script content and options.
+    """
+    global _script_worker, _script_stop_requested
+
+    if _script_worker is not None and _script_worker.is_alive():
+        emit("script_error", {"error": "A script is already running"})
+        return
+
+    script_content = data.get("content", "")
+    filename = data.get("filename", "script.py")
+
+    if not script_content:
+        emit("script_error", {"error": "No script content provided"})
+        return
+
+    # Reset stop flag
+    _script_stop_requested = False
+
+    # Start script execution in background thread
+    _script_worker = threading.Thread(
+        target=_execute_script_thread,
+        args=(script_content, filename, "/scripting"),
+        daemon=True
+    )
+    _script_worker.start()
+
+
+@socketio.on("stop_script", namespace="/scripting")
+def handle_stop_script():
+    """Handle script stop request."""
+    global _script_stop_requested
+    _script_stop_requested = True
+    emit("script_output", {"output": "\n[Stop requested - waiting for script to check stop_requested()...]\n"})

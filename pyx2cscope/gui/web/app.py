@@ -28,10 +28,12 @@ def create_app():
     from pyx2cscope.gui.web.views.scope_view import sv_bp as scope_view
     from pyx2cscope.gui.web.views.watch_view import wv_bp as watch_view
     from pyx2cscope.gui.web.views.dashboard_view import dv_bp as dashboard_view
+    from pyx2cscope.gui.web.views.script_view import script_bp as script_view
 
-    app.register_blueprint(watch_view, url_prefix="/watch-view")
-    app.register_blueprint(scope_view, url_prefix="/scope-view")
-    app.register_blueprint(dashboard_view, url_prefix="/dashboard-view")
+    app.register_blueprint(watch_view, url_prefix="/watch")
+    app.register_blueprint(scope_view, url_prefix="/scope")
+    app.register_blueprint(dashboard_view, url_prefix="/dashboard")
+    app.register_blueprint(script_view, url_prefix="/scripting")
 
     app.add_url_rule("/", view_func=index)
     app.add_url_rule("/serial-ports", view_func=list_serial_ports)
@@ -174,12 +176,30 @@ def get_variables():
 def open_browser(host="localhost", web_port=5000):
     """Open a new browser pointing to the Flask server.
 
+    Only opens if no clients are already connected (e.g., from a previous session).
+    Existing browser tabs will reconnect automatically via Socket.IO.
+
     Args:
         host (str): the host address/name
         web_port (int): the host port.
     """
-    socketio.sleep(1)
-    webbrowser.open("http://" + host + ":" + str(web_port))
+    # Wait for any existing browser tabs to reconnect
+    socketio.sleep(2)
+
+    # Check if any clients are already connected via Socket.IO
+    has_clients = False
+    try:
+        if hasattr(socketio.server, 'eio') and hasattr(socketio.server.eio, 'sockets'):
+            has_clients = len(socketio.server.eio.sockets) > 0
+    except Exception:
+        pass
+
+    if not has_clients:
+        url = "http://" + ("localhost" if host == "0.0.0.0" else host) + ":" + str(web_port)
+        webbrowser.open(url)
+        print("Browser opened: " + url)
+    else:
+        print("Browser tab already connected - refresh the page to reflect changes")
 
 
 def main(host="localhost", web_port=5000, new=True, *args, **kwargs):

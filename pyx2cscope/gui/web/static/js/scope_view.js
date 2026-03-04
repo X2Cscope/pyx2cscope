@@ -379,7 +379,7 @@ function initScopeChart() {
         scopeChart.resetZoom();
     });
 
-    $('#chartExport').attr("href", "/scope-view/export")
+    $('#chartExport').attr("href", "/scope/export")
 }
 
 function initScopeForms(){
@@ -395,11 +395,16 @@ function initScopeForms(){
         $(this).closest('.btn-group').find('.btn').removeClass('active');
         // Add active class to the clicked button's label
         $(`label[for="${this.id}"]`).addClass('active');
-        
+
         // Submit the form
         $("#sampleControlForm").submit();
     });
-    
+
+    // Add change event handlers for sample time and frequency inputs
+    $('#sampleTime, #sampleFreq').on('change', function() {
+        $("#sampleControlForm").submit();
+    });
+
     // Initialize the active state of the stop button on page load
     $('input[name="triggerAction"][checked]').trigger('change');
 
@@ -420,7 +425,7 @@ function initScopeForms(){
 
     // Set up Save button click handler
     $("#scopeSave").on("click", function() {
-        window.location.href = '/scope-view/save';
+        window.location.href = '/scope/save';
     });
 
     $("#scopeLoad").on("change", function(event) {
@@ -429,7 +434,7 @@ function initScopeForms(){
         formData.append('file', file);
 
         $.ajax({
-            url: '/scope-view/load', // Replace with your server upload endpoint
+            url: '/scope/load', // Replace with your server upload endpoint
             type: 'POST',
             data: formData,
             contentType: false,
@@ -453,7 +458,7 @@ $(document).ready(function () {
     initScopeChart();
 
     scopeTable = $('#scopeTable').DataTable({
-        ajax: '/scope-view/data',
+        ajax: '/scope/data',
         searching: false,
         paging: false,
         info: false,

@@ -11,7 +11,7 @@ from flask import Blueprint, jsonify, render_template, request
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
 
-dv_bp = Blueprint("dashboard_view", __name__, template_folder="templates")
+dv_bp = Blueprint("dashboard_view", __name__)
 
 
 def index():

@@ -240,8 +240,7 @@ $(document).ready(function() {
         document.getElementById('tabDashboard').classList.remove('active');
     });
 
-    // Desktop view (toggles)
-    // Uncheck toggles and hide views by default on desktop
+    // Hide all view cards by default - only setup card is visible
     toggleWatch.checked = false;
     toggleScope.checked = false;
     toggleDashboard.checked = false;

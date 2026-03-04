@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from pyx2cscope.gui.qt.resources import get_resource_path
+from pyx2cscope.gui.resources import get_resource_path
 
 if TYPE_CHECKING:
     from pyx2cscope.gui.qt.models.app_state import AppState

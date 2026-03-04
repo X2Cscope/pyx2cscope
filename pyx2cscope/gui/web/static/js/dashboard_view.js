@@ -127,7 +127,7 @@ window.scopeVariablesList = [];
 
 // Fetch scope variables from server
 function fetchScopeVariables() {
-    fetch('/scope-view/data')
+    fetch('/scope/data')
         .then(response => response.json())
         .then(data => {
             if (data.data) {
@@ -264,7 +264,7 @@ function syncScopeControlToBackend() {
             // Wait for scope variables to be registered, then set trigger
             setTimeout(() => {
                 // Refetch scope variables to ensure we have the latest list
-                fetch('/scope-view/data')
+                fetch('/scope/data')
                     .then(response => response.json())
                     .then(data => {
                         if (data.data) {

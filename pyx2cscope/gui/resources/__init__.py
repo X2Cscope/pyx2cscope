@@ -1,4 +1,4 @@
-"""Resources for the Qt GUI."""
+"""Shared resources for Qt and Web GUIs."""
 
 import os
 

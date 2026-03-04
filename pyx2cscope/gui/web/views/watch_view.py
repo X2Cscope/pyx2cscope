@@ -10,11 +10,11 @@ from flask import Blueprint, Response, jsonify, render_template, request
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
 
-wv_bp = Blueprint("watch_view", __name__, template_folder="templates")
+wv_bp = Blueprint("watch_view", __name__)
 
 def index():
     """Watch View url entry point. Calling the page {url}/watch-view will render the watch view page."""
-    return render_template("index_wv.html", title="WatchView - pyX2Cscope")
+    return render_template("index_watch.html", title="WatchView - pyX2Cscope")
 
 
 def get_data():
