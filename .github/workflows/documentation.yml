@@ -53,16 +53,21 @@ jobs:
       with:
         python-version: "3.10"
 
-# Since we moved to generic parser, we don't need to install the xc-16 compiler anymore,
-# because generic parser is based on pyelftools.
-#
-#    - name: Set up Microchip XC16 v2.10 compiler
-#      run: |
-#        wget -nv -O /tmp/xc16 https://ww1.microchip.com/downloads/aemDocuments/documents/DEV/ProductDocuments/SoftwareTools/xc16-v2.10-full-install-linux64-installer.run && \
-#        chmod +x /tmp/xc16 && \
-#        sudo /tmp/xc16 --mode unattended --unattendedmodeui none --netservername localhost --LicenseType FreeMode --prefix /opt/microchip/xc16/v2.10 && \
-#        rm /tmp/xc16
-#        echo "/opt/microchip/xc16/v2.10/bin" >> $GITHUB_PATH
+    - name: Install system dependencies for Qt
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          libxcb-xfixes0 \
+          libegl1 \
+          libgl1-mesa-glx \
+          xvfb
 
     - name: Install dependencies
       run: |
@@ -71,8 +76,13 @@ jobs:
         pip install -e .
 
     - name: Run tests
+      env:
+        QT_QPA_PLATFORM: offscreen
+        DISPLAY: ":99.0"
       run: |
-        pytest 
+        Xvfb :99 -screen 0 1024x768x24 &
+        sleep 2
+        pytest -v 
 
   docs:
     runs-on: ubuntu-latest
