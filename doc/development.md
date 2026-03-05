@@ -68,5 +68,5 @@ the contents of the dist folder and add the whell file
 available on pypi in the dist folder.
 
 ```bash
-python -m scripts/build.py
+python scripts/build.py
 ```
