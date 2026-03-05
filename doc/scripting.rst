@@ -23,20 +23,112 @@ X2CScope class
 
     from pyx2scope import X2CScope
 
-X2CScope class needs one parameter to be instantiated:
+X2CScope supports multiple communication interfaces: **Serial** and **TCP/IP**. **CAN** support is coming soon.
 
-- **port**: The desired communication port name, i.e.:"COM3", "dev/ttyUSB", etc.
+Communication Interfaces
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-X2CScope will support multiple communication interfaces. Currently, only **Serial** is supported: CAN, LIN, 
-and TCP/IP are coming in near future. For serial, the only parameter needed is the desired port name, by 
-default baud rate is set to **115200**. If there's a need to change the baud rate, include the baud_rate 
-parameter with your preferred baud rate.
+**Serial (UART) Interface**
 
-2. Instantiate X2CScope with the serial port number:
+The most common interface for connecting to microcontrollers. Parameters:
+
+.. list-table::
+   :widths: 20 15 15 50
+   :header-rows: 1
+
+   * - Parameter
+     - Type
+     - Default
+     - Description
+   * - ``port``
+     - str
+     - "COM1"
+     - Serial port name (e.g., "COM3", "/dev/ttyUSB0")
+   * - ``baud_rate``
+     - int
+     - 115200
+     - Communication speed in bits per second
+   * - ``parity``
+     - int
+     - 0
+     - Parity setting (0=None)
+   * - ``stop_bit``
+     - int
+     - 1
+     - Number of stop bits
+   * - ``data_bits``
+     - int
+     - 8
+     - Number of data bits
+
+Example - Serial connection with default baud rate:
 
 .. code-block:: python
 
-    x2c_scope = X2CScope(port="COM16")
+    x2c_scope = X2CScope(port="COM16", elf_file="firmware.elf")
+
+Example - Serial connection with custom baud rate:
+
+.. code-block:: python
+
+    x2c_scope = X2CScope(port="COM16", baud_rate=9600, elf_file="firmware.elf")
+
+**TCP/IP Interface**
+
+For network-based connections to embedded systems with Ethernet capability. Parameters:
+
+.. list-table::
+   :widths: 20 15 15 50
+   :header-rows: 1
+
+   * - Parameter
+     - Type
+     - Default
+     - Description
+   * - ``host``
+     - str
+     - "localhost"
+     - IP address or hostname of the target device
+   * - ``tcp_port``
+     - int
+     - 12666
+     - TCP port number for the connection
+   * - ``timeout``
+     - float
+     - 0.1
+     - Connection timeout in seconds
+
+Example - TCP/IP connection with default tcp_port:
+
+.. code-block:: python
+
+    x2c_scope = X2CScope(host="192.168.1.100", elf_file="firmware.elf")
+
+Example - TCP/IP with custom tcp_port:
+
+.. code-block:: python
+
+    x2c_scope = X2CScope(host="192.168.1.100", tcp_port=12345, elf_file="firmware.elf")
+
+**CAN Interface (Coming Soon)**
+
+CAN bus support is under development. The interface will support parameters such as:
+
+- ``bus``: CAN bus type (e.g., "USB", "TCP")
+- ``channel``: CAN channel identifier
+- ``bitrate``: CAN bus bitrate
+- ``tx_id``: Transmit message ID
+- ``rx_id``: Receive message ID
+
+2. Basic instantiation examples:
+
+.. code-block:: python
+
+    # Serial connection (most common)
+    x2c_scope = X2CScope(port="COM16", elf_file="firmware.elf")
+
+    # TCP/IP connection
+    x2c_scope = X2CScope(host="192.168.1.100", elf_file="firmware.elf")
 
 Load variables
 ----------------
@@ -54,7 +146,7 @@ the code below:
 
 .. code-block:: python
 
-    x2c_scope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
+    x2c_scope.import_variables(r"..\..\tests\data\dsPIC33ak128mc106_foc.elf")
 
 Variable class
 --------------
@@ -93,6 +185,73 @@ Writing values
 .. code-block:: python
 
     variable.set_value(value)
+
+Special Function Registers (SFR)
+---------------------------------
+
+In addition to firmware variables, pyX2Cscope can access **Special Function Registers (SFRs)** —
+hardware peripheral registers with fixed addresses defined in the MCU's ELF file (e.g. ``LATD``,
+``TMR1``, ``PORTA``). SFR access uses the same ``Variable`` interface as ordinary variables, so
+``get_value()`` and ``set_value()`` work identically.
+
+Listing available SFRs
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Use ``list_sfr()`` to retrieve a sorted list of all SFR names parsed from the ELF file:
+
+.. code-block:: python
+
+    sfr_names = x2c_scope.list_sfr()
+    print(sfr_names)
+    # ['ADCON1', 'ADCON2', ..., 'LATD', ..., 'TMR1', ...]
+
+This is the SFR counterpart of ``list_variables()``, which lists firmware variables only.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Method
+     - Description
+   * - ``list_variables()``
+     - Returns all firmware (DWARF) variable names from the ELF symbol table.
+   * - ``list_sfr()``
+     - Returns all peripheral register (SFR) names from the ELF register map.
+
+Retrieving an SFR variable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pass ``sfr=True`` to ``get_variable()`` to look up the name in the SFR register map instead of
+the firmware variable table:
+
+.. code-block:: python
+
+    latd = x2c_scope.get_variable("LATD", sfr=True)
+    tmr1 = x2c_scope.get_variable("TMR1", sfr=True)
+
+The returned object is a standard ``Variable`` instance — read and write it the same way:
+
+.. code-block:: python
+
+    # Read the current register value
+    value = latd.get_value()
+    print(f"LATD = 0x{value:04X}")
+
+    # Write a new value to the register
+    latd.set_value(value | (1 << 12))   # set bit 12 (LATE12)
+
+.. note::
+
+    ``get_variable("NAME")`` and ``get_variable("NAME", sfr=False)`` both search the firmware
+    variable map.  ``get_variable("NAME", sfr=True)`` searches the SFR register map.  The two
+    namespaces are independent — a name can exist in both without conflict.
+
+Full SFR example
+^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../pyx2cscope/examples/SFR_Example.py
+    :language: python
+    :linenos:
 
 .. _import-and-export-variables:
 
@@ -222,16 +381,112 @@ To set any trigger configuration, you need to pass a TriggerConfig imported from
 
 .. code-block:: python
 
-    trigger_config = TriggerConfig(Variable, trigger_level: int, trigger_mode: int, trigger_delay: int, trigger_edge: int)
+    trigger_config = TriggerConfig(Variable, trigger_level: float, trigger_mode: int, trigger_delay: int, trigger_edge: int)
     x2cscope.set_scope_trigger(trigger_config)
 
 TriggerConfig needs some parameters like the variable and some trigger values like:
 
 * Variable: the variable which will be monitored
-* Trigger_Level: at which level the trigger will start executing
+* Trigger_Level: at which level the trigger will start executing (float)
 * Trigger_mode: 1 for triggered, 0 for Auto (No trigger)
 * Trigger_delay: Value > 0 Pre-trigger, Value < 0 Post trigger
 * Trigger_Edge: Rising (1) or Falling (0)
 
 Additional information on how to change triggers, clear and change sample time, may be
 found on the API documentation.
+
+Utility Functions
+-----------------
+
+The ``pyx2cscope.utils`` module provides helper functions for managing configuration settings
+used in examples and scripts. These utilities simplify the process of specifying ELF file paths
+and COM ports without hardcoding them into your scripts.
+
+Configuration File (config.ini)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When any utility function is called for the first time, a ``config.ini`` file is automatically
+generated in the current working directory if it doesn't already exist. This file contains
+default placeholder values that you should update with your actual settings:
+
+.. code-block:: ini
+
+    [ELF_FILE]
+    path = path_to_your_elf_file
+
+    [COM_PORT]
+    com_port = your_com_port, ex:COM3
+
+    [HOST_IP]
+    host_ip = your_host_ip
+
+After the file is created, edit it to specify your actual ELF file path and COM port.
+
+Available Functions
+^^^^^^^^^^^^^^^^^^^
+
+**get_elf_file_path()**
+
+Retrieves the ELF file path from the configuration:
+
+.. code-block:: python
+
+    from pyx2cscope.utils import get_elf_file_path
+
+    elf_path = get_elf_file_path()
+    if elf_path:
+        x2cscope = X2CScope(port="COM8", elf_file=elf_path)
+
+**get_com_port()**
+
+Retrieves the COM port from the configuration:
+
+.. code-block:: python
+
+    from pyx2cscope.utils import get_com_port
+
+    port = get_com_port()
+    if port:
+        x2cscope = X2CScope(port=port, elf_file="firmware.elf")
+
+**get_host_address()**
+
+Retrieves the host IP address for TCP/IP connections:
+
+.. code-block:: python
+
+    from pyx2cscope.utils import get_host_address
+
+    host = get_host_address()
+    if host:
+        x2cscope = X2CScope(host=host, tcp_port=12666, elf_file="firmware.elf")
+
+
+
+Example Usage
+^^^^^^^^^^^^^
+
+The utility functions are particularly useful in example scripts where you want to avoid
+hardcoding paths:
+
+.. code-block:: python
+
+    from pyx2cscope import X2CScope
+    from pyx2cscope.utils import get_elf_file_path, get_com_port
+
+    # Get configuration from config.ini
+    elf_path = get_elf_file_path()
+    port = get_com_port()
+
+    if not elf_path or not port:
+        print("Please configure config.ini with your ELF file path and COM port")
+        exit(1)
+
+    # Initialize X2CScope with configured values
+    x2cscope = X2CScope(port=port, elf_file=elf_path)
+
+.. note::
+
+    The utility functions return an empty string if the configuration contains placeholder
+    values (containing "your"). This allows you to check if the configuration has been
+    properly set up before proceeding.

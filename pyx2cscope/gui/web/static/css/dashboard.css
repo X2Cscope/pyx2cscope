@@ -1,0 +1,143 @@
+.dashboard-widget {
+    position: absolute;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 200px;
+    min-height: 100px;
+}
+
+.dashboard-widget.edit-mode {
+    cursor: move;
+    overflow: auto;
+}
+
+.dashboard-widget.edit-mode.selected {
+    resize: both;
+}
+
+.dashboard-widget.view-mode {
+    cursor: default;
+    resize: none !important;
+    border-color: transparent;
+    box-shadow: none;
+    background: transparent;
+}
+
+.dashboard-widget.edit-mode:not(.selected) {
+    border-style: dashed;
+    border-color: #adb5bd;
+    opacity: 0.9;
+}
+
+.dashboard-widget.edit-mode:not(.selected):hover {
+    border-color: #6c757d;
+    opacity: 1;
+}
+
+.dashboard-widget.selected {
+    border-color: #0d6efd;
+    border-style: solid;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.widget-title {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.widget-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.widget-controls .btn {
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+}
+
+.widget-controls .btn:hover {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.widget-controls .btn .material-icons {
+    font-size: 18px;
+}
+
+.view-mode .widget-controls {
+    display: none;
+}
+
+.widget-content {
+    margin-top: 8px;
+}
+
+.widget-content-only {
+    margin: 0;
+}
+
+.dashboard-widget input[type="range"],
+.dashboard-widget input[type="number"],
+.dashboard-widget input[type="text"] {
+    width: 100%;
+}
+
+.dashboard-widget .btn {
+    width: 100%;
+}
+
+.value-display {
+    font-size: 1.25rem;
+    color: #212529;
+    text-align: center;
+    padding: 4px;
+    font-weight: 500;
+}
+
+.gauge-container,
+.plot-container {
+    width: 100%;
+    min-height: 150px;
+    height: 100%;
+}
+
+.dashboard-widget.edit-mode.selected::after {
+    content: '⋰';
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    color: #adb5bd;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.view-mode .dashboard-widget::after {
+    display: none;
+}
+
+/* Label widgets don't block interactions with widgets underneath in view mode */
+.dashboard-widget.widget-type-label.view-mode {
+    pointer-events: none;
+}

@@ -17,29 +17,67 @@
 <!-- Tabs for Mobile -->
 <ul class="nav nav-tabs d-md-none mb-3" id="mobileTabs">
     <li class="nav-item">
-        <button class="nav-link active" id="tabWatch" data-bs-toggle="tab" data-bs-target="#watchView">Watch View
-        </button>
+        <button class="nav-link active" id="tabWatch" data-bs-toggle="tab" data-bs-target="#watchView">Watch View</button>
     </li>
     <li class="nav-item">
         <button class="nav-link" id="tabScope" data-bs-toggle="tab" data-bs-target="#scopeView">Scope View</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" id="tabDashboard" data-bs-toggle="tab" data-bs-target="#dashboardView">Dashboard</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" id="tabScript" data-bs-toggle="tab" data-bs-target="#scriptView">Scripting</button>
     </li>
 </ul>
 
 <!-- Desktop Toggles -->
 <div class="btn-group mb-3 d-none d-md-inline-flex" id="desktopTabs" role="group" aria-label="Toggle views">
-    <input type="checkbox" class="btn-check" id="toggleWatch" checked autocomplete="off">
+    <input type="checkbox" class="btn-check" id="toggleWatch" autocomplete="off">
     <label class="btn btn-outline-primary" for="toggleWatch">Watch View</label>
-    <input type="checkbox" class="btn-check" id="toggleScope" checked autocomplete="off">
+    <input type="checkbox" class="btn-check" id="toggleScope" autocomplete="off">
     <label class="btn btn-outline-primary" for="toggleScope">Scope View</label>
+    <input type="checkbox" class="btn-check" id="toggleDashboard" autocomplete="off">
+    <label class="btn btn-outline-primary" for="toggleDashboard">Dashboard</label>
+    <input type="checkbox" class="btn-check" id="toggleScript" autocomplete="off">
+    <label class="btn btn-outline-primary" for="toggleScript">Scripting</label>
 </div>
 
 <!-- Views -->
 <div class="row g-3" id="viewsContainer">
-    <div class="col-12 col-lg-12 col-xxl-6" id="watchCol">
+    <div class="col-lg-8 col-12 col-md-12 col-sm-12 col-xs-12 d-none" id="scriptCol">
+        <div class="card">
+            <div class="card-header">
+                <strong>Scripting</strong>
+                <a href="/scripting" target="_blank" class="float-end" title="Open this card in a new window">
+                    <span class="material-icons md-18">open_in_new</span></a>
+                <a href="#" class="float-end" title="Get QR-Code address" id="scriptQRCode">
+                    <span class="material-icons md-18">qr_code_2</span></a>
+            </div>
+            <div class="card-body">
+                {% include 'scripting.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 d-none" id="dashboardCol">
+        <div class="card h-100">
+            <div class="card-header">
+                <strong>Dashboard</strong>
+                <a href="/dashboard" target="_blank" class="float-end" title="Open this card in a new window">
+                    <span class="material-icons md-18">open_in_new</span></a>
+                <a href="#" class="float-end" title="Get QR-Code address" id="dashboardQRCode">
+                    <span class="material-icons md-18">qr_code_2</span></a>
+                {% include 'dashboard_toolbar.html' %}
+            </div>
+            <div class="card-body p-0" style="min-height: 600px;">
+                {% include 'dashboard_view.html' %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-12 col-xxl-6 d-none" id="watchCol">
         <div class="card h-100">
             <div class="card-header">
                 <strong>WatchView</strong>
-                <a href="/watch-view" target="_blank" class="float-end" title="Open this card in a new window">
+                <a href="/watch" target="_blank" class="float-end" title="Open this card in a new window">
                     <span class="material-icons">open_in_new</span></a>
                 <a href="#" class="float-end" title="Get QR-Code address" id="watchQRCode">
                     <span class="material-icons md-18">qr_code_2</span></a>
@@ -49,11 +87,11 @@
             </div>
         </div>
     </div>
-    <div class="col-12 col-lg-12 col-xxl-6" id="scopeCol">
+    <div class="col-12 col-lg-12 col-xxl-6 d-none" id="scopeCol">
         <div class="card h-100">
             <div class="card-header">
                 <strong>ScopeView</strong>
-                <a href="/scope-view" target="_blank" class="float-end" title="Open this card in a new window">
+                <a href="/scope" target="_blank" class="float-end" title="Open this card in a new window">
                     <span class="material-icons md-18">open_in_new</span></a>
                 <a href="#" class="float-end" title="Get QR-Code address" id="scopeQRCode">
                     <span class="material-icons md-18">qr_code_2</span></a>
@@ -72,4 +110,7 @@
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script src="{{ url_for('static', filename='js/watch_view.js') }}"></script>
 <script src="{{ url_for('static', filename='js/scope_view.js') }}"></script>
+<script src="{{ url_for('static', filename='widgets/widget_loader.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scripting_view.js') }}"></script>
 {% endblock scripts %}

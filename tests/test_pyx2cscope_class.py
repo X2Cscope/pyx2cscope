@@ -29,6 +29,27 @@ class TestPyX2CScope:
         with pytest.raises(Exception, match=r"Error loading ELF file"):
             X2CScope(elf_file="wrong_elf_file.elf", port="COM0")
 
+    def test_missing_interface(self, mocker):
+        """Check class behavior in case of non define COMM interface.
+
+        In case a COMM interface is not defined, a Serial Interface is used as default.
+        """
+        fake_serial(mocker, 16)
+        with warnings.catch_warnings(record=True) as w:
+            # Cause all warnings to always be triggered
+            warnings.simplefilter("always")
+
+            # This should now generate a warning instead of raising an exception
+            scope = X2CScope(elf_file=self.elf_file)
+
+            # Verify the warning was raised
+            assert len(w) == 2  # noqa: PLR2004
+            assert issubclass(w[-1].category, Warning) is True
+            assert "No interface select, setting Serial as default." in str(w[0].message)
+
+            # Clean up
+            scope.disconnect()
+
     def test_missing_com_port(self, mocker):
         """Check class behavior in case of non COM-Port initialization.
 
@@ -44,7 +65,7 @@ class TestPyX2CScope:
             scope = X2CScope(elf_file=self.elf_file)
 
             # Verify the warning was raised
-            assert len(w) == 1
+            assert len(w) == 2  # noqa: PLR2004
             assert issubclass(w[-1].category, Warning) is True
             assert "No port provided, using default COM1" in str(w[-1].message)
 

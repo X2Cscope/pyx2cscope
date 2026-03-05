@@ -1,9 +1,20 @@
 <div id="setupControl" class="container mt-3">
+    <div class="row mb-3">
+        <div class="col-12">
+            <label for="interfaceType" class="form-label">Interface</label>
+            <select class="form-select" id="interfaceType">
+                <option value="SERIAL" selected>Serial</option>
+                <option value="TCP_IP">TCP/IP</option>
+                <option value="CAN">CAN</option>
+            </select>
+        </div>
+    </div>
+
     <!-- UART Selection Row -->
-    <div class="row mb-3 align-items-end">
+    <div class="row mb-3 align-items-end" id="uartRow">
         <div class="col-md-8">
-            <label for="uart" class="form-label">UART</label>
-            <select class="form-select" id="uart">
+            <label for="port" class="form-label">UART</label>
+            <select class="form-select" id="port">
                 <option value="default">Select UART</option>
             </select>
         </div>
@@ -11,6 +22,60 @@
             <button type="button" class="btn btn-outline-primary w-100" id="update_com_port">
                 Refresh
             </button>
+        </div>
+    </div>
+
+    <div class="row mb-3 d-none" id="hostRow">
+        <div class="col-md-8">
+            <label for="host" class="form-label">Host</label>
+            <input type="text" class="form-control" id="host" placeholder="localhost" value="localhost">
+        </div>
+        <div class="col-md-4">
+            <label for="tcpPort" class="form-label">Port</label>
+            <input type="number" class="form-control" id="tcpPort" value="12666" min="1" max="65535">
+        </div>
+    </div>
+
+    <!-- CAN Configuration Row -->
+    <div class="d-none" id="canRow">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="canBusType" class="form-label">Bus Type</label>
+                <select class="form-select" id="canBusType">
+                    <option value="USB" selected>USB</option>
+                    <option value="LAN">LAN</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="canChannel" class="form-label">Channel</label>
+                <input type="number" class="form-control" id="canChannel" value="1" min="1">
+            </div>
+            <div class="col-md-4">
+                <label for="canBaudrate" class="form-label">Baudrate</label>
+                <select class="form-select" id="canBaudrate">
+                    <option value="125K" selected>125K</option>
+                    <option value="250K">250K</option>
+                    <option value="500K">500K</option>
+                    <option value="1M">1M</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="canMode" class="form-label">Mode</label>
+                <select class="form-select" id="canMode">
+                    <option value="Standard" selected>Standard</option>
+                    <option value="Extended">Extended</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="canTxId" class="form-label">TX ID (Hex)</label>
+                <input type="text" class="form-control" id="canTxId" value="7F1" placeholder="7F1">
+            </div>
+            <div class="col-md-4">
+                <label for="canRxId" class="form-label">RX ID (Hex)</label>
+                <input type="text" class="form-control" id="canRxId" value="7F0" placeholder="7F0">
+            </div>
         </div>
     </div>
 
