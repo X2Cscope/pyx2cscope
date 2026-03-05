@@ -14,6 +14,7 @@ stop_requested = globals().get("stop_requested", lambda: False)
 phase_current = x2cscope.get_variable("my_counter")
 
 x2cscope.add_scope_channel(phase_current)
+
 x2cscope.request_scope_data()
 
 while not stop_requested():

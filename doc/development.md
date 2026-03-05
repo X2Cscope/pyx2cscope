@@ -70,5 +70,3 @@ available on pypi in the dist folder.
 ```bash
 python scripts/build.py
 ```
-
-## Creating artifacts to upload to GitHu

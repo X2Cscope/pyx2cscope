@@ -90,9 +90,6 @@ class GenericParser(ElfParser):
 
         members = {}
         self._process_end_die(members, self.die_variable, self.var_name, 0)
-        # Uncomment and use if base type processing is needed
-        # base_type_die = self._get_base_type_die(self.die_variable)
-        # self._process_end_die(members, base_type_die, self.var_name, 0)
 
         target_map = self.register_map if self.is_sfr else self.variable_map
         for member_name, member_data in members.items():
@@ -413,11 +410,6 @@ class GenericParser(ElfParser):
             for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
                 self._process_die(die)
-
-        # #Update type _Bool to bool
-        # for var_info in self.variable_map.values():
-        #     if var_info.type == "_Bool":
-        #         var_info.type = "bool"
 
         return self.variable_map
 

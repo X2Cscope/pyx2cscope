@@ -401,6 +401,16 @@ class WebScope:
                                 for sample in channel_data[name]
                             ]
 
+                    # Build raw data dict for dashboard (gain/offset applied per channel)
+                    dashboard_data = {}
+                    for channel in self.scope_vars:
+                        name = channel["variable"].info.name
+                        if name in channel_data:
+                            dashboard_data[name] = [
+                                sample * channel["gain"] + channel["offset"]
+                                for sample in channel_data[name]
+                            ]
+
                     if self.scope_burst:
                         self.scope_burst = False
                         self.scope_trigger = False

@@ -290,7 +290,6 @@ class X2CScope:
             bool: True if the scope data is ready, False otherwise.
         """
         scope_data = self.lnet.load_parameters()
-        logging.debug(scope_data)
         return (
             scope_data.scope_state == 0
             or scope_data.data_array_pointer == scope_data.data_array_used_length
@@ -342,6 +341,7 @@ class X2CScope:
         loop = num_chunks if chunk_rest == 0 else num_chunks + 1
         for i in range(int(loop)):
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
+            data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
             try:
                 # Read the chunk of data
                 data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)try:
