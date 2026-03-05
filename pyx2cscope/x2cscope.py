@@ -125,16 +125,17 @@ class X2CScope:
         """
         return self.variable_factory.get_var_list()
 
-    def get_variable(self, name: str) -> Variable:
+    def get_variable(self, name: str, sfr: bool = False) -> Variable:
         """Retrieve a variable by its name.
 
         Args:
             name (str): The name of the variable to retrieve.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.
 
         Returns:
             Variable: The requested variable object.
         """
-        return self.variable_factory.get_variable(name)
+        return self.variable_factory.get_variable(name, sfr=sfr)
 
     def get_variable_raw(self, variable_info: VariableInfo) -> Variable:
         """Retrieve a variable by its definition encapsulated by VariableInfo Dataclass.

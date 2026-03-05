@@ -41,23 +41,45 @@ class ElfParser(ABC):
         self.dwarf_info = {}
         self.elf_file = None
         self.variable_map = {}
+        self.register_map = {}
         self.symbol_table = {}
 
         self._load_elf_file()
-        self._map_variables()
         self._load_symbol_table()
+        self._map_variables()
+        self._map_registers()
         self._close_elf_file()
 
-    def get_var_info(self, name: str) -> Optional[VariableInfo]:
+    def get_register_info(self, name: str) -> Optional[VariableInfo]:
+        """Return the VariableInfo associated with a given register name, or None if not found.
+
+        Args:
+            name (str): The name of the register (e.g. "U1STA", "U1STAbits.URXDA").
+
+        Returns:
+            Optional[VariableInfo]: The information of the register, if available.
+        """
+        return self.register_map.get(name)
+
+    def get_register_list(self) -> List[str]:
+        """Return a sorted list of all MCU peripheral register names found in the ELF.
+
+        Returns:
+            List[str]: A sorted list of register names.
+        """
+        return sorted(self.register_map.keys())
+
+    def get_var_info(self, name: str, sfr: bool = False) -> Optional[VariableInfo]:
         """Return the VariableInfo associated with a given variable name, or None if not found.
 
         Args:
             name (str): The name of the variable.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.
 
         Returns:
             Optional[VariableInfo]: The information of the variable, if available.
         """
-        return self.variable_map.get(name)
+        return self.register_map.get(name) if sfr else self.variable_map.get(name)
 
     def get_var_list(self) -> List[str]:
         """Return a list of all variable names available in the ELF file.
@@ -92,6 +114,19 @@ class ElfParser(ABC):
         """
 
     @abstractmethod
+    def _map_registers(self) -> Dict[str, VariableInfo]:
+        """Abstract method to map MCU peripheral registers from DWARF / symbol table.
+
+        Implementations should populate ``self.register_map`` with entries for every
+        peripheral register (SFR) found, including their bitfield sub-entries where
+        available. The same ``VariableInfo`` dataclass is reused: ``bit_size`` and
+        ``bit_offset`` are non-zero for individual bit/bitfield members.
+
+        Returns:
+            Dict[str, VariableInfo]: A dictionary of register names to VariableInfo objects.
+        """
+
+    @abstractmethod
     def _close_elf_file(self):
         """Abstract method to close any open file connection after parsing is done."""
 
@@ -115,6 +150,9 @@ class DummyParser(ElfParser):
         pass
 
     def _map_variables(self) -> Dict[str, VariableInfo]:
+        return {}
+
+    def _map_registers(self) -> Dict[str, VariableInfo]:
         return {}
 
     def _close_elf_file(self):

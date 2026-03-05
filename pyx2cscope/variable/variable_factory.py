@@ -176,17 +176,18 @@ class VariableFactory:
         """
         return self.parser.get_var_list()
 
-    def get_variable(self, name: str) -> Variable | None:
+    def get_variable(self, name: str, sfr: bool = False) -> Variable | None:
         """Retrieve a Variable object based on its name.
 
         Args:
             name (str): Name of the variable to retrieve.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.
 
         Returns:
             Variable: The Variable object, if found. None otherwise.
         """
         try:
-            variable_info = self.parser.get_var_info(name)
+            variable_info = self.parser.get_var_info(name, sfr=sfr)
             if variable_info is None:
                 logging.error(f"Variable '{name}' not found!")
                 return None

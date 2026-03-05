@@ -1,4 +1,4 @@
-"""This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+"""This module provides functionalities for parsing ELF files.
 
 It focuses on extracting structure members and variable information from DWARF debugging information.
 """
@@ -27,6 +27,7 @@ class GenericParser(ElfParser):
         self.die_variable = None
         self.var_name = None
         self.address = None
+        self.is_sfr = False  # True when the current DIE is a peripheral register (DW_AT_external)
 
     def _load_elf_file(self):
         try:
@@ -52,6 +53,7 @@ class GenericParser(ElfParser):
         self.die_variable = None
         self.var_name = None
         self.address = None
+        self.is_sfr = False
 
         # In DIE structure, a variable to be considered valid, has under
         # its attributes the attribute DW_AT_specification or DW_AT_location
@@ -64,14 +66,11 @@ class GenericParser(ElfParser):
             self.die_variable = spec_die
         elif die_struct.attributes.get("DW_AT_location") and die_struct.attributes.get("DW_AT_name") is not None:
             self.die_variable = die_struct
-        # YA/EP We are not sure if we need to catch external variables.
-        # probably they are already being detected anywhere else as static or global
-        # variables, so this step may be avoided here.
-        # We let the code here in case we want to process them anyway.
-        # elif die_variable.attributes.get("DW_AT_external") and die_variable.attributes.get("DW_AT_name") is not None:
-        #      self.var_name = die_variable.attributes.get("DW_AT_name").value.decode("utf-8")
-        #      self.die_variable = die_variable
-        #      self._extract_address(die_variable)
+        elif die_struct.attributes.get("DW_AT_external") and die_struct.attributes.get("DW_AT_name") is not None:
+            if die_struct.tag != "DW_TAG_variable":
+                return
+            self.die_variable = die_struct        
+            self.is_sfr = True
         else:
             return
 
@@ -79,25 +78,28 @@ class GenericParser(ElfParser):
         self.address = self._extract_address(die_struct)
 
     def _process_die(self, die):
-        """Process a DIE structure containing the variable and its."""
+        """Process a DIE structure containing the variable and its members.
+
+        Firmware variables (no DW_AT_external) are stored in variable_map.
+        Peripheral registers / SFRs (DW_AT_external, address from symbol table) are
+        stored in register_map, including any bitfield sub-entries.
+        """
         self._get_die_variable(die)
         if self.address is None:
             return
 
         members = {}
         self._process_end_die(members, self.die_variable, self.var_name, 0)
-        # Uncomment and use if base type processing is needed
-        # base_type_die = self._get_base_type_die(self.die_variable)
-        # self._process_end_die(members, base_type_die, self.var_name, 0)
 
+        target_map = self.register_map if self.is_sfr else self.variable_map
         for member_name, member_data in members.items():
-            self.variable_map[member_name] = VariableInfo(
-                name = member_name,
-                byte_size = member_data["byte_size"],
-                bit_size = member_data["bit_size"],
-                bit_offset = member_data["bit_offset"],
-                type = member_data["type"],
-                address = self.address + member_data["address_offset"],
+            target_map[member_name] = VariableInfo(
+                name=member_name,
+                byte_size=member_data["byte_size"],
+                bit_size=member_data["bit_size"],
+                bit_offset=member_data["bit_offset"],
+                type=member_data["type"],
+                address=self.address + member_data["address_offset"],
                 array_size=member_data["array_size"],
                 valid_values=member_data["valid_values"],
             )
@@ -171,7 +173,7 @@ class GenericParser(ElfParser):
         for section in self.elf_file.iter_sections():
             if isinstance(section, SymbolTableSection):
                 for symbol in section.iter_symbols():
-                    if symbol["st_info"].type == "STT_OBJECT":
+                    if symbol["st_info"].type == "STT_OBJECT" or symbol["st_info"].bind == "STB_GLOBAL":
                         self.symbol_table[symbol.name] = symbol["st_value"]
 
     def _fetch_address_from_symtab(self, variable_name):
@@ -391,36 +393,46 @@ class GenericParser(ElfParser):
                     return die
         return None
 
+    def _map_registers(self) -> dict[str, VariableInfo]:
+        """No-op: register_map is populated as part of _map_variables() in a single pass.
+
+        Both firmware variables and peripheral registers (SFRs) are processed together
+        in ``_map_variables()``. The ``self.is_sfr`` flag set in ``_get_die_variable()``
+        determines which map each entry is written to inside ``_process_die()``.
+        """
+        return self.register_map
+
     def _map_variables(self) -> dict[str, VariableInfo]:
         """Maps all variables in the ELF file."""
         self.variable_map.clear()
+        self.register_map.clear()
         for cu in self.dwarf_info.iter_CUs():
             for die in filter(lambda d: d.tag == "DW_TAG_variable", cu.iter_DIEs()):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
                 self._process_die(die)
 
-        # #Update type _Bool to bool
-        # for var_info in self.variable_map.values():
-        #     if var_info.type == "_Bool":
-        #         var_info.type = "bool"
-
         return self.variable_map
 
 
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.DEBUG)
-    #elf_file = r"C:\Users\m67250\Downloads\pmsm (1)\mclv-48v-300w-an1292-dspic33ak512mc510_v1.0.0\pmsm.X\dist\default\production\pmsm.X.production.elf"
-    # elf_file = r"C:\Users\m67250\OneDrive - Microchip Technology Inc\Desktop\Training_Domel\motorbench_demo_domel.X\dist\default\production\motorbench_demo_domel.X.production.elf"
-    #elf_file = r"C:\Users\m67250\Downloads\mcapp_pmsm_zsmtlf(1)\mcapp_pmsm_zsmtlf\project\mcapp_pmsm.X\dist\default\production\mcapp_pmsm.X.production.elf"
-    elf_file = r"..\..\tests\data\qspin_foc_same54.elf"
+ 
+    # elf_file = r"..\..\tests\data\qspin_foc_same54.elf"
+    elf_file = r"..\..\..\tests\data\dsPIC33ak128mc106_foc.elf"
     elf_reader = GenericParser(elf_file)
     variable_map = elf_reader._map_variables()
+    register_map = elf_reader._map_registers()
 
     print(variable_map)
     print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
-    counter = 0
-
+    
+    print("Array variables:")
     for var_info in variable_map.values():
         if var_info.array_size > 0:
             print(var_info)
+    print("'''''''''''''''''''''''''''''''''''''''' ")
+    
+    print("register variables:")
+    print(register_map)
+    print(len(register_map))
+    print("'''''''''''''''''''''''''''''''''''''''' ")
