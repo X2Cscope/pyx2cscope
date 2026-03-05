@@ -361,6 +361,31 @@ if stop_requested():
 
 ---
 
+## Special Function Registers (SFR)
+
+The Web GUI exposes SFR access through an **SFR** toggle switch placed inline next to every
+variable search dropdown.
+
+### Watch View and Scope View
+
+Each view has an **SFR** toggle (Bootstrap form-switch) beside the Select2 search bar:
+
+- When the toggle is **off** (default) the dropdown searches firmware variables.
+- When the toggle is **on** the dropdown searches Special Function Registers instead.
+
+Switching the toggle clears the current selection and reinitialises the dropdown so the next
+search already queries the correct namespace. When an SFR is selected and added to the watch
+or scope table it is retrieved with `sfr=True` on the backend, mapping it to its fixed
+hardware address.
+
+### Dashboard
+
+The widget configuration modal includes the same **SFR** toggle above the variable name
+selector. The toggle resets to **off** every time the modal is opened and behaves identically
+to the Watch/Scope toggles described above.
+
+---
+
 ## Tips and Best Practices
 
 ### Performance

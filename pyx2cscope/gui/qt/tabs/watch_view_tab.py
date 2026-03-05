@@ -253,13 +253,17 @@ class WatchViewTab(BaseTab):
         if not self._variable_list or index >= len(self._variable_edits):
             return
 
-        dialog = VariableSelectionDialog(self._variable_list, self)
+        sfr_list = self._app_state.get_sfr_list()
+        dialog = VariableSelectionDialog(self._variable_list, self, sfr_variables=sfr_list)
         if dialog.exec_() == QDialog.Accepted and dialog.selected_variable:
+            sfr = dialog.sfr_selected
             self._variable_edits[index].setText(dialog.selected_variable)
+            # Store sfr flag before updating name so the var_ref cache uses the right namespace
+            self._app_state.update_live_watch_var_field(index, "sfr", sfr)
             self._app_state.update_live_watch_var_field(index, "name", dialog.selected_variable)
 
             # Read initial value
-            value = self._app_state.read_variable(dialog.selected_variable)
+            value = self._app_state.read_variable(dialog.selected_variable, sfr=sfr)
             if value is not None:
                 self._value_edits[index].setText(str(value))
                 self._app_state.update_live_watch_var_field(index, "value", value)
@@ -283,7 +287,8 @@ class WatchViewTab(BaseTab):
         if var_name and var_name != "None":
             try:
                 value = float(self._value_edits[index].text())
-                self._app_state.write_variable(var_name, value)
+                sfr = self._app_state.get_live_watch_var(index).sfr
+                self._app_state.write_variable(var_name, value, sfr=sfr)
             except ValueError:
                 pass
 

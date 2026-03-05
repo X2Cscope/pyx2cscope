@@ -151,13 +151,16 @@ def variables_autocomplete():
 
     Receiving at least 3 letters, the function will search on pyX2Cscope parsed variables to find similar matches,
     returning a list of possible candidates. Access this function over {server_url}/variables.
+    Use the query parameter ``sfr=true`` to search SFRs instead of firmware variables.
     """
     query = request.args.get("q", "")
+    sfr = request.args.get("sfr", "false").lower() == "true"
     items = []
     if web_scope.is_connected():
+        var_list = web_scope.list_sfr() if sfr else web_scope.list_variables()
         items = [
             {"id": var, "text": var}
-            for var in web_scope.list_variables()
+            for var in var_list
             if query.lower() in var.lower()
         ]
     return jsonify({"items": items})

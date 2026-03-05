@@ -102,6 +102,24 @@ You can enable both views simultaneously for a split-screen layout. You can chan
 5. Click "Sample" to start capturing, "Single" for one-shot capture, or "Stop" to halt.
 6. Use the plot toolbar to zoom, pan, and export data (CSV, PNG, SVG, or Matplotlib window).
 
+### Special Function Registers (SFR)
+
+Both **WatchView** and **ScopeView** support searching and adding Special Function Registers
+(SFRs) — hardware peripheral registers such as `LATD`, `TMR1`, or `PORTA` — in addition to
+ordinary firmware variables.
+
+When the variable selection dialog opens, an **SFR** checkbox appears next to the search bar:
+
+- When the checkbox is **unchecked** (default) the list shows firmware variables.
+- When the checkbox is **checked** the list switches to SFRs parsed from the ELF file.
+
+The checkbox is disabled (greyed out) if the connected ELF file contains no SFR entries.
+
+Once an SFR is selected and confirmed, it is retrieved with `sfr=True` internally so it is
+mapped to its fixed hardware address. From that point it behaves exactly like any other
+variable — values can be read, polled live (WatchView), or captured as a scope channel
+(ScopeView).
+
 ### Save and Load Config
 
 The **Save Config** and **Load Config** buttons allow you to:

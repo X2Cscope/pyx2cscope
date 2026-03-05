@@ -25,6 +25,7 @@ class WatchVariable:
     unit: str = ""
     live: bool = False
     plot_enabled: bool = False
+    sfr: bool = False  # True when the variable is a Special Function Register
     _var_ref: Any = field(default=None, repr=False)  # Cached x2cscope variable reference
 
     @property
@@ -51,6 +52,7 @@ class ScopeChannel:
     trigger: bool = False
     gain: float = 1.0
     visible: bool = True
+    sfr: bool = False  # True when the variable is a Special Function Register
 
 
 @dataclass
@@ -186,6 +188,16 @@ class AppState(QObject):
         finally:
             self._mutex.unlock()
 
+    def get_sfr_list(self) -> List[str]:
+        """Get the list of SFR (Special Function Register) names (thread-safe)."""
+        self._mutex.lock()
+        try:
+            if self._x2cscope:
+                return self._x2cscope.list_sfr()
+            return []
+        finally:
+            self._mutex.unlock()
+
     def update_device_info(self) -> Optional[DeviceInfo]:
         """Fetch and update device info (thread-safe)."""
         self._mutex.lock()
@@ -253,14 +265,19 @@ class AppState(QObject):
 
     # ============= Variable Read/Write =============
 
-    def read_variable(self, name: str) -> Optional[float]:
-        """Read a variable value from the device (thread-safe)."""
+    def read_variable(self, name: str, sfr: bool = False) -> Optional[float]:
+        """Read a variable value from the device (thread-safe).
+
+        Args:
+            name: The variable name to read.
+            sfr: When True, look up the name in the SFR register map.
+        """
         if not name or name == "None":
             return None
         self._mutex.lock()
         try:
             if self._x2cscope:
-                var = self._x2cscope.get_variable(name)
+                var = self._x2cscope.get_variable(name, sfr=sfr)
                 if var is not None:
                     return var.get_value()
         except Exception as e:
@@ -309,14 +326,20 @@ class AppState(QObject):
             self._mutex.unlock()
         return None
 
-    def write_variable(self, name: str, value: float) -> bool:
-        """Write a variable value to the device (thread-safe)."""
+    def write_variable(self, name: str, value: float, sfr: bool = False) -> bool:
+        """Write a variable value to the device (thread-safe).
+
+        Args:
+            name: The variable name to write.
+            value: The value to write.
+            sfr: When True, look up the name in the SFR register map.
+        """
         if not name or name == "None":
             return False
         self._mutex.lock()
         try:
             if self._x2cscope:
-                var = self._x2cscope.get_variable(name)
+                var = self._x2cscope.get_variable(name, sfr=sfr)
                 if var is not None:
                     var.set_value(value)
                     return True
@@ -355,7 +378,8 @@ class AppState(QObject):
                 setattr(self._watch_vars[index], field, value)
                 # Cache the x2cscope variable reference when name is set
                 if field == "name" and value and value != "None" and self._x2cscope:
-                    var_ref = self._x2cscope.get_variable(value)
+                    sfr = self._watch_vars[index].sfr
+                    var_ref = self._x2cscope.get_variable(value, sfr=sfr)
                     if var_ref is not None:
                         self._watch_vars[index].var_ref = var_ref
         finally:
@@ -485,7 +509,7 @@ class AppState(QObject):
             # Add configured channels
             for channel in self._scope_channels:
                 if channel.name and channel.name != "None":
-                    variable = self._x2cscope.get_variable(channel.name)
+                    variable = self._x2cscope.get_variable(channel.name, sfr=channel.sfr)
                     if variable is not None:
                         self._x2cscope.add_scope_channel(variable)
 
@@ -516,7 +540,12 @@ class AppState(QObject):
                 return True
 
             if trigger_var_name:
-                variable = self._x2cscope.get_variable(trigger_var_name)
+                # Find sfr flag for the trigger channel
+                trigger_sfr = next(
+                    (ch.sfr for ch in self._scope_channels if ch.trigger and ch.name == trigger_var_name),
+                    False,
+                )
+                variable = self._x2cscope.get_variable(trigger_var_name, sfr=trigger_sfr)
                 if variable is not None:
                     trigger_edge = (
                         0 if self._trigger_settings.edge == "Rising" else 1
@@ -670,7 +699,8 @@ class AppState(QObject):
                 setattr(self._live_watch_vars[index], field, value)
                 # Cache the x2cscope variable reference when name is set
                 if field == "name" and value and value != "None" and self._x2cscope:
-                    var_ref = self._x2cscope.get_variable(value)
+                    sfr = self._live_watch_vars[index].sfr
+                    var_ref = self._x2cscope.get_variable(value, sfr=sfr)
                     if var_ref is not None:
                         self._live_watch_vars[index].var_ref = var_ref
         finally:

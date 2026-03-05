@@ -406,14 +406,25 @@ function initWidgetVarSelect2(options = {}) {
             url: '/variables',
             dataType: 'json',
             delay: 250,
+            data: function(params) {
+                return { q: params.term, sfr: $('#widgetSfrToggle').is(':checked') };
+            },
             processResults: function (data) {
                 return { results: data.items };
             },
-            cache: true
+            cache: false
         },
         minimumInputLength: 3
     };
     return $.extend(true, {}, defaults, options);
+}
+
+function reinitWidgetVarSelect2() {
+    if ($('#widgetVarName').data('select2')) {
+        $('#widgetVarName').val(null).trigger('change');
+        $('#widgetVarName').select2('destroy');
+    }
+    $('#widgetVarName').select2(initWidgetVarSelect2());
 }
 
 function showWidgetConfig(type, editWidget = null) {
@@ -459,11 +470,20 @@ function showWidgetConfig(type, editWidget = null) {
 
     // Initialize Select2 after modal is shown so dropdown renders correctly
     $('#widgetConfigModal').one('shown.bs.modal', function() {
+        // Reset SFR toggle for each new config session
+        $('#widgetSfrToggle').prop('checked', false);
+
         if (widgetDef.requiresVariable && !widgetDef.requiresMultipleVariables) {
             $('#widgetVarName').select2(initWidgetVarSelect2());
             if (editWidget) {
                 $('#widgetVarName').prop('disabled', true);
             }
+            // Reinitialize select2 when SFR toggle changes
+            $('#widgetSfrToggle').off('change.widgetVarSelect2').on('change.widgetVarSelect2', function() {
+                if (!$('#widgetVarName').prop('disabled')) {
+                    reinitWidgetVarSelect2();
+                }
+            });
         }
         if (widgetDef.initSelect2) {
             widgetDef.initSelect2(editWidget);

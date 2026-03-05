@@ -3,8 +3,10 @@
 from typing import List, Optional
 
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
+    QHBoxLayout,
     QLineEdit,
     QListWidget,
     QVBoxLayout,
@@ -14,20 +16,28 @@ from PyQt5.QtWidgets import (
 class VariableSelectionDialog(QDialog):
     """Dialog for searching and selecting a variable from a list.
 
-    Provides a search bar to filter variables and a list to select from.
+    Provides a search bar, an SFR toggle to switch between firmware variables
+    and Special Function Registers, and a list to select from.
     Double-clicking or pressing OK selects the highlighted variable.
     """
 
-    def __init__(self, variables: List[str], parent=None):
+    def __init__(self, variables: List[str], parent=None, sfr_variables: Optional[List[str]] = None):
         """Initialize the variable selection dialog.
 
         Args:
-            variables: A list of available variable names to select from.
+            variables: A list of firmware variable names to select from.
             parent: The parent widget.
+            sfr_variables: An optional list of SFR names. When provided the SFR
+                toggle checkbox is enabled and the user can switch between the two
+                namespaces.
         """
         super().__init__(parent)
-        self.variables = variables
+        self._variables = variables
+        self._sfr_variables: List[str] = sfr_variables or []
+        self._active_list = self._variables
+
         self.selected_variable: Optional[str] = None
+        self.sfr_selected: bool = False  # True when the selected name is an SFR
 
         self._init_ui()
 
@@ -38,15 +48,27 @@ class VariableSelectionDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        # Search bar
+        # --- Search bar + SFR toggle row ---
+        search_row = QHBoxLayout()
+
         self.search_bar = QLineEdit(self)
         self.search_bar.setPlaceholderText("Search...")
         self.search_bar.textChanged.connect(self._filter_variables)
-        layout.addWidget(self.search_bar)
+        search_row.addWidget(self.search_bar)
+
+        self.sfr_checkbox = QCheckBox("SFR", self)
+        self.sfr_checkbox.setEnabled(bool(self._sfr_variables))
+        self.sfr_checkbox.setToolTip(
+            "Search Special Function Registers instead of firmware variables"
+        )
+        self.sfr_checkbox.stateChanged.connect(self._on_sfr_toggled)
+        search_row.addWidget(self.sfr_checkbox)
+
+        layout.addLayout(search_row)
 
         # Variable list
         self.variable_list = QListWidget(self)
-        self.variable_list.addItems(self.variables)
+        self.variable_list.addItems(self._active_list)
         self.variable_list.itemDoubleClicked.connect(self._accept_selection)
         layout.addWidget(self.variable_list)
 
@@ -60,6 +82,20 @@ class VariableSelectionDialog(QDialog):
 
         self.setLayout(layout)
 
+    def _on_sfr_toggled(self, state: int):
+        """Switch the active variable list when the SFR checkbox changes.
+
+        Args:
+            state: Qt checkbox state (Qt.Checked or Qt.Unchecked).
+        """
+        from PyQt5.QtCore import Qt
+
+        self._active_list = (
+            self._sfr_variables if state == Qt.Checked else self._variables
+        )
+        self.search_bar.clear()
+        self._filter_variables("")
+
     def _filter_variables(self, text: str):
         """Filter the variables based on user input in the search bar.
 
@@ -67,14 +103,13 @@ class VariableSelectionDialog(QDialog):
             text: The input text to filter variables.
         """
         self.variable_list.clear()
-        filtered_variables = [
-            var for var in self.variables if text.lower() in var.lower()
-        ]
-        self.variable_list.addItems(filtered_variables)
+        filtered = [var for var in self._active_list if text.lower() in var.lower()]
+        self.variable_list.addItems(filtered)
 
     def _accept_selection(self):
         """Accept the selection when a variable is chosen from the list."""
         selected_items = self.variable_list.selectedItems()
         if selected_items:
             self.selected_variable = selected_items[0].text()
+            self.sfr_selected = self.sfr_checkbox.isChecked()
             self.accept()

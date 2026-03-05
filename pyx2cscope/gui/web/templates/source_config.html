@@ -1,6 +1,10 @@
 <div class="row g-2 mb-3">
-    <div class="col-12 col-md-3">
-        <select id="scopeSearch" class="form-select" aria-label="Search variables"></select>
+    <div class="col-12 col-md-3 d-flex gap-2 align-items-center">
+        <select id="scopeSearch" class="form-select flex-grow-1" aria-label="Search variables"></select>
+        <div class="form-check form-switch mb-0 text-nowrap">
+            <input class="form-check-input" type="checkbox" id="scopeSfrToggle" role="switch">
+            <label class="form-check-label" for="scopeSfrToggle">SFR</label>
+        </div>
     </div>
     <div class="col-6 col-md-2">
         <button type="button" id="scopeSave" class="btn btn-secondary w-100">Save</button>

@@ -283,9 +283,12 @@ class ScopeViewTab(BaseTab):
         if not self._variable_list:
             return
 
-        dialog = VariableSelectionDialog(self._variable_list, self)
+        sfr_list = self._app_state.get_sfr_list()
+        dialog = VariableSelectionDialog(self._variable_list, self, sfr_variables=sfr_list)
         if dialog.exec_() == QDialog.Accepted and dialog.selected_variable:
             self._var_line_edits[index].setText(dialog.selected_variable)
+            # Store sfr flag before updating name so sampling uses the right namespace
+            self._app_state.update_scope_channel_field(index, "sfr", dialog.sfr_selected)
             self._app_state.update_scope_channel_field(index, "name", dialog.selected_variable)
 
     def _on_trigger_changed(self, index: int, state: int):
@@ -323,10 +326,11 @@ class ScopeViewTab(BaseTab):
             x2cscope.clear_all_scope_channel()
 
             # Add configured channels
-            for line_edit in self._var_line_edits:
+            for i, line_edit in enumerate(self._var_line_edits):
                 var_name = line_edit.text()
                 if var_name and var_name != "None":
-                    variable = x2cscope.get_variable(var_name)
+                    sfr = self._app_state.get_scope_channel(i).sfr
+                    variable = x2cscope.get_variable(var_name, sfr=sfr)
                     if variable is not None:
                         x2cscope.add_scope_channel(variable)
                         logging.debug(f"Added scope channel: {var_name}")
@@ -387,7 +391,18 @@ class ScopeViewTab(BaseTab):
                 x2cscope.reset_scope_trigger()
                 return
 
-            variable = x2cscope.get_variable(self._trigger_variable)
+            # Find the sfr flag for the trigger channel
+            trigger_sfr = next(
+                (
+                    self._app_state.get_scope_channel(i).sfr
+                    for i, le in enumerate(self._var_line_edits)
+                    if le.text() == self._trigger_variable
+                    and i < len(self._trigger_checkboxes)
+                    and self._trigger_checkboxes[i].isChecked()
+                ),
+                False,
+            )
+            variable = x2cscope.get_variable(self._trigger_variable, sfr=trigger_sfr)
             if variable is None:
                 logging.warning(f"Trigger variable not found: {self._trigger_variable}")
                 return

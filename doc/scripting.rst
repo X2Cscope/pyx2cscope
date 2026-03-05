@@ -186,6 +186,73 @@ Writing values
 
     variable.set_value(value)
 
+Special Function Registers (SFR)
+---------------------------------
+
+In addition to firmware variables, pyX2Cscope can access **Special Function Registers (SFRs)** —
+hardware peripheral registers with fixed addresses defined in the MCU's ELF file (e.g. ``LATD``,
+``TMR1``, ``PORTA``). SFR access uses the same ``Variable`` interface as ordinary variables, so
+``get_value()`` and ``set_value()`` work identically.
+
+Listing available SFRs
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Use ``list_sfr()`` to retrieve a sorted list of all SFR names parsed from the ELF file:
+
+.. code-block:: python
+
+    sfr_names = x2c_scope.list_sfr()
+    print(sfr_names)
+    # ['ADCON1', 'ADCON2', ..., 'LATD', ..., 'TMR1', ...]
+
+This is the SFR counterpart of ``list_variables()``, which lists firmware variables only.
+
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Method
+     - Description
+   * - ``list_variables()``
+     - Returns all firmware (DWARF) variable names from the ELF symbol table.
+   * - ``list_sfr()``
+     - Returns all peripheral register (SFR) names from the ELF register map.
+
+Retrieving an SFR variable
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pass ``sfr=True`` to ``get_variable()`` to look up the name in the SFR register map instead of
+the firmware variable table:
+
+.. code-block:: python
+
+    latd = x2c_scope.get_variable("LATD", sfr=True)
+    tmr1 = x2c_scope.get_variable("TMR1", sfr=True)
+
+The returned object is a standard ``Variable`` instance — read and write it the same way:
+
+.. code-block:: python
+
+    # Read the current register value
+    value = latd.get_value()
+    print(f"LATD = 0x{value:04X}")
+
+    # Write a new value to the register
+    latd.set_value(value | (1 << 12))   # set bit 12 (LATE12)
+
+.. note::
+
+    ``get_variable("NAME")`` and ``get_variable("NAME", sfr=False)`` both search the firmware
+    variable map.  ``get_variable("NAME", sfr=True)`` searches the SFR register map.  The two
+    namespaces are independent — a name can exist in both without conflict.
+
+Full SFR example
+^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../pyx2cscope/examples/SFR_Example.py
+    :language: python
+    :linenos:
+
 .. _import-and-export-variables:
 
 Import and Export variables

@@ -99,11 +99,12 @@ def handle_add_watch_var(data):
     """Handle add watch variable event.
 
     Args:
-        data (dict): Dictionary containing the variable name.
+        data (dict): Dictionary containing the variable name and optional sfr flag.
     """
     var = data.get("var")
+    sfr = bool(data.get("sfr", False))
     if var:
-        web_scope.add_watch_var(var)
+        web_scope.add_watch_var(var, sfr=sfr)
         emit("watch_table_update", {"var": var}, broadcast=True)
 
 @socketio.on("remove_watch_var", namespace="/watch-view")
@@ -124,11 +125,12 @@ def handle_add_scope_var(data):
     """Handle add scope variable event.
 
     Args:
-        data (dict): Dictionary containing the variable name.
+        data (dict): Dictionary containing the variable name and optional sfr flag.
     """
     var = data.get("var")
+    sfr = bool(data.get("sfr", False))
     if var:
-        web_scope.add_scope_var(var)
+        web_scope.add_scope_var(var, sfr=sfr)
         emit("scope_table_update", {"var": var}, broadcast=True)
 
 @socketio.on("remove_scope_var", namespace="/scope-view")

@@ -176,6 +176,14 @@ class VariableFactory:
         """
         return self.parser.get_var_list()
 
+    def get_sfr_list(self) -> list[str]:
+        """Get a list of SFR (Special Function Register) names available in the ELF file.
+
+        Returns:
+            list[str]: A list of SFR names.
+        """
+        return self.parser.get_register_list()
+
     def get_variable(self, name: str, sfr: bool = False) -> Variable | None:
         """Retrieve a Variable object based on its name.
 

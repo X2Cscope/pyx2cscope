@@ -125,6 +125,14 @@ class X2CScope:
         """
         return self.variable_factory.get_var_list()
 
+    def list_sfr(self) -> List[str]:
+        """List all available SFR (Special Function Register) names.
+
+        Returns:
+            List[str]: A list of SFR names.
+        """
+        return self.variable_factory.get_sfr_list()
+
     def get_variable(self, name: str, sfr: bool = False) -> Variable:
         """Retrieve a variable by its name.
 

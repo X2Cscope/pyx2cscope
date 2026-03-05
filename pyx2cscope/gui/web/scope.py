@@ -137,18 +137,19 @@ class WebScope:
         """Clear all watch variables."""
         self.watch_vars.clear()
 
-    def add_watch_var(self, var):
+    def add_watch_var(self, var, sfr: bool = False):
         """Add a variable to the watch list.
 
         Args:
             var (str): Variable name to add.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) instead of a firmware variable.
 
         Returns:
             dict | None: Variable data dictionary if successful, None otherwise.
         """
         var_dict = None
         if not any(_data["variable"].info.name == var for _data in self.watch_vars):
-            variable = self.x2c_scope.get_variable(var)
+            variable = self.x2c_scope.get_variable(var, sfr=sfr)
             if variable is not None:
                 var_dict = self._get_watch_variable_as_dict(variable)
                 self.watch_vars.append(var_dict)
@@ -252,18 +253,19 @@ class WebScope:
             self.scope_vars.clear()
             self.x2c_scope.clear_all_scope_channel()
 
-    def add_scope_var(self, var):
+    def add_scope_var(self, var, sfr: bool = False):
         """Add a variable to the scope channel list.
 
         Args:
             var (str): Variable name to add.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) instead of a firmware variable.
 
         Returns:
             dict | None: Variable data dictionary if successful, None otherwise.
         """
         var_dict = None
         if not any(data["variable"].info.name == var for data in self.scope_vars):
-            variable = self.x2c_scope.get_variable(var)
+            variable = self.x2c_scope.get_variable(var, sfr=sfr)
             if variable is not None:
                 var_dict = self._get_scope_variable_as_dict(variable)
                 self.scope_vars.append(var_dict)
@@ -464,6 +466,14 @@ class WebScope:
             list: List of variable names.
         """
         return self.x2c_scope.list_variables()
+
+    def list_sfr(self):
+        """List all available SFR (Special Function Register) names.
+
+        Returns:
+            list: List of SFR names.
+        """
+        return self.x2c_scope.list_sfr()
 
     def disconnect(self):
         """Disconnect from X2CScope."""

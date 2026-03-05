@@ -106,19 +106,31 @@ function initScopeSelect(){
             url: '/variables',
             dataType: 'json',
             delay: 250,
+            data: function(params) {
+                return { q: params.term, sfr: $('#scopeSfrToggle').is(':checked') };
+            },
             processResults: function (data) {
                 return {
                     results: data.items
                 };
             },
-            cache: true
+            cache: false
         },
         minimumInputLength: 3
     });
 
-    $('#scopeSearch').on('select2:select', function(e){
+    $('#scopeSearch').off('select2:select').on('select2:select', function(e){
         parameter = $('#scopeSearch').select2('data')[0]['text'];
-        socket_sv.emit("add_scope_var", {var: parameter});
+        var sfr = $('#scopeSfrToggle').is(':checked');
+        socket_sv.emit("add_scope_var", {var: parameter, sfr: sfr});
+    });
+
+    $('#scopeSfrToggle').off('change.scopeSearch').on('change.scopeSearch', function() {
+        $('#scopeSearch').val(null).trigger('change');
+        if ($('#scopeSearch').data('select2')) {
+            $('#scopeSearch').select2('destroy');
+        }
+        initScopeSelect();
     });
 }
 
