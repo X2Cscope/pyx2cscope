@@ -818,6 +818,10 @@ function reverseGainOffset(displayedValue, widget) {
 function updateDashboardWatchWidgets(varName, value) {
     dashboardWidgets.forEach(widget => {
         if (widget.type === 'plot_scope') return; // scope data handled separately
+
+        // Check if widget should be updated based on its update rate setting
+        if (window.shouldUpdateWidget && !window.shouldUpdateWidget(widget)) return;
+
         if (widget.type === 'plot_logger') {
             if (!widget.variables || !widget.variables.includes(varName)) return;
             if (!widget.data) widget.data = {};

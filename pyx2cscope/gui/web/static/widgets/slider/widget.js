@@ -44,10 +44,12 @@ function getSliderConfig(editWidget) {
             <input type="number" class="form-control" id="widgetOffset" step="any"
                    value="${editWidget?.offset !== undefined ? editWidget.offset : 0}" placeholder="0">
         </div>
+        ${window.getUpdateRateConfigHTML ? window.getUpdateRateConfigHTML(editWidget, 0) : ''}
     `;
 }
 
 function saveSliderConfig(widget) {
+    if (window.saveUpdateRateConfig) window.saveUpdateRateConfig(widget);
     widget.min = parseFloat(document.getElementById('widgetMinValue').value);
     widget.max = parseFloat(document.getElementById('widgetMaxValue').value);
     widget.step = parseFloat(document.getElementById('widgetStepValue').value);

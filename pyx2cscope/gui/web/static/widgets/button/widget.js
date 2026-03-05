@@ -100,10 +100,12 @@ function getButtonConfig(editWidget) {
                 <option value="primary" ${editWidget?.pressedColor === 'primary' ? 'selected' : ''}>Primary (Blue)</option>
             </select>
         </div>
+        ${window.getUpdateRateConfigHTML ? window.getUpdateRateConfigHTML(editWidget, 0) : ''}
     `;
 }
 
 function saveButtonConfig(widget) {
+    if (window.saveUpdateRateConfig) window.saveUpdateRateConfig(widget);
     widget.displayName = document.getElementById('widgetDisplayName').value;
     widget.buttonColor = document.getElementById('widgetButtonColor').value;
     widget.pressValue = parseValue(document.getElementById('widgetPressValue').value);

@@ -56,6 +56,7 @@ function getPlotLoggerConfig(editWidget) {
                 <input type="text" class="form-control" id="widgetYLabel" value="${editWidget?.yLabel || 'Value'}" placeholder="Value">
             </div>
         </div>
+        ${window.getUpdateRateConfigHTML ? window.getUpdateRateConfigHTML(editWidget) : ''}
     `;
 }
 
@@ -132,6 +133,7 @@ function updatePlotLoggerVariableSettingsUI() {
 }
 
 function savePlotLoggerConfig(widget) {
+    if (window.saveUpdateRateConfig) window.saveUpdateRateConfig(widget);
     widget.variables = $('#widgetVariables').val() || [];
     if (widget.variables.length === 0) {
         alert('Please enter at least one variable name');

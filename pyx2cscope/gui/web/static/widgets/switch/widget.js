@@ -47,10 +47,12 @@ function getSwitchConfig(editWidget) {
             <label class="form-label">Value when OFF</label>
             <input type="text" class="form-control" id="widgetOffValue" value="${editWidget?.offValue !== undefined ? editWidget.offValue : 0}" placeholder="e.g., 0 or false">
         </div>
+        ${window.getUpdateRateConfigHTML ? window.getUpdateRateConfigHTML(editWidget, 0) : ''}
     `;
 }
 
 function saveSwitchConfig(widget) {
+    if (window.saveUpdateRateConfig) window.saveUpdateRateConfig(widget);
     widget.displayName = document.getElementById('widgetDisplayName').value;
     widget.onValue = parseValue(document.getElementById('widgetOnValue').value);
     widget.offValue = parseValue(document.getElementById('widgetOffValue').value);

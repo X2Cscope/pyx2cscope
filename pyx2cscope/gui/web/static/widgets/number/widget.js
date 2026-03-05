@@ -11,6 +11,7 @@ function createNumberWidget(widget) {
         <input type="number" class="form-control"
                value="${widget.value}"
                onchange="updateDashboardVariable('${widget.variable}', parseFloat(this.value))"
+               onkeydown="if(event.key==='Enter') updateDashboardVariable('${widget.variable}', parseFloat(this.value))"
                ${isDashboardEditMode ? 'disabled' : ''}>
     `;
 }
@@ -27,10 +28,12 @@ function getNumberConfig(editWidget) {
             <input type="number" class="form-control" id="widgetOffset" step="any"
                    value="${editWidget?.offset !== undefined ? editWidget.offset : 0}" placeholder="0">
         </div>
+        ${window.getUpdateRateConfigHTML ? window.getUpdateRateConfigHTML(editWidget) : ''}
     `;
 }
 
 function saveNumberConfig(widget) {
+    if (window.saveUpdateRateConfig) window.saveUpdateRateConfig(widget);
     widget.gain = parseFloat(document.getElementById('widgetGain').value) || 1;
     widget.offset = parseFloat(document.getElementById('widgetOffset').value) || 0;
 }

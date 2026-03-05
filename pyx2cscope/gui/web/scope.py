@@ -26,6 +26,7 @@ class WebScope:
         self.scope_time_sampling = 50e-3
 
         self.dashboard_vars = {}  # {var_name: Variable object}
+        self.dashboard_rate = 1.0  # Fixed at 1 second for dashboard polling
         self.dashboard_next = time.time()
 
         self.x2c_scope :X2CScope | None = None
@@ -235,7 +236,7 @@ class WebScope:
         current_time = time.time()
         if current_time < self.dashboard_next:
             return {}
-        self.dashboard_next = current_time + self.watch_rate
+        self.dashboard_next = current_time + self.dashboard_rate
         result = {}
         with self._lock:
             for name, variable in self.dashboard_vars.items():
