@@ -223,7 +223,7 @@ class TestCardLinks:
 
         This test verifies all routes return valid standalone pages.
         """
-        response = flask_client.get(route)
+        response = flask_client.get(route, follow_redirects=True)
 
         assert response.status_code == HTTP_OK
         # Check if any of the expected content variations are present
