@@ -971,10 +971,21 @@ function loadDashboardLayout() {
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
+            // Unregister old variables
             removeAllDashboardVariables();
+            // Destroy all existing chart instances before clearing
+            for (const id in dashboardCharts) {
+                if (dashboardCharts[id]) {
+                    dashboardCharts[id].destroy();
+                    delete dashboardCharts[id];
+                }
+            }
+            // Load new layout
             dashboardWidgets = data.layout;
             widgetIdCounter = Math.max(...dashboardWidgets.map(w => w.id), 0) + 1;
+            // Clear canvas
             document.getElementById('dashboardCanvas').innerHTML = '';
+            // Render new widgets
             dashboardWidgets.forEach(w => renderDashboardWidget(w));
             registerAllDashboardVariables();
             syncScopeControlToBackend();
@@ -1031,10 +1042,21 @@ function handleDashboardFileImport(e) {
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
+                // Unregister old variables
                 removeAllDashboardVariables();
+                // Destroy all existing chart instances before clearing
+                for (const id in dashboardCharts) {
+                    if (dashboardCharts[id]) {
+                        dashboardCharts[id].destroy();
+                        delete dashboardCharts[id];
+                    }
+                }
+                // Parse and load new layout
                 dashboardWidgets = JSON.parse(event.target.result);
                 widgetIdCounter = Math.max(...dashboardWidgets.map(w => w.id), 0) + 1;
+                // Clear canvas
                 document.getElementById('dashboardCanvas').innerHTML = '';
+                // Render new widgets
                 dashboardWidgets.forEach(w => renderDashboardWidget(w));
                 registerAllDashboardVariables();
                 syncScopeControlToBackend();
