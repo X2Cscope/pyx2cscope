@@ -5,7 +5,12 @@ a = Analysis(
     ['pyx2cscope/__main__.py'],
     pathex=[],
     binaries=[],
-    datas=[('pyx2cscope/gui/web/static', 'pyx2cscope/gui/web/static'), ('pyx2cscope/gui/web/templates', 'pyx2cscope/gui/web/templates'), ('pyx2cscope/gui/img', 'pyx2cscope/gui/img')],
+    datas=[
+        ('pyx2cscope/gui/web/static', 'pyx2cscope/gui/web/static'),
+        ('pyx2cscope/gui/web/templates', 'pyx2cscope/gui/web/templates'),
+        ('pyx2cscope/gui/img', 'pyx2cscope/gui/img'),
+        ('pyx2cscope/gui/resources', 'pyx2cscope/gui/resources'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

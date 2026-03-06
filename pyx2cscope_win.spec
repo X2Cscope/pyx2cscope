@@ -10,6 +10,7 @@ a = Analysis(
       ('pyx2cscope\\gui\\web\\static', 'pyx2cscope\\gui\\web\\static'),
       ('pyx2cscope\\gui\\web\\templates', 'pyx2cscope\\gui\\web\\templates'),
       ('pyx2cscope\\gui\\img', 'pyx2cscope\\gui\\img'),
+      ('pyx2cscope\\gui\\resources', 'pyx2cscope\\gui\\resources'),
       ],
     hiddenimports=[
       'engineio.async_threading',
