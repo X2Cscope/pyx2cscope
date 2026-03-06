@@ -159,22 +159,22 @@ function initQRCodes() {
 
     $("#watchQRCode").on("click", function() {
         $('#x2cModalTitle').html('WatchView - Scan QR Code');
-        insertQRCode("watch-view");
+        insertQRCode("watch");
         $('#x2cModal').modal('show');
     });
     $("#scopeQRCode").on("click", function() {
         $('#x2cModalTitle').html('ScopeView - Scan QR Code');
-        insertQRCode("scope-view");
+        insertQRCode("scope");
         $('#x2cModal').modal('show');
     });
     $("#dashboardQRCode").on("click", function() {
         $('#x2cModalTitle').html('Dashboard - Scan QR Code');
-        insertQRCode("dashboard-view");
+        insertQRCode("dashboard");
         $('#x2cModal').modal('show');
     });
     $("#scriptQRCode").on("click", function() {
         $('#x2cModalTitle').html('Script - Scan QR Code');
-        insertQRCode("script-view");
+        insertQRCode("scripting");
         $('#x2cModal').modal('show');
     });
 }
