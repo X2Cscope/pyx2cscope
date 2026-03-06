@@ -15,6 +15,7 @@ import pytest
 
 # HTTP status codes for test assertions
 HTTP_OK = 200
+HTTP_NOT_FOUND = 404
 
 
 class TestFlaskAppCreation:
@@ -180,7 +181,7 @@ class TestDashboardRoutes:
         """Test load layout when no file exists."""
         response = flask_client.get("/dashboard/load-layout")
 
-        assert response.status_code == 404
+        assert response.status_code == HTTP_NOT_FOUND
         data = json.loads(response.data)
         assert data['status'] == 'error'
         assert 'No saved layout found' in data['message']
