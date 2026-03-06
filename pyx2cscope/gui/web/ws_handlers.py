@@ -15,7 +15,8 @@ def background_x2cscope_task():
     """Background x2cScope thread."""
     while True:
         watch_values = web_scope.watch_poll()
-        scope_values = web_scope.scope_poll()
+        scope_values, dashboard_scope_data = web_scope.scope_poll()
+        dashboard_values = web_scope.dashboard_poll()
         if watch_values:
             socketio.emit("watch_data_update", watch_values, namespace="/watch-view")
         if scope_values:
@@ -24,6 +25,10 @@ def background_x2cscope_task():
                 socketio.emit("sample_control_updated", {
                     "status": "success", "data": {"triggerAction": "off"}
                 },  namespace="/scope-view")
+        if dashboard_values:
+            socketio.emit("dashboard_data_update", dashboard_values, namespace="/dashboard")
+        if dashboard_scope_data:
+            socketio.emit("dashboard_scope_update", dashboard_scope_data, namespace="/dashboard")
         socketio.sleep(0.1)
 
 @socketio.on("connect")
@@ -94,11 +99,12 @@ def handle_add_watch_var(data):
     """Handle add watch variable event.
 
     Args:
-        data (dict): Dictionary containing the variable name.
+        data (dict): Dictionary containing the variable name and optional sfr flag.
     """
     var = data.get("var")
+    sfr = bool(data.get("sfr", False))
     if var:
-        web_scope.add_watch_var(var)
+        web_scope.add_watch_var(var, sfr=sfr)
         emit("watch_table_update", {"var": var}, broadcast=True)
 
 @socketio.on("remove_watch_var", namespace="/watch-view")
@@ -119,11 +125,12 @@ def handle_add_scope_var(data):
     """Handle add scope variable event.
 
     Args:
-        data (dict): Dictionary containing the variable name.
+        data (dict): Dictionary containing the variable name and optional sfr flag.
     """
     var = data.get("var")
+    sfr = bool(data.get("sfr", False))
     if var:
-        web_scope.add_scope_var(var)
+        web_scope.add_scope_var(var, sfr=sfr)
         emit("scope_table_update", {"var": var}, broadcast=True)
 
 @socketio.on("remove_scope_var", namespace="/scope-view")
@@ -182,10 +189,219 @@ def handle_update_trigger_control(data):
     Args:
         data (str): URL-encoded query string with trigger control parameters.
     """
-    data = {k: int(v[0]) if v else 0 for k, v in parse_qs(data).items()}
-    web_scope.scope_set_trigger(**data)
+    parsed_data = {k: (float(v[0]) if k == 'trigger_level' else int(v[0])) if v else 0 for k, v in parse_qs(data).items()}
+    web_scope.scope_set_trigger(**parsed_data)
     emit("trigger_control_updated", {
         "status": "success",
         "message": "Trigger settings updated successfully",
-        "data": data
+        "data": parsed_data
     }, broadcast=True)
+
+# Dashboard handlers
+@socketio.on("connect", namespace="/dashboard")
+def handle_connect_dashboard():
+    """Handle client connection to the dashboard namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (dashboard)")
+    if not hasattr(socketio, "bg_thread"):
+        socketio.bg_thread = socketio.start_background_task(background_x2cscope_task)
+
+@socketio.on("disconnect", namespace="/dashboard")
+def handle_disconnect_dashboard():
+    """Handle client disconnection from the dashboard namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client disconnected (dashboard)")
+
+@socketio.on("add_dashboard_var", namespace="/dashboard")
+def handle_add_dashboard_var(data):
+    """Handle adding a variable to dashboard polling.
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.add_dashboard_var(var)
+
+@socketio.on("remove_dashboard_var", namespace="/dashboard")
+def handle_remove_dashboard_var(data):
+    """Handle removing a variable from dashboard polling.
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.remove_dashboard_var(var)
+
+@socketio.on("register_scope_channel", namespace="/dashboard")
+def handle_register_scope_channel(data):
+    """Register a scope channel from a dashboard plot_scope widget.
+
+    Uses the shared scope_vars pool (max 8 channels, shared with scope-view).
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.add_scope_var(var)
+        # Notify scope-view so its table stays in sync
+        socketio.emit("scope_table_update", {"var": var}, namespace="/scope-view")
+
+@socketio.on("unregister_scope_channel", namespace="/dashboard")
+def handle_unregister_scope_channel(data):
+    """Register a scope channel from a dashboard plot_scope widget.
+
+    Uses the shared scope_vars pool (max 8 channels, shared with scope-view).
+
+    Args:
+        data (dict): Dictionary containing the variable name.
+    """
+    var = data.get("var")
+    if var:
+        web_scope.remove_scope_var(var)
+        # Notify scope-view so its table stays in sync
+        socketio.emit("scope_table_update", {"var": var}, namespace="/scope-view")
+
+@socketio.on("widget_interaction", namespace="/dashboard")
+def handle_widget_interaction(data):
+    """Handle a dashboard widget user interaction (write value to device).
+
+    Args:
+        data (dict): Dictionary containing variable name and value.
+    """
+    var = data.get("variable")
+    value = data.get("value")
+    if var and value is not None:
+        web_scope.write_dashboard_var(var, value)
+
+
+# =============================================================================
+# Scripting handlers
+# =============================================================================
+
+import io
+import threading
+import traceback
+from contextlib import redirect_stderr, redirect_stdout
+
+# Global script execution state
+_script_worker = None
+_script_stop_requested = False
+
+
+class ScriptOutputCapture(io.StringIO):
+    """Captures stdout/stderr and emits to socket."""
+
+    def __init__(self, socketio_instance, namespace):
+        """Initialize the output capture with socketio instance."""
+        super().__init__()
+        self._socketio = socketio_instance
+        self._namespace = namespace
+
+    def write(self, text):
+        """Write text to the socket output."""
+        if text:
+            self._socketio.emit("script_output", {"output": text}, namespace=self._namespace)
+        return len(text) if text else 0
+
+    def flush(self):
+        """Flush the output buffer (no-op for socket output)."""
+        pass
+
+
+def _is_stop_requested():
+    """Check if script stop has been requested."""
+    return _script_stop_requested
+
+
+def _execute_script_thread(script_content, filename, namespace):
+    """Execute script in a background thread."""
+    global _script_worker  # noqa: PLW0603
+
+    exit_code = 0
+    stdout_capture = ScriptOutputCapture(socketio, namespace)
+    stderr_capture = ScriptOutputCapture(socketio, namespace)
+
+    try:
+        # Get x2cscope instance
+        x2cscope = web_scope.x2c_scope if web_scope.is_connected() else None
+
+        # Create namespace for script execution
+        script_namespace = {
+            "__name__": "__main__",
+            "__file__": filename,
+            "x2cscope": x2cscope,
+            "stop_requested": _is_stop_requested,
+        }
+
+        # Execute with captured output
+        with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
+            exec(compile(script_content, filename, "exec"), script_namespace)
+
+    except SystemExit as e:
+        exit_code = e.code if isinstance(e.code, int) else 1
+    except StopIteration:
+        exit_code = 0
+    except Exception as e:
+        socketio.emit("script_output", {"output": f"\nScript error: {e}\n"}, namespace=namespace)
+        socketio.emit("script_output", {"output": traceback.format_exc()}, namespace=namespace)
+        exit_code = 1
+
+    _script_worker = None
+    socketio.emit("script_finished", {"exit_code": exit_code}, namespace=namespace)
+
+
+@socketio.on("connect", namespace="/scripting")
+def handle_connect_scripting():
+    """Handle client connection to the scripting namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client connected (scripting)")
+
+
+@socketio.on("disconnect", namespace="/scripting")
+def handle_disconnect_scripting():
+    """Handle client disconnection from the scripting namespace."""
+    if os.environ.get('DEBUG') == 'true':
+        print("Client disconnected (scripting)")
+
+
+@socketio.on("execute_script", namespace="/scripting")
+def handle_execute_script(data):
+    """Handle script execution request.
+
+    Args:
+        data (dict): Dictionary containing script content and options.
+    """
+    global _script_worker, _script_stop_requested  # noqa: PLW0603
+
+    if _script_worker is not None and _script_worker.is_alive():
+        emit("script_error", {"error": "A script is already running"})
+        return
+
+    script_content = data.get("content", "")
+    filename = data.get("filename", "script.py")
+
+    if not script_content:
+        emit("script_error", {"error": "No script content provided"})
+        return
+
+    # Reset stop flag
+    _script_stop_requested = False
+
+    # Start script execution in background thread
+    _script_worker = threading.Thread(
+        target=_execute_script_thread,
+        args=(script_content, filename, "/scripting"),
+        daemon=True
+    )
+    _script_worker.start()
+
+
+@socketio.on("stop_script", namespace="/scripting")
+def handle_stop_script():
+    """Handle script stop request."""
+    global _script_stop_requested  # noqa: PLW0603
+    _script_stop_requested = True
+    emit("script_output", {"output": "\n[Stop requested - waiting for script to check stop_requested()...]\n"})

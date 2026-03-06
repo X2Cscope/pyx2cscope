@@ -33,14 +33,14 @@ def execute_qt(*args, **kwargs):
 
     from PyQt5.QtWidgets import QApplication
 
-    from pyx2cscope.gui.generic_gui.generic_gui import X2cscopeGui
+    from pyx2cscope.gui.qt.main_window import MainWindow
 
     # QApplication expects the first argument to be the program name.
     qt_args = sys.argv[:1] + args[0]
     # Initialize a PyQt5 application
     app = QApplication(qt_args)
-    # Create an instance of the X2Cscope_GUI
-    ex = X2cscopeGui(*args, **kwargs)
+    # Create an instance of the main window
+    ex = MainWindow()
     # Display the GUI
     ex.show()
     # Start the PyQt5 application event loop

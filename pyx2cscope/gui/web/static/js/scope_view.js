@@ -106,19 +106,31 @@ function initScopeSelect(){
             url: '/variables',
             dataType: 'json',
             delay: 250,
+            data: function(params) {
+                return { q: params.term, sfr: $('#scopeSfrToggle').is(':checked') };
+            },
             processResults: function (data) {
                 return {
                     results: data.items
                 };
             },
-            cache: true
+            cache: false
         },
         minimumInputLength: 3
     });
 
-    $('#scopeSearch').on('select2:select', function(e){
+    $('#scopeSearch').off('select2:select').on('select2:select', function(e){
         parameter = $('#scopeSearch').select2('data')[0]['text'];
-        socket_sv.emit("add_scope_var", {var: parameter});
+        var sfr = $('#scopeSfrToggle').is(':checked');
+        socket_sv.emit("add_scope_var", {var: parameter, sfr: sfr});
+    });
+
+    $('#scopeSfrToggle').off('change.scopeSearch').on('change.scopeSearch', function() {
+        $('#scopeSearch').val(null).trigger('change');
+        if ($('#scopeSearch').data('select2')) {
+            $('#scopeSearch').select2('destroy');
+        }
+        initScopeSelect();
     });
 }
 
@@ -379,7 +391,7 @@ function initScopeChart() {
         scopeChart.resetZoom();
     });
 
-    $('#chartExport').attr("href", "/scope-view/export")
+    $('#chartExport').attr("href", "/scope/export")
 }
 
 function initScopeForms(){
@@ -395,11 +407,16 @@ function initScopeForms(){
         $(this).closest('.btn-group').find('.btn').removeClass('active');
         // Add active class to the clicked button's label
         $(`label[for="${this.id}"]`).addClass('active');
-        
+
         // Submit the form
         $("#sampleControlForm").submit();
     });
-    
+
+    // Add change event handlers for sample time and frequency inputs
+    $('#sampleTime, #sampleFreq').on('change', function() {
+        $("#sampleControlForm").submit();
+    });
+
     // Initialize the active state of the stop button on page load
     $('input[name="triggerAction"][checked]').trigger('change');
 
@@ -411,7 +428,7 @@ function initScopeForms(){
     });
 
     // Add change event handlers for the radio buttons to update their visual state
-    $('input[name="triggerEnable"]').on('change', function() {
+    $('input[name="trigger_mode"]').on('change', function() {
         // Remove active class from all labels in the same button group
         $(this).closest('.btn-group').find('.btn').removeClass('active');
         // Add active class to the clicked button's label
@@ -420,7 +437,7 @@ function initScopeForms(){
 
     // Set up Save button click handler
     $("#scopeSave").on("click", function() {
-        window.location.href = '/scope-view/save';
+        window.location.href = '/scope/save';
     });
 
     $("#scopeLoad").on("change", function(event) {
@@ -429,7 +446,7 @@ function initScopeForms(){
         formData.append('file', file);
 
         $.ajax({
-            url: '/scope-view/load', // Replace with your server upload endpoint
+            url: '/scope/load', // Replace with your server upload endpoint
             type: 'POST',
             data: formData,
             contentType: false,
@@ -453,7 +470,7 @@ $(document).ready(function () {
     initScopeChart();
 
     scopeTable = $('#scopeTable').DataTable({
-        ajax: '/scope-view/data',
+        ajax: '/scope/data',
         searching: false,
         paging: false,
         info: false,

@@ -62,7 +62,7 @@ class TriggerConfig:
     """
 
     variable: Variable
-    trigger_level: int = 0
+    trigger_level: float = 0
     trigger_mode: int = 1
     trigger_delay: int = 0
     trigger_edge: int = 0
@@ -125,16 +125,25 @@ class X2CScope:
         """
         return self.variable_factory.get_var_list()
 
-    def get_variable(self, name: str) -> Variable:
+    def list_sfr(self) -> List[str]:
+        """List all available SFR (Special Function Register) names.
+
+        Returns:
+            List[str]: A list of SFR names.
+        """
+        return self.variable_factory.get_sfr_list()
+
+    def get_variable(self, name: str, sfr: bool = False) -> Variable:
         """Retrieve a variable by its name.
 
         Args:
             name (str): The name of the variable to retrieve.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.
 
         Returns:
             Variable: The requested variable object.
         """
-        return self.variable_factory.get_variable(name)
+        return self.variable_factory.get_variable(name, sfr=sfr)
 
     def get_variable_raw(self, variable_info: VariableInfo) -> Variable:
         """Retrieve a variable by its definition encapsulated by VariableInfo Dataclass.
@@ -281,7 +290,6 @@ class X2CScope:
             bool: True if the scope data is ready, False otherwise.
         """
         scope_data = self.lnet.load_parameters()
-        logging.debug(scope_data)
         return (
             scope_data.scope_state == 0
             or scope_data.data_array_pointer == scope_data.data_array_used_length
@@ -327,21 +335,19 @@ class X2CScope:
         """
         chunk_data = []
         data_type = 1  # It will always be 1 for array data
-        chunk_size = (
-            253  # Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)
-        )
+        chunk_size = 253  # Full chunk excluding Service-ID and Error-ID, total bytes 255 (0xFF)
         num_chunks = self._calc_sda_used_length() // chunk_size
         chunk_rest = self._calc_sda_used_length() % chunk_size
         loop = num_chunks if chunk_rest == 0 else num_chunks + 1
         for i in range(int(loop)):
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
+            data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
             try:
-                # Read the chunk of data
-                data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
                 data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
                 logging.error(f"Error reading chunk {i}: {str(e)}")
+
         return chunk_data
 
     def read_array(self, data_type: int) -> List[bytearray]:

@@ -82,7 +82,7 @@ function setParameterTableListeners(){
 
     // Set up Save button click handler
     $("#parameterSave").on("click", function() {
-        window.location.href = '/watch-view/save';
+        window.location.href = '/watch/save';
     });
     $('#parameterLoad').on('change', function(event) {
         var file = event.target.files[0];
@@ -90,7 +90,7 @@ function setParameterTableListeners(){
         formData.append('file', file);
 
         $.ajax({
-            url: '/watch-view/load', // Replace with your server upload endpoint
+            url: '/watch/load', // Replace with your server upload endpoint
             type: 'POST',
             data: formData,
             contentType: false,
@@ -108,6 +108,7 @@ function setParameterTableListeners(){
 }
 
 function initParameterSelect(){
+    var sfr = $('#parameterSfrToggle').is(':checked');
     $('#parameterSearch').select2({
         placeholder: "Select a variable",
         dropdownAutoWidth : true,
@@ -116,19 +117,31 @@ function initParameterSelect(){
             url: '/variables',
             dataType: 'json',
             delay: 250,
+            data: function(params) {
+                return { q: params.term, sfr: $('#parameterSfrToggle').is(':checked') };
+            },
             processResults: function (data) {
                 return {
                     results: data.items
                 };
             },
-            cache: true
+            cache: false
         },
         minimumInputLength: 3
     });
 
-    $('#parameterSearch').on('select2:select', function(e){
+    $('#parameterSearch').off('select2:select').on('select2:select', function(e){
         parameter = $('#parameterSearch').select2('data')[0]['text'];
-        socket_wv.emit("add_watch_var", {var: parameter});
+        sfr = $('#parameterSfrToggle').is(':checked');
+        socket_wv.emit("add_watch_var", {var: parameter, sfr: sfr});
+    });
+
+    $('#parameterSfrToggle').off('change.parameterSearch').on('change.parameterSearch', function() {
+        $('#parameterSearch').val(null).trigger('change');
+        if ($('#parameterSearch').data('select2')) {
+            $('#parameterSearch').select2('destroy');
+        }
+        initParameterSelect();
     });
 }
 
@@ -169,7 +182,7 @@ $(document).ready(function () {
     setParameterRefreshInterval();
 
     parameterTable = $('#parameterTable').DataTable({
-        ajax: '/watch-view/data',
+        ajax: '/watch/data',
         searching: false,
         paging: false,
         info: false,
