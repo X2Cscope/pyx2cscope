@@ -812,7 +812,7 @@ function updateDashboardVariable(varName, value) {
             value: rawValue
         });
     } else {
-        fetch('/dashboard-view/update', {
+        fetch('/dashboard/update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ variable: varName, value: rawValue })
@@ -951,7 +951,7 @@ function stopDashboardDrag() {
 }
 
 function saveDashboardLayout() {
-    fetch('/dashboard-view/save-layout', {
+    fetch('/dashboard/save-layout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dashboardWidgets)
@@ -967,7 +967,7 @@ function saveDashboardLayout() {
 }
 
 function loadDashboardLayout() {
-    fetch('/dashboard-view/load-layout')
+    fetch('/dashboard/load-layout')
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
