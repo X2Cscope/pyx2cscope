@@ -1,6 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 # Created from command:
-#  pyinstaller --add-data pyx2cscope\gui\web\static:pyx2cscope\gui\web\static --add-data pyx2cscope\gui\web\templates:pyx2cscope\gui\web\templates --add-data pyx2cscope\gui\img:pyx2cscope\gui\img --name pyX2Cscope --icon pyx2cscope\gui\img\pyx2cscope.ico .\pyx2cscope\__main__.py 
+#  pyinstaller --add-data pyx2cscope\gui\web\static:pyx2cscope\gui\web\static --add-data pyx2cscope\gui\web\templates:pyx2cscope\gui\web\templates --add-data pyx2cscope\gui\img:pyx2cscope\gui\img --name pyX2Cscope --icon pyx2cscope\gui\img\pyx2cscope.ico .\pyx2cscope\__main__.py
 
 a = Analysis(
     ['pyx2cscope\\__main__.py'],
@@ -10,10 +10,11 @@ a = Analysis(
       ('pyx2cscope\\gui\\web\\static', 'pyx2cscope\\gui\\web\\static'),
       ('pyx2cscope\\gui\\web\\templates', 'pyx2cscope\\gui\\web\\templates'),
       ('pyx2cscope\\gui\\img', 'pyx2cscope\\gui\\img'),
+      ('pyx2cscope\\gui\\resources', 'pyx2cscope\\gui\\resources'),
       ],
     hiddenimports=[
       'engineio.async_threading',
-      'engineio.async_drivers.threading'
+      'engineio.async_drivers.threading',
       ],
     hookspath=[],
     hooksconfig={},

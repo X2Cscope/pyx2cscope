@@ -5,6 +5,7 @@ pages (blueprints).
 """
 import logging
 import os
+import socket
 import webbrowser
 
 import serial.tools.list_ports
@@ -37,6 +38,7 @@ def create_app():
 
     app.add_url_rule("/", view_func=index)
     app.add_url_rule("/serial-ports", view_func=list_serial_ports)
+    app.add_url_rule("/local-ips", view_func=get_local_ips)
     app.add_url_rule("/connect", view_func=connect, methods=["POST"])
     app.add_url_rule("/disconnect", view_func=disconnect)
     app.add_url_rule("/is-connected", view_func=is_connected)
@@ -63,6 +65,31 @@ def list_serial_ports():
     """
     ports = serial.tools.list_ports.comports()
     return jsonify([port.device for port in ports])
+
+
+def get_local_ips():
+    """Return a list of local IP addresses for this host.
+
+    call {server_url}/local-ips to execute.
+    """
+    ips = []
+    try:
+        # Get hostname
+        hostname = socket.gethostname()
+        # Get all IP addresses for this hostname
+        for info in socket.getaddrinfo(hostname, None):
+            ip = info[4][0]
+            # Filter IPv4 addresses and exclude localhost
+            if ':' not in ip and ip != '127.0.0.1' and ip not in ips:
+                ips.append(ip)
+    except Exception:
+        pass
+
+    # If no IPs found, add default
+    if not ips:
+        ips = ['0.0.0.0']
+
+    return jsonify({"ips": ips})
 
 
 def connect():
