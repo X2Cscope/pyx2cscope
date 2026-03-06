@@ -9,43 +9,169 @@ application.
 The GUI Qt is currently the default GUI, it runs out-of-the-box when running the command below:
 
 ```
-python -m pyx2cscope 
-``` 
+python -m pyx2cscope
+```
 
-It can also be executed over argument -q
+It can also be executed with the argument -q:
 
 ```
 python -m pyx2cscope -q
-``` 
+```
 
-## Getting Started with pyX2Cscope reference GUI
-## Tab: WatchPlot
-![WatchPlot](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/gui_watch_plot.jpg)
-1. pyX2Cscope-GUI is based on Serial interface.
-2. The Firmware of the microcontroller should have the X2Cscope library/Peripheral enabled.
-3. In Tab WatchPlot, five channels values can be viewed, modified and can be plotted in the plot window.
-4. In COM Port, either select **Auto Connect** or select the appropriate COM Port, Baud Rate from the drop-down menus and the ELF file of the project, the microcontroller programmed with. <br>
-5. Sample time can be changed during run time as well, by default its set to 500 ms.
-6. Press on **Connect**
-7. Once the connection between pyX2Cscope and Microcontroller takes place, the buttons will be enabled.
-8. Information related to the microcontroller will be displayed in the top-left corner.  
+## Getting Started with pyX2Cscope Reference GUI
 
-## Tab: ScopeView
-![ScopeView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/gui_scope_view.jpg)
+The GUI consists of three main tabs: **Setup**, **Data Views**, and **Scripting**.
 
-1. ScopeView supports up to 8 PWM resolution channels for precise signal control.
-2. You can configure all trigger settings directly within the window. To enable the trigger for a variable, check the corresponding trigger checkbox.
-3. To apply modifications during sampling, first stop the sampling, make the necessary changes, then click Sample again to update and apply the modifications.
-4. From the plot window, User can export the plot in various formats, including CSV, image files, Matplotlib Window, and Scalable Vector Graphics (SVG).
-5. To zoom in on the plot, left-click and drag on the desired area. To return to the original view, right-click and select View All.
+---
 
-## Tab: WatchView
-![WatchView](https://raw.githubusercontent.com/X2Cscope/pyx2cscope/refs/heads/main/doc/images/gui_watch_view.jpg)
+## Tab: Setup
 
-1. WatchView lets users add or remove variables as needed. To remove a variable, click the Remove button next to it.
-2. Users can visualize variables in live mode with an update rate of 500 milliseconds. This rate is the default setting and cannot be changed.
-3. Users can select, view, and modify all global variables during runtime, providing real-time control and adjustments.
+The Setup tab is where you configure the connection to your microcontroller.
 
-## Save and Load Config. 
-1. The Save and Load buttons, found at the bottom of the GUI, allow users to save or load the entire configuration, including the COM Port, Baud Rate, ELF file path, and all other selected variables across different tabs. This ensures a consistent setup, regardless of which tab is active.
-2. When a pre-saved configuration file is loaded, the system will automatically attempt to load the ELF file and establish a connection. If the ELF file is missing or unavailable at the specified path, user will need to manually select the correct ELF file path.
+### Connection Settings
+
+1. **ELF File**: Click "Select ELF file" to choose the ELF file of the project your microcontroller is programmed with.
+
+2. **Interface**: Select the communication interface:
+   - **UART**: Serial communication
+   - **TCP/IP**: Network communication
+   - **CAN**: CAN bus communication
+
+3. **Connect**: Press to establish the connection. The button changes to "Disconnect" when connected.
+
+### UART Settings
+
+- **Port**: Select the COM port from the dropdown. Use the refresh button to update available ports.
+- **Baud Rate**: Select the baud rate (38400, 115200, 230400, 460800, 921600).
+
+### TCP/IP Settings
+
+- **Host**: Enter the IP address or hostname of the target device.
+- **Port**: Enter the TCP port number (default: 12666).
+
+### CAN Settings
+
+- **Bus Type**: Select USB or LAN.
+- **Channel**: Enter the CAN channel number.
+- **Baudrate**: Select from 125K, 250K, 500K, or 1M.
+- **Mode**: Select Standard or Extended.
+- **Tx-ID (hex)**: Transmit ID in hexadecimal (default: 7F1).
+- **Rx-ID (hex)**: Receive ID in hexadecimal (default: 7F0).
+
+### Device Information
+
+Once connected, device information is displayed on the right side:
+- Processor ID
+- UC Width
+- Date and Time
+- App Version
+- DSP State
+
+> **Note**: All connection settings are automatically saved and restored on the next application start.
+
+---
+
+## Tab: Data Views
+
+The Data Views tab provides two views that can be toggled independently using the buttons at the top:
+
+- **WatchView**: Monitor and modify variable values in real-time
+- **ScopeView**: Capture and visualize variable waveforms
+
+You can enable both views simultaneously for a split-screen layout. You can change the width of each column by dragging the line between them. For this to take effect, adjust the App window size accordingly.
+
+### WatchView
+
+1. Click "Add Variable" to add variables to monitor.
+2. Select variables from the dialog window.
+3. Configure scaling and offset for each variable.
+4. Enable "Live" checkbox to poll values at 500ms intervals.
+5. Enter new values and click "Write" to modify variables on the device.
+6. Click "Remove" to delete a variable row.
+
+### ScopeView
+
+1. ScopeView supports up to 8 channels for precise signal capture.
+2. Select variables for each channel from the dropdown.
+3. Configure trigger settings:
+   - **Mode**: Auto (continuous) or Triggered
+   - **Edge**: Rising or Falling
+   - **Level**: Trigger threshold value
+   - **Delay**: Trigger delay in samples
+4. Check the "Trigger" checkbox on the channel you want to use as trigger source.
+5. Click "Sample" to start capturing, "Single" for one-shot capture, or "Stop" to halt.
+6. Use the plot toolbar to zoom, pan, and export data (CSV, PNG, SVG, or Matplotlib window).
+
+### Special Function Registers (SFR)
+
+Both **WatchView** and **ScopeView** support searching and adding Special Function Registers
+(SFRs) — hardware peripheral registers such as `LATD`, `TMR1`, or `PORTA` — in addition to
+ordinary firmware variables.
+
+When the variable selection dialog opens, an **SFR** checkbox appears next to the search bar:
+
+- When the checkbox is **unchecked** (default) the list shows firmware variables.
+- When the checkbox is **checked** the list switches to SFRs parsed from the ELF file.
+
+The checkbox is disabled (greyed out) if the connected ELF file contains no SFR entries.
+
+Once an SFR is selected and confirmed, it is retrieved with `sfr=True` internally so it is
+mapped to its fixed hardware address. From that point it behaves exactly like any other
+variable — values can be read, polled live (WatchView), or captured as a scope channel
+(ScopeView).
+
+### Save and Load Config
+
+The **Save Config** and **Load Config** buttons allow you to:
+- Save the entire configuration including ELF file path, connection settings, and all variable configurations.
+- Load a previously saved configuration to quickly restore your setup.
+- When loading, the system automatically attempts to connect using the saved settings.
+
+---
+
+## Tab: Scripting
+
+The Scripting tab allows you to run Python scripts with direct access to the x2cscope connection.
+
+### Script Selection
+
+1. Click **Browse** to select a Python script (.py file).
+2. Click **Edit (IDLE)** to open the script in Python's IDLE editor.
+3. Click **Help** for documentation on writing scripts.
+
+### Execution Controls
+
+1. Click **Execute** to run the selected script.
+2. Click **Stop** to request the script to stop (scripts must check `stop_requested()` in loops).
+3. Enable **Log output to file** and select a location to save script output.
+
+### Output Tabs
+
+- **Script Output**: Displays the actual output from your script (print statements, errors).
+- **Log**: Displays timestamped system messages (script started, stopped, connection status).
+
+### Available Objects in Scripts
+
+When running from the Scripting tab, your script has access to:
+
+- **x2cscope**: The X2CScope instance (or `None` if not connected via Setup tab)
+- **stop_requested()**: Function that returns `True` when the Stop button is pressed
+
+### Example Script
+
+```python
+# Example: Read and print a variable value
+if globals().get("x2cscope") is not None:
+    var = x2cscope.get_variable("myVariable")
+    print(f"Value: {var.get_value()}")
+
+# Example: Loop with stop support
+stop_requested = globals().get("stop_requested", lambda: False)
+while not stop_requested():
+    var = x2cscope.get_variable("myVar")
+    print(var.get_value())
+    time.sleep(0.5)
+print("Script stopped.")
+```
+
+> **Note**: Scripts run in the same process as the GUI. If connected via the Setup tab, scripts share the same x2cscope connection. Scripts can also create their own connections when running standalone.

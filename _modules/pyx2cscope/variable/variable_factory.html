@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.5.1 documentation</title>
+  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=b9afe91b"></script>
+        <script src="../../../_static/documentation_options.js?v=8fa8b3e9"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -300,19 +300,31 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_list</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="VariableFactory.get_sfr_list">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_sfr_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sfr_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of SFR (Special Function Register) names available in the ELF file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: A list of SFR names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_register_list</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="VariableFactory.get_variable">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.get_variable">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sfr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a Variable object based on its name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): Name of the variable to retrieve.</span>
+<span class="sd">            sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Variable: The Variable object, if found. None otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_info</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_info</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="n">sfr</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">variable_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found!&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span>

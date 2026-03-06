@@ -84,7 +84,7 @@ Attributes
       
 
    .. py:attribute:: trigger_level
-      :type: int
+      :type: float
       :value: 0
 
       
@@ -150,12 +150,21 @@ Attributes
           List[str]: A list of available variable names.
 
 
-   .. py:method:: get_variable(name: str) -> pyx2cscope.variable.variable.Variable
+   .. py:method:: list_sfr() -> List[str]
+
+      List all available SFR (Special Function Register) names.
+
+      Returns:
+          List[str]: A list of SFR names.
+
+
+   .. py:method:: get_variable(name: str, sfr: bool = False) -> pyx2cscope.variable.variable.Variable
 
       Retrieve a variable by its name.
 
       Args:
           name (str): The name of the variable to retrieve.
+          sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.
 
       Returns:
           Variable: The requested variable object.

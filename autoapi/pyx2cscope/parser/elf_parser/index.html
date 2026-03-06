@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.elf_parser &mdash; pyX2Cscope 0.5.1 documentation</title>
+  <title>pyx2cscope.parser.elf_parser &mdash; pyX2Cscope 0.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=b9afe91b"></script>
+        <script src="../../../../_static/documentation_options.js?v=8fa8b3e9"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -143,11 +143,34 @@ map_variables: Map variables from the parsed DWARF information.</p>
 </dd>
 </dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser.get_register_info">
+<span class="sig-name descname"><span class="pre">get_register_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser.get_register_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser.get_register_info" title="Link to this definition"></a></dt>
+<dd><p>Return the VariableInfo associated with a given register name, or None if not found.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>name (str): The name of the register (e.g. “U1STA”, “U1STAbits.URXDA”).</p>
+</dd>
+<dt>Returns:</dt><dd><p>Optional[VariableInfo]: The information of the register, if available.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser.get_register_list">
+<span class="sig-name descname"><span class="pre">get_register_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser.get_register_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser.get_register_list" title="Link to this definition"></a></dt>
+<dd><p>Return a sorted list of all MCU peripheral register names found in the ELF.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>List[str]: A sorted list of register names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser.get_var_info">
-<span class="sig-name descname"><span class="pre">get_var_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser.get_var_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser.get_var_info" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_var_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser.get_var_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser.get_var_info" title="Link to this definition"></a></dt>
 <dd><p>Return the VariableInfo associated with a given variable name, or None if not found.</p>
 <dl class="simple">
-<dt>Args:</dt><dd><p>name (str): The name of the variable.</p>
+<dt>Args:</dt><dd><p>name (str): The name of the variable.
+sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.</p>
 </dd>
 <dt>Returns:</dt><dd><p>Optional[VariableInfo]: The information of the variable, if available.</p>
 </dd>
@@ -190,6 +213,20 @@ map_variables: Map variables from the parsed DWARF information.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser._map_registers">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_map_registers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser._map_registers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser._map_registers" title="Link to this definition"></a></dt>
+<dd><p>Abstract method to map MCU peripheral registers from DWARF / symbol table.</p>
+<p>Implementations should populate <code class="docutils literal notranslate"><span class="pre">self.register_map</span></code> with entries for every
+peripheral register (SFR) found, including their bitfield sub-entries where
+available. The same <code class="docutils literal notranslate"><span class="pre">VariableInfo</span></code> dataclass is reused: <code class="docutils literal notranslate"><span class="pre">bit_size</span></code> and
+<code class="docutils literal notranslate"><span class="pre">bit_offset</span></code> are non-zero for individual bit/bitfield members.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Dict[str, VariableInfo]: A dictionary of register names to VariableInfo objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.ElfParser._close_elf_file">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_close_elf_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#ElfParser._close_elf_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.ElfParser._close_elf_file" title="Link to this definition"></a></dt>
 <dd><p>Abstract method to close any open file connection after parsing is done.</p>
@@ -225,6 +262,20 @@ not supplied. It is a pure implementation of class ElfParser.</p>
 <p>Subclasses should implement this method to extract variable information specific to their ELF format.</p>
 <dl class="simple">
 <dt>Returns:</dt><dd><p>Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.elf_parser.DummyParser._map_registers">
+<span class="sig-name descname"><span class="pre">_map_registers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/elf_parser.html#DummyParser._map_registers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.elf_parser.DummyParser._map_registers" title="Link to this definition"></a></dt>
+<dd><p>Abstract method to map MCU peripheral registers from DWARF / symbol table.</p>
+<p>Implementations should populate <code class="docutils literal notranslate"><span class="pre">self.register_map</span></code> with entries for every
+peripheral register (SFR) found, including their bitfield sub-entries where
+available. The same <code class="docutils literal notranslate"><span class="pre">VariableInfo</span></code> dataclass is reused: <code class="docutils literal notranslate"><span class="pre">bit_size</span></code> and
+<code class="docutils literal notranslate"><span class="pre">bit_offset</span></code> are non-zero for individual bit/bitfield members.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Dict[str, VariableInfo]: A dictionary of register names to VariableInfo objects.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -133,12 +133,21 @@ Functions
           list[str]: A list of variable names.
 
 
-   .. py:method:: get_variable(name: str) -> pyx2cscope.variable.variable.Variable | None
+   .. py:method:: get_sfr_list() -> list[str]
+
+      Get a list of SFR (Special Function Register) names available in the ELF file.
+
+      Returns:
+          list[str]: A list of SFR names.
+
+
+   .. py:method:: get_variable(name: str, sfr: bool = False) -> pyx2cscope.variable.variable.Variable | None
 
       Retrieve a Variable object based on its name.
 
       Args:
           name (str): Name of the variable to retrieve.
+          sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.
 
       Returns:
           Variable: The Variable object, if found. None otherwise.

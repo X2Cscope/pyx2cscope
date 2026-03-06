@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.5.1 documentation</title>
+  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=b9afe91b"></script>
+        <script src="../../_static/documentation_options.js?v=8fa8b3e9"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -107,6 +107,7 @@
     <span class="n">config_file</span> <span class="o">=</span> <span class="s2">&quot;config.ini&quot;</span>
     <span class="n">default_path</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;path_to_your_elf_file&quot;</span><span class="p">}</span>
     <span class="n">default_com</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;com_port&quot;</span><span class="p">:</span> <span class="s2">&quot;your_com_port, ex:COM3&quot;</span><span class="p">}</span>
+    <span class="n">default_host_ip</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;host_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;your_host_ip, ex:192.168.1.100&quot;</span><span class="p">}</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
         <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
@@ -114,6 +115,7 @@
         <span class="c1"># Create the config file with the default value</span>
         <span class="n">config</span><span class="p">[</span><span class="s2">&quot;ELF_FILE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_path</span>
         <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_com</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_host_ip</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">configfile</span><span class="p">:</span>
             <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">configfile</span><span class="p">)</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Config file &#39;</span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&#39; created with default values&quot;</span><span class="p">)</span>
@@ -154,6 +156,23 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;your&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
         <span class="k">return</span> <span class="s2">&quot;&quot;</span>
     <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_host_address">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_host_address">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_host_address</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;host_ip&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the Host IP Address from the configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        key (str): The key for the Host IP Address in the configuration. Default is &quot;host_ip&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The IP address.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">get_config_file</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;your&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
 
 </pre></div>
 

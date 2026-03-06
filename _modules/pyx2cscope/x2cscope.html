@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.5.1 documentation</title>
+  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=b9afe91b"></script>
+        <script src="../../_static/documentation_options.js?v=8fa8b3e9"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -164,7 +164,7 @@
 
 <div class="viewcode-block" id="TriggerConfig.trigger_level">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.trigger_level">[docs]</a>
-    <span class="n">trigger_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+    <span class="n">trigger_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="TriggerConfig.trigger_mode">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.trigger_mode">[docs]</a>
@@ -252,18 +252,30 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_var_list</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="X2CScope.list_sfr">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.list_sfr">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_sfr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all available SFR (Special Function Register) names.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[str]: A list of SFR names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_sfr_list</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="X2CScope.get_variable">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_variable">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sfr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a variable by its name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): The name of the variable to retrieve.</span>
+<span class="sd">            sfr (bool): Whether to retrieve a peripheral register (SFR) or a firmware variable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Variable: The requested variable object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="n">sfr</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_variable_raw">
@@ -452,7 +464,6 @@
 <span class="sd">            bool: True if the scope data is ready, False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">scope_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">load_parameters</span><span class="p">()</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">scope_data</span><span class="o">.</span><span class="n">scope_state</span> <span class="o">==</span> <span class="mi">0</span>
             <span class="ow">or</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_pointer</span> <span class="o">==</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_used_length</span>
@@ -510,21 +521,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">chunk_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">data_type</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># It will always be 1 for array data</span>
-        <span class="n">chunk_size</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="mi">253</span>  <span class="c1"># Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)</span>
-        <span class="p">)</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">253</span>  <span class="c1"># Full chunk excluding Service-ID and Error-ID, total bytes 255 (0xFF)</span>
         <span class="n">num_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_sda_used_length</span><span class="p">()</span> <span class="o">//</span> <span class="n">chunk_size</span>
         <span class="n">chunk_rest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_sda_used_length</span><span class="p">()</span> <span class="o">%</span> <span class="n">chunk_size</span>
         <span class="n">loop</span> <span class="o">=</span> <span class="n">num_chunks</span> <span class="k">if</span> <span class="n">chunk_rest</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">num_chunks</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">loop</span><span class="p">)):</span>
             <span class="n">current_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_address</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span>
+            <span class="n">data_size</span> <span class="o">=</span> <span class="n">chunk_size</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk_rest</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="c1"># Read the chunk of data</span>
-                <span class="n">data_size</span> <span class="o">=</span> <span class="n">chunk_size</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_chunks</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunk_rest</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
                 <span class="n">chunk_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">chunk_data</span></div>
 
 

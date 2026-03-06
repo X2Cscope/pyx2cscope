@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.5.1 documentation</title>
+  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.6.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=b9afe91b"></script>
+        <script src="../../../_static/documentation_options.js?v=8fa8b3e9"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.5.1
+                0.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -124,6 +124,9 @@ get_com_port(key=”com_port”) -&gt; str: Gets the COM port from the configura
 <tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.utils.get_com_port" title="pyx2cscope.utils.get_com_port"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_com_port</span></code></a>(→ str)</p></td>
 <td><p>Gets the COM port from the configuration.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.utils.get_host_address" title="pyx2cscope.utils.get_host_address"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_host_address</span></code></a>(→ str)</p></td>
+<td><p>Gets the Host IP Address from the configuration.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py function">
@@ -156,6 +159,18 @@ get_com_port(key=”com_port”) -&gt; str: Gets the COM port from the configura
 <dt>Args:</dt><dd><p>key (str): The key for the COM port in the configuration. Default is “com_port”.</p>
 </dd>
 <dt>Returns:</dt><dd><p>str: The COM port.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.utils.get_host_address">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_host_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'host_ip'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_host_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_host_address" title="Link to this definition"></a></dt>
+<dd><p>Gets the Host IP Address from the configuration.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>key (str): The key for the Host IP Address in the configuration. Default is “host_ip”.</p>
+</dd>
+<dt>Returns:</dt><dd><p>str: The IP address.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -5,7 +5,7 @@
 
 .. autoapi-nested-parse::
 
-   This module provides functionalities for parsing ELF files compatible with 32-bit architectures.
+   This module provides functionalities for parsing ELF files.
 
    It focuses on extracting structure members and variable information from DWARF debugging information.
 
@@ -63,7 +63,11 @@ Attributes
 
    .. py:method:: _process_die(die)
 
-      Process a DIE structure containing the variable and its.
+      Process a DIE structure containing the variable and its members.
+
+      Firmware variables (no DW_AT_external) are stored in variable_map.
+      Peripheral registers / SFRs (DW_AT_external, address from symbol table) are
+      stored in register_map, including any bitfield sub-entries.
 
 
    .. py:method:: _get_base_type_die(current_die)
@@ -174,6 +178,15 @@ Attributes
       Retrieve a DWARF DIE given its offset.
 
 
+   .. py:method:: _map_registers() -> dict[str, pyx2cscope.variable.variable.VariableInfo]
+
+      No-op: register_map is populated as part of _map_variables() in a single pass.
+
+      Both firmware variables and peripheral registers (SFRs) are processed together
+      in ``_map_variables()``. The ``self.is_sfr`` flag set in ``_get_die_variable()``
+      determines which map each entry is written to inside ``_process_die()``.
+
+
    .. py:method:: _map_variables() -> dict[str, pyx2cscope.variable.variable.VariableInfo]
 
       Maps all variables in the ELF file.
@@ -181,7 +194,7 @@ Attributes
 
 
 .. py:data:: elf_file
-   :value: '..\\..\\tests\\data\\qspin_foc_same54.elf'
+   :value: '..\\..\\..\\tests\\data\\dsPIC33ak128mc106_foc.elf'
 
    
 
