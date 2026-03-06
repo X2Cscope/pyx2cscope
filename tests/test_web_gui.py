@@ -72,6 +72,16 @@ class TestFlaskRoutes:
         data = json.loads(response.data)
         assert isinstance(data, list)
 
+    def test_local_ips_route(self, flask_client):
+        """Test local-ips route returns IP list."""
+        response = flask_client.get("/local-ips")
+
+        assert response.status_code == HTTP_OK
+        data = json.loads(response.data)
+        assert "ips" in data
+        assert isinstance(data["ips"], list)
+        assert len(data["ips"]) > 0
+
     def test_is_connected_route_disconnected(self, flask_client):
         """Test is-connected route returns False when disconnected."""
         response = flask_client.get("/is-connected")

@@ -42,6 +42,19 @@
     <label class="btn btn-outline-primary" for="toggleScript">Scripting</label>
 </div>
 
+<!-- Welcome/Help Section (toggled by help button) -->
+<div class="card mb-3 d-none" id="welcomeCard">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Welcome to pyX2Cscope</strong>
+        <a href="#" class="float-end" title="Get QR-Code for main page" id="mainPageQRCode">
+            <span class="material-icons md-18">qr_code_2</span>
+        </a>
+    </div>
+    <div class="card-body">
+        {% include 'welcome_content.html' %}
+    </div>
+</div>
+
 <!-- Views -->
 <div class="row g-3" id="viewsContainer">
     <div class="col-lg-8 col-12 col-md-12 col-sm-12 col-xs-12 d-none" id="scriptCol">
