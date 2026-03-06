@@ -1,6 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['pyx2cscope/__main__.py'],
     pathex=[],

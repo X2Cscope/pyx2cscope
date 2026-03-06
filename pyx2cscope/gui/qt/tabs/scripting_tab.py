@@ -33,6 +33,8 @@ if TYPE_CHECKING:
     from pyx2cscope.gui.qt.models.app_state import AppState
 
 
+
+
 class ScriptHelpDialog(QDialog):
     """Dialog showing help for writing scripts."""
 
@@ -204,11 +206,12 @@ class ScriptingTab(QWidget):
         self._browse_btn.clicked.connect(self._on_browse_clicked)
         script_layout.addWidget(self._browse_btn)
 
-        # Edit with IDLE button
-        self._edit_btn = QPushButton("Edit (IDLE)")
+        # Edit button
+        self._edit_btn = QPushButton("Edit Script")
         self._edit_btn.setFixedWidth(90)
         self._edit_btn.clicked.connect(self._on_edit_clicked)
         self._edit_btn.setEnabled(False)
+        self._edit_btn.setToolTip("Open script in text editor")
         script_layout.addWidget(self._edit_btn)
 
         # Help button
@@ -387,6 +390,25 @@ class ScriptingTab(QWidget):
         dialog = ScriptHelpDialog(self)
         dialog.exec_()
 
+    def _open_with_system_editor(self, script_path):
+        """Open script with the system's default editor or associated application.
+
+        Uses OS-specific methods to open the file with the default application
+        associated with .py files.
+
+        Args:
+            script_path: Path to the script file to open.
+        """
+        if sys.platform == "win32":
+            # Windows: Use os.startfile to open with associated application
+            os.startfile(script_path)
+        elif sys.platform == "darwin":
+            # macOS: Use 'open' command
+            subprocess.Popen(['open', script_path])
+        else:
+            # Linux: Use xdg-open to respect file associations
+            subprocess.Popen(['xdg-open', script_path])
+
     def _on_browse_clicked(self):
         """Handle browse button click."""
         # Get last directory from settings
@@ -414,23 +436,16 @@ class ScriptingTab(QWidget):
                 self._log_path_edit.setText(self._log_file_path)
 
     def _on_edit_clicked(self):
-        """Open the script in IDLE."""
+        """Open the script in the system's default editor."""
         if not self._script_path:
             return
 
         try:
-            # Try to open with IDLE
-            if sys.platform == "win32":
-                # On Windows, use pythonw to avoid console window
-                subprocess.Popen(
-                    [sys.executable, "-m", "idlelib.idle", self._script_path],
-                    creationflags=subprocess.CREATE_NO_WINDOW,
-                )
-            else:
-                subprocess.Popen([sys.executable, "-m", "idlelib.idle", self._script_path])
-            self._log_message(f"Opened {os.path.basename(self._script_path)} in IDLE")
+            # Open with system default application for .py files
+            self._open_with_system_editor(self._script_path)
+            self._log_message(f"Opened {os.path.basename(self._script_path)} in default editor")
         except Exception as e:
-            self._log_message(f"Error opening IDLE: {e}")
+            self._log_message(f"Error opening editor: {e}")
 
     def _on_execute_clicked(self):
         """Execute the selected script."""

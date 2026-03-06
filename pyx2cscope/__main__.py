@@ -103,15 +103,16 @@ def _args_check(k_args: argparse.Namespace):
             raise ValueError("An elf-file path must be supplied!")
 
 
-known_args, unknown_args = parse_arguments()
-# if arguments logic is correct,
-_args_check(known_args)
+if __name__ == '__main__':
+    known_args, unknown_args = parse_arguments()
+    # if arguments logic is correct,
+    _args_check(known_args)
 
-logging.root.handlers.clear()
-pyx2cscope.set_logger(level=known_args.log_level, console=known_args.log_console)
+    logging.root.handlers.clear()
+    pyx2cscope.set_logger(level=known_args.log_level, console=known_args.log_console)
 
-if known_args.qt and not known_args.web:
-    gui.execute_qt(unknown_args, **known_args.__dict__)
+    if known_args.qt and not known_args.web:
+        gui.execute_qt(unknown_args, **known_args.__dict__)
 
-if known_args.web:
-    gui.execute_web(**known_args.__dict__)
+    if known_args.web:
+        gui.execute_web(**known_args.__dict__)
