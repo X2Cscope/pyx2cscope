@@ -240,14 +240,31 @@ function initQRCodes() {
     });
     $("#dashboardQRCode").on("click", function() {
         $('#x2cModalTitle').html('Dashboard - Scan QR Code');
-        insertQRCode("dashboard-view");
+        insertQRCode("dashboard");
         $('#x2cModal').modal('show');
     });
     $("#scriptQRCode").on("click", function() {
         $('#x2cModalTitle').html('Script - Scan QR Code');
-        insertQRCode("script-view");
+        insertQRCode("scripting");
         $('#x2cModal').modal('show');
     });
+    $("#mainPageQRCode").on("click", function() {
+        $('#x2cModalTitle').html('Main Page - Scan QR Code');
+        insertQRCode("");
+        $('#x2cModal').modal('show');
+    });
+}
+
+function initHelpToggle() {
+    const helpToggle = document.getElementById('helpToggle');
+    const welcomeCard = document.getElementById('welcomeCard');
+
+    if (helpToggle && welcomeCard) {
+        helpToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            welcomeCard.classList.toggle('d-none');
+        });
+    }
 }
 
 function initHelpToggle() {
