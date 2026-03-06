@@ -10,6 +10,7 @@ from flask import Blueprint, jsonify, render_template, request
 
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
+from tests import data
 
 dv_bp = Blueprint("dashboard_view", __name__)
 
@@ -74,7 +75,7 @@ def load_layout():
     Calling the link {dashboard-view-url}/load-layout will load the saved layout.
     """
     try:
-        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        web_lib_path = os.path.dirname(data.__file__)
         dashboard_file = os.path.join(web_lib_path, "dashboard_layout.json")
         if os.path.exists(dashboard_file):
             with open(dashboard_file, 'r') as f:
