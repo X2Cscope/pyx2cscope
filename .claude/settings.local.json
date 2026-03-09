@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from pyx2cscope.gui.generic_gui.tabs.watch_view_tab import WatchViewTab; from pyx2cscope.gui.generic_gui.tabs.scope_view_tab import ScopeViewTab; from pyx2cscope.gui.generic_gui.tabs.watch_plot_tab import WatchPlotTab; print\\(''All imports successful''\\)\")",
+      "Bash(ruff check .)"
+    ]
+  }
+}
