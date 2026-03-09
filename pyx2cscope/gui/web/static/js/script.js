@@ -45,7 +45,7 @@ function connect(){
 }
 
 function disconnect(){
-    $.getJSON('/disconnect', function(data) {
+    $.getJSON('/disconnect', function() {
         setConnectState(false);
     });
 }
@@ -131,26 +131,82 @@ function initSetupCard(){
 }
 
 function insertQRCode(link) {
-    qrCodeHtml = "<form id='ipForm'> \
-        <label for='ipAddress'>Enter local IP address:</label> \
-        <input type='text' id='ipAddress' name='ipAddress' placeholder='192.168.1.1'> \
-        <button id='updateButton'>Update</button> \
-        </form><div id='qrcode'></div>";
+    qrCodeHtml = `
+        <div class="mb-3">
+            <h6>Instructions</h6>
+            <ol class="small text-muted">
+                <li>Ensure your mobile device is connected to the same network as this host.</li>
+                <li>The server must be started with shared access: <code>--host 0.0.0.0</code></li>
+                <li>Select your host's IP address below or enter a custom one.</li>
+                <li>Scan the QR code with your mobile device to open the page.</li>
+            </ol>
+        </div>
+        <form id='ipForm'>
+            <div class="mb-3">
+                <label for='ipSelect' class="form-label">Select Host IP Address:</label>
+                <select id='ipSelect' class="form-select">
+                    <option value="">Loading available IPs...</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for='ipAddress' class="form-label">Or enter custom IP:</label>
+                <input type='text' id='ipAddress' class="form-control" name='ipAddress' placeholder='192.168.1.1'>
+            </div>
+            <button id='updateButton' class="btn btn-primary">Generate QR Code</button>
+        </form>
+        <div id='qrcode' class='mt-3 text-center'></div>
+    `;
 
     $('#x2cModalBody').empty();
     $('#x2cModalBody').html(qrCodeHtml);
 
-    new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/" + link);
+    // Load available IP addresses
+    $.getJSON('/local-ips', function(data) {
+        const ipSelect = $('#ipSelect');
 
-    $('#updateButton').click(function(e) {
-        e.preventDefault(); // Prevent the default form submit action
+        ipSelect.empty();
+        if (data.ips && data.ips.length > 0) {
+            data.ips.forEach(function(ip) {
+                ipSelect.append($('<option></option>').val(ip).text(ip));
+            });
+            // Generate initial QR code with first IP
+            new QRCode(document.getElementById("qrcode"), "http://" + data.ips[0] + ":5000/" + link);
+        } else {
+            ipSelect.append($('<option></option>').val('').text('No IPs found - enter manually'));
+            new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/" + link);
+        }
+    }).fail(function() {
+        // Fallback if endpoint doesn't exist
+        $('#ipSelect').empty().append($('<option></option>').val('0.0.0.0').text('0.0.0.0 (default)'));
+        new QRCode(document.getElementById("qrcode"), "http://0.0.0.0:5000/" + link);
+    });
+
+    // Update QR code when IP is selected from dropdown
+    $(document).on('change', '#ipSelect', function() {
+        const selectedIp = $(this).val();
+        if (selectedIp) {
+            $("#qrcode").empty();
+            new QRCode(document.getElementById("qrcode"), "http://" + selectedIp + ":5000/" + link);
+        }
+    });
+
+    // Update QR code when custom IP is entered
+    $(document).on('click', '#updateButton', function(e) {
+        e.preventDefault();
         var ipAddress = $('#ipAddress').val();
         var ipFormat = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
-        if(ipFormat.test(ipAddress)) {
+        if (ipAddress && ipFormat.test(ipAddress)) {
             $("#qrcode").empty();
             new QRCode(document.getElementById("qrcode"), "http://" + ipAddress + ":5000/" + link);
-        } else {
+        } else if (ipAddress) {
             alert('Invalid IP address format.');
+        } else {
+            // Use selected IP from dropdown
+            const selectedIp = $('#ipSelect').val();
+            if (selectedIp) {
+                $("#qrcode").empty();
+                new QRCode(document.getElementById("qrcode"), "http://" + selectedIp + ":5000/" + link);
+            }
         }
     });
 }
@@ -159,12 +215,27 @@ function initQRCodes() {
 
     $("#watchQRCode").on("click", function() {
         $('#x2cModalTitle').html('WatchView - Scan QR Code');
-        insertQRCode("watch-view");
+        insertQRCode("watch");
         $('#x2cModal').modal('show');
     });
     $("#scopeQRCode").on("click", function() {
         $('#x2cModalTitle').html('ScopeView - Scan QR Code');
-        insertQRCode("scope-view");
+        insertQRCode("scope");
+        $('#x2cModal').modal('show');
+    });
+    $("#dashboardQRCode").on("click", function() {
+        $('#x2cModalTitle').html('Dashboard - Scan QR Code');
+        insertQRCode("dashboard");
+        $('#x2cModal').modal('show');
+    });
+    $("#scriptQRCode").on("click", function() {
+        $('#x2cModalTitle').html('Script - Scan QR Code');
+        insertQRCode("scripting");
+        $('#x2cModal').modal('show');
+    });
+    $("#mainPageQRCode").on("click", function() {
+        $('#x2cModalTitle').html('Main Page - Scan QR Code');
+        insertQRCode("");
         $('#x2cModal').modal('show');
     });
     $("#dashboardQRCode").on("click", function() {
@@ -179,10 +250,23 @@ function initQRCodes() {
     });
 }
 
+function initHelpToggle() {
+    const helpToggle = document.getElementById('helpToggle');
+    const welcomeCard = document.getElementById('welcomeCard');
+
+    if (helpToggle && welcomeCard) {
+        helpToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            welcomeCard.classList.toggle('d-none');
+        });
+    }
+}
+
 $(document).ready(function() {
     initSetupCard();
     setInterfaceSetupFields();
     initQRCodes();
+    initHelpToggle();
 
     // Toggles for views
     const toggleWatch = document.getElementById('toggleWatch');

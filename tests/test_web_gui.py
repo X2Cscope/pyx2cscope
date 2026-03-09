@@ -15,6 +15,7 @@ import pytest
 
 # HTTP status codes for test assertions
 HTTP_OK = 200
+HTTP_NOT_FOUND = 404
 
 
 class TestFlaskAppCreation:
@@ -71,6 +72,16 @@ class TestFlaskRoutes:
         assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert isinstance(data, list)
+
+    def test_local_ips_route(self, flask_client):
+        """Test local-ips route returns IP list."""
+        response = flask_client.get("/local-ips")
+
+        assert response.status_code == HTTP_OK
+        data = json.loads(response.data)
+        assert "ips" in data
+        assert isinstance(data["ips"], list)
+        assert len(data["ips"]) > 0
 
     def test_is_connected_route_disconnected(self, flask_client):
         """Test is-connected route returns False when disconnected."""
@@ -170,10 +181,10 @@ class TestDashboardRoutes:
         """Test load layout when no file exists."""
         response = flask_client.get("/dashboard/load-layout")
 
-        assert response.status_code == HTTP_OK
+        assert response.status_code == HTTP_NOT_FOUND
         data = json.loads(response.data)
-        # Should return empty or default layout
-        assert isinstance(data, (dict, list))
+        assert data['status'] == 'error'
+        assert 'No saved layout found' in data['message']
 
 
 class TestScriptViewRoutes:
@@ -186,6 +197,38 @@ class TestScriptViewRoutes:
         assert response.status_code == HTTP_OK
         data = json.loads(response.data)
         assert "markdown" in data
+
+
+class TestCardLinks:
+    """Tests for card links on the main page.
+
+    Verifies that all 4 cards have correct links:
+    - 'Open in new window' icon links (href="/route")
+    - QR code generated links (insertQRCode("route"))
+
+    Both link types use the same routes and should return valid standalone pages.
+    """
+
+    @pytest.mark.parametrize("route,expected_content", [
+        ("/watch", [b"WatchView", b"Watch"]),
+        ("/scope", [b"ScopeView", b"Scope"]),
+        ("/dashboard", [b"Dashboard"]),
+        ("/scripting", [b"Script", b"Scripting"]),
+    ])
+    def test_card_links_point_to_valid_pages(self, flask_client, route, expected_content):
+        """Test both 'open in new window' and QR code links point to valid pages.
+
+        Each card on the main page has two types of links:
+        1. 'Open in new window' icon - direct link to the route
+        2. QR code icon - generates QR code with the same route
+
+        This test verifies all routes return valid standalone pages.
+        """
+        response = flask_client.get(route, follow_redirects=True)
+
+        assert response.status_code == HTTP_OK
+        # Check if any of the expected content variations are present
+        assert any(content in response.data for content in expected_content)
 
 
 class TestWebScopeClass:
