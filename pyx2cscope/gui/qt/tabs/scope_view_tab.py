@@ -124,7 +124,7 @@ class ScopeViewTab(BaseTab):
 
         # Sample time factor
         grid.addWidget(QLabel("Sample Time Factor"), 1, 0)
-        self._sample_time_factor_edit = QLineEdit("1")
+        self._sample_time_factor_edit = QLineEdit("0")
         self._sample_time_factor_edit.setValidator(self.decimal_validator)
         grid.addWidget(self._sample_time_factor_edit, 1, 1)
 
@@ -336,7 +336,7 @@ class ScopeViewTab(BaseTab):
                         logging.debug(f"Added scope channel: {var_name}")
 
             # Set sample time
-            sample_time_factor = self.safe_int(self._sample_time_factor_edit.text(), 1)
+            sample_time_factor = self.safe_int(self._sample_time_factor_edit.text(), 0)
             x2cscope.set_sample_time(sample_time_factor)
 
             # Get real sample time

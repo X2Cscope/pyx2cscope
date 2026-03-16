@@ -305,7 +305,7 @@ class TestWebScopeClass:
 
     def test_scope_sample_time_default(self, web_scope):
         """Test scope sample time default."""
-        assert web_scope.scope_sample_time == 1
+        assert web_scope.scope_sample_time == 0
 
 
 class TestWebScopeVariableManagement:

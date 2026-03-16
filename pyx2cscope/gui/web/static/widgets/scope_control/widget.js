@@ -17,7 +17,7 @@ function handleScopeControlAction(action) {
     scopeControlState = action;
 
     // Get current settings from the widget
-    const sampleTime = document.getElementById('scopeCtrlSampleTime')?.value || 1;
+    const sampleTime = document.getElementById('scopeCtrlSampleTime')?.value || 0;
     const sampleFreq = document.getElementById('scopeCtrlSampleFreq')?.value || 20;
 
     // Send to scope-view namespace
@@ -80,7 +80,7 @@ function updateScopeControlTrigger(widgetId) {
 function updateScopeSampleSettings(widgetId) {
     if (isDashboardEditMode) return;
 
-    const sampleTime = document.getElementById('scopeCtrlSampleTime')?.value || 1;
+    const sampleTime = document.getElementById('scopeCtrlSampleTime')?.value || 0;
     const sampleFreq = document.getElementById('scopeCtrlSampleFreq')?.value || 20;
 
     // Store values in all scope_control widgets for persistence
@@ -107,7 +107,7 @@ function createScopeControlWidget(widget) {
     const triggerLevel = widget.triggerLevel || 0;
     const triggerDelay = widget.triggerDelay || 0;
     const triggerVar = widget.triggerVar || '';
-    const sampleTime = widget.sampleTime || 1;
+    const sampleTime = widget.sampleTime !== undefined ? widget.sampleTime : 0;
     const sampleFreq = widget.sampleFreq || 20;
 
     // Build trigger variable options from scope-view variables
@@ -145,7 +145,7 @@ function createScopeControlWidget(widget) {
                 <div class="col-6">
                     <label class="form-label mb-0" style="font-size: 0.75rem;">Time</label>
                     <input type="number" class="form-control form-control-sm" id="scopeCtrlSampleTime"
-                           value="${sampleTime}" min="1" max="30"
+                           value="${sampleTime}" min="0" max="30"
                            onchange="updateScopeSampleSettings(${widget.id})"
                            ${isDashboardEditMode ? 'disabled' : ''}>
                 </div>
@@ -246,7 +246,7 @@ function getScopeControlConfig(editWidget) {
 }
 
 function saveScopeControlConfig(widget) {
-    widget.sampleTime = widget.sampleTime || 1;
+    widget.sampleTime = widget.sampleTime !== undefined ? widget.sampleTime : 0;
     widget.sampleFreq = widget.sampleFreq || 20;
     widget.triggerMode = widget.triggerMode || '0';
     widget.triggerEdge = widget.triggerEdge || '1';

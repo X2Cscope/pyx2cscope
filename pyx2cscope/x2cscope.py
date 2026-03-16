@@ -472,7 +472,7 @@ class X2CScope:
         logging.info(
             f"Total time for the scope functionality: {total_time_milliseconds} ms"
         )
-        return self.scope_setup.sample_time_factor * total_time_milliseconds
+        return (self.scope_setup.sample_time_factor + 1) * total_time_milliseconds
 
     def get_device_info(self):
         """Returns the device information as a dictionary."""
