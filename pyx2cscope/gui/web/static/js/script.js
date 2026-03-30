@@ -238,16 +238,6 @@ function initQRCodes() {
         insertQRCode("");
         $('#x2cModal').modal('show');
     });
-    $("#dashboardQRCode").on("click", function() {
-        $('#x2cModalTitle').html('Dashboard - Scan QR Code');
-        insertQRCode("dashboard-view");
-        $('#x2cModal').modal('show');
-    });
-    $("#scriptQRCode").on("click", function() {
-        $('#x2cModalTitle').html('Script - Scan QR Code');
-        insertQRCode("script-view");
-        $('#x2cModal').modal('show');
-    });
 }
 
 function initHelpToggle() {

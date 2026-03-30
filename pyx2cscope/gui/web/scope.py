@@ -22,7 +22,7 @@ class WebScope:
         self.scope_vars = []
         self.scope_trigger = False
         self.scope_burst = False
-        self.scope_sample_time = 1
+        self.scope_sample_time = 0
         self.scope_time_sampling = 50e-3
 
         self.dashboard_vars = {}  # {var_name: Variable object}
@@ -350,7 +350,11 @@ class WebScope:
             if self.scope_sample_time != sample_time:
                 self.scope_sample_time = sample_time
                 self.x2c_scope.set_sample_time(self.scope_sample_time)
-            self.scope_time_sampling = self.x2c_scope.get_scope_sample_time(1 / (sample_freq * 100))
+            # Convert sample_freq from KHz to period in microseconds
+            # sample_freq is in KHz, so period = 1/(freq_hz) = 1/(sample_freq*1000) seconds
+            # Convert to microseconds: * 1_000_000 = 1000/sample_freq
+            time_per_sample_us = 1000.0 / sample_freq
+            self.scope_time_sampling = self.x2c_scope.get_scope_sample_time(time_per_sample_us)
             if "shot" in trigger_action:
                 self.scope_burst = True
             trigger_action = False if "off" in trigger_action else True
@@ -373,7 +377,19 @@ class WebScope:
                     channel_data = self.x2c_scope.get_scope_channel_data()
                     datasets = self._get_scope_datasets(channel_data, self.scope_vars)
                     size = len(datasets[0]["data"]) if len(datasets) > 0 else 1000
-                    labels = self.get_scope_chart_label(size)
+                    # scope_time_sampling is total buffer time, divide by size to get time per sample
+                    time_per_sample = self.scope_time_sampling / size if size > 0 else self.scope_time_sampling
+                    labels = [round(i * time_per_sample, 1) for i in range(size)]
+
+                    # Build raw data dict for dashboard (gain/offset applied per channel)
+                    dashboard_data = {}
+                    for channel in self.scope_vars:
+                        name = channel["variable"].info.name
+                        if name in channel_data:
+                            dashboard_data[name] = [
+                                sample * channel["gain"] + channel["offset"]
+                                for sample in channel_data[name]
+                            ]
 
                     # Build raw data dict for dashboard (gain/offset applied per channel)
                     dashboard_data = {}

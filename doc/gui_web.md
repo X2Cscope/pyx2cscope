@@ -162,7 +162,7 @@ The Sample Control panel manages data acquisition:
 | **Sample** | Start continuous sampling |
 | **Stop** | Stop sampling |
 | **Burst** | Capture a single frame of data |
-| **Sample Time** | Prescaler value for sampling rate (1 = fastest) |
+| **Sample Time** | Prescaler value for sampling rate (0 = fastest) |
 | **Sampling Frequency** | Display of the calculated sampling frequency |
 
 #### How Sampling Works
@@ -229,7 +229,7 @@ Configure up to 8 scope channels:
 
 #### Tips for Best Results
 
-- Start with **Sample Time = 1** for maximum resolution
+- Start with **Sample Time = 0** for maximum resolution
 - Increase Sample Time to capture longer time periods
 - Use **Gain** to scale signals for better visualization
 - Use **Offset** to separate overlapping waveforms

@@ -33,6 +33,8 @@ if TYPE_CHECKING:
     from pyx2cscope.gui.qt.models.app_state import AppState
 
 
+
+
 class ScriptHelpDialog(QDialog):
     """Dialog showing help for writing scripts."""
 

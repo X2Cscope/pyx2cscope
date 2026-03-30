@@ -134,7 +134,7 @@ class AppState(QObject):
         # Scope state
         self._scope_active: bool = False
         self._scope_single_shot: bool = False
-        self._sample_time_factor: int = 1
+        self._sample_time_factor: int = 0
         self._scope_sample_time_us: int = 50
         self._real_sample_time: float = 0.0
 

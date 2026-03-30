@@ -245,7 +245,7 @@ function syncScopeControlToBackend() {
     const scopeControlWidget = dashboardWidgets.find(w => w.type === 'scope_control');
     if (scopeControlWidget) {
         // Sync sample control settings
-        const sampleTime = scopeControlWidget.sampleTime || 1;
+        const sampleTime = scopeControlWidget.sampleTime !== undefined ? scopeControlWidget.sampleTime : 0;
         const sampleFreq = scopeControlWidget.sampleFreq || 20;
         const sampleFormData = `triggerAction=off&sampleTime=${sampleTime}&sampleFreq=${sampleFreq}`;
         scopeSocket.emit('update_sample_control', sampleFormData);
