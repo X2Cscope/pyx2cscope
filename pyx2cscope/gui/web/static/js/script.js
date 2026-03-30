@@ -21,6 +21,26 @@ function connect(){
         formData.append('canRxId', $('#canRxId').val());
     }
 
+    const interfaceType = $('#interfaceType').val();
+    formData.append('interfaceType', interfaceType);
+
+    if (interfaceType === 'SERIAL') {
+        formData.append('interfaceArgument', 'port');
+        formData.append('interfaceValue', $('#port').val());
+    }
+    else if (interfaceType === 'TCP_IP') {
+        formData.append('host', $('#host').val());
+        formData.append('tcpPort', $('#tcpPort').val());
+    }
+    else if (interfaceType === 'CAN') {
+        formData.append('canBusType', $('#canBusType').val());
+        formData.append('canChannel', $('#canChannel').val());
+        formData.append('canBaudrate', $('#canBaudrate').val());
+        formData.append('canMode', $('#canMode').val());
+        formData.append('canTxId', $('#canTxId').val());
+        formData.append('canRxId', $('#canRxId').val());
+    }
+
     formData.append('elfFile', $('#elfFile')[0].files[0]);
 
     $.ajax({
