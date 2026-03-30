@@ -264,7 +264,7 @@ Attributes
       Define the resolution how the samples will be buffered at the internal buffer.
 
       This can be used to extend total sampling time at the cost of resolution.
-      1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample …
+      0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
 
       Args:
           sample_time (int): The sample time factor.
