@@ -215,12 +215,13 @@ function refreshPlotScopeWidget(widget, widgetEl) {
 function generateTimeLabels(numSamples) {
     // Get sample time and frequency from scope control widget
     const scopeControlWidget = dashboardWidgets.find(w => w.type === 'scope_control');
-    const sampleTime = scopeControlWidget?.sampleTime || 1;
+    const sampleTime = scopeControlWidget?.sampleTime !== undefined ? scopeControlWidget.sampleTime : 0;
     const sampleFreq = scopeControlWidget?.sampleFreq || 20; // in KHz
 
-    // Calculate time per sample: (1 / freq_Hz) * sampleTime
+    // Calculate time per sample: (1 / freq_Hz) * (sampleTime + 1)
+    // sampleTime is a skip factor: 0 = every sample, 1 = every 2nd sample, etc.
     // freq is in KHz, so freq_Hz = sampleFreq * 1000
-    const timePerSampleUs = (1 / (sampleFreq * 1000)) * sampleTime * 1000000; // in microseconds
+    const timePerSampleUs = (1 / (sampleFreq * 1000)) * (sampleTime + 1) * 1000000; // in microseconds
     const totalTimeUs = (numSamples - 1) * timePerSampleUs;
 
     // Determine best unit based on total time
@@ -239,7 +240,7 @@ function generateTimeLabels(numSamples) {
     const labels = [];
     for (let i = 0; i < numSamples; i++) {
         const timeUs = i * timePerSampleUs;
-        labels.push(parseFloat((timeUs / divisor).toFixed(2)));
+        labels.push(parseFloat((timeUs / divisor).toFixed(1)));
     }
 
     return { labels, unit };

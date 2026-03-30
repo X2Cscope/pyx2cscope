@@ -256,12 +256,12 @@ class X2CScope:
         """Define the resolution how the samples will be buffered at the internal buffer.
 
         This can be used to extend total sampling time at the cost of resolution.
-        1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample …
+        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
 
         Args:
             sample_time (int): The sample time factor.
         """
-        sample_time = 1 if sample_time < 1 else sample_time
+        sample_time = 0 if sample_time < 0 else sample_time
         self.scope_setup.set_sample_time_factor(sample_time)
 
     def set_scope_state(self, scope_state: int):
@@ -472,7 +472,7 @@ class X2CScope:
         logging.info(
             f"Total time for the scope functionality: {total_time_milliseconds} ms"
         )
-        return self.scope_setup.sample_time_factor * total_time_milliseconds
+        return (self.scope_setup.sample_time_factor + 1) * total_time_milliseconds
 
     def get_device_info(self):
         """Returns the device information as a dictionary."""

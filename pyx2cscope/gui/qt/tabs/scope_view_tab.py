@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QPushButton,
     QSizePolicy,
+    QSpinBox,
     QVBoxLayout,
 )
 
@@ -124,20 +125,24 @@ class ScopeViewTab(BaseTab):
 
         # Sample time factor
         grid.addWidget(QLabel("Sample Time Factor"), 1, 0)
-        self._sample_time_factor_edit = QLineEdit("1")
-        self._sample_time_factor_edit.setValidator(self.decimal_validator)
+        self._sample_time_factor_edit = QSpinBox()
+        self._sample_time_factor_edit.setMinimum(0)
+        self._sample_time_factor_edit.setMaximum(30)
+        self._sample_time_factor_edit.setValue(0)
         grid.addWidget(self._sample_time_factor_edit, 1, 1)
 
         # Scope sample time
         grid.addWidget(QLabel("Scope Sample Time (us):"), 2, 0)
-        self._scope_sampletime_edit = QLineEdit("50")
-        self._scope_sampletime_edit.setValidator(self.decimal_validator)
+        self._scope_sampletime_edit = QSpinBox()
+        self._scope_sampletime_edit.setMinimum(1)
+        self._scope_sampletime_edit.setMaximum(10000)
+        self._scope_sampletime_edit.setValue(50)
         grid.addWidget(self._scope_sampletime_edit, 2, 1)
 
         # Trigger mode
         grid.addWidget(QLabel("Trigger Mode:"), 3, 0)
         self._trigger_mode_combo = QComboBox()
-        self._trigger_mode_combo.addItems(["Auto", "Triggered"])
+        self._trigger_mode_combo.addItems(["Disable", "Enable"])
         grid.addWidget(self._trigger_mode_combo, 3, 1)
 
         # Trigger edge
@@ -336,11 +341,11 @@ class ScopeViewTab(BaseTab):
                         logging.debug(f"Added scope channel: {var_name}")
 
             # Set sample time
-            sample_time_factor = self.safe_int(self._sample_time_factor_edit.text(), 1)
+            sample_time_factor = self._sample_time_factor_edit.value()
             x2cscope.set_sample_time(sample_time_factor)
 
             # Get real sample time
-            scope_sample_time_us = self.safe_int(self._scope_sampletime_edit.text(), 50)
+            scope_sample_time_us = self._scope_sampletime_edit.value()
             self._real_sampletime = x2cscope.get_scope_sample_time(scope_sample_time_us)
 
             # Configure trigger
@@ -383,7 +388,7 @@ class ScopeViewTab(BaseTab):
 
             trigger_mode = self._trigger_mode_combo.currentText()
 
-            if trigger_mode == "Auto":
+            if trigger_mode == "Disable":
                 x2cscope.reset_scope_trigger()
                 return
 
@@ -497,7 +502,7 @@ class ScopeViewTab(BaseTab):
             "trigger_delay": self._trigger_delay_combo.currentText(),
             "trigger_edge": self._trigger_edge_combo.currentText(),
             "trigger_mode": self._trigger_mode_combo.currentText(),
-            "sample_time_factor": self._sample_time_factor_edit.text(),
+            "sample_time_factor": str(self._sample_time_factor_edit.value()),
             "single_shot": self._single_shot_checkbox.isChecked(),
         }
 
@@ -535,6 +540,6 @@ class ScopeViewTab(BaseTab):
         self._trigger_level_edit.setText(config.get("trigger_level", "0"))
         self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
-        self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Auto"))
-        self._sample_time_factor_edit.setText(config.get("sample_time_factor", "1"))
+        self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Disable"))
+        self._sample_time_factor_edit.setValue(int(config.get("sample_time_factor", "0")))
         self._single_shot_checkbox.setChecked(config.get("single_shot", False))

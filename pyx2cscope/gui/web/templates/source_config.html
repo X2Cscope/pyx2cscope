@@ -6,27 +6,32 @@
             <label class="form-check-label" for="scopeSfrToggle">SFR</label>
         </div>
     </div>
-    <div class="col-6 col-md-2">
-        <button type="button" id="scopeSave" class="btn btn-secondary w-100">Save</button>
-    </div>
-    <div class="col-6 col-md-2">
-        <label class="btn btn-secondary w-100" for="scopeLoad">Load
-            <input type="file" accept=".cfg" class="d-none" id="scopeLoad">
-        </label>
-    </div>
-    <div class="col-12 col-md-5 col-lg-4 ms-md-auto float-end">
-        <div class="dropdown d-inline-block">
-            <button class="btn btn-info dropdown-toggle w-100" type="button" id="chartMenuButton"
-                    data-bs-toggle="dropdown" aria-expanded="false">Chart Actions
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end w-100" aria-labelledby="chartMenuButton" style="z-index: 20;">
-                <li><a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" id="chartExport">Export data</a></li>
-            </ul>
+    <div class="col-12 col-md-9 ms-md-auto">
+        <div class="row g-2">
+            <div class="col-4 col-lg-2 ms-auto">
+                <button type="button" id="scopeSave" class="btn btn-secondary w-100">Save</button>
+            </div>
+            <div class="col-4 col-lg-2">
+                <label class="btn btn-secondary w-100" for="scopeLoad">Load
+                    <input type="file" accept=".cfg" class="d-none" id="scopeLoad">
+                </label>
+            </div>
+            <div class="col-4 col-lg-4">
+                <div class="dropdown">
+                    <button class="btn btn-info dropdown-toggle w-100" type="button" id="chartMenuButton"
+                            data-bs-toggle="dropdown" aria-expanded="false">Chart Actions
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end w-100" aria-labelledby="chartMenuButton" style="z-index: 20;">
+                        <li><a class="dropdown-item" href="#" id="chartZoomReset">Reset zoom</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="chartExport">Export data</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 <div class="card shadow-sm mb-4">
     <div class="card-body p-0">

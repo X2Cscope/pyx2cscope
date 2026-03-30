@@ -217,7 +217,7 @@ variables = [
 for var in variables:
     x2c_scope.add_scope_channel(x2c_scope.get_variable(var))
 
-x2c_scope.set_sample_time(1)
+x2c_scope.set_sample_time(0)
 
 # Create the plot
 plt.ion()  # Turn on interactive mode

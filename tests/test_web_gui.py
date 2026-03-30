@@ -9,6 +9,7 @@ Tests cover:
 """
 
 import json
+import os
 from unittest.mock import MagicMock
 
 import pytest
@@ -179,6 +180,13 @@ class TestDashboardRoutes:
 
     def test_dashboard_load_layout_no_file(self, flask_client):
         """Test load layout when no file exists."""
+        # Ensure no dashboard_layout.json file exists before test
+        from pyx2cscope.gui import web
+        web_lib_path = os.path.join(os.path.dirname(web.__file__), "upload")
+        dashboard_file = os.path.join(web_lib_path, "dashboard_layout.json")
+        if os.path.exists(dashboard_file):
+            os.remove(dashboard_file)
+
         response = flask_client.get("/dashboard/load-layout")
 
         assert response.status_code == HTTP_NOT_FOUND
@@ -305,7 +313,7 @@ class TestWebScopeClass:
 
     def test_scope_sample_time_default(self, web_scope):
         """Test scope sample time default."""
-        assert web_scope.scope_sample_time == 1
+        assert web_scope.scope_sample_time == 0
 
 
 class TestWebScopeVariableManagement:
