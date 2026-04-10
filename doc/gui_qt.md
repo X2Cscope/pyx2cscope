@@ -51,12 +51,19 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### CAN Settings
 
-- **Bus Type**: Select USB or LAN.
-- **Channel**: Enter the CAN channel number.
-- **Baudrate**: Select from 125K, 250K, 500K, or 1M.
-- **Mode**: Select Standard or Extended.
-- **Tx-ID (hex)**: Transmit ID in hexadecimal (default: 7F1).
-- **Rx-ID (hex)**: Receive ID in hexadecimal (default: 7F0).
+- **Bus Type**: Select the CAN interface type:
+  - **PCAN USB**: Peak-System USB CAN adapters
+  - **PCAN LAN**: Peak-System Ethernet CAN gateways
+  - **SocketCAN**: Linux native CAN interface
+  - **Vector**: Vector CAN hardware
+  - **Kvaser**: Kvaser CAN interfaces
+- **Channel**: Enter the CAN channel number (numeric: 1, 2, 3...).
+- **Baud Rate**: Select from 125K, 250K, 500K, or 1M bits per second.
+- **Mode**: Select Standard (11-bit ID) or Extended (29-bit ID).
+- **Tx-ID (hex)**: Transmit arbitration ID in hexadecimal (default: 110).
+- **Rx-ID (hex)**: Receive arbitration ID in hexadecimal (default: 100).
+
+> **Note**: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.
 
 ### Device Information
 
