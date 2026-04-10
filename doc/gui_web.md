@@ -57,7 +57,7 @@ Select the communication interface type:
 
 - **Serial** - For UART/USB-to-Serial connections
 - **TCP/IP** - For network-based connections
-- **CAN** - For CAN bus connections (coming soon)
+- **CAN** - For CAN bus connections
 
 ### Serial Configuration
 
@@ -73,16 +73,23 @@ When TCP/IP is selected:
 1. **Host** - Enter the IP address or hostname of the target device (default: localhost)
 2. **Port** - Enter the TCP port number (default: 12666)
 
-### CAN Configuration (Coming Soon)
+### CAN Configuration
 
 When CAN is selected:
 
-- **Bus Type** - USB or LAN
-- **Channel** - CAN channel number
-- **Baudrate** - 125K, 250K, 500K, or 1M
-- **Mode** - Standard or Extended
-- **TX ID** - Transmit message ID (hex)
-- **RX ID** - Receive message ID (hex)
+- **Bus Type** - Select the CAN interface type:
+  - **PCAN USB**: Peak-System USB CAN adapters
+  - **PCAN LAN**: Peak-System Ethernet CAN gateways
+  - **SocketCAN**: Linux native CAN interface
+  - **Vector**: Vector CAN hardware
+  - **Kvaser**: Kvaser CAN interfaces
+- **Channel** - CAN channel number (numeric: 1, 2, 3...)
+- **Baud Rate** - 125K, 250K, 500K, or 1M bits per second
+- **Mode** - Standard (11-bit ID) or Extended (29-bit ID)
+- **TX ID** - Transmit arbitration ID in hexadecimal (default: 110)
+- **RX ID** - Receive arbitration ID in hexadecimal (default: 100)
+
+> **Note**: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.
 
 ### ELF File Selection
 

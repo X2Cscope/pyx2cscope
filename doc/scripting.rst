@@ -23,7 +23,7 @@ X2CScope class
 
     from pyx2scope import X2CScope
 
-X2CScope supports multiple communication interfaces: **Serial** and **TCP/IP**. **CAN** support is coming soon.
+X2CScope supports multiple communication interfaces: **Serial**, **CAN**, and **TCP/IP**.
 
 Communication Interfaces
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,15 +110,107 @@ Example - TCP/IP with custom tcp_port:
 
     x2c_scope = X2CScope(host="192.168.1.100", tcp_port=12345, elf_file="firmware.elf")
 
-**CAN Interface (Coming Soon)**
+**CAN Interface**
 
-CAN bus support is under development. The interface will support parameters such as:
+For CAN bus communication with microcontrollers. The CAN interface supports multiple hardware vendors through the python-can library. Parameters:
 
-- ``bus``: CAN bus type (e.g., "USB", "TCP")
-- ``channel``: CAN channel identifier
-- ``bitrate``: CAN bus bitrate
-- ``tx_id``: Transmit message ID
-- ``rx_id``: Receive message ID
+.. list-table::
+   :widths: 20 15 15 50
+   :header-rows: 1
+
+   * - Parameter
+     - Type
+     - Default
+     - Description
+   * - ``bustype``
+     - str
+     - "pcan_usb"
+     - CAN interface type: "pcan_usb", "pcan_lan", "socketcan", "vector", "kvaser"
+   * - ``channel``
+     - int
+     - 1
+     - Channel number (numeric: 1, 2, 3...). Automatically converted to vendor-specific format
+   * - ``baud_rate``
+     - int
+     - 500000
+     - CAN bus baud rate in bits per second (common: 125000, 250000, 500000, 1000000)
+   * - ``id_tx``
+     - int
+     - 0x110
+     - CAN arbitration ID for transmitting messages
+   * - ``id_rx``
+     - int
+     - 0x100
+     - CAN arbitration ID for receiving messages
+   * - ``mode``
+     - str
+     - "standard"
+     - CAN ID mode: "standard" (11-bit) or "extended" (29-bit)
+
+**Supported CAN Interfaces:**
+
+- **PCAN USB** (``bustype="pcan_usb"``): Peak-System USB CAN adapters
+- **PCAN LAN** (``bustype="pcan_lan"``): Peak-System Ethernet CAN gateways
+- **SocketCAN** (``bustype="socketcan"``): Linux native CAN interface
+- **Vector** (``bustype="vector"``): Vector CAN hardware
+- **Kvaser** (``bustype="kvaser"``): Kvaser CAN interfaces
+
+.. note::
+
+   CAN interface support requires the ``python-can`` library and vendor-specific drivers:
+
+   - **PCAN**: Requires PCAN driver installation from Peak-System website
+   - **SocketCAN**: Built into Linux kernel (no additional driver needed)
+   - **Vector**: Requires Vector driver installation
+   - **Kvaser**: Requires Kvaser driver installation
+
+   The ``python-can`` package includes base support for all vendors, but hardware-specific
+   drivers must be installed separately according to each vendor's documentation.
+
+Example - CAN connection with PCAN USB (default settings):
+
+.. code-block:: python
+
+    x2c_scope = X2CScope(bustype="pcan_usb", channel=1, elf_file="firmware.elf")
+
+Example - CAN connection with custom parameters:
+
+.. code-block:: python
+
+    x2c_scope = X2CScope(
+        bustype="pcan_usb",
+        channel=2,
+        baud_rate=250000,
+        id_tx=0x120,
+        id_rx=0x110,
+        mode="extended",
+        elf_file="firmware.elf"
+    )
+
+Example - SocketCAN on Linux:
+
+.. code-block:: python
+
+    x2c_scope = X2CScope(
+        bustype="socketcan",
+        channel=1,  # Maps to can0
+        baud_rate=500000,
+        elf_file="firmware.elf"
+    )
+
+Example - Using configuration file:
+
+.. code-block:: python
+
+    from pyx2cscope.utils import get_can_config, get_elf_file_path
+
+    can_config = get_can_config()  # Loads CAN parameters from config.ini
+    x2c_scope = X2CScope(
+        elf_file=get_elf_file_path(),
+        **can_config  # Unpacks all CAN parameters
+    )
+
+For detailed CAN interface documentation, see the `mchplnet documentation <https://mchp-lnet.readthedocs.io/>`_.
 
 2. Basic instantiation examples:
 
