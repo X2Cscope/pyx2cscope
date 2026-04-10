@@ -137,14 +137,14 @@ class ConnectionManager(QObject):
             True if connection successful, False otherwise.
         """
         try:
-            # Convert baudrate string to numeric value
-            baudrate_map = {
+            # Convert baud rate string to numeric value
+            baud_rate_map = {
                 "125K": 125000,
                 "250K": 250000,
                 "500K": 500000,
                 "1M": 1000000,
             }
-            baud_value = baudrate_map.get(baudrate, 500000)
+            baud_value = baud_rate_map.get(baudrate, 500000)
 
             # Convert hex IDs to integers
             tx_id_int = int(tx_id, 16)
@@ -153,14 +153,29 @@ class ConnectionManager(QObject):
             # Determine if extended mode
             is_extended = mode == "Extended"
 
+            # Map bus_type to bustype
+            bustype_map = {
+                'usb': 'pcan_usb',
+                'pcan usb': 'pcan_usb',
+                'lan': 'pcan_lan',
+                'pcan lan': 'pcan_lan',
+                'socketcan': 'socketcan',
+                'vector': 'vector',
+                'kvaser': 'kvaser',
+            }
+            bustype = bustype_map.get(bus_type.lower(), 'pcan_usb')
+
+            # Map mode to standard/extended
+            mode_str = 'extended' if is_extended else 'standard'
+
             x2cscope = X2CScope(
                 elf_file=elf_file,
-                bus=bus_type.lower(),
+                bustype=bustype,
                 channel=channel,
-                baudrate=baud_value,
-                tx_id=tx_id_int,
-                rx_id=rx_id_int,
-                extended=is_extended,
+                baud_rate=baud_value,
+                id_tx=tx_id_int,
+                id_rx=rx_id_int,
+                mode=mode_str,
             )
 
             self._app_state.elf_file = elf_file

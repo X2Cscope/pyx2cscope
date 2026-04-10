@@ -103,8 +103,8 @@ def connect():
     interface_kwargs = {}
 
     if interface_type == "CAN":
-        # CAN baudrate string to numeric mapping
-        baudrate_map = {
+        # CAN baud rate string to numeric mapping
+        baud_rate_map = {
             "125K": 125000,
             "250K": 250000,
             "500K": 500000,
@@ -112,18 +112,34 @@ def connect():
         }
         can_bus_type = request.form.get("canBusType", "USB")
         can_channel = int(request.form.get("canChannel", 1))
-        can_baudrate = request.form.get("canBaudrate", "125K")
+        can_baud_rate = request.form.get("canBaudrate", "125K")
         can_mode = request.form.get("canMode", "Standard")
         can_tx_id = request.form.get("canTxId", "7F1")
         can_rx_id = request.form.get("canRxId", "7F0")
 
+        # Map bus_type to bustype
+        bustype_map = {
+            'usb': 'pcan_usb',
+            'pcan usb': 'pcan_usb',
+            'lan': 'pcan_lan',
+            'pcan lan': 'pcan_lan',
+            'socketcan': 'socketcan',
+            'socketcan (linux)': 'socketcan',
+            'vector': 'vector',
+            'kvaser': 'kvaser',
+        }
+        bustype = bustype_map.get(can_bus_type.lower(), 'pcan_usb')
+
+        # Map mode to standard/extended
+        mode_str = 'extended' if can_mode == "Extended" else 'standard'
+
         interface_kwargs = {
-            "bus": can_bus_type.lower(),
+            "bustype": bustype,
             "channel": can_channel,
-            "baudrate": baudrate_map.get(can_baudrate, 125000),
-            "tx_id": int(can_tx_id, 16),
-            "rx_id": int(can_rx_id, 16),
-            "extended": can_mode == "Extended",
+            "baud_rate": baud_rate_map.get(can_baud_rate, 125000),
+            "id_tx": int(can_tx_id, 16),
+            "id_rx": int(can_rx_id, 16),
+            "mode": mode_str,
         }
     elif interface_type == "TCP_IP":
         host = request.form.get("host", "localhost")

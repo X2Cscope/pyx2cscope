@@ -197,7 +197,7 @@ class SetupTab(QWidget):
         # Bus Type
         can_layout.addWidget(QLabel("Bus Type:"), can_row, 0, Qt.AlignRight)
         self._can_bus_type_combo = QComboBox()
-        self._can_bus_type_combo.addItems(["USB", "LAN"])
+        self._can_bus_type_combo.addItems(["PCAN USB", "PCAN LAN", "SocketCAN", "Vector", "Kvaser"])
         self._can_bus_type_combo.setFixedWidth(120)
         can_layout.addWidget(self._can_bus_type_combo, can_row, 1)
         can_row += 1
