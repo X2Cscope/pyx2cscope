@@ -392,6 +392,8 @@ class SetupTab(QWidget):
     def set_ports(self, ports: list):
         """Set available COM ports."""
         self._port_combo.clear()
+        # Add AUTO option first for auto-detection
+        self._port_combo.addItem("AUTO")
         self._port_combo.addItems(ports)
 
     def set_connected(self, connected: bool):

@@ -53,8 +53,8 @@ class TestPyX2CScope:
     def test_missing_com_port(self, mocker):
         """Check class behavior in case of non COM-Port initialization.
 
-        A com-port must not be provided, in this case, the default COM1
-        is used but a warning is generated on the console.
+        A com-port must not be provided, in this case, AUTO detection
+        is attempted but a warning is generated on the console.
         """
         fake_serial(mocker, 16)
         with warnings.catch_warnings(record=True) as w:
@@ -67,7 +67,7 @@ class TestPyX2CScope:
             # Verify the warning was raised
             assert len(w) == 2  # noqa: PLR2004
             assert issubclass(w[-1].category, Warning) is True
-            assert "No port provided, using default COM1" in str(w[-1].message)
+            assert "No port provided, will attempt auto-detection" in str(w[-1].message)
 
             # Clean up
             scope.disconnect()
@@ -75,6 +75,6 @@ class TestPyX2CScope:
     def test_wrong_com_port(self):
         """Check handling of a non-existent COM-PORT input."""
         with pytest.raises(
-            RuntimeError, match=r"Failed to retrieve device information"
+            Exception, match=r"could not open port 'COM0'"
         ):
             X2CScope(elf_file=self.elf_file, port="COM0")

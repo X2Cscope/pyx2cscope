@@ -63,8 +63,12 @@ Select the communication interface type:
 
 When Serial is selected:
 
-1. **UART Dropdown** - Select the COM port from the available ports list
-2. **Refresh Button** - Click to rescan for available COM ports
+1. **UART Dropdown** - Select the COM port:
+   - **AUTO (Auto-detect)**: Automatically scans and connects to the first available LNet device (recommended for single device).
+   - **Specific Port**: Choose a specific COM port (COM1, COM3, etc.) for manual connection.
+2. **Refresh Button** - Click to rescan for available COM ports.
+
+> **Tip**: The AUTO option is useful when you don't know the exact COM port or when working across different machines. The system will test each available port and connect to the first one that responds to the LNet protocol.
 
 ### TCP/IP Configuration
 

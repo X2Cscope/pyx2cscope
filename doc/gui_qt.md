@@ -41,8 +41,13 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### UART Settings
 
-- **Port**: Select the COM port from the dropdown. Use the refresh button to update available ports.
+- **Port**: Select the COM port from the dropdown.
+  - **AUTO**: Automatically detects the first available LNet device (recommended for single device).
+  - **Specific Port**: Choose a specific COM port (COM1, COM3, etc.) for manual connection.
+  - **Refresh Button**: Updates the list of available ports.
 - **Baud Rate**: Select the baud rate (38400, 115200, 230400, 460800, 921600).
+
+> **Tip**: When using AUTO mode, the system will scan available COM ports and connect to the first device that responds to the LNet protocol. This is useful when the exact port number is unknown or when working across different machines.
 
 ### TCP/IP Settings
 

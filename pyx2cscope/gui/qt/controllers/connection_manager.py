@@ -248,7 +248,12 @@ class ConnectionManager(QObject):
             True if disconnection successful, False otherwise.
         """
         try:
-            # X2CScope handles closing the serial connection
+            # Get current x2cscope instance and properly disconnect it
+            x2cscope = self._app_state.x2cscope
+            if x2cscope:
+                x2cscope.disconnect()
+
+            # Clear the x2cscope instance
             self._app_state.set_x2cscope(None)
             logging.info("Disconnected from device")
             self.connection_changed.emit(False)

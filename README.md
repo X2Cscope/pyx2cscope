@@ -40,12 +40,16 @@ To execute the Browser based version type:
 ```py
 from pyx2cscope.x2cscope import X2CScope
 
-# initialize the X2CScope class with serial port, by default baud rate is 115200
-x2c_scope = X2CScope(port="COM8")
-# instead of loading directly the elf file, we can import it after instantiating the X2CScope class
-x2c_scope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
+# Option 1: Default UART with Auto-detect COM port (recommended for single device)
+x2c_scope = X2CScope(elf_file="path/to/firmware.elf")
 
-# Collect some variables.
+# Option 2: Specify COM port explicitly
+# x2c_scope = X2CScope(port="COM8", elf_file="path/to/firmware.elf")
+
+# Or import variables after instantiation
+# x2c_scope.import_variables(r"..\..\tests\data\qspin_foc_same54.elf")
+
+# Collect some variables
 speed_reference = x2c_scope.get_variable("motor.apiData.velocityReference")
 speed_measured = x2c_scope.get_variable("motor.apiData.velocityMeasured")
 

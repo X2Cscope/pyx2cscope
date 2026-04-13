@@ -85,9 +85,9 @@ class SerialStub:
     def lnet_serial_start(self):
         """Mocker for the start interface function.
 
-        As we are dealing with no real device, we just return.
+        As we are dealing with no real device, we just return True.
         """
-        return
+        return True
 
     def _get_ram(self):
         """Handle a get_ram request."""

@@ -169,6 +169,8 @@ def connect():
             return jsonify({"status": "error", "msg": str(e)}), 401
         except ValueError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
+        except TimeoutError as e:
+            return jsonify({"status": "error", "msg": str(e)}), 401
     return jsonify({"status": "error", "msg": "Interface argument or import file invalid."}), 400
 
 

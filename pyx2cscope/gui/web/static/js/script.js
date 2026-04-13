@@ -55,6 +55,8 @@ function load_uart() {
         uart = $('#port');
         uart.empty();
         uart.append('<option value="default">Select UART</option>');
+        // Add AUTO option for auto-detection
+        uart.append($('<option></option>').val('AUTO').html('AUTO (Auto-detect)'));
         data.forEach(function(item) {
             uart.append($('<option></option>').val(item).html(item));
         });
