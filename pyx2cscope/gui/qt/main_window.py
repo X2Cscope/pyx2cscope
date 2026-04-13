@@ -24,6 +24,7 @@ from pyx2cscope.gui import img as img_src
 from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
 from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
 from pyx2cscope.gui.qt.models.app_state import AppState
+from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
 from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab
 from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
@@ -180,6 +181,10 @@ class MainWindow(QMainWindow):
         # Tab 3: Scripting
         self._scripting_tab = ScriptingTab(self._app_state, self)
         self._tab_widget.addTab(self._scripting_tab, "Scripting")
+
+        # Tab 4: Help
+        self._help_tab = HelpTab(self)
+        self._tab_widget.addTab(self._help_tab, "Help")
 
         # Set initial view (Both selected)
         self._on_view_toggle_changed()
