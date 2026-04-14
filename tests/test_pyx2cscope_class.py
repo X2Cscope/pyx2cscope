@@ -74,7 +74,5 @@ class TestPyX2CScope:
 
     def test_wrong_com_port(self):
         """Check handling of a non-existent COM-PORT input."""
-        with pytest.raises(
-            Exception, match=r"could not open port 'COM0'"
-        ):
+        with pytest.raises(Exception, match=r"could not open port '?COM0'?"):
             X2CScope(elf_file=self.elf_file, port="COM0")
