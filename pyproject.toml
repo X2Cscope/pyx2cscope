@@ -35,6 +35,7 @@ PyQt5 = "^5.15.9"
 pyqtgraph = "^0.13.7"
 mchplnet = "0.4.2"
 flask = "^3.0.3"
+flask-socketio = "^5.3.4"
 
 [tool.ruff]
 line-length = 120

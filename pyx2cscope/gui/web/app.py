@@ -39,6 +39,7 @@ def create_app():
     app.add_url_rule("/", view_func=index)
     app.add_url_rule("/serial-ports", view_func=list_serial_ports)
     app.add_url_rule("/local-ips", view_func=get_local_ips)
+    app.add_url_rule("/version-info", view_func=get_version_info)
     app.add_url_rule("/connect", view_func=connect, methods=["POST"])
     app.add_url_rule("/disconnect", view_func=disconnect)
     app.add_url_rule("/is-connected", view_func=is_connected)
@@ -90,6 +91,44 @@ def get_local_ips():
         ips = ['0.0.0.0']
 
     return jsonify({"ips": ips})
+
+
+def get_version_info():
+    """Return version information for all dependencies.
+
+    call {server_url}/version-info to execute.
+    """
+    import importlib.metadata
+    versions = {}
+
+    def get_package_version(package_name, module_name=None, attr_name='__version__'):
+        """Get version from package metadata or module attribute."""
+        try:
+            # Try importlib.metadata first (standard way)
+            return importlib.metadata.version(package_name)
+        except Exception:
+            # Fall back to module attribute
+            if module_name:
+                try:
+                    module = __import__(module_name)
+                    return getattr(module, attr_name, 'Unknown')
+                except (ImportError, AttributeError):
+                    pass
+        return 'Not installed'
+
+    # Web interface dependencies
+    versions['flask'] = get_package_version('flask', 'flask')
+    versions['flask_socketio'] = get_package_version('flask-socketio', 'flask_socketio')
+    versions['mchplnet'] = get_package_version('mchplnet', 'mchplnet')
+    versions['python_can'] = get_package_version('python-can', 'can')
+
+    # Core dependencies
+    versions['numpy'] = get_package_version('numpy', 'numpy')
+    versions['matplotlib'] = get_package_version('matplotlib', 'matplotlib')
+    versions['pyserial'] = get_package_version('pyserial', 'serial', 'VERSION')
+    versions['pyelftools'] = get_package_version('pyelftools', 'elftools')
+
+    return jsonify(versions)
 
 
 def connect():
