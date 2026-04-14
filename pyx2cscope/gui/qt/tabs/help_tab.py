@@ -1,9 +1,10 @@
 """Help tab for the Qt GUI application."""
 
 import platform
-import subprocess
 import sys
+
 from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
@@ -13,7 +14,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from PyQt5.QtGui import QFont, QDesktopServices
 
 import pyx2cscope
 
@@ -32,64 +32,71 @@ class HelpTab(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
 
-        # Release Notes Section
-        release_group = QGroupBox("Release Notes and Documentation")
-        release_layout = QVBoxLayout(release_group)
+        layout.addWidget(self._create_release_group())
+        layout.addWidget(self._create_github_group())
+        layout.addWidget(self._create_version_group())
+        layout.addWidget(self._create_resources_group())
+        layout.addStretch()
 
-        release_info = QLabel(
-            "View the latest release notes, changelog, and documentation."
-        )
-        release_info.setWordWrap(True)
-        release_info.setStyleSheet("color: #666; margin-bottom: 10px;")
-        release_layout.addWidget(release_info)
+    def _create_release_group(self):
+        """Create the Release Notes and Documentation group box."""
+        group = QGroupBox("Release Notes and Documentation")
+        group_layout = QVBoxLayout(group)
 
-        release_button_layout = QHBoxLayout()
+        info = QLabel("View the latest release notes, changelog, and documentation.")
+        info.setWordWrap(True)
+        info.setStyleSheet("color: #666; margin-bottom: 10px;")
+        group_layout.addWidget(info)
+
+        button_layout = QHBoxLayout()
 
         self.release_notes_btn = QPushButton("View Release Notes")
         self.release_notes_btn.clicked.connect(self._open_release_notes)
-        release_button_layout.addWidget(self.release_notes_btn)
+        button_layout.addWidget(self.release_notes_btn)
 
         self.documentation_btn = QPushButton("Documentation")
         self.documentation_btn.clicked.connect(self._open_documentation)
-        release_button_layout.addWidget(self.documentation_btn)
-        release_button_layout.addStretch()
+        button_layout.addWidget(self.documentation_btn)
+        button_layout.addStretch()
 
-        release_layout.addLayout(release_button_layout)
-        layout.addWidget(release_group)
+        group_layout.addLayout(button_layout)
+        return group
 
-        # GitHub Issues Section
-        github_group = QGroupBox("Report Issues and Request Features")
-        github_layout = QVBoxLayout(github_group)
+    def _create_github_group(self):
+        """Create the Report Issues and Request Features group box."""
+        group = QGroupBox("Report Issues and Request Features")
+        group_layout = QVBoxLayout(group)
 
-        github_info = QLabel(
+        info = QLabel(
             "If you encounter bugs, have feature requests, or need help, "
             "please open an issue on our GitHub repository."
         )
-        github_info.setWordWrap(True)
-        github_info.setStyleSheet("color: #666; margin-bottom: 10px;")
-        github_layout.addWidget(github_info)
+        info.setWordWrap(True)
+        info.setStyleSheet("color: #666; margin-bottom: 10px;")
+        group_layout.addWidget(info)
 
-        github_button_layout = QHBoxLayout()
+        button_layout = QHBoxLayout()
 
         self.github_issues_btn = QPushButton("Open GitHub Issues")
         self.github_issues_btn.clicked.connect(self._open_github_issues)
-        github_button_layout.addWidget(self.github_issues_btn)
+        button_layout.addWidget(self.github_issues_btn)
 
         self.github_repo_btn = QPushButton("Visit Repository")
         self.github_repo_btn.clicked.connect(self._open_github_repo)
-        github_button_layout.addWidget(self.github_repo_btn)
-        github_button_layout.addStretch()
+        button_layout.addWidget(self.github_repo_btn)
+        button_layout.addStretch()
 
-        github_layout.addLayout(github_button_layout)
-        layout.addWidget(github_group)
+        group_layout.addLayout(button_layout)
+        return group
 
-        # Software Versions Section
-        version_group = QGroupBox("Software Versions")
-        version_layout = QVBoxLayout(version_group)
+    def _create_version_group(self):
+        """Create the Software Versions group box."""
+        group = QGroupBox("Software Versions")
+        group_layout = QVBoxLayout(group)
 
-        version_info = QLabel("Current software and dependency versions:")
-        version_info.setStyleSheet("color: #666; margin-bottom: 10px;")
-        version_layout.addWidget(version_info)
+        info = QLabel("Current software and dependency versions:")
+        info.setStyleSheet("color: #666; margin-bottom: 10px;")
+        group_layout.addWidget(info)
 
         self.version_text = QTextEdit()
         self.version_text.setReadOnly(True)
@@ -105,117 +112,81 @@ class HelpTab(QWidget):
             "}"
         )
         self._populate_version_info()
-        version_layout.addWidget(self.version_text)
+        group_layout.addWidget(self.version_text)
+        return group
 
-        layout.addWidget(version_group)
+    def _create_resources_group(self):
+        """Create the Additional Resources group box."""
+        group = QGroupBox("Additional Resources")
+        group_layout = QVBoxLayout(group)
 
-        # Additional Resources
-        resources_group = QGroupBox("Additional Resources")
-        resources_layout = QVBoxLayout(resources_group)
-
-        resources_text = QLabel(
+        text = QLabel(
             "For additional support and resources:\n"
             "• Check the examples directory for usage examples\n"
             "• Review the README file for installation instructions\n"
             "• Join our community discussions on GitHub\n"
             "• Visit the documentation for detailed guides"
         )
-        resources_text.setWordWrap(True)
-        resources_text.setStyleSheet("color: #666; line-height: 1.8; padding: 5px;")
-        resources_layout.addWidget(resources_text)
-
-        layout.addWidget(resources_group)
-
-        # Add stretch to push everything to the top
-        layout.addStretch()
+        text.setWordWrap(True)
+        text.setStyleSheet("color: #666; line-height: 1.8; padding: 5px;")
+        group_layout.addWidget(text)
+        return group
 
     def _open_github_issues(self):
         """Open GitHub issues page in default browser."""
-        url = QUrl("https://github.com/X2Cscope/pyx2cscope/issues")
-        QDesktopServices.openUrl(url)
+        QDesktopServices.openUrl(QUrl("https://github.com/X2Cscope/pyx2cscope/issues"))
 
     def _open_github_repo(self):
         """Open GitHub repository page in default browser."""
-        url = QUrl("https://github.com/X2Cscope/pyx2cscope")
-        QDesktopServices.openUrl(url)
+        QDesktopServices.openUrl(QUrl("https://github.com/X2Cscope/pyx2cscope"))
 
     def _open_release_notes(self):
         """Open GitHub releases page in default browser."""
-        url = QUrl("https://github.com/X2Cscope/pyx2cscope/releases")
-        QDesktopServices.openUrl(url)
+        QDesktopServices.openUrl(QUrl("https://github.com/X2Cscope/pyx2cscope/releases"))
 
     def _open_documentation(self):
         """Open documentation in default browser."""
-        url = QUrl("https://x2cscope.github.io/pyx2cscope/")
-        QDesktopServices.openUrl(url)
+        QDesktopServices.openUrl(QUrl("https://x2cscope.github.io/pyx2cscope/"))
+
+    @staticmethod
+    def _get_module_version(import_name, version_attr="__version__"):
+        """Return the version string for a module, or 'Not installed' on failure."""
+        try:
+            module = __import__(import_name)
+            return getattr(module, version_attr, "Unknown")
+        except ImportError:
+            return "Not installed"
 
     def _populate_version_info(self):
         """Populate the version information text area."""
-        version_info = []
+        lines = []
 
-        # Application Versions Section
-        version_info.append("=== Application ===")
-        version_info.append(f"pyX2Cscope: {pyx2cscope.__version__}")
+        lines.append("=== Application ===")
+        lines.append(f"pyX2Cscope: {pyx2cscope.__version__}")
 
-        # Core Dependencies Section
-        version_info.append("\n=== Core Dependencies ===")
+        lines.append("\n=== Core Dependencies ===")
+        lines.append(f"mchplnet: {self._get_module_version('mchplnet')}")
+        lines.append(f"python-can: {self._get_module_version('can')}")
+        lines.append(f"numpy: {self._get_module_version('numpy')}")
+        lines.append(f"matplotlib: {self._get_module_version('matplotlib')}")
+        lines.append(f"pyserial: {self._get_module_version('serial', 'VERSION')}")
+        lines.append(f"pyelftools: {self._get_module_version('elftools')}")
 
-        # mchplnet version (important dependency)
+        lines.append("\n=== GUI Framework ===")
         try:
-            import mchplnet
-            version_info.append(f"mchplnet: {mchplnet.__version__}")
-        except (ImportError, AttributeError):
-            version_info.append("mchplnet: Not installed")
-
-        # mchplnet dependencies
-        mchplnet_deps = [
-            ("can", "python-can"),
-        ]
-
-        for import_name, display_name in mchplnet_deps:
-            try:
-                module = __import__(import_name)
-                version = getattr(module, "__version__", "Unknown")
-                version_info.append(f"{display_name}: {version}")
-            except (ImportError, AttributeError):
-                version_info.append(f"{display_name}: Not installed")
-
-        # Try to get other dependency versions
-        dependencies = [
-            ("numpy", "numpy"),
-            ("matplotlib", "matplotlib"),
-            ("serial", "pyserial"),  # pyserial is imported as 'serial'
-            ("elftools", "pyelftools")
-        ]
-
-        for import_name, display_name in dependencies:
-            try:
-                module = __import__(import_name)
-                if display_name == "pyserial":
-                    version = getattr(module, "VERSION", "Unknown")
-                else:
-                    version = getattr(module, "__version__", "Unknown")
-                version_info.append(f"{display_name}: {version}")
-            except (ImportError, AttributeError):
-                version_info.append(f"{display_name}: Not installed")
-
-        # GUI Framework Section
-        version_info.append("\n=== GUI Framework ===")
-        try:
-            from PyQt5.QtCore import QT_VERSION_STR, PYQT_VERSION_STR
-            version_info.append(f"Qt: {QT_VERSION_STR}")
-            version_info.append(f"PyQt5: {PYQT_VERSION_STR}")
+            from PyQt5.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
+            lines.append(f"Qt: {QT_VERSION_STR}")
+            lines.append(f"PyQt5: {PYQT_VERSION_STR}")
         except ImportError:
-            version_info.append("PyQt5: Not available")
+            lines.append("PyQt5: Not available")
 
-        # System Information Section
-        version_info.append("\n=== System Information ===")
-        version_info.append(f"Python: {sys.version.split()[0]}")  # Show version without extra info
-        version_info.append(f"Platform: {platform.platform()}")
-        version_info.append(f"Architecture: {platform.architecture()[0]}")
+        lines.append("\n=== System Information ===")
+        lines.append(f"Python: {sys.version.split()[0]}")
+        lines.append(f"Platform: {platform.platform()}")
+        lines.append(f"Architecture: {platform.architecture()[0]}")
 
         processor = platform.processor()
-        if processor:  # Only show if available
-            version_info.append(f"Processor: {processor}")
+        if processor:
+            lines.append(f"Processor: {processor}")
 
-        self.version_text.setPlainText("\n".join(version_info))
+        self.version_text.setPlainText("\n".join(lines))

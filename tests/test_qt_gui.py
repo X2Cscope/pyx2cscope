@@ -10,12 +10,27 @@ Tests cover:
 """
 
 import os
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 # Set headless mode before importing Qt modules
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
+from tests import data
+
+
+@pytest.fixture
+def mock_can_bus():
+    """Create a mock CAN bus for testing."""
+    with patch('can.interface.Bus') as mock_bus_class:
+        mock_bus_instance = MagicMock()
+        mock_bus_instance._is_shutdown = False
+        mock_bus_instance.recv = MagicMock(return_value=None)
+        mock_bus_instance.send = MagicMock()
+        mock_bus_instance.shutdown = MagicMock()
+        mock_bus_class.return_value = mock_bus_instance
+        yield mock_bus_class, mock_bus_instance
 
 
 class TestAppStateModel:
@@ -386,6 +401,77 @@ class TestDataPoller:
         """Test polling can be stopped."""
         data_poller.stop()
         assert data_poller._running is False
+
+
+class TestCANConnectionManager:
+    """Tests for ConnectionManager CAN connect/disconnect cycle."""
+
+    elf_file = os.path.join(
+        os.path.dirname(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
+    )
+
+    def test_qt_connection_manager_disconnect_calls_x2cscope_disconnect(self, mock_can_bus):
+        """Test that Qt ConnectionManager properly calls x2cscope.disconnect()."""
+        from unittest.mock import patch
+
+        from PyQt5.QtCore import QCoreApplication
+
+        from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
+        from pyx2cscope.gui.qt.models.app_state import AppState
+
+        app = QCoreApplication.instance()
+        if app is None:
+            app = QCoreApplication([])
+
+        try:
+            _, mock_bus_instance = mock_can_bus
+
+            app_state = AppState()
+            conn_manager = ConnectionManager(app_state)
+
+            device_info_frame = bytearray(
+                b'\x55\x2E\x01\x11\x00'
+                b'\x01\x00'
+                b'\x01\x00'
+                b'\x10\x82'
+                b'01/01/2024'
+                b'1200'
+                b'01/01/2024'
+                b'1200'
+                b'\x01'
+                b'\x00\x00'
+                b'\x00\x00\x00\x00'
+                b'\x00\x00\x00\x00'
+                b'\x00'
+            )
+            load_param_frame = bytearray(b'\x55\x00\x01\x12\x00\x00')
+
+            with patch('mchplnet.interfaces.can.LNetCan.read') as mock_read, \
+                 patch('mchplnet.interfaces.can.LNetCan.write'):
+                mock_read.side_effect = [device_info_frame, load_param_frame]
+
+                success = conn_manager.connect_can(
+                    elf_file=self.elf_file,
+                    bus_type="USB",
+                    channel=1,
+                    baudrate="500K",
+                    mode="Standard",
+                    tx_id="110",
+                    rx_id="100",
+                )
+
+                assert success is True
+                assert app_state.is_connected()
+
+                conn_manager.disconnect()
+
+                assert not app_state.is_connected()
+                assert app_state.x2cscope is None
+                assert mock_bus_instance.shutdown.called
+
+        finally:
+            if app:
+                app.quit()
 
 
 class TestSignalSlotConnections:

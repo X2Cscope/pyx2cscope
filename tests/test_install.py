@@ -53,7 +53,7 @@ def test_x2cscope_install_script_bin():
     result = subprocess.run(
         [sys.executable, "-m", "pyx2cscope", "-v"],
         capture_output=True,
-        text=True,
+        text=True, check=False,
     )
     version = result.stdout.strip().split(" ")[-1].strip()
     assert version == pyx2cscope.__version__, "x2cscope script not working"

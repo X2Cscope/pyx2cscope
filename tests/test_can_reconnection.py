@@ -10,12 +10,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Set headless mode before importing Qt modules
-os.environ["QT_QPA_PLATFORM"] = "offscreen"
-
 from mchplnet.interfaces.can import LNetCan
 from pyx2cscope.x2cscope import X2CScope
 from tests import data
+
+EXPECTED_BUS_CALLS_AFTER_RECONNECT = 2
+RECONNECT_CYCLES = 3
+EXPECTED_BUS_CALLS_AFTER_CYCLES = RECONNECT_CYCLES + 1
 
 
 @pytest.fixture
@@ -62,7 +63,7 @@ class TestCANReconnection:
         # Verify shutdown was called on the old bus
         assert mock_bus_instance.shutdown.called
         # Verify a new bus was created (total 2 calls)
-        assert mock_bus_class.call_count == 2
+        assert mock_bus_class.call_count == EXPECTED_BUS_CALLS_AFTER_RECONNECT
 
     def test_can_interface_stop_clears_bus_reference(self, mock_can_bus):
         """Test that stop() properly clears the bus reference."""
@@ -109,7 +110,7 @@ class TestCANReconnection:
         # Verify we can start again after all cycles
         can_interface.start()
         assert can_interface.bus is not None
-        assert mock_bus_class.call_count == 4
+        assert mock_bus_class.call_count == EXPECTED_BUS_CALLS_AFTER_CYCLES
 
     def test_can_interface_stop_handles_shutdown_error(self, mock_can_bus):
         """Test that stop() handles errors during bus shutdown gracefully."""
@@ -187,78 +188,6 @@ class TestCANReconnection:
             # Verify shutdown was called
             assert mock_bus_instance.shutdown.called
 
-    def test_qt_connection_manager_disconnect_calls_x2cscope_disconnect(self, mock_can_bus):
-        """Test that Qt ConnectionManager properly calls x2cscope.disconnect()."""
-        from PyQt5.QtCore import QCoreApplication
-        from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
-        from pyx2cscope.gui.qt.models.app_state import AppState
-
-        # Create Qt application if it doesn't exist
-        app = QCoreApplication.instance()
-        if app is None:
-            app = QCoreApplication([])
-
-        try:
-            _, mock_bus_instance = mock_can_bus
-
-            # Create app state and connection manager
-            app_state = AppState()
-            conn_manager = ConnectionManager(app_state)
-
-            # Mock read/write to avoid actual CAN communication
-            with patch('mchplnet.interfaces.can.LNetCan.read') as mock_read, \
-                 patch('mchplnet.interfaces.can.LNetCan.write'):
-
-                # Mock read to return valid LNet frames
-                device_info_frame = bytearray(
-                    b'\x55\x2E\x01\x11\x00'  # SYN, SIZE(46 data bytes), NODE, SERVICE_ID, STATUS
-                    b'\x01\x00'              # Monitor version (little-endian)
-                    b'\x01\x00'              # App version (little-endian)
-                    b'\x10\x82'              # Processor ID 0x8210 (16-bit generic dsPIC)
-                    b'01/01/2024'            # Monitor date (9 bytes)
-                    b'1200'                  # Monitor time (4 bytes)
-                    b'01/01/2024'            # App date (9 bytes)
-                    b'1200'                  # App time (4 bytes)
-                    b'\x01'                  # DSP state (0x01 = Application runs on target)
-                    b'\x00\x00'              # Event type (2 bytes)
-                    b'\x00\x00\x00\x00'      # Event ID (4 bytes)
-                    b'\x00\x00\x00\x00'      # Table struct address (4 bytes)
-                    b'\x00'                  # CRC
-                )
-                load_param_frame = bytearray(b'\x55\x00\x01\x12\x00\x00')
-                # Return frames for connection (2 calls: device_info and load_parameters)
-                mock_read.side_effect = [
-                    device_info_frame,
-                    load_param_frame,
-                ]
-
-                # Connect via CAN
-                success = conn_manager.connect_can(
-                    elf_file=self.elf_file,
-                    bus_type="USB",
-                    channel=1,
-                    baudrate="500K",
-                    mode="Standard",
-                    tx_id="110",
-                    rx_id="100",
-                )
-
-                assert success is True
-                assert app_state.is_connected()
-
-                # Disconnect
-                conn_manager.disconnect()
-
-                # Verify x2cscope was properly disconnected
-                assert not app_state.is_connected()
-                assert app_state.x2cscope is None
-                # Verify bus shutdown was called
-                assert mock_bus_instance.shutdown.called
-
-        finally:
-            # Clean up Qt application
-            if app:
-                app.quit()
 
 
 class TestCANInterfaceStartupCleanup:
@@ -293,7 +222,7 @@ class TestCANInterfaceStartupCleanup:
         # Verify old bus was shut down
         assert mock_bus_instance.shutdown.called
         # Verify new bus was created
-        assert mock_bus_class.call_count == 2
+        assert mock_bus_class.call_count == EXPECTED_BUS_CALLS_AFTER_RECONNECT
 
     def test_is_open_returns_false_when_bus_is_none(self):
         """Test that is_open() returns False when bus is None."""
