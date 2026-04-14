@@ -32,17 +32,33 @@ class HelpTab(QWidget):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
 
-        # Title
-        title_label = QLabel("Help & Support")
-        title_font = QFont()
-        title_font.setPointSize(14)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("margin-bottom: 10px;")
-        layout.addWidget(title_label)
+        # Release Notes Section
+        release_group = QGroupBox("Release Notes and Documentation")
+        release_layout = QVBoxLayout(release_group)
+
+        release_info = QLabel(
+            "View the latest release notes, changelog, and documentation."
+        )
+        release_info.setWordWrap(True)
+        release_info.setStyleSheet("color: #666; margin-bottom: 10px;")
+        release_layout.addWidget(release_info)
+
+        release_button_layout = QHBoxLayout()
+
+        self.release_notes_btn = QPushButton("View Release Notes")
+        self.release_notes_btn.clicked.connect(self._open_release_notes)
+        release_button_layout.addWidget(self.release_notes_btn)
+
+        self.documentation_btn = QPushButton("Documentation")
+        self.documentation_btn.clicked.connect(self._open_documentation)
+        release_button_layout.addWidget(self.documentation_btn)
+        release_button_layout.addStretch()
+
+        release_layout.addLayout(release_button_layout)
+        layout.addWidget(release_group)
 
         # GitHub Issues Section
-        github_group = QGroupBox("Report Issues & Request Features")
+        github_group = QGroupBox("Report Issues and Request Features")
         github_layout = QVBoxLayout(github_group)
 
         github_info = QLabel(
@@ -54,59 +70,18 @@ class HelpTab(QWidget):
         github_layout.addWidget(github_info)
 
         github_button_layout = QHBoxLayout()
-        
+
         self.github_issues_btn = QPushButton("Open GitHub Issues")
         self.github_issues_btn.clicked.connect(self._open_github_issues)
-        self.github_issues_btn.setStyleSheet(
-            "QPushButton { background-color: #0078d4; color: white; padding: 8px 16px; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #106ebe; }"
-        )
         github_button_layout.addWidget(self.github_issues_btn)
 
         self.github_repo_btn = QPushButton("Visit Repository")
         self.github_repo_btn.clicked.connect(self._open_github_repo)
-        self.github_repo_btn.setStyleSheet(
-            "QPushButton { background-color: #28a745; color: white; padding: 8px 16px; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #218838; }"
-        )
         github_button_layout.addWidget(self.github_repo_btn)
         github_button_layout.addStretch()
-        
+
         github_layout.addLayout(github_button_layout)
         layout.addWidget(github_group)
-
-        # Release Notes Section
-        release_group = QGroupBox("Release Notes & Documentation")
-        release_layout = QVBoxLayout(release_group)
-
-        release_info = QLabel(
-            "View the latest release notes, changelog, and documentation."
-        )
-        release_info.setWordWrap(True)
-        release_info.setStyleSheet("color: #666; margin-bottom: 10px;")
-        release_layout.addWidget(release_info)
-
-        release_button_layout = QHBoxLayout()
-        
-        self.release_notes_btn = QPushButton("View Release Notes")
-        self.release_notes_btn.clicked.connect(self._open_release_notes)
-        self.release_notes_btn.setStyleSheet(
-            "QPushButton { background-color: #17a2b8; color: white; padding: 8px 16px; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #138496; }"
-        )
-        release_button_layout.addWidget(self.release_notes_btn)
-
-        self.documentation_btn = QPushButton("Documentation")
-        self.documentation_btn.clicked.connect(self._open_documentation)
-        self.documentation_btn.setStyleSheet(
-            "QPushButton { background-color: #6f42c1; color: white; padding: 8px 16px; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #5a32a3; }"
-        )
-        release_button_layout.addWidget(self.documentation_btn)
-        release_button_layout.addStretch()
-        
-        release_layout.addLayout(release_button_layout)
-        layout.addWidget(release_group)
 
         # Software Versions Section
         version_group = QGroupBox("Software Versions")
@@ -118,24 +93,19 @@ class HelpTab(QWidget):
 
         self.version_text = QTextEdit()
         self.version_text.setReadOnly(True)
-        self.version_text.setMaximumHeight(200)
+        self.version_text.setMaximumHeight(250)
         self.version_text.setStyleSheet(
-            "QTextEdit { background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; }"
+            "QTextEdit { "
+            "background-color: #f8f9fa; "
+            "border: 1px solid #dee2e6; "
+            "border-radius: 4px; "
+            "padding: 10px; "
+            "font-family: 'Consolas', 'Courier New', monospace; "
+            "font-size: 10pt; "
+            "}"
         )
         self._populate_version_info()
         version_layout.addWidget(self.version_text)
-
-        # Copy version info button
-        copy_layout = QHBoxLayout()
-        self.copy_version_btn = QPushButton("Copy Version Info")
-        self.copy_version_btn.clicked.connect(self._copy_version_info)
-        self.copy_version_btn.setStyleSheet(
-            "QPushButton { background-color: #6c757d; color: white; padding: 6px 12px; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #5a6268; }"
-        )
-        copy_layout.addWidget(self.copy_version_btn)
-        copy_layout.addStretch()
-        version_layout.addLayout(copy_layout)
 
         layout.addWidget(version_group)
 
@@ -144,13 +114,14 @@ class HelpTab(QWidget):
         resources_layout = QVBoxLayout(resources_group)
 
         resources_text = QLabel(
-            "For additional support and community discussion:\n"
-            "· Check the examples directory for usage examples\n"
-            "· Review the README file for installation instructions\n"
-            "· Join our community discussions on GitHub"
+            "For additional support and resources:\n"
+            "• Check the examples directory for usage examples\n"
+            "• Review the README file for installation instructions\n"
+            "• Join our community discussions on GitHub\n"
+            "• Visit the documentation for detailed guides"
         )
         resources_text.setWordWrap(True)
-        resources_text.setStyleSheet("color: #666; line-height: 1.5;")
+        resources_text.setStyleSheet("color: #666; line-height: 1.8; padding: 5px;")
         resources_layout.addWidget(resources_text)
 
         layout.addWidget(resources_group)
@@ -181,41 +152,42 @@ class HelpTab(QWidget):
     def _populate_version_info(self):
         """Populate the version information text area."""
         version_info = []
-        
-        # Main application version
+
+        # Application Versions Section
+        version_info.append("=== Application ===")
         version_info.append(f"pyX2Cscope: {pyx2cscope.__version__}")
-        
+
+        # Core Dependencies Section
+        version_info.append("\n=== Core Dependencies ===")
+
         # mchplnet version (important dependency)
         try:
             import mchplnet
             version_info.append(f"mchplnet: {mchplnet.__version__}")
-        except ImportError:
+        except (ImportError, AttributeError):
             version_info.append("mchplnet: Not installed")
-        
-        # Python version
-        version_info.append(f"Python: {sys.version}")
-        
-        # Platform info
-        version_info.append(f"Platform: {platform.platform()}")
-        version_info.append(f"Architecture: {platform.architecture()[0]}")
-        version_info.append(f"Processor: {platform.processor()}")
-        
-        # PyQt version
-        try:
-            from PyQt5.QtCore import QT_VERSION_STR, PYQT_VERSION_STR
-            version_info.append(f"Qt: {QT_VERSION_STR}")
-            version_info.append(f"PyQt5: {PYQT_VERSION_STR}")
-        except ImportError:
-            version_info.append("PyQt5: Not available")
-        
+
+        # mchplnet dependencies
+        mchplnet_deps = [
+            ("can", "python-can"),
+        ]
+
+        for import_name, display_name in mchplnet_deps:
+            try:
+                module = __import__(import_name)
+                version = getattr(module, "__version__", "Unknown")
+                version_info.append(f"{display_name}: {version}")
+            except (ImportError, AttributeError):
+                version_info.append(f"{display_name}: Not installed")
+
         # Try to get other dependency versions
         dependencies = [
             ("numpy", "numpy"),
-            ("matplotlib", "matplotlib"), 
+            ("matplotlib", "matplotlib"),
             ("serial", "pyserial"),  # pyserial is imported as 'serial'
-            ("elftools", "elftools")
+            ("elftools", "pyelftools")
         ]
-        
+
         for import_name, display_name in dependencies:
             try:
                 module = __import__(import_name)
@@ -224,32 +196,26 @@ class HelpTab(QWidget):
                 else:
                     version = getattr(module, "__version__", "Unknown")
                 version_info.append(f"{display_name}: {version}")
-            except ImportError:
+            except (ImportError, AttributeError):
                 version_info.append(f"{display_name}: Not installed")
-        
+
+        # GUI Framework Section
+        version_info.append("\n=== GUI Framework ===")
+        try:
+            from PyQt5.QtCore import QT_VERSION_STR, PYQT_VERSION_STR
+            version_info.append(f"Qt: {QT_VERSION_STR}")
+            version_info.append(f"PyQt5: {PYQT_VERSION_STR}")
+        except ImportError:
+            version_info.append("PyQt5: Not available")
+
+        # System Information Section
+        version_info.append("\n=== System Information ===")
+        version_info.append(f"Python: {sys.version.split()[0]}")  # Show version without extra info
+        version_info.append(f"Platform: {platform.platform()}")
+        version_info.append(f"Architecture: {platform.architecture()[0]}")
+
+        processor = platform.processor()
+        if processor:  # Only show if available
+            version_info.append(f"Processor: {processor}")
+
         self.version_text.setPlainText("\n".join(version_info))
-
-    def _copy_version_info(self):
-        """Copy version information to clipboard."""
-        from PyQt5.QtWidgets import QApplication
-        clipboard = QApplication.clipboard()
-        clipboard.setText(self.version_text.toPlainText())
-        
-        # Show brief confirmation by changing button text temporarily
-        original_text = self.copy_version_btn.text()
-        self.copy_version_btn.setText("Copied!")
-        self.copy_version_btn.setStyleSheet(
-            "QPushButton { background-color: #28a745; color: white; padding: 6px 12px; border-radius: 4px; }"
-        )
-        
-        # Reset button after 2 seconds
-        from PyQt5.QtCore import QTimer
-        QTimer.singleShot(2000, lambda: self._reset_copy_button(original_text))
-
-    def _reset_copy_button(self, original_text):
-        """Reset the copy button text and style."""
-        self.copy_version_btn.setText(original_text)
-        self.copy_version_btn.setStyleSheet(
-            "QPushButton { background-color: #6c757d; color: white; padding: 6px 12px; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #5a6268; }"
-        )
