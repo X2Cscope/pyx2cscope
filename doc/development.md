@@ -35,8 +35,7 @@ source .venv\bin\activate
 ## Installing dev requirements
 
 ```bash
-pip install -r requirements.txt
-pip install -r quality.txt
+pip install -e ".[dev,docs,build]"
 ```
 
 ## Running tests

@@ -188,15 +188,16 @@ class VariableFactory:
         # clear any previous loaded variable
         self.parser.variable_map.clear()
         self.parser.register_map.clear()
+        imported_data = None
 
         if ext is FileType.ELF:
             self.parser = GenericParser(filename)
         if ext is FileType.PICKLE:
             with open(filename, 'rb') as file:
-                imported_data = pickle.load(file)
+                imported_data = pickle.loads(file.read())
         if ext is FileType.YAML:
             with open(filename, 'r') as file:
-                imported_data = yaml.load(file, Loader=yaml.FullLoader)
+                imported_data = yaml.load(file.read(), Loader=yaml.FullLoader)
 
         if ext is not FileType.ELF:
             if isinstance(imported_data, dict) and "variables" in imported_data:

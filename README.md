@@ -16,6 +16,8 @@ Detailed documentation is hosted at GitHub.io:
 
 ## Install
 
+pyX2Cscope currently supports Python `3.10` to `3.14`.
+
 Create a virtual environment and install pyx2cscope using the following commands (Windows):
 ```
 python -m venv .venv

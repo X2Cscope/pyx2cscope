@@ -116,8 +116,9 @@ class TestParser:
         assert variable.is_array() == False, "variable should not be an array"
         assert len(variable.info.valid_values) == size6, "enum size should be 3"
 
-    def test_variable_export_import(self, mocker):
+    def test_variable_export_import(self, mocker, tmp_path, monkeypatch):
         """Given a valid 32 bit elf file, check if export and import functions for variables are working."""
+        monkeypatch.chdir(tmp_path)
         fake_serial(mocker, 32)
         x2c_scope = X2CScope(port="COM14")
         # try to import elf file instead of loading directly from the constructor
@@ -141,6 +142,7 @@ class TestParser:
         assert variable.info.name == variable_reloaded.info.name, "variables don't have the same name"
         assert variable.info.address == variable_reloaded.info.address, "variables don't have the same address"
         assert variable.info.array_size == variable_reloaded.info.array_size, "variables don't have the same array size"
+        x2c_reloaded.disconnect()
 
         # load generated pickle file with single variable
         x2c_reloaded = X2CScope(port="COM14")
@@ -150,14 +152,11 @@ class TestParser:
         assert variable.info.name == variable_reloaded.info.name, "variables don't have the same name"
         assert variable.info.address == variable_reloaded.info.address, "variables don't have the same address"
         assert variable.info.array_size == variable_reloaded.info.array_size, "variables don't have the same array size"
+        x2c_reloaded.disconnect()
 
-        # house keeping -> delete generated files
-        os.remove("my_variables.yml")
-        os.remove("qspin_foc_same54.yml")
-        os.remove("my_single_variable.pkl")
-
-    def test_sfr_export_import(self, mocker):
+    def test_sfr_export_import(self, mocker, tmp_path, monkeypatch):
         """Check exported SFR entries can be re-imported and resolved as registers."""
+        monkeypatch.chdir(tmp_path)
         fake_serial(mocker, 16)
         x2c_scope = X2CScope(port="COM14")
         x2c_scope.import_variables(self.elf_file_dspic33ak)
@@ -176,5 +175,3 @@ class TestParser:
         assert sfr_reloaded is not None, "reloaded SFR should be available"
         assert sfr_reloaded.info.name == sfr_name, "reloaded SFR name mismatch"
         assert len(x2c_reloaded.list_sfr()) == 1, "import loaded more than one SFR"
-
-        os.remove("my_sfr_variable.yml")

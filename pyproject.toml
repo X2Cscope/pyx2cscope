@@ -1,41 +1,66 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
+[project]
 name = "pyx2cscope"
 version = "0.7.0"
 description = "python implementation of X2Cscope"
-authors = [
-  "Yash Agarwal",
-  "Edras Pacola <edras.pacola@microchip.com>",
-  "Christoph Baumgartner",
-  "Mark Wendler",
-]
 readme = "README.md"
-packages = [{include = "pyx2cscope"}]
+requires-python = ">=3.10,<3.15"
+license = "LicenseRef-Proprietary"
+authors = [
+  {name = "Yash Agarwal"},
+  {name = "Edras Pacola", email = "edras.pacola@microchip.com"},
+  {name = "Christoph Baumgartner"},
+  {name = "Mark Wendler"},
+]
+dependencies = [
+  "pyserial>=3.5,<4.0",
+  "pyelftools>=0.31,<0.32",
+  "pyyaml>=6.0.1,<7.0.0",
+  "numpy>=1.26.0,<3.0.0",
+  "matplotlib>=3.7.2,<4.0.0",
+  "PyQt5>=5.15.9,<6.0.0",
+  "pyqtgraph>=0.13.7,<0.14.0",
+  "mchplnet==0.5.0",
+  "flask>=3.0.3,<4.0.0",
+  "flask-socketio>=5.3.4,<6.0.0",
+]
 
-license = "Proprietary"
+[project.optional-dependencies]
+dev = [
+  "pre-commit==4.3.0",
+  "pylint==3.1.0",
+  "pytest==8.1.1",
+  "pytest-mock==3.14.0",
+  "pytest-qt==4.4.0",
+  "ruff==0.4.4",
+]
+docs = [
+  "furo==2024.1.29",
+  "myst-parser==2.0.0",
+  "sphinx==7.2.6",
+  "sphinx-autoapi==3.0.0",
+  "sphinx-rtd-theme==2.0.0",
+]
+build = [
+  "build>=1.2.2",
+  "pyinstaller>=6.11.0",
+  "requests==2.31.0",
+  "twine>=5.1.1",
+]
 
-homepage = "https://x2cscope.github.io/"
-documentation = "https://x2cscope.github.io/pyx2cscope"
-repository = "https://github.com/X2Cscope/pyx2cscope"
+[project.urls]
+Homepage = "https://x2cscope.github.io/"
+Documentation = "https://x2cscope.github.io/pyx2cscope"
+Repository = "https://github.com/X2Cscope/pyx2cscope"
 
-[tool.poetry.scripts]
-pyx2cscope = 'pyx2cscope.__main__:main'
+[project.scripts]
+pyx2cscope = "pyx2cscope.__main__:main"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pyserial = "^3.5"
-pyelftools = "^0.31"
-pyyaml ="^6.0.1"
-numpy = "^1.26.0"
-matplotlib = "^3.7.2"
-PyQt5 = "^5.15.9"
-pyqtgraph = "^0.13.7"
-mchplnet = "0.5.0"
-flask = "^3.0.3"
-flask-socketio = "^5.3.4"
+[tool.setuptools.packages.find]
+include = ["pyx2cscope*"]
 
 [tool.ruff]
 line-length = 120
@@ -50,5 +75,3 @@ lint.select = ["D"]
 lint.extend-select = ["I", "N", "F", "PL", "D"]
 exclude = ["mchplnet/*"]
 lint.ignore = ["PLR0913"]
-
-
