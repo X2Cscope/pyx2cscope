@@ -3,6 +3,7 @@
 import logging
 import os
 import pickle
+from typing import Optional
 from dataclasses import asdict
 from enum import Enum
 
@@ -100,7 +101,7 @@ class VariableFactory:
         """
         self.l_net = lnet
 
-    def _build_export_file_name(self, filename: str = None, ext: FileType= FileType.YAML):
+    def _build_export_file_name(self, filename: Optional[str] = None, ext: FileType= FileType.YAML):
         if filename is None:
             if self.parser.elf_path is not None:
                 # get the elf_file name without extension
@@ -110,7 +111,33 @@ class VariableFactory:
 
         return os.path.splitext(filename)[0] + ext.value
 
-    def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
+    def _resolve_export_item(self, item):
+        """Resolve an export item to VariableInfo and its target map kind."""
+        if isinstance(item, tuple) and len(item) == 2:
+            name, sfr = item
+            if isinstance(name, str):
+                return self.parser.get_var_info(name, sfr=bool(sfr)), bool(sfr)
+            return None, bool(sfr)
+
+        if isinstance(item, Variable):
+            item = item.info.name
+
+        if isinstance(item, VariableInfo):
+            if self.parser.register_map.get(item.name) == item:
+                return item, True
+            if self.parser.variable_map.get(item.name) == item:
+                return item, False
+            return item, item.name in self.parser.register_map
+
+        if isinstance(item, str):
+            if item in self.parser.variable_map:
+                return self.parser.variable_map.get(item), False
+            if item in self.parser.register_map:
+                return self.parser.register_map.get(item), True
+
+        return None, False
+
+    def export_variables(self, filename: Optional[str] = None, ext: FileType = FileType.YAML, items=None):
         """Store the variables registered on the elf file to a pickle file.
 
         Args:
@@ -122,13 +149,17 @@ class VariableFactory:
             raise ValueError("Elf file is not yet supported as export format...")
         filename = self._build_export_file_name(filename, ext)
 
-        export_dict = {}
+        export_dict = {"variables": {}, "registers": {}}
         if items:
             for item in items:
-                variable_name = item.info.name if isinstance(item, Variable) else item
-                export_dict[variable_name] = self.parser.variable_map.get(variable_name)
+                variable_info, is_register = self._resolve_export_item(item)
+                if variable_info is None:
+                    continue
+                target_key = "registers" if is_register else "variables"
+                export_dict[target_key][variable_info.name] = variable_info
         else:
-            export_dict = self.parser.variable_map
+            export_dict["variables"] = dict(self.parser.variable_map)
+            export_dict["registers"] = dict(self.parser.register_map)
 
         if ext is FileType.PICKLE:
             with open(filename, 'wb') as file:
@@ -156,15 +187,23 @@ class VariableFactory:
 
         # clear any previous loaded variable
         self.parser.variable_map.clear()
+        self.parser.register_map.clear()
 
         if ext is FileType.ELF:
             self.parser = GenericParser(filename)
         if ext is FileType.PICKLE:
             with open(filename, 'rb') as file:
-                self.parser.variable_map = pickle.load(file)
+                imported_data = pickle.load(file)
         if ext is FileType.YAML:
             with open(filename, 'r') as file:
-                self.parser.variable_map = yaml.load(file, Loader=yaml.FullLoader)
+                imported_data = yaml.load(file, Loader=yaml.FullLoader)
+
+        if ext is not FileType.ELF:
+            if isinstance(imported_data, dict) and "variables" in imported_data:
+                self.parser.variable_map = imported_data.get("variables", {}) or {}
+                self.parser.register_map = imported_data.get("registers", {}) or {}
+            else:
+                self.parser.variable_map = imported_data or {}
 
         logging.debug(f"Variables loaded from {filename}")
 

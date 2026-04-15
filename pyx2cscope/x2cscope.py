@@ -9,7 +9,7 @@ received data.
 import logging
 from dataclasses import dataclass
 from numbers import Number
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from mchplnet.interfaces.abstract_interface import Interface
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
@@ -156,7 +156,7 @@ class X2CScope:
         """
         return self.variable_factory.get_variable_raw(variable_info)
 
-    def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
+    def export_variables(self, filename: Optional[str] = None, ext: FileType = FileType.YAML, items=None):
         """Store the variables registered on the elf file to a pickle file.
 
         Args:
