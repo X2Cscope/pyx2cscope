@@ -169,7 +169,7 @@ def handle_update_sample_control(data):
     """
     data = {k: v[0] if v else '' for k, v in parse_qs(data).items()}
     trigger_action = data.get('triggerAction', 'off')
-    sample_time = int(data.get('sampleTime', 0))
+    sample_time = max(int(data.get('sampleTime', 1)), 1)
     sample_freq = float(data.get('sampleFreq', 20))
     web_scope.scope_set_sample(trigger_action, sample_time, sample_freq)
     emit("sample_control_updated", {

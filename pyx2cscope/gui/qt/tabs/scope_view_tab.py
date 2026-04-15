@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QColor, QIcon, QPixmap
+from PyQt5.QtCore import QRegExp, Qt, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QColor, QIcon, QPixmap, QRegExpValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -125,10 +125,8 @@ class ScopeViewTab(BaseTab):
 
         # Sample time factor
         grid.addWidget(QLabel("Sample Time Factor"), 1, 0)
-        self._sample_time_factor_edit = QSpinBox()
-        self._sample_time_factor_edit.setMinimum(0)
-        self._sample_time_factor_edit.setMaximum(30)
-        self._sample_time_factor_edit.setValue(0)
+        self._sample_time_factor_edit = QLineEdit("1")
+        self._sample_time_factor_edit.setValidator(QRegExpValidator(QRegExp("[1-9][0-9]*")))
         grid.addWidget(self._sample_time_factor_edit, 1, 1)
 
         # Scope sample time
@@ -341,7 +339,7 @@ class ScopeViewTab(BaseTab):
                         logging.debug(f"Added scope channel: {var_name}")
 
             # Set sample time
-            sample_time_factor = self._sample_time_factor_edit.value()
+            sample_time_factor = int(self._sample_time_factor_edit.text() or "1")
             x2cscope.set_sample_time(sample_time_factor)
 
             # Get real sample time
@@ -502,7 +500,7 @@ class ScopeViewTab(BaseTab):
             "trigger_delay": self._trigger_delay_combo.currentText(),
             "trigger_edge": self._trigger_edge_combo.currentText(),
             "trigger_mode": self._trigger_mode_combo.currentText(),
-            "sample_time_factor": str(self._sample_time_factor_edit.value()),
+            "sample_time_factor": self._sample_time_factor_edit.text() or "1",
             "single_shot": self._single_shot_checkbox.isChecked(),
         }
 
@@ -541,5 +539,5 @@ class ScopeViewTab(BaseTab):
         self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
         self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Disable"))
-        self._sample_time_factor_edit.setValue(int(config.get("sample_time_factor", "0")))
+        self._sample_time_factor_edit.setText(config.get("sample_time_factor", "1") or "1")
         self._single_shot_checkbox.setChecked(config.get("single_shot", False))

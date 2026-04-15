@@ -484,6 +484,26 @@ TriggerConfig needs some parameters like the variable and some trigger values li
 * Trigger_delay: Value > 0 Pre-trigger, Value < 0 Post trigger
 * Trigger_Edge: Rising (1) or Falling (0)
 
+Data resolution
+^^^^^^^^^^^^^^^
+
+The scope sampling resolution can be adjusted with ``set_sample_time()``.
+
+.. code-block:: python
+
+    x2c_scope.set_sample_time(sample_time)
+
+``sample_time`` starts at ``1`` in the pyX2Cscope API and interfaces:
+
+* ``1``: take every sample
+* ``2``: take every second sample
+* ``3``: take every third sample
+
+Higher values increase the total captured time window, but reduce the time resolution of the acquired data.
+In other words, the scope skips more firmware samples before storing the next point in the scope buffer.
+
+Internally, LNET uses a 0-based value, but pyX2Cscope exposes this parameter as 1-based in the API and interfaces.
+
 Additional information on how to change triggers, clear and change sample time, may be
 found on the API documentation.
 
@@ -492,7 +512,7 @@ Utility Functions
 
 The ``pyx2cscope.utils`` module provides helper functions for managing configuration settings
 used in examples and scripts. These utilities simplify the process of specifying ELF file paths
-and COM ports without hardcoding them into your scripts.
+and communication parameters without hardcoding them into your scripts.
 
 Configuration File (config.ini)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -512,7 +532,16 @@ default placeholder values that you should update with your actual settings:
     [HOST_IP]
     host_ip = your_host_ip
 
-After the file is created, edit it to specify your actual ELF file path and COM port.
+    [CAN]
+    bustype = pcan_usb
+    channel = 1
+    baud_rate = 500000
+    id_tx = 0x110
+    id_rx = 0x100
+    mode = standard
+
+After the file is created, edit it to specify your actual ELF path and the connection settings
+needed for Serial, TCP/IP, or CAN.
 
 Available Functions
 ^^^^^^^^^^^^^^^^^^^
@@ -553,13 +582,33 @@ Retrieves the host IP address for TCP/IP connections:
     if host:
         x2cscope = X2CScope(host=host, tcp_port=12666, elf_file="firmware.elf")
 
+**get_can_config()**
+
+Retrieves the CAN interface configuration from the ``[CAN]`` section in ``config.ini``:
+
+.. code-block:: python
+
+    from pyx2cscope.utils import get_can_config
+
+    can_config = get_can_config()
+    x2cscope = X2CScope(elf_file="firmware.elf", **can_config)
+
+The returned dictionary contains these parameters:
+
+* ``bustype``
+* ``channel``
+* ``baud_rate``
+* ``id_tx``
+* ``id_rx``
+* ``mode``
+
 
 
 Example Usage
 ^^^^^^^^^^^^^
 
 The utility functions are particularly useful in example scripts where you want to avoid
-hardcoding paths:
+hardcoding paths and interface settings:
 
 .. code-block:: python
 
@@ -576,6 +625,38 @@ hardcoding paths:
 
     # Initialize X2CScope with configured values
     x2cscope = X2CScope(port=port, elf_file=elf_path)
+
+For CAN, the same approach can be used with the CAN configuration block:
+
+.. code-block:: python
+
+    from pyx2cscope import X2CScope
+    from pyx2cscope.utils import get_can_config, get_elf_file_path
+
+    elf_path = get_elf_file_path()
+    can_config = get_can_config()
+
+    if not elf_path:
+        print("Please configure config.ini with your ELF file path")
+        exit(1)
+
+    x2cscope = X2CScope(elf_file=elf_path, **can_config)
+
+For TCP/IP, the host address can also be loaded from the configuration file:
+
+.. code-block:: python
+
+    from pyx2cscope import X2CScope
+    from pyx2cscope.utils import get_elf_file_path, get_host_address
+
+    elf_path = get_elf_file_path()
+    host = get_host_address()
+
+    if not elf_path or not host:
+        print("Please configure config.ini with your ELF file path and host IP")
+        exit(1)
+
+    x2cscope = X2CScope(elf_file=elf_path, host=host)
 
 .. note::
 

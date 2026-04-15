@@ -256,13 +256,14 @@ class X2CScope:
         """Define the resolution how the samples will be buffered at the internal buffer.
 
         This can be used to extend total sampling time at the cost of resolution.
-        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
+        In the pyX2Cscope API, values start at 1, while LNET uses a 0-based pre-scaler.
+        1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample ...
 
         Args:
             sample_time (int): The sample time factor.
         """
-        sample_time = 0 if sample_time < 0 else sample_time
-        self.scope_setup.set_sample_time_factor(sample_time)
+        sample_time = 1 if sample_time < 1 else sample_time
+        self.scope_setup.set_sample_time_factor(sample_time - 1)
 
     def set_scope_state(self, scope_state: int):
         """Set the state of the scope.

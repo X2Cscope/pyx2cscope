@@ -313,7 +313,7 @@ class TestWebScopeClass:
 
     def test_scope_sample_time_default(self, web_scope):
         """Test scope sample time default."""
-        assert web_scope.scope_sample_time == 0
+        assert web_scope.scope_sample_time == 1
 
 
 class TestWebScopeVariableManagement:
@@ -404,6 +404,16 @@ class TestWebScopeVariableManagement:
 
         web_scope_connected.remove_scope_var("test_var")
         assert len(web_scope_connected.scope_vars) == 0
+
+    def test_scope_sample_time_uses_user_facing_values(self, web_scope_connected):
+        """Test web scope clamps sample time to user-facing 1-based values."""
+        web_scope_connected.x2c_scope.get_scope_sample_time.return_value = 2.5
+        web_scope_connected.scope_sample_time = 2
+
+        web_scope_connected.scope_set_sample("off", 0, 20)
+
+        assert web_scope_connected.scope_sample_time == 1
+        web_scope_connected.x2c_scope.set_sample_time.assert_called_once_with(1)
 
 
 class TestWebScopeScaledValue:

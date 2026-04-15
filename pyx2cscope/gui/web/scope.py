@@ -22,7 +22,7 @@ class WebScope:
         self.scope_vars = []
         self.scope_trigger = False
         self.scope_burst = False
-        self.scope_sample_time = 0
+        self.scope_sample_time = 1
         self.scope_time_sampling = 50e-3
 
         self.dashboard_vars = {}  # {var_name: Variable object}
@@ -346,6 +346,7 @@ class WebScope:
         """
         if self.x2c_scope is None:
             return
+        sample_time = 1 if sample_time < 1 else sample_time
         with self._lock:
             if self.scope_sample_time != sample_time:
                 self.scope_sample_time = sample_time

@@ -171,8 +171,8 @@ function updateScopeControlSampleState(data) {
             // Update sample time/freq if elements exist
             const sampleTimeEl = document.getElementById('scopeCtrlSampleTime');
             const sampleFreqEl = document.getElementById('scopeCtrlSampleFreq');
-            if (sampleTimeEl && data.sampleTime) sampleTimeEl.value = data.sampleTime;
-            if (sampleFreqEl && data.sampleFreq) sampleFreqEl.value = data.sampleFreq;
+            if (sampleTimeEl && data.sampleTime !== undefined) sampleTimeEl.value = data.sampleTime;
+            if (sampleFreqEl && data.sampleFreq !== undefined) sampleFreqEl.value = data.sampleFreq;
 
             // Update button states
             const widgetEl = document.getElementById(`dashboard-widget-${widget.id}`);
@@ -245,7 +245,7 @@ function syncScopeControlToBackend() {
     const scopeControlWidget = dashboardWidgets.find(w => w.type === 'scope_control');
     if (scopeControlWidget) {
         // Sync sample control settings
-        const sampleTime = scopeControlWidget.sampleTime !== undefined ? scopeControlWidget.sampleTime : 0;
+        const sampleTime = scopeControlWidget.sampleTime !== undefined ? scopeControlWidget.sampleTime : 1;
         const sampleFreq = scopeControlWidget.sampleFreq || 20;
         const sampleFormData = `triggerAction=off&sampleTime=${sampleTime}&sampleFreq=${sampleFreq}`;
         scopeSocket.emit('update_sample_control', sampleFormData);

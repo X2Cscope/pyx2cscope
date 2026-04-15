@@ -134,7 +134,7 @@ class AppState(QObject):
         # Scope state
         self._scope_active: bool = False
         self._scope_single_shot: bool = False
-        self._sample_time_factor: int = 0
+        self._sample_time_factor: int = 1
         self._scope_sample_time_us: int = 50
         self._real_sample_time: float = 0.0
 
@@ -642,7 +642,7 @@ class AppState(QObject):
     @sample_time_factor.setter
     def sample_time_factor(self, value: int):
         self._mutex.lock()
-        self._sample_time_factor = value
+        self._sample_time_factor = 1 if value < 1 else value
         self._mutex.unlock()
 
     @property

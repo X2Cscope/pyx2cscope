@@ -76,3 +76,19 @@ class TestPyX2CScope:
         """Check handling of a non-existent COM-PORT input."""
         with pytest.raises(Exception, match=r"could not open port '?COM0'?"):
             X2CScope(elf_file=self.elf_file, port="COM0")
+
+    def test_set_sample_time_uses_user_facing_factor(self, mocker):
+        """Check sample time values are translated from 1-based API to 0-based LNET."""
+        fake_serial(mocker, 16)
+        scope = X2CScope(elf_file=self.elf_file, port="COM1")
+        try:
+            scope.set_sample_time(1)
+            assert scope.scope_setup.sample_time_factor == 0
+
+            scope.set_sample_time(3)
+            assert scope.scope_setup.sample_time_factor == 2
+
+            scope.set_sample_time(0)
+            assert scope.scope_setup.sample_time_factor == 0
+        finally:
+            scope.disconnect()
