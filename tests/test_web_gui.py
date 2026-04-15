@@ -57,6 +57,7 @@ class TestFlaskRoutes:
 
         assert response.status_code == HTTP_OK
         assert b"html" in response.data.lower()
+        assert b"exportVariablesToggle" in response.data
 
     def test_serial_ports_route(self, flask_client, mocker):
         """Test serial-ports route returns list."""
@@ -111,6 +112,85 @@ class TestFlaskRoutes:
         data = json.loads(response.data)
         assert "items" in data
         assert data["items"] == []
+
+    def test_export_variables_route(self, flask_client, mocker):
+        """Test variable export route returns a downloadable file."""
+        from pyx2cscope.gui.web.scope import web_scope
+
+        mock_x2c = MagicMock()
+        original_x2c = web_scope.x2c_scope
+        original_file = web_scope.variables_file
+        original_watch = web_scope.watch_vars
+        original_scope = web_scope.scope_vars
+        original_dashboard = web_scope.dashboard_vars
+
+        def write_export_file(filename, ext, items=None):
+            mode = "wb" if ext.value == ".pkl" else "w"
+            payload = b"pickle-data" if mode == "wb" else "yaml-data"
+            with open(filename, mode) as file:
+                file.write(payload)
+
+        mock_x2c.export_variables.side_effect = write_export_file
+        mocker.patch.object(web_scope, "is_connected", return_value=True)
+        web_scope.x2c_scope = mock_x2c
+        web_scope.variables_file = "firmware.elf"
+        watch_var = MagicMock()
+        watch_var.info.name = "watch.var"
+        scope_var = MagicMock()
+        scope_var.info.name = "scope.var"
+        dashboard_var = MagicMock()
+        dashboard_var.info.name = "dashboard.var"
+        web_scope.watch_vars = [{"variable": watch_var, "sfr": True}]
+        web_scope.scope_vars = [{"variable": scope_var, "sfr": False}]
+        web_scope.dashboard_vars = {"dashboard.var": dashboard_var}
+
+        try:
+            response = flask_client.get("/variables/export?ext=yml")
+
+            assert response.status_code == HTTP_OK
+            assert response.headers["Content-Disposition"] == "attachment; filename=firmware.yml"
+            assert response.data == b"yaml-data"
+            assert mock_x2c.export_variables.call_args.kwargs["items"] == [
+                ("watch.var", True),
+                ("scope.var", False),
+                ("dashboard.var", False),
+            ]
+        finally:
+            web_scope.x2c_scope = original_x2c
+            web_scope.variables_file = original_file
+            web_scope.watch_vars = original_watch
+            web_scope.scope_vars = original_scope
+            web_scope.dashboard_vars = original_dashboard
+
+    def test_export_variables_route_requires_selected_variables(self, flask_client, mocker):
+        """Test export route fails when no view has selected variables."""
+        from pyx2cscope.gui.web.scope import web_scope
+
+        original_x2c = web_scope.x2c_scope
+        original_file = web_scope.variables_file
+        original_watch = web_scope.watch_vars
+        original_scope = web_scope.scope_vars
+        original_dashboard = web_scope.dashboard_vars
+
+        mocker.patch.object(web_scope, "is_connected", return_value=True)
+        web_scope.x2c_scope = MagicMock()
+        web_scope.variables_file = "firmware.elf"
+        web_scope.watch_vars = []
+        web_scope.scope_vars = []
+        web_scope.dashboard_vars = {}
+
+        try:
+            response = flask_client.get("/variables/export?ext=yml")
+
+            assert response.status_code == 400
+            data = json.loads(response.data)
+            assert "No variables are selected" in data["msg"]
+        finally:
+            web_scope.x2c_scope = original_x2c
+            web_scope.variables_file = original_file
+            web_scope.watch_vars = original_watch
+            web_scope.scope_vars = original_scope
+            web_scope.dashboard_vars = original_dashboard
 
 
 class TestWatchViewRoutes:
@@ -358,6 +438,13 @@ class TestWebScopeVariableManagement:
 
         assert result is not None
         assert len(web_scope_connected.watch_vars) == 1
+        assert web_scope_connected.watch_vars[0]["sfr"] is False
+
+    def test_add_watch_var_tracks_sfr_flag(self, web_scope_connected):
+        """Test adding watch SFR variable preserves its SFR flag."""
+        web_scope_connected.add_watch_var("test_var", sfr=True)
+
+        assert web_scope_connected.watch_vars[0]["sfr"] is True
 
     def test_add_watch_var_duplicate_prevented(self, web_scope_connected):
         """Test duplicate watch variables are not added."""
@@ -380,6 +467,13 @@ class TestWebScopeVariableManagement:
 
         assert result is not None
         assert len(web_scope_connected.scope_vars) == 1
+        assert web_scope_connected.scope_vars[0]["sfr"] is False
+
+    def test_add_scope_var_tracks_sfr_flag(self, web_scope_connected):
+        """Test adding scope SFR variable preserves its SFR flag."""
+        web_scope_connected.add_scope_var("test_var", sfr=True)
+
+        assert web_scope_connected.scope_vars[0]["sfr"] is True
 
     def test_add_scope_var_max_limit(self, web_scope_connected):
         """Test scope variables can be added (max limit may not be enforced in WebScope)."""

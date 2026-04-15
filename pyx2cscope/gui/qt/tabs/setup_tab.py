@@ -33,7 +33,7 @@ class SetupTab(QWidget):
     - UART settings (Port, Baud Rate)
     - TCP/IP settings (IP Address, Port)
     - CAN settings (Bus Type, Channel, Baudrate, Mode, Tx-ID, Rx-ID)
-    - ELF file selection
+    - File selection (.elf, .yml, .pkl)
     - Device info display
     """
 
@@ -73,7 +73,7 @@ class SetupTab(QWidget):
         left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignTop)
 
-        # === Connection Settings Group (ELF file + Interface selection) ===
+        # === Connection Settings Group (file + interface selection) ===
         connection_group = QGroupBox("Connection Settings")
         connection_layout = QGridLayout()
         connection_layout.setSpacing(8)
@@ -83,9 +83,9 @@ class SetupTab(QWidget):
 
         row = 0
 
-        # ELF file selection
-        connection_layout.addWidget(QLabel("ELF File:"), row, 0, Qt.AlignRight)
-        self._elf_button = QPushButton("Select ELF file")
+        # Variable source selection
+        connection_layout.addWidget(QLabel("Select File:"), row, 0, Qt.AlignRight)
+        self._elf_button = QPushButton("ELF / YML / PKL")
         self._elf_button.setFixedWidth(200)
         self._elf_button.clicked.connect(self._on_select_elf)
         connection_layout.addWidget(self._elf_button, row, 1, 1, 2)
@@ -241,6 +241,7 @@ class SetupTab(QWidget):
         can_layout.addWidget(self._can_rx_id_edit, can_row, 1)
 
         left_layout.addWidget(self._can_group)
+
         left_layout.addStretch()
 
         main_layout.addLayout(left_layout)
@@ -311,15 +312,15 @@ class SetupTab(QWidget):
             self._can_group.show()
 
     def _on_select_elf(self):
-        """Handle ELF file selection."""
+        """Handle variable file selection."""
         # Get last directory from settings
         last_dir = self._settings.value("elf_file_dir", "", type=str)
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            "Select ELF File",
+            "Select File",
             last_dir,
-            "ELF Files (*.elf);;All Files (*.*)",
+            "Variable Files (*.elf *.yml *.pkl);;ELF Files (*.elf);;YAML Files (*.yml);;Pickle Files (*.pkl);;All Files (*.*)",
         )
         if file_path:
             self._elf_file_path = file_path
@@ -375,12 +376,12 @@ class SetupTab(QWidget):
 
     @property
     def elf_file_path(self) -> str:
-        """Get the selected ELF file path."""
+        """Get the selected file path."""
         return self._elf_file_path
 
     @elf_file_path.setter
     def elf_file_path(self, path: str):
-        """Set the ELF file path."""
+        """Set the selected file path."""
         self._elf_file_path = path
         if path:
             basename = os.path.basename(path)

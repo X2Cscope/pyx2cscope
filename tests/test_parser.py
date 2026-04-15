@@ -155,3 +155,26 @@ class TestParser:
         os.remove("my_variables.yml")
         os.remove("qspin_foc_same54.yml")
         os.remove("my_single_variable.pkl")
+
+    def test_sfr_export_import(self, mocker):
+        """Check exported SFR entries can be re-imported and resolved as registers."""
+        fake_serial(mocker, 16)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+
+        sfr_list = x2c_scope.list_sfr()
+        assert sfr_list, "expected at least one SFR in the imported ELF"
+
+        sfr_name = sfr_list[0]
+        x2c_scope.export_variables("my_sfr_variable", items=[(sfr_name, True)])
+        assert os.path.exists("my_sfr_variable.yml") == True, "SFR export yaml file name not found"
+
+        x2c_reloaded = X2CScope(port="COM14")
+        x2c_reloaded.import_variables(filename="my_sfr_variable.yml")
+        sfr_reloaded = x2c_reloaded.get_variable(sfr_name, sfr=True)
+
+        assert sfr_reloaded is not None, "reloaded SFR should be available"
+        assert sfr_reloaded.info.name == sfr_name, "reloaded SFR name mismatch"
+        assert len(x2c_reloaded.list_sfr()) == 1, "import loaded more than one SFR"
+
+        os.remove("my_sfr_variable.yml")

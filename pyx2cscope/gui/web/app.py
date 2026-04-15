@@ -6,15 +6,17 @@ pages (blueprints).
 import logging
 import os
 import socket
+import tempfile
 import webbrowser
 
 import serial.tools.list_ports
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 
 from pyx2cscope import __version__, set_logger
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
 from pyx2cscope.gui.web.ws_handlers import socketio
+from pyx2cscope.variable.variable_factory import FileType
 
 set_logger(logging.ERROR)
 
@@ -45,6 +47,7 @@ def create_app():
     app.add_url_rule("/is-connected", view_func=is_connected)
     app.add_url_rule("/variables", view_func=variables_autocomplete, methods=["POST", "GET"])
     app.add_url_rule("/variables/all", view_func=get_variables, methods=["POST", "GET"])
+    app.add_url_rule("/variables/export", view_func=export_variables, methods=["GET"])
 
     socketio.init_app(app)
 
@@ -258,6 +261,44 @@ def get_variables():
     """
     items = [{"id": var, "text": var} for var in web_scope.list_variables()]
     return jsonify({"items": items})
+
+
+def export_variables():
+    """Export the currently loaded variable database as YML or PKL."""
+    if not web_scope.is_connected() or web_scope.x2c_scope is None:
+        return jsonify({"status": "error", "msg": "No variables are loaded."}), 400
+
+    ext = request.args.get("ext", "yml").lower()
+    if ext == "yml":
+        file_type = FileType.YAML
+        mimetype = "application/x-yaml"
+    elif ext == "pkl":
+        file_type = FileType.PICKLE
+        mimetype = "application/octet-stream"
+    else:
+        return jsonify({"status": "error", "msg": "Supported export formats are yml and pkl."}), 400
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_type.value)
+    temp_file.close()
+    try:
+        selected_items = web_scope.get_selected_variables()
+        if not selected_items:
+            return jsonify({"status": "error", "msg": "No variables are selected in WatchView, ScopeView, or Dashboard."}), 400
+
+        web_scope.x2c_scope.export_variables(temp_file.name, ext=file_type, items=selected_items)
+        with open(temp_file.name, "rb") as file:
+            data = file.read()
+    finally:
+        if os.path.exists(temp_file.name):
+            os.remove(temp_file.name)
+
+    return Response(
+        data,
+        mimetype=mimetype,
+        headers={
+            "Content-disposition": f"attachment; filename={web_scope.get_export_filename(file_type.value)}"
+        },
+    )
 
 
 def open_browser(host="localhost", web_port=5000):

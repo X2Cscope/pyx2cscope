@@ -357,6 +357,10 @@ It is possible to export selected variables or the whole list of variables.
 Having the exported file (yml or pickle) it is possible to import it back to the X2CScope object.
 YML is human readable and can be edited with any text editor, while pickle is a binary file and can be used to store the variables in a more secure way.
 
+Exported files preserve both firmware variables and SFR entries. If a selected list contains SFRs,
+they are stored in the register section of the export file and can be imported again with
+``get_variable("NAME", sfr=True)``.
+
 See the example below:
 
 .. literalinclude:: ../pyx2cscope/examples/export_import_variables.py

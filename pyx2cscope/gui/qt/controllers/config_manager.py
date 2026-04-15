@@ -129,7 +129,7 @@ class ConfigManager(QObject):
         return os.path.exists(elf_path)
 
     def prompt_for_elf_file(self) -> Optional[str]:
-        """Prompt user to select an ELF file.
+        """Prompt user to select an ELF file or import.
 
         Returns:
             Selected file path, or None if cancelled.
@@ -139,9 +139,9 @@ class ConfigManager(QObject):
 
         file_path, _ = QFileDialog.getOpenFileName(
             self._parent,
-            "Select ELF File",
+            "Select ELF File or Import",
             last_dir,
-            "ELF Files (*.elf);;All Files (*)",
+            "Variable Files (*.elf *.yml *.pkl);;ELF Files (*.elf);;YAML Files (*.yml);;Pickle Files (*.pkl);;All Files (*)",
         )
 
         if file_path:
@@ -151,7 +151,7 @@ class ConfigManager(QObject):
         return file_path if file_path else None
 
     def show_file_not_found_warning(self, file_path: str):
-        """Show a warning dialog for missing ELF file.
+        """Show a warning dialog for a missing ELF/import file.
 
         Args:
             file_path: The path that was not found.
@@ -159,8 +159,8 @@ class ConfigManager(QObject):
         QMessageBox.warning(
             self._parent,
             "File Not Found",
-            f"The ELF file '{file_path}' does not exist.\n\n"
-            "Please select a valid ELF file.",
+            f"The ELF/import file '{file_path}' does not exist.\n\n"
+            "Please select a valid ELF file or import.",
         )
 
     @staticmethod

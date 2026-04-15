@@ -95,10 +95,17 @@ When CAN is selected:
 
 > **Note**: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.
 
-### ELF File Selection
+### Variable File Selection
 
-Select an ELF file (or PKL/YML import file) containing the variable information from your firmware.
+Select a variable file containing the variable information for your firmware.
 Supported formats: `.elf`, `.pkl`, `.yml`
+
+### Export Variables
+
+After connecting, click the export icon in the header to export the variables currently used in
+Watch View, Scope View, and Dashboard.
+
+Choose either `.yml` or `.pkl`. SFR selections are preserved in the exported file too.
 
 ### Connecting
 

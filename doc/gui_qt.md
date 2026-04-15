@@ -30,7 +30,7 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### Connection Settings
 
-1. **ELF File**: Click "Select ELF file" to choose the ELF file of the project your microcontroller is programmed with.
+1. **Select File**: Click `ELF / YML / PKL` to load variable information. Supported formats are `.elf`, `.yml`, and `.pkl`.
 
 2. **Interface**: Select the communication interface:
    - **UART**: Serial communication
@@ -131,6 +131,13 @@ Once an SFR is selected and confirmed, it is retrieved with `sfr=True` internall
 mapped to its fixed hardware address. From that point it behaves exactly like any other
 variable — values can be read, polled live (WatchView), or captured as a scope channel
 (ScopeView).
+
+### Export Variables
+
+The **Export Variables** button in the Data Views toolbar allows you to:
+- Export only the variables currently selected in WatchView and ScopeView.
+- Save the selection as `.yml` or `.pkl`.
+- Preserve SFR selections in the exported file too.
 
 ### Save and Load Config
 

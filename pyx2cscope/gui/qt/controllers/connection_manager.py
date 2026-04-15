@@ -1,7 +1,6 @@
 """Connection management for the X2CScope device."""
 
 import logging
-
 import serial.tools.list_ports
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -46,6 +45,12 @@ class ConnectionManager(QObject):
         self.ports_refreshed.emit(ports)
         return ports
 
+    def _create_x2cscope(self, variable_file: str, **kwargs) -> X2CScope:
+        """Create an X2CScope instance and load variables from the selected file."""
+        x2cscope = X2CScope(**kwargs)
+        x2cscope.import_variables(variable_file)
+        return x2cscope
+
     def connect_uart(self, port: str, baud_rate: int, elf_file: str) -> bool:
         """Connect to the device via UART.
 
@@ -58,9 +63,9 @@ class ConnectionManager(QObject):
             True if connection successful, False otherwise.
         """
         try:
-            x2cscope = X2CScope(
+            x2cscope = self._create_x2cscope(
+                elf_file,
                 port=port,
-                elf_file=elf_file,
                 baud_rate=baud_rate,
             )
 
@@ -92,10 +97,10 @@ class ConnectionManager(QObject):
             True if connection successful, False otherwise.
         """
         try:
-            x2cscope = X2CScope(
+            x2cscope = self._create_x2cscope(
+                elf_file,
                 host=host,
                 tcp_port=tcp_port,
-                elf_file=elf_file,
             )
 
             self._app_state.elf_file = elf_file
@@ -168,8 +173,8 @@ class ConnectionManager(QObject):
             # Map mode to standard/extended
             mode_str = 'extended' if is_extended else 'standard'
 
-            x2cscope = X2CScope(
-                elf_file=elf_file,
+            x2cscope = self._create_x2cscope(
+                elf_file,
                 bustype=bustype,
                 channel=channel,
                 baud_rate=baud_value,
@@ -214,7 +219,7 @@ class ConnectionManager(QObject):
             return False
 
         if not elf_file:
-            self.error_occurred.emit("No ELF file selected.")
+            self.error_occurred.emit("No ELF file or import selected.")
             return False
 
         interface = params.get("interface", "UART")

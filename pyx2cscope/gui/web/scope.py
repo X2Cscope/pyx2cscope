@@ -5,6 +5,7 @@ through the web interface.
 """
 import numbers
 import time
+from pathlib import Path
 
 from pyx2cscope.gui.web import extensions
 from pyx2cscope.x2cscope import TriggerConfig, X2CScope
@@ -24,6 +25,7 @@ class WebScope:
         self.scope_burst = False
         self.scope_sample_time = 1
         self.scope_time_sampling = 50e-3
+        self.variables_file = ""
 
         self.dashboard_vars = {}  # {var_name: Variable object}
         self.dashboard_rate = 1.0  # Fixed at 1 second for dashboard polling
@@ -32,7 +34,7 @@ class WebScope:
         self.x2c_scope :X2CScope | None = None
         self._lock = extensions.create_lock()
 
-    def _get_watch_variable_as_dict(self, variable, value=None):
+    def _get_watch_variable_as_dict(self, variable, sfr=False, value=None):
         primitive = variable.__class__.__name__.lower().replace("variable", "")
         if value is None:
             with self._lock:
@@ -47,9 +49,10 @@ class WebScope:
             "offset": 0,
             "scaled_value": value,
             "remove": 0,
+            "sfr": bool(sfr),
         }
 
-    def _get_scope_variable_as_dict(self, variable):
+    def _get_scope_variable_as_dict(self, variable, sfr=False):
         colors = [
             "#FF0000",
             "#00FF00",
@@ -68,6 +71,7 @@ class WebScope:
             "gain": 1,
             "offset": 0,
             "remove": 0,
+            "sfr": bool(sfr),
         }
 
     @staticmethod
@@ -151,7 +155,7 @@ class WebScope:
         if not any(_data["variable"].info.name == var for _data in self.watch_vars):
             variable = self.x2c_scope.get_variable(var, sfr=sfr)
             if variable is not None:
-                var_dict = self._get_watch_variable_as_dict(variable)
+                var_dict = self._get_watch_variable_as_dict(variable, sfr=sfr)
                 self.watch_vars.append(var_dict)
         return var_dict
 
@@ -267,7 +271,7 @@ class WebScope:
         if not any(data["variable"].info.name == var for data in self.scope_vars):
             variable = self.x2c_scope.get_variable(var, sfr=sfr)
             if variable is not None:
-                var_dict = self._get_scope_variable_as_dict(variable)
+                var_dict = self._get_scope_variable_as_dict(variable, sfr=sfr)
                 self.scope_vars.append(var_dict)
                 self.x2c_scope.add_scope_channel(variable)
         return var_dict
@@ -469,12 +473,49 @@ class WebScope:
         self.x2c_scope = X2CScope(*args, **kwargs)
 
     def set_file(self, import_file):
-        """Import variables from ELF file.
+        """Import variables from a variable database file.
 
         Args:
-            import_file (str): Path to the ELF file.
+            import_file (str): Path to the import file.
         """
+        self.variables_file = import_file
         self.x2c_scope.import_variables(import_file)
+
+    def get_export_filename(self, extension: str) -> str:
+        """Build a default export filename for the current variable database."""
+        stem = Path(self.variables_file).stem if self.variables_file else "variables_list"
+        return stem + extension
+
+    def get_selected_variables(self):
+        """Collect unique variables currently used by watch, scope, and dashboard views."""
+        selected = []
+        seen = set()
+
+        for item in self.watch_vars:
+            variable = item.get("variable")
+            if variable is None:
+                continue
+            key = (variable.info.name, bool(item.get("sfr", False)))
+            if key not in seen:
+                seen.add(key)
+                selected.append(key)
+
+        for item in self.scope_vars:
+            variable = item.get("variable")
+            if variable is None:
+                continue
+            key = (variable.info.name, bool(item.get("sfr", False)))
+            if key not in seen:
+                seen.add(key)
+                selected.append(key)
+
+        for name, variable in self.dashboard_vars.items():
+            key = (name, False)
+            if variable is not None and key not in seen:
+                seen.add(key)
+                selected.append(key)
+
+        return selected
 
     def list_variables(self):
         """List all available variables.
@@ -496,6 +537,7 @@ class WebScope:
         """Disconnect from X2CScope."""
         self.x2c_scope.disconnect()
         self.x2c_scope = None
+        self.variables_file = ""
 
     def is_connected(self):
         """Check if connected to X2CScope.

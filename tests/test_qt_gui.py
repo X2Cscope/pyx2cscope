@@ -274,6 +274,38 @@ class TestConnectionManagerConnections:
 
         assert result is True
 
+    def test_connect_uart_imports_selected_file(self, connection_manager, mocker):
+        """Test UART connection always loads variables through import_variables."""
+        mock_x2c = MagicMock()
+        mock_x2c.list_variables.return_value = []
+        mocker.patch(
+            "pyx2cscope.gui.qt.controllers.connection_manager.X2CScope",
+            return_value=mock_x2c,
+        )
+
+        result = connection_manager.connect_uart(
+            port="COM1", baud_rate=115200, elf_file="firmware.elf"
+        )
+
+        assert result is True
+        mock_x2c.import_variables.assert_called_once_with("firmware.elf")
+
+    def test_connect_tcp_imports_yml_after_connect(self, connection_manager, mocker):
+        """Test TCP connection loads YML imports after creating the transport."""
+        mock_x2c = MagicMock()
+        mock_x2c.list_variables.return_value = []
+        mocker.patch(
+            "pyx2cscope.gui.qt.controllers.connection_manager.X2CScope",
+            return_value=mock_x2c,
+        )
+
+        result = connection_manager.connect_tcp(
+            host="127.0.0.1", tcp_port=12666, elf_file="variables.yml"
+        )
+
+        assert result is True
+        mock_x2c.import_variables.assert_called_once_with("variables.yml")
+
     def test_disconnect_clears_state(self, connection_manager):
         """Test disconnect clears connection state."""
         connection_manager.disconnect()
@@ -336,6 +368,25 @@ class TestQtWidgetCreation:
         tab = SetupTab(app_state)
 
         assert tab is not None
+
+    def test_app_state_exports_selected_variables(self, qt_application):
+        """Test AppState exports only variables selected in watch and scope views."""
+        from pyx2cscope.gui.qt.models.app_state import AppState, ScopeChannel
+
+        app_state = AppState()
+        mock_x2c = MagicMock()
+
+        mock_x2c.list_variables.return_value = ["watch.var", "scope.var"]
+
+        app_state.set_x2cscope(mock_x2c)
+        app_state.add_live_watch_var()
+        app_state.update_live_watch_var_field(0, "name", "watch.var")
+        app_state.set_scope_channel(0, ScopeChannel(name="scope.var", sfr=True))
+
+        app_state.export_selected_variables("selected.yml")
+
+        exported_items = mock_x2c.export_variables.call_args.kwargs["items"]
+        assert set(exported_items) == {("watch.var", False), ("scope.var", True)}
 
     def test_scope_view_tab_creation(self, qt_application):
         """Test ScopeViewTab can be created."""
