@@ -9,6 +9,8 @@ from pyx2cscope.x2cscope import X2CScope
 from tests import data
 from tests.utils.serial_stub import fake_serial
 
+LNET_SAMPLE_TIME_THIRD_SAMPLE = 2
+
 
 class TestPyX2CScope:
     """Tests related to the PyX2CScope class."""
@@ -86,7 +88,7 @@ class TestPyX2CScope:
             assert scope.scope_setup.sample_time_factor == 0
 
             scope.set_sample_time(3)
-            assert scope.scope_setup.sample_time_factor == 2
+            assert scope.scope_setup.sample_time_factor == LNET_SAMPLE_TIME_THIRD_SAMPLE
 
             scope.set_sample_time(0)
             assert scope.scope_setup.sample_time_factor == 0

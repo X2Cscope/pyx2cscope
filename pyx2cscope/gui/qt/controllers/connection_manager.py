@@ -1,6 +1,7 @@
 """Connection management for the X2CScope device."""
 
 import logging
+
 import serial.tools.list_ports
 from PyQt5.QtCore import QObject, pyqtSignal
 

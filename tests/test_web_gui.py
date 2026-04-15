@@ -16,6 +16,7 @@ import pytest
 
 # HTTP status codes for test assertions
 HTTP_OK = 200
+HTTP_BAD_REQUEST = 400
 HTTP_NOT_FOUND = 404
 
 
@@ -182,7 +183,7 @@ class TestFlaskRoutes:
         try:
             response = flask_client.get("/variables/export?ext=yml")
 
-            assert response.status_code == 400
+            assert response.status_code == HTTP_BAD_REQUEST
             data = json.loads(response.data)
             assert "No variables are selected" in data["msg"]
         finally:

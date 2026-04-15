@@ -3,9 +3,9 @@
 import logging
 import os
 import pickle
-from typing import Optional
 from dataclasses import asdict
 from enum import Enum
+from typing import Optional
 
 import yaml
 
@@ -65,6 +65,8 @@ class VariableFactory:
         _get_variable_instance: Creates a Variable instance from provided information.
     """
 
+    _NAME_SFR_PAIR_LEN = 2
+
     def __init__(self, l_net: LNet, elf_path=None):
         """Initialize the VariableFactory with LNet instance and path to the ELF file.
 
@@ -113,29 +115,34 @@ class VariableFactory:
 
     def _resolve_export_item(self, item):
         """Resolve an export item to VariableInfo and its target map kind."""
-        if isinstance(item, tuple) and len(item) == 2:
-            name, sfr = item
-            if isinstance(name, str):
-                return self.parser.get_var_info(name, sfr=bool(sfr)), bool(sfr)
-            return None, bool(sfr)
+        variable_info = None
+        is_register = False
 
-        if isinstance(item, Variable):
+        if isinstance(item, tuple) and len(item) == self._NAME_SFR_PAIR_LEN:
+            name, sfr = item
+            is_register = bool(sfr)
+            if isinstance(name, str):
+                variable_info = self.parser.get_var_info(name, sfr=is_register)
+        elif isinstance(item, Variable):
             item = item.info.name
 
         if isinstance(item, VariableInfo):
             if self.parser.register_map.get(item.name) == item:
-                return item, True
-            if self.parser.variable_map.get(item.name) == item:
-                return item, False
-            return item, item.name in self.parser.register_map
-
-        if isinstance(item, str):
+                variable_info = item
+                is_register = True
+            elif self.parser.variable_map.get(item.name) == item:
+                variable_info = item
+            else:
+                variable_info = item
+                is_register = item.name in self.parser.register_map
+        elif isinstance(item, str):
             if item in self.parser.variable_map:
-                return self.parser.variable_map.get(item), False
-            if item in self.parser.register_map:
-                return self.parser.register_map.get(item), True
+                variable_info = self.parser.variable_map.get(item)
+            elif item in self.parser.register_map:
+                variable_info = self.parser.register_map.get(item)
+                is_register = True
 
-        return None, False
+        return variable_info, is_register
 
     def export_variables(self, filename: Optional[str] = None, ext: FileType = FileType.YAML, items=None):
         """Store the variables registered on the elf file to a pickle file.
