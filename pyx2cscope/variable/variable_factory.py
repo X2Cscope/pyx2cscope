@@ -3,8 +3,10 @@
 import logging
 import os
 import pickle
+import warnings
 from dataclasses import asdict
 from enum import Enum
+from typing import Optional
 
 import yaml
 
@@ -64,6 +66,19 @@ class VariableFactory:
         _get_variable_instance: Creates a Variable instance from provided information.
     """
 
+    _NAME_SFR_PAIR_LEN = 2
+    _DEVICE_FAMILY_KEYWORDS = {
+        "arm": ("ARM",),
+        "pic32": ("PIC32",),
+        "dspic": ("DSPIC", "PIC24"),
+    }
+    _DEVICE_SIGNATURE_KEYWORDS = {
+        "dspic33a": ("DSPIC33A", "33AK"),
+        "arm": ("ARM",),
+        "pic32": ("PIC32",),
+        "dspic": ("DSPIC", "PIC24"),
+    }
+
     def __init__(self, l_net: LNet, elf_path=None):
         """Initialize the VariableFactory with LNet instance and path to the ELF file.
 
@@ -91,6 +106,7 @@ class VariableFactory:
         """
         parser = GenericParser
         self.parser = parser(elf_path)
+        self._warn_if_incompatible(elf_path)
 
     def set_lnet_interface(self, lnet: LNet):
         """Set the LNet interface to be used for data communication.
@@ -99,8 +115,61 @@ class VariableFactory:
             lnet (LNet): the LNet interface
         """
         self.l_net = lnet
+        self.device_info = self.l_net.get_device_info()
 
-    def _build_export_file_name(self, filename: str = None, ext: FileType= FileType.YAML):
+    def _get_device_family(self) -> Optional[str]:
+        processor_id = str(getattr(self.device_info, "processor_id", "") or "")
+        for family, keywords in self._DEVICE_FAMILY_KEYWORDS.items():
+            if any(keyword in processor_id for keyword in keywords):
+                return family
+        return None
+
+    def _get_device_signature(self) -> Optional[str]:
+        processor_id = str(getattr(self.device_info, "processor_id", "") or "")
+        for signature, keywords in self._DEVICE_SIGNATURE_KEYWORDS.items():
+            if any(keyword in processor_id for keyword in keywords):
+                return signature
+        return None
+
+    def check_device_compatibility(self) -> dict:
+        """Check whether the loaded ELF appears compatible with the connected target."""
+        file_family = self.parser.get_target_family() if hasattr(self.parser, "get_target_family") else None
+        file_signature = self.parser.get_target_signature() if hasattr(self.parser, "get_target_signature") else file_family
+        device_family = self._get_device_family()
+        device_signature = self._get_device_signature() or device_family
+        checked = bool(file_signature and device_signature)
+        compatible = (file_signature == device_signature) if checked else None
+        if compatible is False:
+            reason = "ELF file and connected target appear to describe different MCU targets."
+        elif checked:
+            reason = "ELF file appears compatible with the connected target."
+        else:
+            reason = "Compatibility could not be determined."
+        return {
+            "checked": checked,
+            "compatible": compatible,
+            "device_family": device_family,
+            "file_family": file_family,
+            "device_signature": device_signature,
+            "file_signature": file_signature,
+            "processor_id": str(getattr(self.device_info, "processor_id", "") or ""),
+            "elf_file": getattr(self.parser, "elf_path", ""),
+            "reason": reason,
+        }
+
+    def _warn_if_incompatible(self, elf_path: str):
+        """Warn when the loaded ELF appears incompatible with the connected target."""
+        compatibility = self.check_device_compatibility()
+        if compatibility["compatible"] is False:
+            warnings.warn(
+                (
+                    f"Loaded ELF '{elf_path}' appears incompatible with the connected target "
+                    f"({compatibility['processor_id']})."
+                ),
+                stacklevel=2,
+            )
+
+    def _build_export_file_name(self, filename: Optional[str] = None, ext: FileType= FileType.YAML):
         if filename is None:
             if self.parser.elf_path is not None:
                 # get the elf_file name without extension
@@ -110,7 +179,38 @@ class VariableFactory:
 
         return os.path.splitext(filename)[0] + ext.value
 
-    def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
+    def _resolve_export_item(self, item):
+        """Resolve an export item to VariableInfo and its target map kind."""
+        variable_info = None
+        is_register = False
+
+        if isinstance(item, tuple) and len(item) == self._NAME_SFR_PAIR_LEN:
+            name, sfr = item
+            is_register = bool(sfr)
+            if isinstance(name, str):
+                variable_info = self.parser.get_var_info(name, sfr=is_register)
+        elif isinstance(item, Variable):
+            item = item.info.name
+
+        if isinstance(item, VariableInfo):
+            if self.parser.register_map.get(item.name) == item:
+                variable_info = item
+                is_register = True
+            elif self.parser.variable_map.get(item.name) == item:
+                variable_info = item
+            else:
+                variable_info = item
+                is_register = item.name in self.parser.register_map
+        elif isinstance(item, str):
+            if item in self.parser.variable_map:
+                variable_info = self.parser.variable_map.get(item)
+            elif item in self.parser.register_map:
+                variable_info = self.parser.register_map.get(item)
+                is_register = True
+
+        return variable_info, is_register
+
+    def export_variables(self, filename: Optional[str] = None, ext: FileType = FileType.YAML, items=None):
         """Store the variables registered on the elf file to a pickle file.
 
         Args:
@@ -122,13 +222,17 @@ class VariableFactory:
             raise ValueError("Elf file is not yet supported as export format...")
         filename = self._build_export_file_name(filename, ext)
 
-        export_dict = {}
+        export_dict = {"variables": {}, "registers": {}}
         if items:
             for item in items:
-                variable_name = item.info.name if isinstance(item, Variable) else item
-                export_dict[variable_name] = self.parser.variable_map.get(variable_name)
+                variable_info, is_register = self._resolve_export_item(item)
+                if variable_info is None:
+                    continue
+                target_key = "registers" if is_register else "variables"
+                export_dict[target_key][variable_info.name] = variable_info
         else:
-            export_dict = self.parser.variable_map
+            export_dict["variables"] = dict(self.parser.variable_map)
+            export_dict["registers"] = dict(self.parser.register_map)
 
         if ext is FileType.PICKLE:
             with open(filename, 'wb') as file:
@@ -156,15 +260,25 @@ class VariableFactory:
 
         # clear any previous loaded variable
         self.parser.variable_map.clear()
+        self.parser.register_map.clear()
+        imported_data = None
 
         if ext is FileType.ELF:
             self.parser = GenericParser(filename)
+            self._warn_if_incompatible(filename)
         if ext is FileType.PICKLE:
             with open(filename, 'rb') as file:
-                self.parser.variable_map = pickle.load(file)
+                imported_data = pickle.loads(file.read())
         if ext is FileType.YAML:
             with open(filename, 'r') as file:
-                self.parser.variable_map = yaml.load(file, Loader=yaml.FullLoader)
+                imported_data = yaml.load(file.read(), Loader=yaml.FullLoader)
+
+        if ext is not FileType.ELF:
+            if isinstance(imported_data, dict) and "variables" in imported_data:
+                self.parser.variable_map = imported_data.get("variables", {}) or {}
+                self.parser.register_map = imported_data.get("registers", {}) or {}
+            else:
+                self.parser.variable_map = imported_data or {}
 
         logging.debug(f"Variables loaded from {filename}")
 
@@ -196,6 +310,9 @@ class VariableFactory:
         """
         try:
             variable_info = self.parser.get_var_info(name, sfr=sfr)
+            if variable_info is None:
+                logging.error(f"Variable '{name}' not found!")
+                return None
             if variable_info is None:
                 logging.error(f"Variable '{name}' not found!")
                 return None

@@ -9,7 +9,7 @@ received data.
 import logging
 from dataclasses import dataclass
 from numbers import Number
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from mchplnet.interfaces.abstract_interface import Interface
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
@@ -156,7 +156,7 @@ class X2CScope:
         """
         return self.variable_factory.get_variable_raw(variable_info)
 
-    def export_variables(self, filename: str = None, ext: FileType = FileType.YAML, items=None):
+    def export_variables(self, filename: Optional[str] = None, ext: FileType = FileType.YAML, items=None):
         """Store the variables registered on the elf file to a pickle file.
 
         Args:
@@ -176,6 +176,10 @@ class X2CScope:
             filename (str): The name of the file and its path.
         """
         self.variable_factory.import_variables(filename)
+
+    def check_compatibility(self) -> dict:
+        """Check whether the currently loaded ELF appears compatible with the connected target."""
+        return self.variable_factory.check_device_compatibility()
 
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
         """Add a variable as a scope channel.
@@ -256,13 +260,14 @@ class X2CScope:
         """Define the resolution how the samples will be buffered at the internal buffer.
 
         This can be used to extend total sampling time at the cost of resolution.
-        0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
+        In the pyX2Cscope API, values start at 1, while LNET uses a 0-based pre-scaler.
+        1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample ...
 
         Args:
             sample_time (int): The sample time factor.
         """
-        sample_time = 0 if sample_time < 0 else sample_time
-        self.scope_setup.set_sample_time_factor(sample_time)
+        sample_time = 1 if sample_time < 1 else sample_time
+        self.scope_setup.set_sample_time_factor(sample_time - 1)
 
     def set_scope_state(self, scope_state: int):
         """Set the state of the scope.
@@ -343,6 +348,7 @@ class X2CScope:
             current_address = self.lnet.scope_data.data_array_address + i * chunk_size
             data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
             try:
+                # Read the chunk of data
                 data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:

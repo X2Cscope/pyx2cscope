@@ -5,11 +5,16 @@ import os
 from pyx2cscope.variable.variable_factory import FileType
 from pyx2cscope.x2cscope import X2CScope
 from tests import data
-from tests.utils.serial_stub import fake_serial
+from tests.utils.serial_stub import DEVICE_PROFILE_ARM, DEVICE_PROFILE_DSPIC33A, fake_serial
 
 
 class TestParser:
     """Parser related unit tests."""
+
+    LATE3_BIT_MASK = 0x0008
+    DMA0CH_ADDRESS = 8976
+    DMA0STAT_ADDRESS = 8984
+    DMA0CH_BYTE_SIZE = 4
 
     elf_file_16 = os.path.join(
         os.path.dirname(data.__file__), "MCAF_ZSMT_dsPIC33CK.elf"
@@ -22,6 +27,52 @@ class TestParser:
         os.path.dirname(data.__file__), "dsPIC33ak128mc106_foc.elf"
     )
 
+    def test_sfr_bitfield_aliases_dspic33ck(self, mocker):
+        """Check dsPIC33CK SFR bitfields are exposed with nested and flat aliases."""
+        serial_stub = fake_serial(mocker, 16)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        late_bit = x2c_scope.get_variable("LATE3", sfr=True)
+        late_bit_nested = x2c_scope.get_variable("LATEbits.LATE3", sfr=True)
+
+        assert late_bit is not None
+        assert late_bit_nested is not None
+        assert late_bit.info.address == late_bit_nested.info.address
+        assert late_bit.info.bit_size == 1
+
+        serial_stub.mock_memory[late_bit.info.address] = 0
+        late_bit.set_value(int("1"))
+        assert serial_stub.mock_memory[late_bit.info.address] == self.LATE3_BIT_MASK
+        assert late_bit.get_value() == 1
+
+    def test_sfr_bitfield_aliases_dspic33a(self, mocker):
+        """Check dsPIC33A SFR bitfields are exposed with nested and flat aliases."""
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+
+        ansela_bit = x2c_scope.get_variable("ANSELA0", sfr=True)
+        ansela_bit_nested = x2c_scope.get_variable("ANSELAbits.ANSELA0", sfr=True)
+
+        assert ansela_bit is not None
+        assert ansela_bit_nested is not None
+        assert ansela_bit.info.address == ansela_bit_nested.info.address
+        assert ansela_bit.info.bit_size == 1
+
+    def test_symbol_only_sfr_is_listed_with_address(self, mocker):
+        """Check symbol-only SFRs like DMA0CH are exposed with their absolute address."""
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+
+        dma0ch = x2c_scope.get_variable("DMA0CH", sfr=True)
+        dma0stat = x2c_scope.get_variable("DMA0STAT", sfr=True)
+
+        assert dma0ch is not None
+        assert dma0stat is not None
+        assert dma0ch.info.address == self.DMA0CH_ADDRESS
+        assert dma0stat.info.address == self.DMA0STAT_ADDRESS
+        assert dma0ch.info.byte_size == self.DMA0CH_BYTE_SIZE
+
     def test_variable_16_does_not_exist(self, mocker):
         """Given a valid 16 bit elf file, check if an invalid variable outputs the expected behavior."""
         fake_serial(mocker, 16)
@@ -31,7 +82,7 @@ class TestParser:
 
     def test_variable_32_does_not_exist(self, mocker):
         """Given a valid 32 bit elf file, check if an invalid variable outputs the expected behavior."""
-        fake_serial(mocker, 16)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("wrong_variable_name")
         assert variable is None
@@ -47,7 +98,7 @@ class TestParser:
 
     def test_array_variable_32(self, mocker, array_size_test=255):
         """Given a valid 32 bit elf file, check if an array variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("bufferLNet")
         assert variable is not None, "variable name not found"
@@ -69,7 +120,7 @@ class TestParser:
 
     def test_variable_dspic33ak(self, mocker, array_size_test=4900, address=22122):
         """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
         x2c_scope = X2CScope(port="COM14")
         x2c_scope.import_variables(self.elf_file_dspic33ak)
         variable = x2c_scope.get_variable("measureInputs.current.Ia")
@@ -84,7 +135,7 @@ class TestParser:
 
     def test_nested_array_variable_32(self, mocker, array_size_test=3):
         """Given a valid 32 bit elf file, check if an array variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.duty")
         assert variable is not None, "variable name not found"
@@ -93,7 +144,7 @@ class TestParser:
 
     def test_variable_enum_32(self, mocker, size6=6, size3=3):
         """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         # test simple variable enum
         variable = x2c_scope.get_variable("nextGlobalState")
@@ -108,7 +159,7 @@ class TestParser:
 
     def test_variable_enum_16(self, mocker, size6=6):
         """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 16)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
         # test nested enum inside a structure
         variable = x2c_scope.get_variable("motor.apiData.motorStatus")
@@ -116,9 +167,10 @@ class TestParser:
         assert variable.is_array() == False, "variable should not be an array"
         assert len(variable.info.valid_values) == size6, "enum size should be 3"
 
-    def test_variable_export_import(self, mocker):
+    def test_variable_export_import(self, mocker, tmp_path, monkeypatch):
         """Given a valid 32 bit elf file, check if export and import functions for variables are working."""
-        fake_serial(mocker, 32)
+        monkeypatch.chdir(tmp_path)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14")
         # try to import elf file instead of loading directly from the constructor
         x2c_scope.import_variables(self.elf_file_32)
@@ -141,6 +193,7 @@ class TestParser:
         assert variable.info.name == variable_reloaded.info.name, "variables don't have the same name"
         assert variable.info.address == variable_reloaded.info.address, "variables don't have the same address"
         assert variable.info.array_size == variable_reloaded.info.array_size, "variables don't have the same array size"
+        x2c_reloaded.disconnect()
 
         # load generated pickle file with single variable
         x2c_reloaded = X2CScope(port="COM14")
@@ -150,8 +203,26 @@ class TestParser:
         assert variable.info.name == variable_reloaded.info.name, "variables don't have the same name"
         assert variable.info.address == variable_reloaded.info.address, "variables don't have the same address"
         assert variable.info.array_size == variable_reloaded.info.array_size, "variables don't have the same array size"
+        x2c_reloaded.disconnect()
 
-        # house keeping -> delete generated files
-        os.remove("my_variables.yml")
-        os.remove("qspin_foc_same54.yml")
-        os.remove("my_single_variable.pkl")
+    def test_sfr_export_import(self, mocker, tmp_path, monkeypatch):
+        """Check exported SFR entries can be re-imported and resolved as registers."""
+        monkeypatch.chdir(tmp_path)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+
+        sfr_list = x2c_scope.list_sfr()
+        assert sfr_list, "expected at least one SFR in the imported ELF"
+
+        sfr_name = sfr_list[0]
+        x2c_scope.export_variables("my_sfr_variable", items=[(sfr_name, True)])
+        assert os.path.exists("my_sfr_variable.yml") == True, "SFR export yaml file name not found"
+
+        x2c_reloaded = X2CScope(port="COM14")
+        x2c_reloaded.import_variables(filename="my_sfr_variable.yml")
+        sfr_reloaded = x2c_reloaded.get_variable(sfr_name, sfr=True)
+
+        assert sfr_reloaded is not None, "reloaded SFR should be available"
+        assert sfr_reloaded.info.name == sfr_name, "reloaded SFR name mismatch"
+        assert len(x2c_reloaded.list_sfr()) == 1, "import loaded more than one SFR"

@@ -6,15 +6,17 @@ pages (blueprints).
 import logging
 import os
 import socket
+import tempfile
 import webbrowser
 
 import serial.tools.list_ports
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 
 from pyx2cscope import __version__, set_logger
 from pyx2cscope.gui import web
 from pyx2cscope.gui.web.scope import web_scope
 from pyx2cscope.gui.web.ws_handlers import socketio
+from pyx2cscope.variable.variable_factory import FileType
 
 set_logger(logging.ERROR)
 
@@ -39,11 +41,13 @@ def create_app():
     app.add_url_rule("/", view_func=index)
     app.add_url_rule("/serial-ports", view_func=list_serial_ports)
     app.add_url_rule("/local-ips", view_func=get_local_ips)
+    app.add_url_rule("/version-info", view_func=get_version_info)
     app.add_url_rule("/connect", view_func=connect, methods=["POST"])
     app.add_url_rule("/disconnect", view_func=disconnect)
     app.add_url_rule("/is-connected", view_func=is_connected)
     app.add_url_rule("/variables", view_func=variables_autocomplete, methods=["POST", "GET"])
     app.add_url_rule("/variables/all", view_func=get_variables, methods=["POST", "GET"])
+    app.add_url_rule("/variables/export", view_func=export_variables, methods=["GET"])
 
     socketio.init_app(app)
 
@@ -92,6 +96,44 @@ def get_local_ips():
     return jsonify({"ips": ips})
 
 
+def get_version_info():
+    """Return version information for all dependencies.
+
+    call {server_url}/version-info to execute.
+    """
+    import importlib.metadata
+    versions = {}
+
+    def get_package_version(package_name, module_name=None, attr_name='__version__'):
+        """Get version from package metadata or module attribute."""
+        try:
+            # Try importlib.metadata first (standard way)
+            return importlib.metadata.version(package_name)
+        except Exception:
+            # Fall back to module attribute
+            if module_name:
+                try:
+                    module = __import__(module_name)
+                    return getattr(module, attr_name, 'Unknown')
+                except (ImportError, AttributeError):
+                    pass
+        return 'Not installed'
+
+    # Web interface dependencies
+    versions['flask'] = get_package_version('flask', 'flask')
+    versions['flask_socketio'] = get_package_version('flask-socketio', 'flask_socketio')
+    versions['mchplnet'] = get_package_version('mchplnet', 'mchplnet')
+    versions['python_can'] = get_package_version('python-can', 'can')
+
+    # Core dependencies
+    versions['numpy'] = get_package_version('numpy', 'numpy')
+    versions['matplotlib'] = get_package_version('matplotlib', 'matplotlib')
+    versions['pyserial'] = get_package_version('pyserial', 'serial', 'VERSION')
+    versions['pyelftools'] = get_package_version('pyelftools', 'elftools')
+
+    return jsonify(versions)
+
+
 def connect():
     """Connect pyX2CScope using arguments coming from the web.
 
@@ -103,8 +145,8 @@ def connect():
     interface_kwargs = {}
 
     if interface_type == "CAN":
-        # CAN baudrate string to numeric mapping
-        baudrate_map = {
+        # CAN baud rate string to numeric mapping
+        baud_rate_map = {
             "125K": 125000,
             "250K": 250000,
             "500K": 500000,
@@ -112,18 +154,34 @@ def connect():
         }
         can_bus_type = request.form.get("canBusType", "USB")
         can_channel = int(request.form.get("canChannel", 1))
-        can_baudrate = request.form.get("canBaudrate", "125K")
+        can_baud_rate = request.form.get("canBaudrate", "125K")
         can_mode = request.form.get("canMode", "Standard")
         can_tx_id = request.form.get("canTxId", "7F1")
         can_rx_id = request.form.get("canRxId", "7F0")
 
+        # Map bus_type to bustype
+        bustype_map = {
+            'usb': 'pcan_usb',
+            'pcan usb': 'pcan_usb',
+            'lan': 'pcan_lan',
+            'pcan lan': 'pcan_lan',
+            'socketcan': 'socketcan',
+            'socketcan (linux)': 'socketcan',
+            'vector': 'vector',
+            'kvaser': 'kvaser',
+        }
+        bustype = bustype_map.get(can_bus_type.lower(), 'pcan_usb')
+
+        # Map mode to standard/extended
+        mode_str = 'extended' if can_mode == "Extended" else 'standard'
+
         interface_kwargs = {
-            "bus": can_bus_type.lower(),
+            "bustype": bustype,
             "channel": can_channel,
-            "baudrate": baudrate_map.get(can_baudrate, 125000),
-            "tx_id": int(can_tx_id, 16),
-            "rx_id": int(can_rx_id, 16),
-            "extended": can_mode == "Extended",
+            "baud_rate": baud_rate_map.get(can_baud_rate, 125000),
+            "id_tx": int(can_tx_id, 16),
+            "id_rx": int(can_rx_id, 16),
+            "mode": mode_str,
         }
     elif interface_type == "TCP_IP":
         host = request.form.get("host", "localhost")
@@ -152,6 +210,8 @@ def connect():
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
         except ValueError as e:
+            return jsonify({"status": "error", "msg": str(e)}), 401
+        except TimeoutError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
     return jsonify({"status": "error", "msg": "Interface argument or import file invalid."}), 400
 
@@ -201,6 +261,44 @@ def get_variables():
     """
     items = [{"id": var, "text": var} for var in web_scope.list_variables()]
     return jsonify({"items": items})
+
+
+def export_variables():
+    """Export the currently loaded variable database as YML or PKL."""
+    if not web_scope.is_connected() or web_scope.x2c_scope is None:
+        return jsonify({"status": "error", "msg": "No variables are loaded."}), 400
+
+    ext = request.args.get("ext", "yml").lower()
+    if ext == "yml":
+        file_type = FileType.YAML
+        mimetype = "application/x-yaml"
+    elif ext == "pkl":
+        file_type = FileType.PICKLE
+        mimetype = "application/octet-stream"
+    else:
+        return jsonify({"status": "error", "msg": "Supported export formats are yml and pkl."}), 400
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_type.value)
+    temp_file.close()
+    try:
+        selected_items = web_scope.get_selected_variables()
+        if not selected_items:
+            return jsonify({"status": "error", "msg": "No variables are selected in WatchView, ScopeView, or Dashboard."}), 400
+
+        web_scope.x2c_scope.export_variables(temp_file.name, ext=file_type, items=selected_items)
+        with open(temp_file.name, "rb") as file:
+            data = file.read()
+    finally:
+        if os.path.exists(temp_file.name):
+            os.remove(temp_file.name)
+
+    return Response(
+        data,
+        mimetype=mimetype,
+        headers={
+            "Content-disposition": f"attachment; filename={web_scope.get_export_filename(file_type.value)}"
+        },
+    )
 
 
 def open_browser(host="localhost", web_port=5000):

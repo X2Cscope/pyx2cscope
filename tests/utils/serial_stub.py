@@ -9,6 +9,10 @@ from mchplnet.lnetframe import LNetFrame
 
 BIT_LENGTH_16 = 16
 BIT_LENGTH_32 = 32
+DEVICE_PROFILE_DSPIC = "dspic"
+DEVICE_PROFILE_ARM = "arm"
+DEVICE_PROFILE_PIC32 = "pic32"
+DEVICE_PROFILE_DSPIC33A = "dspic33a"
 
 class FrameBuilder(LNetFrame):
     """FrameBuilder class to build LNet frames."""
@@ -66,13 +70,16 @@ class FrameBuilder(LNetFrame):
 class SerialStub:
     """Fakes a serial connection for 16 and 32 bit devices."""
 
-    def __init__(self, uc_width=BIT_LENGTH_16):
+    def __init__(self, uc_width=BIT_LENGTH_16, device_profile=None):
         """Constructor of the SerialStub class.
 
         Expected get_device_info and load_param bytestream are initialized here.
         """
         self.delay_seconds = 0.2  # 200ms delay to make concurrency
         self.uc_width = uc_width
+        self.device_profile = device_profile or (
+            DEVICE_PROFILE_DSPIC if uc_width == BIT_LENGTH_16 else DEVICE_PROFILE_PIC32
+        )
         self.data = bytearray()
         self.device_info = bytearray(b"\x55\x01\x01\x00\x57")
         self.load_param = bytearray(b"\x55\x03\x01\x11\x01\x00\x6b")
@@ -85,9 +92,9 @@ class SerialStub:
     def lnet_serial_start(self):
         """Mocker for the start interface function.
 
-        As we are dealing with no real device, we just return.
+        As we are dealing with no real device, we just return True.
         """
-        return
+        return True
 
     def _get_ram(self):
         """Handle a get_ram request."""
@@ -146,18 +153,27 @@ class SerialStub:
     def _get_device_info(self):
         if self.data != self.device_info:
             raise ValueError("Wrong Device Info package format!")
-        if self.uc_width == BIT_LENGTH_16:
+        if self.device_profile == DEVICE_PROFILE_DSPIC:
             return bytearray(
                 b"\x55.\x01\x00\x00\x05\x00\x01\x00\xff\x10\x82Nov2320231500\x00\x00\x00\x00"
                 b"\x00\x00\xccJ\x14K\xc0\xff\xff\x01\x00\x00\x00\x00\x00\x00\xf4R\x00\x00\xba"
             )
-        elif self.uc_width == BIT_LENGTH_32:
+        if self.device_profile == DEVICE_PROFILE_PIC32:
             return bytearray(
                 b"\x55.\x01\x00\x00\x05\x00\x01\x00\xff \x82Mar 320191220Mar 320191220\x01"
                 b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 T"
             )
-        else:
-            raise ValueError("Mocker fake_serial: wrong uC width! should be either 16 or 32 bits")
+        if self.device_profile == DEVICE_PROFILE_ARM:
+            return bytearray(
+                b"\x55.\x01\x00\x00\x05\x00\x01\x00\xff\x10\x83Mar 320191220Mar 320191220\x01"
+                b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 T"
+            )
+        if self.device_profile == DEVICE_PROFILE_DSPIC33A:
+            return bytearray(
+                b"\x55.\x01\x00\x00\x05\x00\x01\x00\xff@\x82Apr 120241200Apr 120241200\x01"
+                b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 T"
+            )
+        raise ValueError("Mocker fake_serial: unsupported device profile")
 
     def _get_load_param(self) -> bytearray:
         if self.data != self.load_param:
@@ -175,7 +191,7 @@ class SerialStub:
         else:
             raise ValueError("Mocker fake_serial: wrong uC width! should be either 16 or 32 bits")
 
-def fake_serial(mocker, uc_width=BIT_LENGTH_16):
+def fake_serial(mocker, uc_width=BIT_LENGTH_16, device_profile=None):
     """Fakes a serial port for 16/32 bit devices.
 
     The methods being faked by this function are start, read and write.
@@ -183,10 +199,12 @@ def fake_serial(mocker, uc_width=BIT_LENGTH_16):
     Args:
         mocker: Mocker inheritance
         uc_width: bit size of the device to be mocked
+        device_profile: target profile to be mocked
     Return:
-        None
+        SerialStub: the configured serial stub instance
     """
-    serial_stub = SerialStub(uc_width=uc_width)
+    serial_stub = SerialStub(uc_width=uc_width, device_profile=device_profile)
     mocker.patch.object(LNetSerial, "start", serial_stub.lnet_serial_start)
     mocker.patch.object(LNetSerial, "write", serial_stub.lnet_serial_write)
     mocker.patch.object(LNetSerial, "read", serial_stub.lnet_serial_read)
+    return serial_stub

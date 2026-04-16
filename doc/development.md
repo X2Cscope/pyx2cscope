@@ -35,9 +35,12 @@ source .venv\bin\activate
 ## Installing dev requirements
 
 ```bash
-pip install -r requirements.txt
-pip install -r quality.txt
+pip install -e ".[dev,docs,build]"
 ```
+
+## Publishing a release
+
+Package releases are handled by GitHub Actions as part of the maintainer release workflow.
 
 ## Running tests
 

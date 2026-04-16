@@ -5,6 +5,7 @@ It focuses on extracting structure members and variable information from DWARF d
 
 import logging
 import math
+import re
 from itertools import product
 
 from elftools.construct.lib import ListContainer
@@ -14,6 +15,20 @@ from elftools.elf.sections import SymbolTableSection
 
 from pyx2cscope.parser.elf_parser import ElfParser
 from pyx2cscope.variable.variable import VariableInfo
+
+TARGET_SIGNATURE_PATTERNS = (
+    ("dspic33a", ("__DSPIC33A", "__33AK")),
+    ("arm", ("__PIC32C", "PIC32C/", "SAME", "__GENERIC_ARM_", "ARMV6", "ARMV7")),
+    ("pic32", ("__PIC32",)),
+    ("dspic", ("__DSPIC", "__PIC24", "__33CK", "__33CH", "__33EP", "__33FJ")),
+)
+REGISTER_SYMBOL_PATTERN = re.compile(r"^[A-Z][A-Z0-9]*$")
+FAMILY_REGISTER_BYTE_SIZE = {
+    "arm": 4,
+    "pic32": 4,
+    "dspic33a": 4,
+    "dspic": 2,
+}
 
 
 class GenericParser(ElfParser):
@@ -33,6 +48,7 @@ class GenericParser(ElfParser):
         try:
             self.stream = open(self.elf_path, "rb")
             self.elf_file = ELFFile(self.stream)
+            self.elf_machine = self.elf_file["e_machine"]
             self.dwarf_info = self.elf_file.get_dwarf_info()
         except IOError:
             raise Exception(f"Error loading ELF file: {self.elf_path}")
@@ -69,7 +85,7 @@ class GenericParser(ElfParser):
         elif die_struct.attributes.get("DW_AT_external") and die_struct.attributes.get("DW_AT_name") is not None:
             if die_struct.tag != "DW_TAG_variable":
                 return
-            self.die_variable = die_struct        
+            self.die_variable = die_struct
             self.is_sfr = True
         else:
             return
@@ -103,6 +119,40 @@ class GenericParser(ElfParser):
                 array_size=member_data["array_size"],
                 valid_values=member_data["valid_values"],
             )
+
+        if self.is_sfr:
+            self._add_sfr_aliases(self.var_name, target_map)
+
+    @staticmethod
+    def _get_sfr_alias_names(register_name: str, member_name: str) -> list[str]:
+        """Return alternate names for SFR bitfield members."""
+        aliases = []
+        if "." not in member_name:
+            return aliases
+
+        member_leaf = member_name.split(".")[-1]
+        aliases.append(member_leaf)
+
+        return aliases
+
+    def _add_sfr_aliases(self, register_name: str, target_map: dict[str, VariableInfo]):
+        """Add convenience aliases for parsed SFR bitfield members."""
+        register_entries = list(target_map.items())
+        for member_name, variable_info in register_entries:
+            if not member_name.startswith(register_name + "."):
+                continue
+            for alias_name in self._get_sfr_alias_names(register_name, member_name):
+                if alias_name not in target_map:
+                    target_map[alias_name] = VariableInfo(
+                        name=alias_name,
+                        type=variable_info.type,
+                        byte_size=variable_info.byte_size,
+                        bit_size=variable_info.bit_size,
+                        bit_offset=variable_info.bit_offset,
+                        address=variable_info.address,
+                        array_size=variable_info.array_size,
+                        valid_values=variable_info.valid_values,
+                    )
 
     def _get_base_type_die(self, current_die):
         """Find the base type die regarding the current selected die, i.e. array_type."""
@@ -170,15 +220,42 @@ class GenericParser(ElfParser):
 
     def _load_symbol_table(self):
         """Loads symbol table entries into a dictionary for fast access."""
+        all_symbol_names = []
         for section in self.elf_file.iter_sections():
             if isinstance(section, SymbolTableSection):
                 for symbol in section.iter_symbols():
-                    if symbol["st_info"].type == "STT_OBJECT" or symbol["st_info"].bind == "STB_GLOBAL":
+                    all_symbol_names.append(symbol.name)
+                    if symbol.name:
                         self.symbol_table[symbol.name] = symbol["st_value"]
+                        if symbol["st_shndx"] == "SHN_ABS":
+                            self.absolute_symbol_table[symbol.name] = {
+                                "address": symbol["st_value"],
+                                "size": symbol["st_size"],
+                                "type": symbol["st_info"].type,
+                                "bind": symbol["st_info"].bind,
+                            }
+        self.target_signature = self._infer_target_signature(all_symbol_names)
+
+    def _infer_target_signature(self, symbol_names):
+        """Infer a more specific target signature from the ELF symbol table."""
+        symbol_names = "\n".join(symbol_names).upper()
+        for signature, markers in TARGET_SIGNATURE_PATTERNS:
+            if any(marker in symbol_names for marker in markers):
+                return signature
+        return self.get_target_family()
 
     def _fetch_address_from_symtab(self, variable_name):
         """Fetches the address of a variable from the preloaded symbol table."""
-        return self.symbol_table.get(variable_name, None)
+        candidates = [variable_name]
+        if not variable_name.startswith("_"):
+            candidates.append("_" + variable_name)
+        else:
+            candidates.append(variable_name[1:])
+
+        for candidate in candidates:
+            if candidate in self.symbol_table:
+                return self.symbol_table[candidate]
+        return None
 
     def _find_actual_declaration(self, die_variable):
         """Find the actual declaration of an extern variable."""
@@ -402,6 +479,42 @@ class GenericParser(ElfParser):
         """
         return self.register_map
 
+    def _get_symbol_only_register_byte_size(self) -> int:
+        """Return a best-effort byte size for symbol-only SFR entries."""
+        signature = self.get_target_signature()
+        family = self.get_target_family()
+        return FAMILY_REGISTER_BYTE_SIZE.get(signature, FAMILY_REGISTER_BYTE_SIZE.get(family, 2))
+
+    @staticmethod
+    def _get_symbol_only_register_type(byte_size: int) -> str:
+        """Return the variable type string for a symbol-only SFR entry."""
+        type_by_size = {
+            1: "unsigned char",
+            2: "unsigned int",
+            4: "unsigned long",
+            8: "unsigned long long",
+        }
+        return type_by_size.get(byte_size, "unsigned int")
+
+    def _map_symbol_only_registers(self):
+        """Populate missing SFRs from absolute symbol-table entries when DWARF lacks variables."""
+        byte_size = self._get_symbol_only_register_byte_size()
+        for symbol_name, symbol_data in self.absolute_symbol_table.items():
+            if not REGISTER_SYMBOL_PATTERN.fullmatch(symbol_name):
+                continue
+            if symbol_name in self.register_map:
+                continue
+            self.register_map[symbol_name] = VariableInfo(
+                name=symbol_name,
+                type=self._get_symbol_only_register_type(byte_size),
+                byte_size=byte_size,
+                bit_size=0,
+                bit_offset=0,
+                address=symbol_data["address"],
+                array_size=0,
+                valid_values={},
+            )
+
     def _map_variables(self) -> dict[str, VariableInfo]:
         """Maps all variables in the ELF file."""
         self.variable_map.clear()
@@ -411,11 +524,13 @@ class GenericParser(ElfParser):
                 self.expression_parser = DWARFExprParser(die.cu.structs)
                 self._process_die(die)
 
+        self._map_symbol_only_registers()
+
         return self.variable_map
 
 
 if __name__ == "__main__":
- 
+
     # elf_file = r"..\..\tests\data\qspin_foc_same54.elf"
     elf_file = r"..\..\..\tests\data\dsPIC33ak128mc106_foc.elf"
     elf_reader = GenericParser(elf_file)
@@ -425,13 +540,13 @@ if __name__ == "__main__":
     print(variable_map)
     print(len(variable_map))
     print("'''''''''''''''''''''''''''''''''''''''' ")
-    
+
     print("Array variables:")
     for var_info in variable_map.values():
         if var_info.array_size > 0:
             print(var_info)
     print("'''''''''''''''''''''''''''''''''''''''' ")
-    
+
     print("register variables:")
     print(register_map)
     print(len(register_map))

@@ -3,6 +3,8 @@ Installation
 
 Create a virtual environment and install pyx2cscope using the following commands (Windows):
 
+pyX2Cscope currently supports Python ``3.10`` to ``3.14``.
+
 .. code-block:: python
 
    python -m venv .venv
