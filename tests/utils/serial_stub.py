@@ -201,9 +201,10 @@ def fake_serial(mocker, uc_width=BIT_LENGTH_16, device_profile=None):
         uc_width: bit size of the device to be mocked
         device_profile: target profile to be mocked
     Return:
-        None
+        SerialStub: the configured serial stub instance
     """
     serial_stub = SerialStub(uc_width=uc_width, device_profile=device_profile)
     mocker.patch.object(LNetSerial, "start", serial_stub.lnet_serial_start)
     mocker.patch.object(LNetSerial, "write", serial_stub.lnet_serial_write)
     mocker.patch.object(LNetSerial, "read", serial_stub.lnet_serial_read)
+    return serial_stub

@@ -22,6 +22,52 @@ class TestParser:
         os.path.dirname(data.__file__), "dsPIC33ak128mc106_foc.elf"
     )
 
+    def test_sfr_bitfield_aliases_dspic33ck(self, mocker):
+        """Check dsPIC33CK SFR bitfields are exposed with nested and flat aliases."""
+        serial_stub = fake_serial(mocker, 16)
+        x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
+        late_bit = x2c_scope.get_variable("LATE3", sfr=True)
+        late_bit_nested = x2c_scope.get_variable("LATEbits.LATE3", sfr=True)
+
+        assert late_bit is not None
+        assert late_bit_nested is not None
+        assert late_bit.info.address == late_bit_nested.info.address
+        assert late_bit.info.bit_size == 1
+
+        serial_stub.mock_memory[late_bit.info.address] = 0
+        late_bit.set_value(int("1"))
+        assert serial_stub.mock_memory[late_bit.info.address] == 0x0008
+        assert late_bit.get_value() == 1
+
+    def test_sfr_bitfield_aliases_dspic33a(self, mocker):
+        """Check dsPIC33A SFR bitfields are exposed with nested and flat aliases."""
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+
+        ansela_bit = x2c_scope.get_variable("ANSELA0", sfr=True)
+        ansela_bit_nested = x2c_scope.get_variable("ANSELAbits.ANSELA0", sfr=True)
+
+        assert ansela_bit is not None
+        assert ansela_bit_nested is not None
+        assert ansela_bit.info.address == ansela_bit_nested.info.address
+        assert ansela_bit.info.bit_size == 1
+
+    def test_symbol_only_sfr_is_listed_with_address(self, mocker):
+        """Check symbol-only SFRs like DMA0CH are exposed with their absolute address."""
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
+        x2c_scope = X2CScope(port="COM14")
+        x2c_scope.import_variables(self.elf_file_dspic33ak)
+
+        dma0ch = x2c_scope.get_variable("DMA0CH", sfr=True)
+        dma0stat = x2c_scope.get_variable("DMA0STAT", sfr=True)
+
+        assert dma0ch is not None
+        assert dma0stat is not None
+        assert dma0ch.info.address == 8976
+        assert dma0stat.info.address == 8984
+        assert dma0ch.info.byte_size == 4
+
     def test_variable_16_does_not_exist(self, mocker):
         """Given a valid 16 bit elf file, check if an invalid variable outputs the expected behavior."""
         fake_serial(mocker, 16)

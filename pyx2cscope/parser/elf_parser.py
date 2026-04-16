@@ -51,6 +51,7 @@ class ElfParser(ABC):
         self.variable_map = {}
         self.register_map = {}
         self.symbol_table = {}
+        self.absolute_symbol_table = {}
 
         self._load_elf_file()
         self._load_symbol_table()
