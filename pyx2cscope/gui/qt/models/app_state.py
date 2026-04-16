@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 
 from PyQt5.QtCore import QMutex, QObject, pyqtSignal
 
+from pyx2cscope.variable.variable_factory import FileType
 from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
 
@@ -134,7 +135,7 @@ class AppState(QObject):
         # Scope state
         self._scope_active: bool = False
         self._scope_single_shot: bool = False
-        self._sample_time_factor: int = 0
+        self._sample_time_factor: int = 1
         self._scope_sample_time_us: int = 50
         self._real_sample_time: float = 0.0
 
@@ -195,6 +196,59 @@ class AppState(QObject):
             if self._x2cscope:
                 return self._x2cscope.list_sfr()
             return []
+        finally:
+            self._mutex.unlock()
+
+    def export_variables(self, filename: str):
+        """Export the currently loaded variable database to a YML or PKL file."""
+        self._mutex.lock()
+        try:
+            if not self._x2cscope:
+                raise RuntimeError("No variables are loaded.")
+
+            extension = filename.lower().rsplit(".", maxsplit=1)[-1] if "." in filename else ""
+            if extension == "yml":
+                file_type = FileType.YAML
+            elif extension == "pkl":
+                file_type = FileType.PICKLE
+            else:
+                raise ValueError("Supported export formats are .yml and .pkl.")
+
+            self._x2cscope.export_variables(filename, ext=file_type)
+        finally:
+            self._mutex.unlock()
+
+    def export_selected_variables(self, filename: str):
+        """Export only variables currently selected in the watch and scope views."""
+        self._mutex.lock()
+        try:
+            if not self._x2cscope:
+                raise RuntimeError("No variables are loaded.")
+
+            extension = filename.lower().rsplit(".", maxsplit=1)[-1] if "." in filename else ""
+            if extension == "yml":
+                file_type = FileType.YAML
+            elif extension == "pkl":
+                file_type = FileType.PICKLE
+            else:
+                raise ValueError("Supported export formats are .yml and .pkl.")
+
+            seen_items = set()
+            selected_vars = []
+            selected_vars.extend((var.name, var.sfr) for var in self._watch_vars if var.name and var.name != "None")
+            selected_vars.extend((var.name, var.sfr) for var in self._live_watch_vars if var.name and var.name != "None")
+            selected_vars.extend((channel.name, channel.sfr) for channel in self._scope_channels if channel.name and channel.name != "None")
+
+            for name, sfr in selected_vars:
+                key = (name, sfr)
+                if key in seen_items:
+                    continue
+                seen_items.add(key)
+
+            if not seen_items:
+                raise RuntimeError("No variables are selected in WatchView or ScopeView.")
+
+            self._x2cscope.export_variables(filename, ext=file_type, items=list(seen_items))
         finally:
             self._mutex.unlock()
 
@@ -642,7 +696,7 @@ class AppState(QObject):
     @sample_time_factor.setter
     def sample_time_factor(self, value: int):
         self._mutex.lock()
-        self._sample_time_factor = value
+        self._sample_time_factor = 1 if value < 1 else value
         self._mutex.unlock()
 
     @property

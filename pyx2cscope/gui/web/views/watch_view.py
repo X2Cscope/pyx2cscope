@@ -41,7 +41,7 @@ def load():
         if isinstance(data, list) and data and isinstance(data[0], dict) and "variable" in data[0].keys():
             web_scope.clear_watch_var()
             for item in data:
-                var = web_scope.add_watch_var(item["variable"])
+                var = web_scope.add_watch_var(item["variable"], sfr=item.get("sfr", False))
                 if var is None:
                     msg = "Variable " + item["variable"] + " is not available."
                 else:

@@ -7,6 +7,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QSettings, Qt
 from PyQt5.QtWidgets import (
     QApplication,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -24,6 +25,7 @@ from pyx2cscope.gui import img as img_src
 from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
 from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
 from pyx2cscope.gui.qt.models.app_state import AppState
+from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
 from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab
 from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
@@ -132,13 +134,18 @@ class MainWindow(QMainWindow):
 
         top_bar_layout.addStretch()
 
-        # Save/Load buttons
+        # Save/Load/Export buttons
+        self._export_variables_button = QPushButton("Export Variables")
+        self._export_variables_button.setFixedSize(120, 28)
+        self._export_variables_button.setEnabled(False)
+        self._export_variables_button.clicked.connect(self._export_selected_variables)
         self._save_button = QPushButton("Save Config")
         self._save_button.setFixedSize(100, 28)
         self._save_button.clicked.connect(self._save_config)
         self._load_button = QPushButton("Load Config")
         self._load_button.setFixedSize(100, 28)
         self._load_button.clicked.connect(self._load_config)
+        top_bar_layout.addWidget(self._export_variables_button)
         top_bar_layout.addWidget(self._save_button)
         top_bar_layout.addWidget(self._load_button)
         data_views_layout.addLayout(top_bar_layout)
@@ -180,6 +187,10 @@ class MainWindow(QMainWindow):
         # Tab 3: Scripting
         self._scripting_tab = ScriptingTab(self._app_state, self)
         self._tab_widget.addTab(self._scripting_tab, "Scripting")
+
+        # Tab 4: Help
+        self._help_tab = HelpTab(self)
+        self._tab_widget.addTab(self._help_tab, "Help")
 
         # Set initial view (Both selected)
         self._on_view_toggle_changed()
@@ -230,7 +241,7 @@ class MainWindow(QMainWindow):
         self._setup_tab.set_ports(ports)
 
     def _on_elf_file_selected(self, file_path: str):
-        """Handle ELF file selection from setup tab."""
+        """Handle variable file selection from setup tab."""
         self._settings.setValue("elf_file_path", file_path)
 
     def _on_connect_clicked(self):
@@ -244,7 +255,7 @@ class MainWindow(QMainWindow):
 
         if not elf_path:
             self._setup_tab.set_loading(False)
-            self._show_error("Please select an ELF file first.")
+            self._show_error("Please select an ELF file or import first.")
             return
 
         # Get connection parameters based on selected interface
@@ -267,6 +278,7 @@ class MainWindow(QMainWindow):
     def _on_connection_changed(self, connected: bool):
         """Handle connection state change."""
         self._setup_tab.set_connected(connected)
+        self._export_variables_button.setEnabled(connected)
 
         # Update tabs
         self._scope_view_tab.on_connection_changed(connected)
@@ -356,6 +368,29 @@ class MainWindow(QMainWindow):
             view_mode=view_mode,
         )
         self._config_manager.save_config(config)
+
+    def _export_selected_variables(self):
+        """Export variables currently selected in WatchView and ScopeView."""
+        source_path = self._setup_tab.elf_file_path or self._settings.value("elf_file_path", "", type=str)
+        default_name = os.path.splitext(os.path.basename(source_path))[0] if source_path else "variables_list"
+        export_dir = self._settings.value("variable_export_dir", "", type=str)
+        default_path = os.path.join(export_dir, default_name + ".yml") if export_dir else default_name + ".yml"
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Selected Variables",
+            default_path,
+            "YAML Files (*.yml);;Pickle Files (*.pkl)",
+        )
+        if not file_path:
+            return
+
+        self._settings.setValue("variable_export_dir", os.path.dirname(file_path))
+        try:
+            self._app_state.export_selected_variables(file_path)
+            QMessageBox.information(self, "Export Complete", f"Variables exported to:\n{file_path}")
+        except Exception as e:
+            self._show_error(str(e))
 
     def _load_config(self):  # noqa: PLR0912, PLR0915
         """Load configuration from file."""

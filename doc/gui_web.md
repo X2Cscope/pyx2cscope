@@ -63,8 +63,12 @@ Select the communication interface type:
 
 When Serial is selected:
 
-1. **UART Dropdown** - Select the COM port from the available ports list
-2. **Refresh Button** - Click to rescan for available COM ports
+1. **UART Dropdown** - Select the COM port:
+   - **AUTO (Auto-detect)**: Automatically scans and connects to the first available LNet device (recommended for single device).
+   - **Specific Port**: Choose a specific COM port (COM1, COM3, etc.) for manual connection.
+2. **Refresh Button** - Click to rescan for available COM ports.
+
+> **Tip**: The AUTO option is useful when you don't know the exact COM port or when working across different machines. The system will test each available port and connect to the first one that responds to the LNet protocol.
 
 ### TCP/IP Configuration
 
@@ -91,10 +95,17 @@ When CAN is selected:
 
 > **Note**: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.
 
-### ELF File Selection
+### Variable File Selection
 
-Select an ELF file (or PKL/YML import file) containing the variable information from your firmware.
+Select a variable file containing the variable information for your firmware.
 Supported formats: `.elf`, `.pkl`, `.yml`
+
+### Export Variables
+
+After connecting, click the export icon in the header to export the variables currently used in
+Watch View, Scope View, and Dashboard.
+
+Choose either `.yml` or `.pkl`. SFR selections are preserved in the exported file too.
 
 ### Connecting
 

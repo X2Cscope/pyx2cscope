@@ -1,34 +1,89 @@
-<!-- Welcome/Help Content Template -->
-<h5 class="mb-3">Getting Started</h5>
+<!-- Welcome/Help Content Template - Two Column Layout -->
+<div class="row" style="margin-bottom: 100px;">
+    <!-- Left Column: Help Content -->
+    <div class="col-md-6">
+        <h5 class="mb-3">Getting Started</h5>
 
-<div class="mb-4">
-    <h6><span class="material-icons md-18 align-middle">settings</span> Setup</h6>
-    <p class="text-muted mb-0">Configure your interface, upload an ELF file, and click "Connect" to start monitoring your device.</p>
+        <div class="mb-4">
+            <h6><span class="material-icons md-18 align-middle">settings</span> Setup</h6>
+            <p class="text-muted mb-0">Configure your interface, load an ELF or import file, and click "Connect" to start monitoring your device.</p>
+        </div>
+
+        <div class="mb-4">
+            <h6><span class="material-icons md-18 align-middle">upload_file</span> Export Variables</h6>
+            <p class="text-muted mb-0">Use the export icon in the header to save the variables currently used in Watch View, Scope View, and Dashboard as YML or PKL.</p>
+        </div>
+
+        <h6 class="mb-3">Available Views</h6>
+        <div class="mb-3">
+            <h6><span class="material-icons md-18 align-middle">visibility</span> Watch View</h6>
+            <p class="text-muted small mb-0">Monitor and interact with variables in real-time.</p>
+        </div>
+        <div class="mb-3">
+            <h6><span class="material-icons md-18 align-middle">show_chart</span> Scope View</h6>
+            <p class="text-muted small mb-0">Visualize variable data over time with oscilloscope-style charts.</p>
+        </div>
+        <div class="mb-3">
+            <h6><span class="material-icons md-18 align-middle">dashboard</span> Dashboard</h6>
+            <p class="text-muted small mb-0">Create custom layouts with interactive widgets and gauges.</p>
+        </div>
+        <div class="mb-3">
+            <h6><span class="material-icons md-18 align-middle">code</span> Scripting</h6>
+            <p class="text-muted small mb-0">Execute Python scripts with access to x2cscope.</p>
+        </div>
+
+        <h6 class="mb-2 mt-4">Tips</h6>
+        <ul class="text-muted small mb-0">
+            <li><span class="material-icons md-18 align-middle">qr_code_2</span> Click QR code icons to generate scannable links for mobile access</li>
+            <li><span class="material-icons md-18 align-middle">open_in_new</span> Click open icons to launch views in separate windows</li>
+            <li><span class="material-icons md-18 align-middle">help_outline</span> Click the help icon in the header to toggle this card</li>
+            <li><span class="material-icons md-18 align-middle">upload_file</span> Click the export icon in the header to download variables used by the active views</li>
+        </ul>
+    </div>
+
+    <!-- Right Column: Software Versions -->
+    <div class="col-md-6">
+        <h5 class="mb-3">Software Versions</h5>
+        <div class="card bg-light">
+            <div class="card-body p-3">
+                <p class="small mb-1"><strong>Application:</strong></p>
+                <ul class="small text-muted mb-3" style="list-style-type: none; padding-left: 0;">
+                    <li>pyX2Cscope: {{ version }}</li>
+                </ul>
+                <p class="small mb-1"><strong>Web Interface Dependencies:</strong></p>
+                <ul class="small text-muted mb-3" style="list-style-type: none; padding-left: 0;">
+                    <li id="flask-version">Flask: Loading...</li>
+                    <li id="flask-socketio-version">Flask-SocketIO: Loading...</li>
+                    <li id="mchplnet-version">mchplnet: Loading...</li>
+                    <li id="python-can-version">python-can: Loading...</li>
+                </ul>
+                <p class="small mb-1"><strong>Core Dependencies:</strong></p>
+                <ul class="small text-muted mb-0" style="list-style-type: none; padding-left: 0;">
+                    <li id="numpy-version">numpy: Loading...</li>
+                    <li id="matplotlib-version">matplotlib: Loading...</li>
+                    <li id="pyserial-version">pyserial: Loading...</li>
+                    <li id="pyelftools-version">pyelftools: Loading...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-<h6 class="mb-3">Available Views</h6>
-<div class="row">
-    <div class="col-md-6 mb-3">
-        <h6><span class="material-icons md-18 align-middle">visibility</span> Watch View</h6>
-        <p class="text-muted small mb-0">Monitor and interact with variables in real-time.</p>
-    </div>
-    <div class="col-md-6 mb-3">
-        <h6><span class="material-icons md-18 align-middle">show_chart</span> Scope View</h6>
-        <p class="text-muted small mb-0">Visualize variable data over time with oscilloscope-style charts.</p>
-    </div>
-    <div class="col-md-6 mb-3">
-        <h6><span class="material-icons md-18 align-middle">dashboard</span> Dashboard</h6>
-        <p class="text-muted small mb-0">Create custom layouts with interactive widgets and gauges.</p>
-    </div>
-    <div class="col-md-6 mb-3">
-        <h6><span class="material-icons md-18 align-middle">code</span> Scripting</h6>
-        <p class="text-muted small mb-0">Execute Python scripts with access to x2cscope.</p>
-    </div>
-</div>
-
-<h6 class="mb-2 mt-4">Tips</h6>
-<ul class="text-muted small mb-0">
-    <li><span class="material-icons md-18 align-middle">qr_code_2</span> Click QR code icons to generate scannable links for mobile access</li>
-    <li><span class="material-icons md-18 align-middle">open_in_new</span> Click open icons to launch views in separate windows</li>
-    <li><span class="material-icons md-18 align-middle">help_outline</span> Click the help icon in the header to toggle this card</li>
-</ul>
+<script>
+// Load version information
+fetch('/version-info')
+    .then(response => response.json())
+    .then(data => {
+        if (data.flask) document.getElementById('flask-version').textContent = 'Flask: ' + data.flask;
+        if (data.flask_socketio) document.getElementById('flask-socketio-version').textContent = 'Flask-SocketIO: ' + data.flask_socketio;
+        if (data.mchplnet) document.getElementById('mchplnet-version').textContent = 'mchplnet: ' + data.mchplnet;
+        if (data.python_can) document.getElementById('python-can-version').textContent = 'python-can: ' + data.python_can;
+        if (data.numpy) document.getElementById('numpy-version').textContent = 'numpy: ' + data.numpy;
+        if (data.matplotlib) document.getElementById('matplotlib-version').textContent = 'matplotlib: ' + data.matplotlib;
+        if (data.pyserial) document.getElementById('pyserial-version').textContent = 'pyserial: ' + data.pyserial;
+        if (data.pyelftools) document.getElementById('pyelftools-version').textContent = 'pyelftools: ' + data.pyelftools;
+    })
+    .catch(error => {
+        console.error('Error loading version info:', error);
+    });
+</script>

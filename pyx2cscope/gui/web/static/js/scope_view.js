@@ -47,12 +47,12 @@ socket_sv.on("sample_control_updated", function(response) {
             });
         }
         // Handle sampleTime input
-        if (response.data.sampleTime) {
+        if (response.data.sampleTime !== undefined) {
             const sampleTimeInput = document.getElementById('sampleTime');
             sampleTimeInput.value = response.data.sampleTime;
         }
         // Handle sampleFreq input
-        if (response.data.sampleFreq) {
+        if (response.data.sampleFreq !== undefined) {
             const sampleFreqInput = document.getElementById('sampleFreq');
             sampleFreqInput.value = response.data.sampleFreq;
         }

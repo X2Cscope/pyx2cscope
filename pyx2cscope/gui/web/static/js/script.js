@@ -50,11 +50,29 @@ function disconnect(){
     });
 }
 
+function exportVariables() {
+    const exportToggle = $('#exportVariablesToggle');
+    if (exportToggle.attr('aria-disabled') === 'true') {
+        return;
+    }
+
+    $('#x2cModalTitle').html('Export Variables');
+    $('#x2cModalBody').html(`
+        <p>Export the variables currently used in Watch View, Scope View, and Dashboard.</p>
+        <div class="d-flex gap-2 justify-content-center">
+            <a class="btn btn-primary" href="/variables/export?ext=yml">Export YML</a>
+            <a class="btn btn-outline-primary" href="/variables/export?ext=pkl">Export PKL</a>
+        </div>
+    `);
+    $('#x2cModal').modal('show');
+}
+
 function load_uart() {
     $.getJSON('/serial-ports', function(data) {
         uart = $('#port');
         uart.empty();
-        uart.append('<option value="default">Select UART</option>');
+        // Add AUTO option as default selection
+        uart.append($('<option selected></option>').val('AUTO').html('AUTO (Auto-detect)'));
         data.forEach(function(item) {
             uart.append($('<option></option>').val(item).html(item));
         });
@@ -93,6 +111,7 @@ function setConnectState(status) {
         $("#btnDashboardView").prop("disabled", false);
         $("#btnConnect").prop("disabled", true);
         $("#btnConnect").html("Disconnect", true);
+        $('#exportVariablesToggle').removeClass('disabled text-white-50').attr('aria-disabled', 'false');
         $('#connection-status').html('Connected');
         $('#desktopTabs').removeClass('disabled');
         $('#mobileTabs').removeClass('disabled');
@@ -110,6 +129,7 @@ function setConnectState(status) {
         $('#btnConnect').html('Connect');
         $('#btnConnect').removeClass('btn-danger');
         $('#btnConnect').addClass('btn-primary');
+        $('#exportVariablesToggle').addClass('disabled text-white-50').attr('aria-disabled', 'true');
         $('#setupView').removeClass('disabled');
         $('#desktopTabs').addClass('disabled');
         $('#mobileTabs').addClass('disabled');
@@ -122,6 +142,10 @@ function initSetupCard(){
     $('#btnConnect').on('click', function() {
         if($('#btnConnect').html() === "Connect") connect();
         else disconnect();
+    });
+    $('#exportVariablesToggle').on('click', function(e) {
+        e.preventDefault();
+        exportVariables();
     });
 
     $('#connection-status').on('click', function() {

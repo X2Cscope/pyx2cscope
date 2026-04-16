@@ -1,10 +1,8 @@
 """Demo scripting for user to get started with CAN interface."""
 import time
 
-from mchplnet.interfaces.factory import InterfaceType
 from pyx2cscope.utils import get_can_config, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
-
 
 # Check if x2cscope was injected by the Scripting tab, otherwise create our own
 if globals().get("x2cscope") is None:
