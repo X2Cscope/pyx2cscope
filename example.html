@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Examples &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>Examples &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -60,6 +60,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#examplemcaf">ExampleMCAF</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sfr-example">SFR_Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#live-scope-and-saving-data-to-csv-file">Live Scope and saving data to CSV file.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#check-elf-compatibility">Check ELF compatibility</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
@@ -306,7 +307,7 @@
 <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
     <span class="n">x2c_scope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
 
-<span class="n">x2c_scope</span><span class="o">.</span><span class="n">set_sample_time</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">x2c_scope</span><span class="o">.</span><span class="n">set_sample_time</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Create the plot</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>  <span class="c1"># Turn on interactive mode</span>
@@ -374,6 +375,30 @@
         <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Data saved in </span><span class="si">{</span><span class="n">csv_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="check-elf-compatibility">
+<h2>Check ELF compatibility<a class="headerlink" href="#check-elf-compatibility" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="sd">&quot;&quot;&quot;Check whether the loaded ELF file appears compatible with the connected target.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_com_port</span><span class="p">,</span> <span class="n">get_elf_file_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.x2cscope</span><span class="w"> </span><span class="kn">import</span> <span class="n">X2CScope</span>
+
+
+<span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">get_com_port</span><span class="p">())</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="n">get_elf_file_path</span><span class="p">())</span>
+
+    <span class="n">compatibility</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">check_compatibility</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compatibility report:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">compatibility</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">x2c_scope</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
 </pre></div>
 </div>
 <p>for more visit the <a class="reference external" href="https://github.com/X2Cscope/pyx2cscope/tree/develop/pyx2cscope/examples">pyX2Cscope example directory </a></p>

@@ -30,7 +30,7 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### Connection Settings
 
-1. **ELF File**: Click "Select ELF file" to choose the ELF file of the project your microcontroller is programmed with.
+1. **Select File**: Click `ELF / YML / PKL` to load variable information. Supported formats are `.elf`, `.yml`, and `.pkl`.
 
 2. **Interface**: Select the communication interface:
    - **UART**: Serial communication
@@ -41,8 +41,13 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### UART Settings
 
-- **Port**: Select the COM port from the dropdown. Use the refresh button to update available ports.
+- **Port**: Select the COM port from the dropdown.
+  - **AUTO**: Automatically detects the first available LNet device (recommended for single device).
+  - **Specific Port**: Choose a specific COM port (COM1, COM3, etc.) for manual connection.
+  - **Refresh Button**: Updates the list of available ports.
 - **Baud Rate**: Select the baud rate (38400, 115200, 230400, 460800, 921600).
+
+> **Tip**: When using AUTO mode, the system will scan available COM ports and connect to the first device that responds to the LNet protocol. This is useful when the exact port number is unknown or when working across different machines.
 
 ### TCP/IP Settings
 
@@ -51,12 +56,19 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### CAN Settings
 
-- **Bus Type**: Select USB or LAN.
-- **Channel**: Enter the CAN channel number.
-- **Baudrate**: Select from 125K, 250K, 500K, or 1M.
-- **Mode**: Select Standard or Extended.
-- **Tx-ID (hex)**: Transmit ID in hexadecimal (default: 7F1).
-- **Rx-ID (hex)**: Receive ID in hexadecimal (default: 7F0).
+- **Bus Type**: Select the CAN interface type:
+  - **PCAN USB**: Peak-System USB CAN adapters
+  - **PCAN LAN**: Peak-System Ethernet CAN gateways
+  - **SocketCAN**: Linux native CAN interface
+  - **Vector**: Vector CAN hardware
+  - **Kvaser**: Kvaser CAN interfaces
+- **Channel**: Enter the CAN channel number (numeric: 1, 2, 3...).
+- **Baud Rate**: Select from 125K, 250K, 500K, or 1M bits per second.
+- **Mode**: Select Standard (11-bit ID) or Extended (29-bit ID).
+- **Tx-ID (hex)**: Transmit arbitration ID in hexadecimal (default: 110).
+- **Rx-ID (hex)**: Receive arbitration ID in hexadecimal (default: 100).
+
+> **Note**: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.
 
 ### Device Information
 
@@ -119,6 +131,13 @@ Once an SFR is selected and confirmed, it is retrieved with `sfr=True` internall
 mapped to its fixed hardware address. From that point it behaves exactly like any other
 variable — values can be read, polled live (WatchView), or captured as a scope channel
 (ScopeView).
+
+### Export Variables
+
+The **Export Variables** button in the Data Views toolbar allows you to:
+- Export only the variables currently selected in WatchView and ScopeView.
+- Save the selection as `.yml` or `.pkl`.
+- Preserve SFR selections in the exported file too.
 
 ### Save and Load Config
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.elf_parser &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>pyx2cscope.parser.elf_parser &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -97,6 +97,15 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable</span><span class="w"> </span><span class="kn">import</span> <span class="n">VariableInfo</span>
 
+<div class="viewcode-block" id="ELF_MACHINE_TO_FAMILY">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ELF_MACHINE_TO_FAMILY">[docs]</a>
+<span class="n">ELF_MACHINE_TO_FAMILY</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;EM_ARM&quot;</span><span class="p">:</span> <span class="s2">&quot;arm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EM_DSPIC30F&quot;</span><span class="p">:</span> <span class="s2">&quot;dspic&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EM_MIPS&quot;</span><span class="p">:</span> <span class="s2">&quot;pic32&quot;</span><span class="p">,</span>
+<span class="p">}</span></div>
+
+
 
 <div class="viewcode-block" id="ElfParser">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser">[docs]</a>
@@ -128,9 +137,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span> <span class="o">=</span> <span class="n">elf_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elf_machine</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_signature</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">absolute_symbol_table</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_elf_file</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_symbol_table</span><span class="p">()</span>
@@ -187,6 +199,23 @@
 <span class="sd">            List[str]: A sorted list of variable names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ElfParser.get_target_family">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_target_family">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_target_family</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the MCU family inferred from the ELF machine type, if known.&quot;&quot;&quot;</span>
+        <span class="n">elf_machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_machine</span>
+        <span class="k">if</span> <span class="n">elf_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">ELF_MACHINE_TO_FAMILY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">elf_machine</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ElfParser.get_target_signature">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_target_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_target_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the best available ELF target signature for compatibility checks.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_signature</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_family</span><span class="p">()</span></div>
 
 
     <span class="nd">@abstractmethod</span>

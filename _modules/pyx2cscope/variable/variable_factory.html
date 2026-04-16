@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>pyx2cscope.variable.variable_factory &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -89,8 +89,10 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 
@@ -170,6 +172,28 @@
 <span class="sd">        _get_variable_instance: Creates a Variable instance from provided information.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="VariableFactory._NAME_SFR_PAIR_LEN">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._NAME_SFR_PAIR_LEN">[docs]</a>
+    <span class="n">_NAME_SFR_PAIR_LEN</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+<div class="viewcode-block" id="VariableFactory._DEVICE_FAMILY_KEYWORDS">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._DEVICE_FAMILY_KEYWORDS">[docs]</a>
+    <span class="n">_DEVICE_FAMILY_KEYWORDS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;arm&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;ARM&quot;</span><span class="p">,),</span>
+        <span class="s2">&quot;pic32&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;PIC32&quot;</span><span class="p">,),</span>
+        <span class="s2">&quot;dspic&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;DSPIC&quot;</span><span class="p">,</span> <span class="s2">&quot;PIC24&quot;</span><span class="p">),</span>
+    <span class="p">}</span></div>
+
+<div class="viewcode-block" id="VariableFactory._DEVICE_SIGNATURE_KEYWORDS">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._DEVICE_SIGNATURE_KEYWORDS">[docs]</a>
+    <span class="n">_DEVICE_SIGNATURE_KEYWORDS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;dspic33a&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;DSPIC33A&quot;</span><span class="p">,</span> <span class="s2">&quot;33AK&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;arm&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;ARM&quot;</span><span class="p">,),</span>
+        <span class="s2">&quot;pic32&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;PIC32&quot;</span><span class="p">,),</span>
+        <span class="s2">&quot;dspic&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;DSPIC&quot;</span><span class="p">,</span> <span class="s2">&quot;PIC24&quot;</span><span class="p">),</span>
+    <span class="p">}</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_net</span><span class="p">:</span> <span class="n">LNet</span><span class="p">,</span> <span class="n">elf_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the VariableFactory with LNet instance and path to the ELF file.</span>
 
@@ -198,7 +222,8 @@
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">GenericParser</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">elf_path</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">parser</span><span class="p">(</span><span class="n">elf_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_if_incompatible</span><span class="p">(</span><span class="n">elf_path</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="VariableFactory.set_lnet_interface">
@@ -209,12 +234,77 @@
 <span class="sd">        Args:</span>
 <span class="sd">            lnet (LNet): the LNet interface</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">l_net</span> <span class="o">=</span> <span class="n">lnet</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_net</span> <span class="o">=</span> <span class="n">lnet</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="o">.</span><span class="n">get_device_info</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="VariableFactory._get_device_family">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._get_device_family">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_device_family</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">processor_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device_info</span><span class="p">,</span> <span class="s2">&quot;processor_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">family</span><span class="p">,</span> <span class="n">keywords</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEVICE_FAMILY_KEYWORDS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">keyword</span> <span class="ow">in</span> <span class="n">processor_id</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">family</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="VariableFactory._get_device_signature">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._get_device_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_device_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">processor_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device_info</span><span class="p">,</span> <span class="s2">&quot;processor_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">signature</span><span class="p">,</span> <span class="n">keywords</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEVICE_SIGNATURE_KEYWORDS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">keyword</span> <span class="ow">in</span> <span class="n">processor_id</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">signature</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="VariableFactory.check_device_compatibility">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.check_device_compatibility">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_device_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether the loaded ELF appears compatible with the connected target.&quot;&quot;&quot;</span>
+        <span class="n">file_family</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_target_family</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;get_target_family&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">file_signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_target_signature</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;get_target_signature&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">file_family</span>
+        <span class="n">device_family</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_device_family</span><span class="p">()</span>
+        <span class="n">device_signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_device_signature</span><span class="p">()</span> <span class="ow">or</span> <span class="n">device_family</span>
+        <span class="n">checked</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">file_signature</span> <span class="ow">and</span> <span class="n">device_signature</span><span class="p">)</span>
+        <span class="n">compatible</span> <span class="o">=</span> <span class="p">(</span><span class="n">file_signature</span> <span class="o">==</span> <span class="n">device_signature</span><span class="p">)</span> <span class="k">if</span> <span class="n">checked</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">compatible</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="s2">&quot;ELF file and connected target appear to describe different MCU targets.&quot;</span>
+        <span class="k">elif</span> <span class="n">checked</span><span class="p">:</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="s2">&quot;ELF file appears compatible with the connected target.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="s2">&quot;Compatibility could not be determined.&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;checked&quot;</span><span class="p">:</span> <span class="n">checked</span><span class="p">,</span>
+            <span class="s2">&quot;compatible&quot;</span><span class="p">:</span> <span class="n">compatible</span><span class="p">,</span>
+            <span class="s2">&quot;device_family&quot;</span><span class="p">:</span> <span class="n">device_family</span><span class="p">,</span>
+            <span class="s2">&quot;file_family&quot;</span><span class="p">:</span> <span class="n">file_family</span><span class="p">,</span>
+            <span class="s2">&quot;device_signature&quot;</span><span class="p">:</span> <span class="n">device_signature</span><span class="p">,</span>
+            <span class="s2">&quot;file_signature&quot;</span><span class="p">:</span> <span class="n">file_signature</span><span class="p">,</span>
+            <span class="s2">&quot;processor_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device_info</span><span class="p">,</span> <span class="s2">&quot;processor_id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;elf_file&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="p">,</span> <span class="s2">&quot;elf_path&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="n">reason</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="VariableFactory._warn_if_incompatible">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._warn_if_incompatible">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_warn_if_incompatible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Warn when the loaded ELF appears incompatible with the connected target.&quot;&quot;&quot;</span>
+        <span class="n">compatibility</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_device_compatibility</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">compatibility</span><span class="p">[</span><span class="s2">&quot;compatible&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Loaded ELF &#39;</span><span class="si">{</span><span class="n">elf_path</span><span class="si">}</span><span class="s2">&#39; appears incompatible with the connected target &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">compatibility</span><span class="p">[</span><span class="s1">&#39;processor_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span>
+                <span class="p">),</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="VariableFactory._build_export_file_name">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._build_export_file_name">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_export_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span><span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_export_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span><span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">elf_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="c1"># get the elf_file name without extension</span>
@@ -225,9 +315,43 @@
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ext</span><span class="o">.</span><span class="n">value</span></div>
 
 
+<div class="viewcode-block" id="VariableFactory._resolve_export_item">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory._resolve_export_item">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_export_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve an export item to VariableInfo and its target map kind.&quot;&quot;&quot;</span>
+        <span class="n">variable_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">is_register</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NAME_SFR_PAIR_LEN</span><span class="p">:</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">sfr</span> <span class="o">=</span> <span class="n">item</span>
+            <span class="n">is_register</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">sfr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_info</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="n">is_register</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Variable</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="n">item</span><span class="p">:</span>
+                <span class="n">variable_info</span> <span class="o">=</span> <span class="n">item</span>
+                <span class="n">is_register</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span> <span class="n">item</span><span class="p">:</span>
+                <span class="n">variable_info</span> <span class="o">=</span> <span class="n">item</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">variable_info</span> <span class="o">=</span> <span class="n">item</span>
+                <span class="n">is_register</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span><span class="p">:</span>
+                <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span><span class="p">:</span>
+                <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">is_register</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">variable_info</span><span class="p">,</span> <span class="n">is_register</span></div>
+
+
 <div class="viewcode-block" id="VariableFactory.export_variables">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable_factory/index.html#pyx2cscope.variable.variable_factory.VariableFactory.export_variables">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">export_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span> <span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span> <span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the variables registered on the elf file to a pickle file.</span>
 
 <span class="sd">        Args:</span>
@@ -239,13 +363,17 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Elf file is not yet supported as export format...&quot;</span><span class="p">)</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_export_file_name</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
 
-        <span class="n">export_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">export_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;registers&quot;</span><span class="p">:</span> <span class="p">{}}</span>
         <span class="k">if</span> <span class="n">items</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-                <span class="n">variable_name</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">Variable</span><span class="p">)</span> <span class="k">else</span> <span class="n">item</span>
-                <span class="n">export_dict</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable_name</span><span class="p">)</span>
+                <span class="n">variable_info</span><span class="p">,</span> <span class="n">is_register</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_export_item</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">variable_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">target_key</span> <span class="o">=</span> <span class="s2">&quot;registers&quot;</span> <span class="k">if</span> <span class="n">is_register</span> <span class="k">else</span> <span class="s2">&quot;variables&quot;</span>
+                <span class="n">export_dict</span><span class="p">[</span><span class="n">target_key</span><span class="p">][</span><span class="n">variable_info</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_info</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">export_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span>
+            <span class="n">export_dict</span><span class="p">[</span><span class="s2">&quot;variables&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span><span class="p">)</span>
+            <span class="n">export_dict</span><span class="p">[</span><span class="s2">&quot;registers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="n">FileType</span><span class="o">.</span><span class="n">PICKLE</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
@@ -276,15 +404,25 @@
 
         <span class="c1"># clear any previous loaded variable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">imported_data</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="n">FileType</span><span class="o">.</span><span class="n">ELF</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">GenericParser</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_warn_if_incompatible</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="n">FileType</span><span class="o">.</span><span class="n">PICKLE</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="n">imported_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">FullLoader</span><span class="p">)</span>
+                <span class="n">imported_data</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">FullLoader</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">FileType</span><span class="o">.</span><span class="n">ELF</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">imported_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;variables&quot;</span> <span class="ow">in</span> <span class="n">imported_data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span> <span class="o">=</span> <span class="n">imported_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;variables&quot;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">register_map</span> <span class="o">=</span> <span class="n">imported_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;registers&quot;</span><span class="p">,</span> <span class="p">{})</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">variable_map</span> <span class="o">=</span> <span class="n">imported_data</span> <span class="ow">or</span> <span class="p">{}</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variables loaded from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
@@ -325,6 +463,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">variable_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get_var_info</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="n">sfr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">variable_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found!&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">variable_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; not found!&quot;</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span>

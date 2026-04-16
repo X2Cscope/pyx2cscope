@@ -57,14 +57,18 @@ Select the communication interface type:
 
 - **Serial** - For UART/USB-to-Serial connections
 - **TCP/IP** - For network-based connections
-- **CAN** - For CAN bus connections (coming soon)
+- **CAN** - For CAN bus connections
 
 ### Serial Configuration
 
 When Serial is selected:
 
-1. **UART Dropdown** - Select the COM port from the available ports list
-2. **Refresh Button** - Click to rescan for available COM ports
+1. **UART Dropdown** - Select the COM port:
+   - **AUTO (Auto-detect)**: Automatically scans and connects to the first available LNet device (recommended for single device).
+   - **Specific Port**: Choose a specific COM port (COM1, COM3, etc.) for manual connection.
+2. **Refresh Button** - Click to rescan for available COM ports.
+
+> **Tip**: The AUTO option is useful when you don't know the exact COM port or when working across different machines. The system will test each available port and connect to the first one that responds to the LNet protocol.
 
 ### TCP/IP Configuration
 
@@ -73,21 +77,35 @@ When TCP/IP is selected:
 1. **Host** - Enter the IP address or hostname of the target device (default: localhost)
 2. **Port** - Enter the TCP port number (default: 12666)
 
-### CAN Configuration (Coming Soon)
+### CAN Configuration
 
 When CAN is selected:
 
-- **Bus Type** - USB or LAN
-- **Channel** - CAN channel number
-- **Baudrate** - 125K, 250K, 500K, or 1M
-- **Mode** - Standard or Extended
-- **TX ID** - Transmit message ID (hex)
-- **RX ID** - Receive message ID (hex)
+- **Bus Type** - Select the CAN interface type:
+  - **PCAN USB**: Peak-System USB CAN adapters
+  - **PCAN LAN**: Peak-System Ethernet CAN gateways
+  - **SocketCAN**: Linux native CAN interface
+  - **Vector**: Vector CAN hardware
+  - **Kvaser**: Kvaser CAN interfaces
+- **Channel** - CAN channel number (numeric: 1, 2, 3...)
+- **Baud Rate** - 125K, 250K, 500K, or 1M bits per second
+- **Mode** - Standard (11-bit ID) or Extended (29-bit ID)
+- **TX ID** - Transmit arbitration ID in hexadecimal (default: 110)
+- **RX ID** - Receive arbitration ID in hexadecimal (default: 100)
 
-### ELF File Selection
+> **Note**: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.
 
-Select an ELF file (or PKL/YML import file) containing the variable information from your firmware.
+### Variable File Selection
+
+Select a variable file containing the variable information for your firmware.
 Supported formats: `.elf`, `.pkl`, `.yml`
+
+### Export Variables
+
+After connecting, click the export icon in the header to export the variables currently used in
+Watch View, Scope View, and Dashboard.
+
+Choose either `.yml` or `.pkl`. SFR selections are preserved in the exported file too.
 
 ### Connecting
 

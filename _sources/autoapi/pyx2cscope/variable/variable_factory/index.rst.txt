@@ -32,7 +32,7 @@ Functions
 
 
 
-.. py:class:: FileType
+.. py:class:: FileType(*args, **kwds)
 
 
    Bases: :py:obj:`enum.Enum`
@@ -83,6 +83,19 @@ Functions
        get_variable: Gets a Variable object based on the variable name.
        _get_variable_instance: Creates a Variable instance from provided information.
 
+   .. py:attribute:: _NAME_SFR_PAIR_LEN
+      :value: 2
+
+      
+
+   .. py:attribute:: _DEVICE_FAMILY_KEYWORDS
+
+      
+
+   .. py:attribute:: _DEVICE_SIGNATURE_KEYWORDS
+
+      
+
    .. py:method:: set_elf_file(elf_path: str)
 
       Set an elf file to be used as source for variables and addresses.
@@ -102,10 +115,31 @@ Functions
           lnet (LNet): the LNet interface
 
 
-   .. py:method:: _build_export_file_name(filename: str = None, ext: FileType = FileType.YAML)
+   .. py:method:: _get_device_family() -> Optional[str]
 
 
-   .. py:method:: export_variables(filename: str = None, ext: FileType = FileType.YAML, items=None)
+   .. py:method:: _get_device_signature() -> Optional[str]
+
+
+   .. py:method:: check_device_compatibility() -> dict
+
+      Check whether the loaded ELF appears compatible with the connected target.
+
+
+   .. py:method:: _warn_if_incompatible(elf_path: str)
+
+      Warn when the loaded ELF appears incompatible with the connected target.
+
+
+   .. py:method:: _build_export_file_name(filename: Optional[str] = None, ext: FileType = FileType.YAML)
+
+
+   .. py:method:: _resolve_export_item(item)
+
+      Resolve an export item to VariableInfo and its target map kind.
+
+
+   .. py:method:: export_variables(filename: Optional[str] = None, ext: FileType = FileType.YAML, items=None)
 
       Store the variables registered on the elf file to a pickle file.
 

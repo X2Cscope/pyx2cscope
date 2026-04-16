@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GUI Qt &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>GUI Qt &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -68,6 +68,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#watchview">WatchView</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#scopeview">ScopeView</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#special-function-registers-sfr">Special Function Registers (SFR)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-variables">Export Variables</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#save-and-load-config">Save and Load Config</a></li>
 </ul>
 </li>
@@ -139,7 +140,7 @@ application.</p>
 <section id="connection-settings">
 <h3>Connection Settings<a class="headerlink" href="#connection-settings" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
-<li><p><strong>ELF File</strong>: Click “Select ELF file” to choose the ELF file of the project your microcontroller is programmed with.</p></li>
+<li><p><strong>Select File</strong>: Click <code class="docutils literal notranslate"><span class="pre">ELF</span> <span class="pre">/</span> <span class="pre">YML</span> <span class="pre">/</span> <span class="pre">PKL</span></code> to load variable information. Supported formats are <code class="docutils literal notranslate"><span class="pre">.elf</span></code>, <code class="docutils literal notranslate"><span class="pre">.yml</span></code>, and <code class="docutils literal notranslate"><span class="pre">.pkl</span></code>.</p></li>
 <li><p><strong>Interface</strong>: Select the communication interface:</p>
 <ul class="simple">
 <li><p><strong>UART</strong>: Serial communication</p></li>
@@ -153,9 +154,18 @@ application.</p>
 <section id="uart-settings">
 <h3>UART Settings<a class="headerlink" href="#uart-settings" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p><strong>Port</strong>: Select the COM port from the dropdown. Use the refresh button to update available ports.</p></li>
+<li><p><strong>Port</strong>: Select the COM port from the dropdown.</p>
+<ul>
+<li><p><strong>AUTO</strong>: Automatically detects the first available LNet device (recommended for single device).</p></li>
+<li><p><strong>Specific Port</strong>: Choose a specific COM port (COM1, COM3, etc.) for manual connection.</p></li>
+<li><p><strong>Refresh Button</strong>: Updates the list of available ports.</p></li>
+</ul>
+</li>
 <li><p><strong>Baud Rate</strong>: Select the baud rate (38400, 115200, 230400, 460800, 921600).</p></li>
 </ul>
+<blockquote>
+<div><p><strong>Tip</strong>: When using AUTO mode, the system will scan available COM ports and connect to the first device that responds to the LNet protocol. This is useful when the exact port number is unknown or when working across different machines.</p>
+</div></blockquote>
 </section>
 <section id="tcp-ip-settings">
 <h3>TCP/IP Settings<a class="headerlink" href="#tcp-ip-settings" title="Link to this heading"></a></h3>
@@ -167,13 +177,24 @@ application.</p>
 <section id="can-settings">
 <h3>CAN Settings<a class="headerlink" href="#can-settings" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p><strong>Bus Type</strong>: Select USB or LAN.</p></li>
-<li><p><strong>Channel</strong>: Enter the CAN channel number.</p></li>
-<li><p><strong>Baudrate</strong>: Select from 125K, 250K, 500K, or 1M.</p></li>
-<li><p><strong>Mode</strong>: Select Standard or Extended.</p></li>
-<li><p><strong>Tx-ID (hex)</strong>: Transmit ID in hexadecimal (default: 7F1).</p></li>
-<li><p><strong>Rx-ID (hex)</strong>: Receive ID in hexadecimal (default: 7F0).</p></li>
+<li><p><strong>Bus Type</strong>: Select the CAN interface type:</p>
+<ul>
+<li><p><strong>PCAN USB</strong>: Peak-System USB CAN adapters</p></li>
+<li><p><strong>PCAN LAN</strong>: Peak-System Ethernet CAN gateways</p></li>
+<li><p><strong>SocketCAN</strong>: Linux native CAN interface</p></li>
+<li><p><strong>Vector</strong>: Vector CAN hardware</p></li>
+<li><p><strong>Kvaser</strong>: Kvaser CAN interfaces</p></li>
 </ul>
+</li>
+<li><p><strong>Channel</strong>: Enter the CAN channel number (numeric: 1, 2, 3…).</p></li>
+<li><p><strong>Baud Rate</strong>: Select from 125K, 250K, 500K, or 1M bits per second.</p></li>
+<li><p><strong>Mode</strong>: Select Standard (11-bit ID) or Extended (29-bit ID).</p></li>
+<li><p><strong>Tx-ID (hex)</strong>: Transmit arbitration ID in hexadecimal (default: 110).</p></li>
+<li><p><strong>Rx-ID (hex)</strong>: Receive arbitration ID in hexadecimal (default: 100).</p></li>
+</ul>
+<blockquote>
+<div><p><strong>Note</strong>: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.</p>
+</div></blockquote>
 </section>
 <section id="device-information">
 <h3>Device Information<a class="headerlink" href="#device-information" title="Link to this heading"></a></h3>
@@ -243,6 +264,15 @@ ordinary firmware variables.</p>
 mapped to its fixed hardware address. From that point it behaves exactly like any other
 variable — values can be read, polled live (WatchView), or captured as a scope channel
 (ScopeView).</p>
+</section>
+<section id="export-variables">
+<h3>Export Variables<a class="headerlink" href="#export-variables" title="Link to this heading"></a></h3>
+<p>The <strong>Export Variables</strong> button in the Data Views toolbar allows you to:</p>
+<ul class="simple">
+<li><p>Export only the variables currently selected in WatchView and ScopeView.</p></li>
+<li><p>Save the selection as <code class="docutils literal notranslate"><span class="pre">.yml</span></code> or <code class="docutils literal notranslate"><span class="pre">.pkl</span></code>.</p></li>
+<li><p>Preserve SFR selections in the exported file too.</p></li>
+</ul>
 </section>
 <section id="save-and-load-config">
 <h3>Save and Load Config<a class="headerlink" href="#save-and-load-config" title="Link to this heading"></a></h3>

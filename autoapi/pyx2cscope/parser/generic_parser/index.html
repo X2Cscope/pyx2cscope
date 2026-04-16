@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../../_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="../../../../_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -120,11 +120,35 @@
 <h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.generic_parser.elf_file" title="pyx2cscope.parser.generic_parser.elf_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elf_file</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS" title="pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TARGET_SIGNATURE_PATTERNS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN" title="pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REGISTER_SYMBOL_PATTERN</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE" title="pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FAMILY_REGISTER_BYTE_SIZE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.parser.generic_parser.elf_file" title="pyx2cscope.parser.generic_parser.elf_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elf_file</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.generic_parser.</span></span><span class="sig-name descname"><span class="pre">TARGET_SIGNATURE_PATTERNS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(('dspic33a',</span> <span class="pre">('__DSPIC33A',</span> <span class="pre">'__33AK')),</span> <span class="pre">('arm',</span> <span class="pre">('__PIC32C',</span> <span class="pre">'PIC32C/',</span> <span class="pre">'SAME',...</span></em><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#TARGET_SIGNATURE_PATTERNS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.generic_parser.</span></span><span class="sig-name descname"><span class="pre">REGISTER_SYMBOL_PATTERN</span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#REGISTER_SYMBOL_PATTERN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.generic_parser.</span></span><span class="sig-name descname"><span class="pre">FAMILY_REGISTER_BYTE_SIZE</span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#FAMILY_REGISTER_BYTE_SIZE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyx2cscope.parser.generic_parser.</span></span><span class="sig-name descname"><span class="pre">GenericParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elf_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser" title="Link to this definition"></a></dt>
@@ -163,6 +187,18 @@ stored in register_map, including any bitfield sub-entries.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_sfr_alias_names">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_sfr_alias_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">member_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_sfr_alias_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_sfr_alias_names" title="Link to this definition"></a></dt>
+<dd><p>Return alternate names for SFR bitfield members.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._add_sfr_aliases">
+<span class="sig-name descname"><span class="pre">_add_sfr_aliases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo" title="pyx2cscope.variable.variable.VariableInfo"><span class="pre">pyx2cscope.variable.variable.VariableInfo</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._add_sfr_aliases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._add_sfr_aliases" title="Link to this definition"></a></dt>
+<dd><p>Add convenience aliases for parsed SFR bitfield members.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_base_type_die">
 <span class="sig-name descname"><span class="pre">_get_base_type_die</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_die</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_base_type_die"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_base_type_die" title="Link to this definition"></a></dt>
 <dd><p>Find the base type die regarding the current selected die, i.e. array_type.</p>
@@ -197,6 +233,12 @@ structs: The DWARF structs used for parsing expressions.</p>
 <dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._load_symbol_table">
 <span class="sig-name descname"><span class="pre">_load_symbol_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._load_symbol_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._load_symbol_table" title="Link to this definition"></a></dt>
 <dd><p>Loads symbol table entries into a dictionary for fast access.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._infer_target_signature">
+<span class="sig-name descname"><span class="pre">_infer_target_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._infer_target_signature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._infer_target_signature" title="Link to this definition"></a></dt>
+<dd><p>Infer a more specific target signature from the ELF symbol table.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -287,6 +329,24 @@ After calling this method, members is populated with details of the variable and
 <p>Both firmware variables and peripheral registers (SFRs) are processed together
 in <code class="docutils literal notranslate"><span class="pre">_map_variables()</span></code>. The <code class="docutils literal notranslate"><span class="pre">self.is_sfr</span></code> flag set in <code class="docutils literal notranslate"><span class="pre">_get_die_variable()</span></code>
 determines which map each entry is written to inside <code class="docutils literal notranslate"><span class="pre">_process_die()</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_byte_size">
+<span class="sig-name descname"><span class="pre">_get_symbol_only_register_byte_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_symbol_only_register_byte_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_byte_size" title="Link to this definition"></a></dt>
+<dd><p>Return a best-effort byte size for symbol-only SFR entries.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_type">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_symbol_only_register_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">byte_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._get_symbol_only_register_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_type" title="Link to this definition"></a></dt>
+<dd><p>Return the variable type string for a symbol-only SFR entry.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyx2cscope.parser.generic_parser.GenericParser._map_symbol_only_registers">
+<span class="sig-name descname"><span class="pre">_map_symbol_only_registers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/pyx2cscope/parser/generic_parser.html#GenericParser._map_symbol_only_registers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.parser.generic_parser.GenericParser._map_symbol_only_registers" title="Link to this definition"></a></dt>
+<dd><p>Populate missing SFRs from absolute symbol-table entries when DWARF lacks variables.</p>
 </dd></dl>
 
 <dl class="py method">

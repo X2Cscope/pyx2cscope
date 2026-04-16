@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GUI Web &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>GUI Web &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -64,8 +64,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#interface-selection">Interface Selection</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#serial-configuration">Serial Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tcp-ip-configuration">TCP/IP Configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#can-configuration-coming-soon">CAN Configuration (Coming Soon)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#elf-file-selection">ELF File Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#can-configuration">CAN Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#variable-file-selection">Variable File Selection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#export-variables">Export Variables</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#connecting">Connecting</a></li>
 </ul>
 </li>
@@ -223,16 +224,24 @@ The default port is 5000 and the interface will be accessible at http://localhos
 <ul class="simple">
 <li><p><strong>Serial</strong> - For UART/USB-to-Serial connections</p></li>
 <li><p><strong>TCP/IP</strong> - For network-based connections</p></li>
-<li><p><strong>CAN</strong> - For CAN bus connections (coming soon)</p></li>
+<li><p><strong>CAN</strong> - For CAN bus connections</p></li>
 </ul>
 </section>
 <section id="serial-configuration">
 <h3>Serial Configuration<a class="headerlink" href="#serial-configuration" title="Link to this heading"></a></h3>
 <p>When Serial is selected:</p>
 <ol class="arabic simple">
-<li><p><strong>UART Dropdown</strong> - Select the COM port from the available ports list</p></li>
-<li><p><strong>Refresh Button</strong> - Click to rescan for available COM ports</p></li>
+<li><p><strong>UART Dropdown</strong> - Select the COM port:</p>
+<ul class="simple">
+<li><p><strong>AUTO (Auto-detect)</strong>: Automatically scans and connects to the first available LNet device (recommended for single device).</p></li>
+<li><p><strong>Specific Port</strong>: Choose a specific COM port (COM1, COM3, etc.) for manual connection.</p></li>
+</ul>
+</li>
+<li><p><strong>Refresh Button</strong> - Click to rescan for available COM ports.</p></li>
 </ol>
+<blockquote>
+<div><p><strong>Tip</strong>: The AUTO option is useful when you don’t know the exact COM port or when working across different machines. The system will test each available port and connect to the first one that responds to the LNet protocol.</p>
+</div></blockquote>
 </section>
 <section id="tcp-ip-configuration">
 <h3>TCP/IP Configuration<a class="headerlink" href="#tcp-ip-configuration" title="Link to this heading"></a></h3>
@@ -242,22 +251,39 @@ The default port is 5000 and the interface will be accessible at http://localhos
 <li><p><strong>Port</strong> - Enter the TCP port number (default: 12666)</p></li>
 </ol>
 </section>
-<section id="can-configuration-coming-soon">
-<h3>CAN Configuration (Coming Soon)<a class="headerlink" href="#can-configuration-coming-soon" title="Link to this heading"></a></h3>
+<section id="can-configuration">
+<h3>CAN Configuration<a class="headerlink" href="#can-configuration" title="Link to this heading"></a></h3>
 <p>When CAN is selected:</p>
 <ul class="simple">
-<li><p><strong>Bus Type</strong> - USB or LAN</p></li>
-<li><p><strong>Channel</strong> - CAN channel number</p></li>
-<li><p><strong>Baudrate</strong> - 125K, 250K, 500K, or 1M</p></li>
-<li><p><strong>Mode</strong> - Standard or Extended</p></li>
-<li><p><strong>TX ID</strong> - Transmit message ID (hex)</p></li>
-<li><p><strong>RX ID</strong> - Receive message ID (hex)</p></li>
+<li><p><strong>Bus Type</strong> - Select the CAN interface type:</p>
+<ul>
+<li><p><strong>PCAN USB</strong>: Peak-System USB CAN adapters</p></li>
+<li><p><strong>PCAN LAN</strong>: Peak-System Ethernet CAN gateways</p></li>
+<li><p><strong>SocketCAN</strong>: Linux native CAN interface</p></li>
+<li><p><strong>Vector</strong>: Vector CAN hardware</p></li>
+<li><p><strong>Kvaser</strong>: Kvaser CAN interfaces</p></li>
 </ul>
+</li>
+<li><p><strong>Channel</strong> - CAN channel number (numeric: 1, 2, 3…)</p></li>
+<li><p><strong>Baud Rate</strong> - 125K, 250K, 500K, or 1M bits per second</p></li>
+<li><p><strong>Mode</strong> - Standard (11-bit ID) or Extended (29-bit ID)</p></li>
+<li><p><strong>TX ID</strong> - Transmit arbitration ID in hexadecimal (default: 110)</p></li>
+<li><p><strong>RX ID</strong> - Receive arbitration ID in hexadecimal (default: 100)</p></li>
+</ul>
+<blockquote>
+<div><p><strong>Note</strong>: CAN interface requires vendor-specific drivers to be installed. See the API documentation for driver requirements.</p>
+</div></blockquote>
 </section>
-<section id="elf-file-selection">
-<h3>ELF File Selection<a class="headerlink" href="#elf-file-selection" title="Link to this heading"></a></h3>
-<p>Select an ELF file (or PKL/YML import file) containing the variable information from your firmware.
+<section id="variable-file-selection">
+<h3>Variable File Selection<a class="headerlink" href="#variable-file-selection" title="Link to this heading"></a></h3>
+<p>Select a variable file containing the variable information for your firmware.
 Supported formats: <code class="docutils literal notranslate"><span class="pre">.elf</span></code>, <code class="docutils literal notranslate"><span class="pre">.pkl</span></code>, <code class="docutils literal notranslate"><span class="pre">.yml</span></code></p>
+</section>
+<section id="export-variables">
+<h3>Export Variables<a class="headerlink" href="#export-variables" title="Link to this heading"></a></h3>
+<p>After connecting, click the export icon in the header to export the variables currently used in
+Watch View, Scope View, and Dashboard.</p>
+<p>Choose either <code class="docutils literal notranslate"><span class="pre">.yml</span></code> or <code class="docutils literal notranslate"><span class="pre">.pkl</span></code>. SFR selections are preserved in the exported file too.</p>
 </section>
 <section id="connecting">
 <h3>Connecting<a class="headerlink" href="#connecting" title="Link to this heading"></a></h3>

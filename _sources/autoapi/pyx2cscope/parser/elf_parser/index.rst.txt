@@ -29,6 +29,18 @@ Classes
 
 
 
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.parser.elf_parser.ELF_MACHINE_TO_FAMILY
+
+
+.. py:data:: ELF_MACHINE_TO_FAMILY
+
+   
+
 .. py:class:: ElfParser(elf_path: str)
 
 
@@ -88,6 +100,16 @@ Classes
 
       Returns:
           List[str]: A sorted list of variable names.
+
+
+   .. py:method:: get_target_family() -> Optional[str]
+
+      Return the MCU family inferred from the ELF machine type, if known.
+
+
+   .. py:method:: get_target_signature() -> Optional[str]
+
+      Return the best available ELF target signature for compatibility checks.
 
 
    .. py:method:: _load_elf_file()

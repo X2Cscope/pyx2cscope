@@ -11,6 +11,8 @@
        get_config_file() -> ConfigParser: Retrieves the configuration file.
        get_elf_file_path(key="path") -> str: Gets the path to the ELF file from the configuration.
        get_com_port(key="com_port") -> str: Gets the COM port from the configuration.
+       get_host_address(key="host_ip") -> str: Gets the host IP address from the configuration.
+       get_can_config() -> dict: Gets the CAN interface configuration parameters.
 
 
 
@@ -27,6 +29,7 @@ Functions
    pyx2cscope.utils.get_elf_file_path
    pyx2cscope.utils.get_com_port
    pyx2cscope.utils.get_host_address
+   pyx2cscope.utils.get_can_config
 
 
 
@@ -69,5 +72,27 @@ Functions
 
    Returns:
        str: The IP address.
+
+
+.. py:function:: get_can_config() -> dict
+
+   Gets the CAN interface configuration parameters from the configuration file.
+
+   Returns a dictionary with all CAN interface parameters including bustype, channel,
+   baud_rate, id_tx, id_rx, and mode. If values are not properly configured,
+   returns default values.
+
+   Returns:
+       dict: Dictionary containing CAN configuration parameters:
+           - bustype (str): CAN interface type (default: 'pcan_usb')
+           - channel (int): CAN channel number (default: 1)
+           - baud_rate (int): CAN baud rate in bps (default: 500000)
+           - id_tx (int): TX arbitration ID (default: 0x110)
+           - id_rx (int): RX arbitration ID (default: 0x100)
+           - mode (str): CAN ID mode 'standard' or 'extended' (default: 'standard')
+
+   Example:
+       >>> can_config = get_can_config()
+       >>> x2c = X2CScope(elf_file="firmware.elf", **can_config)
 
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.6.2 documentation</title>
+  <title>pyx2cscope.parser.generic_parser &mdash; pyX2Cscope 0.7.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=1c28bd9a"></script>
+        <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.6.2
+                0.7.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -91,6 +91,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">elftools.construct.lib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ListContainer</span>
@@ -100,6 +101,29 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.parser.elf_parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElfParser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.variable.variable</span><span class="w"> </span><span class="kn">import</span> <span class="n">VariableInfo</span>
+
+<div class="viewcode-block" id="TARGET_SIGNATURE_PATTERNS">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS">[docs]</a>
+<span class="n">TARGET_SIGNATURE_PATTERNS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">&quot;dspic33a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__DSPIC33A&quot;</span><span class="p">,</span> <span class="s2">&quot;__33AK&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;arm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__PIC32C&quot;</span><span class="p">,</span> <span class="s2">&quot;PIC32C/&quot;</span><span class="p">,</span> <span class="s2">&quot;SAME&quot;</span><span class="p">,</span> <span class="s2">&quot;__GENERIC_ARM_&quot;</span><span class="p">,</span> <span class="s2">&quot;ARMV6&quot;</span><span class="p">,</span> <span class="s2">&quot;ARMV7&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">&quot;pic32&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__PIC32&quot;</span><span class="p">,)),</span>
+    <span class="p">(</span><span class="s2">&quot;dspic&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__DSPIC&quot;</span><span class="p">,</span> <span class="s2">&quot;__PIC24&quot;</span><span class="p">,</span> <span class="s2">&quot;__33CK&quot;</span><span class="p">,</span> <span class="s2">&quot;__33CH&quot;</span><span class="p">,</span> <span class="s2">&quot;__33EP&quot;</span><span class="p">,</span> <span class="s2">&quot;__33FJ&quot;</span><span class="p">)),</span>
+<span class="p">)</span></div>
+
+<div class="viewcode-block" id="REGISTER_SYMBOL_PATTERN">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN">[docs]</a>
+<span class="n">REGISTER_SYMBOL_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Z][A-Z0-9]*$&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FAMILY_REGISTER_BYTE_SIZE">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE">[docs]</a>
+<span class="n">FAMILY_REGISTER_BYTE_SIZE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;arm&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">&quot;pic32&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">&quot;dspic33a&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">&quot;dspic&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">}</span></div>
+
 
 
 <div class="viewcode-block" id="GenericParser">
@@ -123,6 +147,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span> <span class="o">=</span> <span class="n">ELFFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">elf_machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="p">[</span><span class="s2">&quot;e_machine&quot;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="o">.</span><span class="n">get_dwarf_info</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading ELF file: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
@@ -165,7 +190,7 @@
         <span class="k">elif</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_external&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="s2">&quot;DW_TAG_variable&quot;</span><span class="p">:</span>
                 <span class="k">return</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span> <span class="o">=</span> <span class="n">die_struct</span>        
+            <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span> <span class="o">=</span> <span class="n">die_struct</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">is_sfr</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span>
@@ -201,7 +226,47 @@
                 <span class="n">address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">+</span> <span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;address_offset&quot;</span><span class="p">],</span>
                 <span class="n">array_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;array_size&quot;</span><span class="p">],</span>
                 <span class="n">valid_values</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;valid_values&quot;</span><span class="p">],</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sfr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_sfr_aliases</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_name</span><span class="p">,</span> <span class="n">target_map</span><span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="GenericParser._get_sfr_alias_names">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_sfr_alias_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sfr_alias_names</span><span class="p">(</span><span class="n">register_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">member_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return alternate names for SFR bitfield members.&quot;&quot;&quot;</span>
+        <span class="n">aliases</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">member_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">aliases</span>
+
+        <span class="n">member_leaf</span> <span class="o">=</span> <span class="n">member_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">aliases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member_leaf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">aliases</span></div>
+
+
+<div class="viewcode-block" id="GenericParser._add_sfr_aliases">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._add_sfr_aliases">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_sfr_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add convenience aliases for parsed SFR bitfield members.&quot;&quot;&quot;</span>
+        <span class="n">register_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_map</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">variable_info</span> <span class="ow">in</span> <span class="n">register_entries</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">member_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">register_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">alias_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sfr_alias_names</span><span class="p">(</span><span class="n">register_name</span><span class="p">,</span> <span class="n">member_name</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">alias_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target_map</span><span class="p">:</span>
+                    <span class="n">target_map</span><span class="p">[</span><span class="n">alias_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">VariableInfo</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">alias_name</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                        <span class="n">byte_size</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">byte_size</span><span class="p">,</span>
+                        <span class="n">bit_size</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">bit_size</span><span class="p">,</span>
+                        <span class="n">bit_offset</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">bit_offset</span><span class="p">,</span>
+                        <span class="n">address</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                        <span class="n">array_size</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">array_size</span><span class="p">,</span>
+                        <span class="n">valid_values</span><span class="o">=</span><span class="n">variable_info</span><span class="o">.</span><span class="n">valid_values</span><span class="p">,</span>
+                    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._get_base_type_die">
@@ -284,18 +349,48 @@
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._load_symbol_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_symbol_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads symbol table entries into a dictionary for fast access.&quot;&quot;&quot;</span>
+        <span class="n">all_symbol_names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="o">.</span><span class="n">iter_sections</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">SymbolTableSection</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">section</span><span class="o">.</span><span class="n">iter_symbols</span><span class="p">():</span>
-                    <span class="k">if</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;STT_OBJECT&quot;</span> <span class="ow">or</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span> <span class="o">==</span> <span class="s2">&quot;STB_GLOBAL&quot;</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_value&quot;</span><span class="p">]</span></div>
+                    <span class="n">all_symbol_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_value&quot;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_shndx&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SHN_ABS&quot;</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">absolute_symbol_table</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_value&quot;</span><span class="p">],</span>
+                                <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_size&quot;</span><span class="p">],</span>
+                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                                <span class="s2">&quot;bind&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span>
+                            <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_target_signature</span><span class="p">(</span><span class="n">all_symbol_names</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericParser._infer_target_signature">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._infer_target_signature">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_infer_target_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol_names</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer a more specific target signature from the ELF symbol table.&quot;&quot;&quot;</span>
+        <span class="n">symbol_names</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">symbol_names</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">signature</span><span class="p">,</span> <span class="n">markers</span> <span class="ow">in</span> <span class="n">TARGET_SIGNATURE_PATTERNS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">marker</span> <span class="ow">in</span> <span class="n">symbol_names</span> <span class="k">for</span> <span class="n">marker</span> <span class="ow">in</span> <span class="n">markers</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">signature</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_family</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._fetch_address_from_symtab">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._fetch_address_from_symtab">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_address_from_symtab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetches the address of a variable from the preloaded symbol table.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">variable_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+        <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">variable_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variable_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">variable_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variable_name</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="p">[</span><span class="n">candidate</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._find_actual_declaration">
@@ -553,6 +648,51 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span></div>
 
 
+<div class="viewcode-block" id="GenericParser._get_symbol_only_register_byte_size">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_byte_size">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_symbol_only_register_byte_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a best-effort byte size for symbol-only SFR entries.&quot;&quot;&quot;</span>
+        <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_signature</span><span class="p">()</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_family</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">FAMILY_REGISTER_BYTE_SIZE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">FAMILY_REGISTER_BYTE_SIZE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="GenericParser._get_symbol_only_register_type">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_type">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_symbol_only_register_type</span><span class="p">(</span><span class="n">byte_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the variable type string for a symbol-only SFR entry.&quot;&quot;&quot;</span>
+        <span class="n">type_by_size</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;unsigned char&quot;</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;unsigned int&quot;</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;unsigned long&quot;</span><span class="p">,</span>
+            <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;unsigned long long&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">type_by_size</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">byte_size</span><span class="p">,</span> <span class="s2">&quot;unsigned int&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericParser._map_symbol_only_registers">
+<a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._map_symbol_only_registers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_map_symbol_only_registers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Populate missing SFRs from absolute symbol-table entries when DWARF lacks variables.&quot;&quot;&quot;</span>
+        <span class="n">byte_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbol_only_register_byte_size</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">symbol_name</span><span class="p">,</span> <span class="n">symbol_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_symbol_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">REGISTER_SYMBOL_PATTERN</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">symbol_name</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">symbol_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span><span class="p">[</span><span class="n">symbol_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">VariableInfo</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">symbol_name</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_symbol_only_register_type</span><span class="p">(</span><span class="n">byte_size</span><span class="p">),</span>
+                <span class="n">byte_size</span><span class="o">=</span><span class="n">byte_size</span><span class="p">,</span>
+                <span class="n">bit_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">bit_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">address</span><span class="o">=</span><span class="n">symbol_data</span><span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">],</span>
+                <span class="n">array_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">valid_values</span><span class="o">=</span><span class="p">{},</span>
+            <span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="GenericParser._map_variables">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._map_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]:</span>
@@ -564,13 +704,15 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">expression_parser</span> <span class="o">=</span> <span class="n">DWARFExprParser</span><span class="p">(</span><span class="n">die</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">structs</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_process_die</span><span class="p">(</span><span class="n">die</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map_symbol_only_registers</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span></div>
 </div>
 
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
- 
+
     <span class="c1"># elf_file = r&quot;..\..\tests\data\qspin_foc_same54.elf&quot;</span>
 <div class="viewcode-block" id="elf_file">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.elf_file">[docs]</a>
@@ -583,13 +725,13 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">variable_map</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_map</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39; &quot;</span><span class="p">)</span>
-    
+
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Array variables:&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">var_info</span> <span class="ow">in</span> <span class="n">variable_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">var_info</span><span class="o">.</span><span class="n">array_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">var_info</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39; &quot;</span><span class="p">)</span>
-    
+
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;register variables:&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">register_map</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">register_map</span><span class="p">))</span>

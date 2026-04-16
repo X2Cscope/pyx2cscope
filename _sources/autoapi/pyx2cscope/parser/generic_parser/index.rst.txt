@@ -29,8 +29,24 @@ Attributes
 
 .. autoapisummary::
 
+   pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS
+   pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN
+   pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE
    pyx2cscope.parser.generic_parser.elf_file
 
+
+.. py:data:: TARGET_SIGNATURE_PATTERNS
+   :value: (('dspic33a', ('__DSPIC33A', '__33AK')), ('arm', ('__PIC32C', 'PIC32C/', 'SAME',...
+
+   
+
+.. py:data:: REGISTER_SYMBOL_PATTERN
+
+   
+
+.. py:data:: FAMILY_REGISTER_BYTE_SIZE
+
+   
 
 .. py:class:: GenericParser(elf_path)
 
@@ -70,6 +86,17 @@ Attributes
       stored in register_map, including any bitfield sub-entries.
 
 
+   .. py:method:: _get_sfr_alias_names(register_name: str, member_name: str) -> list[str]
+      :staticmethod:
+
+      Return alternate names for SFR bitfield members.
+
+
+   .. py:method:: _add_sfr_aliases(register_name: str, target_map: dict[str, pyx2cscope.variable.variable.VariableInfo])
+
+      Add convenience aliases for parsed SFR bitfield members.
+
+
    .. py:method:: _get_base_type_die(current_die)
 
       Find the base type die regarding the current selected die, i.e. array_type.
@@ -100,6 +127,11 @@ Attributes
    .. py:method:: _load_symbol_table()
 
       Loads symbol table entries into a dictionary for fast access.
+
+
+   .. py:method:: _infer_target_signature(symbol_names)
+
+      Infer a more specific target signature from the ELF symbol table.
 
 
    .. py:method:: _fetch_address_from_symtab(variable_name)
@@ -185,6 +217,22 @@ Attributes
       Both firmware variables and peripheral registers (SFRs) are processed together
       in ``_map_variables()``. The ``self.is_sfr`` flag set in ``_get_die_variable()``
       determines which map each entry is written to inside ``_process_die()``.
+
+
+   .. py:method:: _get_symbol_only_register_byte_size() -> int
+
+      Return a best-effort byte size for symbol-only SFR entries.
+
+
+   .. py:method:: _get_symbol_only_register_type(byte_size: int) -> str
+      :staticmethod:
+
+      Return the variable type string for a symbol-only SFR entry.
+
+
+   .. py:method:: _map_symbol_only_registers()
+
+      Populate missing SFRs from absolute symbol-table entries when DWARF lacks variables.
 
 
    .. py:method:: _map_variables() -> dict[str, pyx2cscope.variable.variable.VariableInfo]

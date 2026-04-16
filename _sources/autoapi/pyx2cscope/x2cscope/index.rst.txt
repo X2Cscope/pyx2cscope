@@ -181,7 +181,7 @@ Attributes
           Variable: The requested variable object.
 
 
-   .. py:method:: export_variables(filename: str = None, ext: pyx2cscope.variable.variable_factory.FileType = FileType.YAML, items=None)
+   .. py:method:: export_variables(filename: Optional[str] = None, ext: pyx2cscope.variable.variable_factory.FileType = FileType.YAML, items=None)
 
       Store the variables registered on the elf file to a pickle file.
 
@@ -200,6 +200,11 @@ Attributes
 
       Args:
           filename (str): The name of the file and its path.
+
+
+   .. py:method:: check_compatibility() -> dict
+
+      Check whether the currently loaded ELF appears compatible with the connected target.
 
 
    .. py:method:: add_scope_channel(variable: pyx2cscope.variable.variable.Variable, trigger: bool = False) -> int
@@ -264,7 +269,8 @@ Attributes
       Define the resolution how the samples will be buffered at the internal buffer.
 
       This can be used to extend total sampling time at the cost of resolution.
-      0 = every sample, 1 = every 2nd sample, 2 = every 3rd sample …
+      In the pyX2Cscope API, values start at 1, while LNET uses a 0-based pre-scaler.
+      1 = every sample, 2 = every 2nd sample, 3 = every 3rd sample ...
 
       Args:
           sample_time (int): The sample time factor.
