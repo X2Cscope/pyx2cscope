@@ -15,6 +15,13 @@ from elftools.elf.sections import SymbolTableSection
 from pyx2cscope.parser.elf_parser import ElfParser
 from pyx2cscope.variable.variable import VariableInfo
 
+TARGET_SIGNATURE_PATTERNS = (
+    ("dspic33a", ("__DSPIC33A", "__33AK")),
+    ("arm", ("__PIC32C", "PIC32C/", "SAME", "__GENERIC_ARM_", "ARMV6", "ARMV7")),
+    ("pic32", ("__PIC32",)),
+    ("dspic", ("__DSPIC", "__PIC24", "__33CK", "__33CH", "__33EP", "__33FJ")),
+)
+
 
 class GenericParser(ElfParser):
     """Class for parsing ELF files compatible with 32-bit architectures."""
@@ -33,6 +40,7 @@ class GenericParser(ElfParser):
         try:
             self.stream = open(self.elf_path, "rb")
             self.elf_file = ELFFile(self.stream)
+            self.elf_machine = self.elf_file["e_machine"]
             self.dwarf_info = self.elf_file.get_dwarf_info()
         except IOError:
             raise Exception(f"Error loading ELF file: {self.elf_path}")
@@ -170,11 +178,22 @@ class GenericParser(ElfParser):
 
     def _load_symbol_table(self):
         """Loads symbol table entries into a dictionary for fast access."""
+        all_symbol_names = []
         for section in self.elf_file.iter_sections():
             if isinstance(section, SymbolTableSection):
                 for symbol in section.iter_symbols():
+                    all_symbol_names.append(symbol.name)
                     if symbol["st_info"].type == "STT_OBJECT" or symbol["st_info"].bind == "STB_GLOBAL":
                         self.symbol_table[symbol.name] = symbol["st_value"]
+        self.target_signature = self._infer_target_signature(all_symbol_names)
+
+    def _infer_target_signature(self, symbol_names):
+        """Infer a more specific target signature from the ELF symbol table."""
+        symbol_names = "\n".join(symbol_names).upper()
+        for signature, markers in TARGET_SIGNATURE_PATTERNS:
+            if any(marker in symbol_names for marker in markers):
+                return signature
+        return self.get_target_family()
 
     def _fetch_address_from_symtab(self, variable_name):
         """Fetches the address of a variable from the preloaded symbol table."""

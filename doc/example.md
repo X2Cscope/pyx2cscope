@@ -287,6 +287,30 @@ with open(csv_file_path, mode="w", newline="") as file:
 logging.info(f"Data saved in {csv_file_path}")
 ````
 
+## Check ELF compatibility
+
+````python
+
+"""Check whether the loaded ELF file appears compatible with the connected target."""
+
+from pyx2cscope.utils import get_com_port, get_elf_file_path
+from pyx2cscope.x2cscope import X2CScope
+
+
+x2c_scope = X2CScope(port=get_com_port())
+
+try:
+    x2c_scope.import_variables(get_elf_file_path())
+
+    compatibility = x2c_scope.check_compatibility()
+    print("Compatibility report:")
+    for key, value in compatibility.items():
+        print(f"  {key}: {value}")
+finally:
+    x2c_scope.disconnect()
+
+````
+
 for more visit the [pyX2Cscope example directory ](https://github.com/X2Cscope/pyx2cscope/tree/develop/pyx2cscope/examples)
 
 

@@ -18,6 +18,12 @@ class TestPyX2CScope:
     elf_file = os.path.join(
         os.path.dirname(data.__file__), "mc_foc_sl_fip_dspic33ck_mclv48v300w.elf"
     )
+    arm_elf_file = os.path.join(
+        os.path.dirname(data.__file__), "qspin_foc_same54.elf"
+    )
+    dspic33a_elf_file = os.path.join(
+        os.path.dirname(data.__file__), "dsPIC33ak128mc106_foc.elf"
+    )
 
     def test_missing_elf_file_16(self, mocker):
         """Check if the corresponding exception is raised in case of wrong 16 bit elf path."""
@@ -94,3 +100,44 @@ class TestPyX2CScope:
             assert scope.scope_setup.sample_time_factor == 0
         finally:
             scope.disconnect()
+
+    def test_incompatible_elf_emits_warning(self, mocker):
+        """Check mismatched ELF and target families generate a warning."""
+        fake_serial(mocker, 16)
+        with warnings.catch_warnings(record=True) as captured:
+            warnings.simplefilter("always")
+            scope = X2CScope(elf_file=self.arm_elf_file, port="COM1")
+            try:
+                assert any("appears incompatible" in str(w.message) for w in captured)
+            finally:
+                scope.disconnect()
+
+    def test_check_compatibility(self, mocker):
+        """Check the compatibility API reports a matching dsPIC ELF correctly."""
+        fake_serial(mocker, 16)
+        scope = X2CScope(elf_file=self.elf_file, port="COM1")
+        try:
+            compatibility = scope.check_compatibility()
+            assert compatibility["checked"] is True
+            assert compatibility["compatible"] is True
+            assert compatibility["file_family"] == "dspic"
+            assert compatibility["device_family"] == "dspic"
+            assert compatibility["file_signature"] == "dspic"
+        finally:
+            scope.disconnect()
+
+    def test_check_compatibility_detects_dspic33a_mismatch(self, mocker):
+        """Check the compatibility API distinguishes dsPIC33A from generic dsPIC targets."""
+        fake_serial(mocker, 16)
+        with warnings.catch_warnings(record=True) as captured:
+            warnings.simplefilter("always")
+            scope = X2CScope(elf_file=self.dspic33a_elf_file, port="COM1")
+            try:
+                compatibility = scope.check_compatibility()
+                assert compatibility["checked"] is True
+                assert compatibility["compatible"] is False
+                assert compatibility["file_signature"] == "dspic33a"
+                assert compatibility["device_signature"] == "dspic"
+                assert any("appears incompatible" in str(w.message) for w in captured)
+            finally:
+                scope.disconnect()

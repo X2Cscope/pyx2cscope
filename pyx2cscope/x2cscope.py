@@ -177,6 +177,10 @@ class X2CScope:
         """
         self.variable_factory.import_variables(filename)
 
+    def check_compatibility(self) -> dict:
+        """Check whether the currently loaded ELF appears compatible with the connected target."""
+        return self.variable_factory.check_device_compatibility()
+
     def add_scope_channel(self, variable: Variable, trigger: bool = False) -> int:
         """Add a variable as a scope channel.
 

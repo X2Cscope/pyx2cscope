@@ -11,6 +11,12 @@ from typing import Dict, List, Optional
 
 from pyx2cscope.variable.variable import VariableInfo
 
+ELF_MACHINE_TO_FAMILY = {
+    "EM_ARM": "arm",
+    "EM_DSPIC30F": "dspic",
+    "EM_MIPS": "pic32",
+}
+
 
 class ElfParser(ABC):
     """Abstract base class for parsing ELF files.
@@ -40,6 +46,8 @@ class ElfParser(ABC):
         self.elf_path = elf_path
         self.dwarf_info = {}
         self.elf_file = None
+        self.elf_machine = None
+        self.target_signature = None
         self.variable_map = {}
         self.register_map = {}
         self.symbol_table = {}
@@ -88,6 +96,17 @@ class ElfParser(ABC):
             List[str]: A sorted list of variable names.
         """
         return sorted(self.variable_map.keys(), key=lambda x: x.lower())
+
+    def get_target_family(self) -> Optional[str]:
+        """Return the MCU family inferred from the ELF machine type, if known."""
+        elf_machine = self.elf_machine
+        if elf_machine is None:
+            return None
+        return ELF_MACHINE_TO_FAMILY.get(elf_machine)
+
+    def get_target_signature(self) -> Optional[str]:
+        """Return the best available ELF target signature for compatibility checks."""
+        return self.target_signature or self.get_target_family()
 
     @abstractmethod
     def _load_elf_file(self):

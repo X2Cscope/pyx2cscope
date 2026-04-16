@@ -5,7 +5,7 @@ import os
 from pyx2cscope.variable.variable_factory import FileType
 from pyx2cscope.x2cscope import X2CScope
 from tests import data
-from tests.utils.serial_stub import fake_serial
+from tests.utils.serial_stub import DEVICE_PROFILE_ARM, DEVICE_PROFILE_DSPIC33A, fake_serial
 
 
 class TestParser:
@@ -31,7 +31,7 @@ class TestParser:
 
     def test_variable_32_does_not_exist(self, mocker):
         """Given a valid 32 bit elf file, check if an invalid variable outputs the expected behavior."""
-        fake_serial(mocker, 16)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("wrong_variable_name")
         assert variable is None
@@ -47,7 +47,7 @@ class TestParser:
 
     def test_array_variable_32(self, mocker, array_size_test=255):
         """Given a valid 32 bit elf file, check if an array variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("bufferLNet")
         assert variable is not None, "variable name not found"
@@ -69,7 +69,7 @@ class TestParser:
 
     def test_variable_dspic33ak(self, mocker, array_size_test=4900, address=22122):
         """Given a valid dspic33ak elf file, check if an array variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
         x2c_scope = X2CScope(port="COM14")
         x2c_scope.import_variables(self.elf_file_dspic33ak)
         variable = x2c_scope.get_variable("measureInputs.current.Ia")
@@ -84,7 +84,7 @@ class TestParser:
 
     def test_nested_array_variable_32(self, mocker, array_size_test=3):
         """Given a valid 32 bit elf file, check if an array variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         variable = x2c_scope.get_variable("mcFocI_ModuleData_gds.dOutput.duty")
         assert variable is not None, "variable name not found"
@@ -93,7 +93,7 @@ class TestParser:
 
     def test_variable_enum_32(self, mocker, size6=6, size3=3):
         """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_32)
         # test simple variable enum
         variable = x2c_scope.get_variable("nextGlobalState")
@@ -108,7 +108,7 @@ class TestParser:
 
     def test_variable_enum_16(self, mocker, size6=6):
         """Given a valid dspic33ck elf file, check if an enum variable is read correctly."""
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 16)
         x2c_scope = X2CScope(port="COM14", elf_file=self.elf_file_16)
         # test nested enum inside a structure
         variable = x2c_scope.get_variable("motor.apiData.motorStatus")
@@ -119,7 +119,7 @@ class TestParser:
     def test_variable_export_import(self, mocker, tmp_path, monkeypatch):
         """Given a valid 32 bit elf file, check if export and import functions for variables are working."""
         monkeypatch.chdir(tmp_path)
-        fake_serial(mocker, 32)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_ARM)
         x2c_scope = X2CScope(port="COM14")
         # try to import elf file instead of loading directly from the constructor
         x2c_scope.import_variables(self.elf_file_32)
@@ -157,7 +157,7 @@ class TestParser:
     def test_sfr_export_import(self, mocker, tmp_path, monkeypatch):
         """Check exported SFR entries can be re-imported and resolved as registers."""
         monkeypatch.chdir(tmp_path)
-        fake_serial(mocker, 16)
+        fake_serial(mocker, 32, device_profile=DEVICE_PROFILE_DSPIC33A)
         x2c_scope = X2CScope(port="COM14")
         x2c_scope.import_variables(self.elf_file_dspic33ak)
 

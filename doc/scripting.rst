@@ -511,6 +511,26 @@ Internally, LNET uses a 0-based value, but pyX2Cscope exposes this parameter as 
 Additional information on how to change triggers, clear and change sample time, may be
 found on the API documentation.
 
+ELF Compatibility Check
+^^^^^^^^^^^^^^^^^^^^^^^
+
+When an ELF file is loaded, pyX2Cscope performs a best-effort compatibility check against the
+connected target and emits a warning if the MCU family appears to mismatch.
+
+You can also query this explicitly:
+
+.. code-block:: python
+
+    compatibility = x2c_scope.check_compatibility()
+    print(compatibility)
+
+The returned dictionary reports whether the check could be performed and whether the loaded ELF
+appears compatible with the connected target. The check is best-effort and uses the ELF target
+description together with the target processor information reported by LNET. It can distinguish
+common cases such as ARM-based targets, PIC32, generic dsPIC/PIC24, and dsPIC33A.
+
+See also the runnable example in ``pyx2cscope/examples/check_compatibility.py``.
+
 Utility Functions
 -----------------
 

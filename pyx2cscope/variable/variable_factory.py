@@ -3,6 +3,7 @@
 import logging
 import os
 import pickle
+import warnings
 from dataclasses import asdict
 from enum import Enum
 from typing import Optional
@@ -66,6 +67,17 @@ class VariableFactory:
     """
 
     _NAME_SFR_PAIR_LEN = 2
+    _DEVICE_FAMILY_KEYWORDS = {
+        "arm": ("ARM",),
+        "pic32": ("PIC32",),
+        "dspic": ("DSPIC", "PIC24"),
+    }
+    _DEVICE_SIGNATURE_KEYWORDS = {
+        "dspic33a": ("DSPIC33A", "33AK"),
+        "arm": ("ARM",),
+        "pic32": ("PIC32",),
+        "dspic": ("DSPIC", "PIC24"),
+    }
 
     def __init__(self, l_net: LNet, elf_path=None):
         """Initialize the VariableFactory with LNet instance and path to the ELF file.
@@ -94,6 +106,7 @@ class VariableFactory:
         """
         parser = GenericParser
         self.parser = parser(elf_path)
+        self._warn_if_incompatible(elf_path)
 
     def set_lnet_interface(self, lnet: LNet):
         """Set the LNet interface to be used for data communication.
@@ -102,6 +115,59 @@ class VariableFactory:
             lnet (LNet): the LNet interface
         """
         self.l_net = lnet
+        self.device_info = self.l_net.get_device_info()
+
+    def _get_device_family(self) -> Optional[str]:
+        processor_id = str(getattr(self.device_info, "processor_id", "") or "")
+        for family, keywords in self._DEVICE_FAMILY_KEYWORDS.items():
+            if any(keyword in processor_id for keyword in keywords):
+                return family
+        return None
+
+    def _get_device_signature(self) -> Optional[str]:
+        processor_id = str(getattr(self.device_info, "processor_id", "") or "")
+        for signature, keywords in self._DEVICE_SIGNATURE_KEYWORDS.items():
+            if any(keyword in processor_id for keyword in keywords):
+                return signature
+        return None
+
+    def check_device_compatibility(self) -> dict:
+        """Check whether the loaded ELF appears compatible with the connected target."""
+        file_family = self.parser.get_target_family() if hasattr(self.parser, "get_target_family") else None
+        file_signature = self.parser.get_target_signature() if hasattr(self.parser, "get_target_signature") else file_family
+        device_family = self._get_device_family()
+        device_signature = self._get_device_signature() or device_family
+        checked = bool(file_signature and device_signature)
+        compatible = (file_signature == device_signature) if checked else None
+        if compatible is False:
+            reason = "ELF file and connected target appear to describe different MCU targets."
+        elif checked:
+            reason = "ELF file appears compatible with the connected target."
+        else:
+            reason = "Compatibility could not be determined."
+        return {
+            "checked": checked,
+            "compatible": compatible,
+            "device_family": device_family,
+            "file_family": file_family,
+            "device_signature": device_signature,
+            "file_signature": file_signature,
+            "processor_id": str(getattr(self.device_info, "processor_id", "") or ""),
+            "elf_file": getattr(self.parser, "elf_path", ""),
+            "reason": reason,
+        }
+
+    def _warn_if_incompatible(self, elf_path: str):
+        """Warn when the loaded ELF appears incompatible with the connected target."""
+        compatibility = self.check_device_compatibility()
+        if compatibility["compatible"] is False:
+            warnings.warn(
+                (
+                    f"Loaded ELF '{elf_path}' appears incompatible with the connected target "
+                    f"({compatibility['processor_id']})."
+                ),
+                stacklevel=2,
+            )
 
     def _build_export_file_name(self, filename: Optional[str] = None, ext: FileType= FileType.YAML):
         if filename is None:
@@ -199,6 +265,7 @@ class VariableFactory:
 
         if ext is FileType.ELF:
             self.parser = GenericParser(filename)
+            self._warn_if_incompatible(filename)
         if ext is FileType.PICKLE:
             with open(filename, 'rb') as file:
                 imported_data = pickle.loads(file.read())
