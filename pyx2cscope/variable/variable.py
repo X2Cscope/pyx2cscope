@@ -166,7 +166,7 @@ class Variable:
         shift = (8 * self.info.byte_size) - (self.info.bit_offset + self.info.bit_size)
         mask = ((1 << self.info.bit_size) - 1) << shift
         current_data &= ~mask
-        return current_data | ((value << shift) & mask)
+        return current_data | ((int(value) << shift) & mask)
 
     def get_value(self):
         """Get the stored value from the MCU.

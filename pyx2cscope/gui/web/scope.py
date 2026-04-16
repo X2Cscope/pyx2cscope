@@ -194,17 +194,18 @@ class WebScope:
         return result
 
     # Dashboard variable methods
-    def add_dashboard_var(self, name):
+    def add_dashboard_var(self, name, sfr: bool = False):
         """Add a variable to the dashboard polling list.
 
         Args:
             name (str): Variable name to add.
+            sfr (bool): Whether to retrieve a peripheral register (SFR) instead of a firmware variable.
 
         Returns:
             bool: True if variable was added successfully.
         """
         if name not in self.dashboard_vars:
-            variable = self.x2c_scope.get_variable(name)
+            variable = self.x2c_scope.get_variable(name, sfr=sfr)
             if variable is not None:
                 self.dashboard_vars[name] = variable
                 return True

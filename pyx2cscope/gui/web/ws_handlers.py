@@ -220,8 +220,9 @@ def handle_add_dashboard_var(data):
         data (dict): Dictionary containing the variable name.
     """
     var = data.get("var")
+    sfr = bool(data.get("sfr", False))
     if var:
-        web_scope.add_dashboard_var(var)
+        web_scope.add_dashboard_var(var, sfr=sfr)
 
 @socketio.on("remove_dashboard_var", namespace="/dashboard")
 def handle_remove_dashboard_var(data):

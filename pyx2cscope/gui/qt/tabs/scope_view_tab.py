@@ -495,12 +495,13 @@ class ScopeViewTab(BaseTab):
             "offset": [off.text() for off in self._offset_edits],
             "color": [cb.currentData() or list(self._colors.keys())[cb.currentIndex()] for cb in self._color_combos],
             "show": [cb.isChecked() for cb in self._visible_checkboxes],
+            "sfr": [self._app_state.get_scope_channel(i).sfr for i in range(len(self._var_line_edits))],
             "trigger_variable": self._trigger_variable,
             "trigger_level": self._trigger_level_edit.text(),
             "trigger_delay": self._trigger_delay_combo.currentText(),
             "trigger_edge": self._trigger_edge_combo.currentText(),
             "trigger_mode": self._trigger_mode_combo.currentText(),
-            "sample_time_factor": self._sample_time_factor_edit.text() or "1",
+            "sample_time_factor": self._sample_time_factor_edit.value(),
             "single_shot": self._single_shot_checkbox.isChecked(),
         }
 
@@ -512,9 +513,12 @@ class ScopeViewTab(BaseTab):
         offsets = config.get("offset", [])
         colors = config.get("color", [])
         shows = config.get("show", [])
+        sfrs = config.get("sfr", [])
 
         for i, (le, var) in enumerate(zip(self._var_line_edits, variables)):
             le.setText(var)
+            sfr = sfrs[i] if i < len(sfrs) else False
+            self._app_state.update_scope_channel_field(i, "sfr", sfr)
             # Update app state with variable name
             self._app_state.update_scope_channel_field(i, "name", var)
         for i, (cb, trigger) in enumerate(zip(self._trigger_checkboxes, triggers)):
@@ -539,5 +543,5 @@ class ScopeViewTab(BaseTab):
         self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
         self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Disable"))
-        self._sample_time_factor_edit.setText(config.get("sample_time_factor", "1") or "1")
+        self._sample_time_factor_edit.setValue(int(config.get("sample_time_factor", 1)))
         self._single_shot_checkbox.setChecked(config.get("single_shot", False))

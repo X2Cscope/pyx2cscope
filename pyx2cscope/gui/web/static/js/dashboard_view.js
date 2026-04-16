@@ -326,7 +326,7 @@ function registerWidgetVariables(widget) {
             dashboardSocket.emit('add_dashboard_var', {var: varName});
         });
     } else if (widget.type !== 'label') {
-        dashboardSocket.emit('add_dashboard_var', {var: widget.variable});
+        dashboardSocket.emit('add_dashboard_var', {var: widget.variable, sfr: widget.sfr || false});
     }
 }
 
@@ -470,8 +470,8 @@ function showWidgetConfig(type, editWidget = null) {
 
     // Initialize Select2 after modal is shown so dropdown renders correctly
     $('#widgetConfigModal').one('shown.bs.modal', function() {
-        // Reset SFR toggle for each new config session
-        $('#widgetSfrToggle').prop('checked', false);
+        // Restore SFR toggle from widget if editing, otherwise reset
+        $('#widgetSfrToggle').prop('checked', editWidget ? (editWidget.sfr || false) : false);
 
         if (widgetDef.requiresVariable && !widgetDef.requiresMultipleVariables) {
             $('#widgetVarName').select2(initWidgetVarSelect2());
@@ -519,6 +519,7 @@ function addDashboardWidget() {
             id: widgetIdCounter++,
             type: currentWidgetType,
             variable: varName,
+            sfr: $('#widgetSfrToggle').is(':checked'),
             icon: widgetDef.icon,
             x: 50,
             y: 50,
