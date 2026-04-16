@@ -11,6 +11,11 @@ from tests.utils.serial_stub import DEVICE_PROFILE_ARM, DEVICE_PROFILE_DSPIC33A,
 class TestParser:
     """Parser related unit tests."""
 
+    LATE3_BIT_MASK = 0x0008
+    DMA0CH_ADDRESS = 8976
+    DMA0STAT_ADDRESS = 8984
+    DMA0CH_BYTE_SIZE = 4
+
     elf_file_16 = os.path.join(
         os.path.dirname(data.__file__), "MCAF_ZSMT_dsPIC33CK.elf"
     )
@@ -36,7 +41,7 @@ class TestParser:
 
         serial_stub.mock_memory[late_bit.info.address] = 0
         late_bit.set_value(int("1"))
-        assert serial_stub.mock_memory[late_bit.info.address] == 0x0008
+        assert serial_stub.mock_memory[late_bit.info.address] == self.LATE3_BIT_MASK
         assert late_bit.get_value() == 1
 
     def test_sfr_bitfield_aliases_dspic33a(self, mocker):
@@ -64,9 +69,9 @@ class TestParser:
 
         assert dma0ch is not None
         assert dma0stat is not None
-        assert dma0ch.info.address == 8976
-        assert dma0stat.info.address == 8984
-        assert dma0ch.info.byte_size == 4
+        assert dma0ch.info.address == self.DMA0CH_ADDRESS
+        assert dma0stat.info.address == self.DMA0STAT_ADDRESS
+        assert dma0ch.info.byte_size == self.DMA0CH_BYTE_SIZE
 
     def test_variable_16_does_not_exist(self, mocker):
         """Given a valid 16 bit elf file, check if an invalid variable outputs the expected behavior."""
