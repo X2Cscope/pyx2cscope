@@ -349,7 +349,6 @@ class X2CScope:
             data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)
             try:
                 # Read the chunk of data
-                data_size = chunk_size if i < int(num_chunks) else int(chunk_rest)try:
                 data = self.lnet.get_ram_array(current_address, data_size, data_type)
                 chunk_data.extend(data)
             except Exception as e:
