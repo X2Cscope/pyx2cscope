@@ -83,3 +83,33 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
                 gh release upload ${{ github.event.release.tag_name }} pyX2Cscope_linux_amd64_${{ github.event.release.tag_name }}.zip
+
+
+    attach-pypi-wheel:
+        runs-on: ubuntu-latest
+        needs: [buildwindows, buildlinux]
+
+        steps:
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: '3.12'
+
+        - name: Download wheel from PyPI
+          run: |
+            VERSION=${{ github.event.release.tag_name }}
+            # Strip leading 'v' if present (PyPI uses plain version numbers)
+            PYPI_VERSION=${VERSION#v}
+            # Retry up to 5 times to allow PyPI propagation after release.yml upload
+            for i in $(seq 1 5); do
+              pip download "pyx2cscope==${PYPI_VERSION}" --no-deps --dest ./dist && break
+              echo "Attempt $i failed, retrying in 30s..."
+              sleep 30
+            done
+            ls ./dist/
+
+        - name: Upload wheel to release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            gh release upload ${{ github.event.release.tag_name }} ./dist/*.whl --repo ${{ github.repository }}
