@@ -200,6 +200,13 @@ class ScriptingTab(QWidget):
         self._script_path_edit.setPlaceholderText("No script selected")
         script_layout.addWidget(self._script_path_edit, 1)
 
+        # New script button
+        self._new_btn = QPushButton("New Script")
+        self._new_btn.setFixedWidth(90)
+        self._new_btn.clicked.connect(self._on_new_clicked)
+        self._new_btn.setToolTip("Create a new script from the built-in template")
+        script_layout.addWidget(self._new_btn)
+
         # Browse button
         self._browse_btn = QPushButton("Browse...")
         self._browse_btn.setFixedWidth(80)
@@ -408,6 +415,47 @@ class ScriptingTab(QWidget):
         else:
             # Linux: Use xdg-open to respect file associations
             subprocess.Popen(['xdg-open', script_path])
+
+    def _on_new_clicked(self):
+        """Create a new script from the built-in template.
+
+        Asks the user where to save the new file, copies the template there,
+        loads it into the tab, and opens it in the system editor.
+        """
+        import shutil
+
+        from pyx2cscope.gui.resources import get_resource_path
+
+        last_dir = self._settings.value("script_file_dir", "", type=str)
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save New Script",
+            os.path.join(last_dir, "my_script.py"),
+            "Python Files (*.py);;All Files (*.*)",
+        )
+        if not file_path:
+            return
+
+        template_path = get_resource_path("script_template.py")
+        try:
+            shutil.copy(template_path, file_path)
+        except Exception as e:
+            self._log_message(f"Error creating script: {e}")
+            return
+
+        # Load the new file into the tab
+        self._script_path = file_path
+        self._script_path_edit.setText(file_path)
+        self._settings.setValue("script_file_dir", os.path.dirname(file_path))
+        self._edit_btn.setEnabled(True)
+        self._execute_btn.setEnabled(True)
+        self._log_message(f"New script created: {file_path}")
+
+        # Open immediately in the system editor so the user can start writing
+        try:
+            self._open_with_system_editor(file_path)
+        except Exception as e:
+            self._log_message(f"Could not open editor: {e}")
 
     def _on_browse_clicked(self):
         """Handle browse button click."""
