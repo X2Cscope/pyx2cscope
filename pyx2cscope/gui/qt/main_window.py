@@ -4,7 +4,7 @@ import logging
 import os
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtCore import QSettings, QTimer, Qt
 from PyQt5.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -43,9 +43,21 @@ class MainWindow(QMainWindow):
     - Configuration save/load
     """
 
-    def __init__(self, parent=None):
-        """Initialize the main window."""
+    def __init__(self, parent=None, **kwargs):
+        """Initialize the main window.
+
+        Args:
+            parent: Optional parent widget.
+            **kwargs: Optional CLI arguments forwarded from the command line.
+                      Relevant keys: ``elf`` (path to ELF file) and
+                      ``port`` (COM port), which trigger an automatic
+                      connection attempt after the window is displayed.
+        """
         super().__init__(parent)
+
+        # Store CLI arguments for deferred auto-connect
+        self._cli_elf = kwargs.get("elf")
+        self._cli_port = kwargs.get("port")
 
         # Initialize settings
         self._settings = QSettings("Microchip", "pyX2Cscope")
@@ -69,6 +81,10 @@ class MainWindow(QMainWindow):
 
         # Refresh ports on startup
         self._refresh_ports()
+
+        # If CLI provided elf + port, schedule auto-connect after event loop starts
+        if self._cli_elf and self._cli_port:
+            QTimer.singleShot(0, self._auto_connect)
 
     def _setup_ui(self):  # noqa: PLR0915
         """Set up the user interface."""
@@ -235,6 +251,42 @@ class MainWindow(QMainWindow):
     def _refresh_ports(self):
         """Refresh available COM ports."""
         self._connection_manager.refresh_ports()
+
+    def _auto_connect(self):
+        """Attempt automatic connection using CLI-supplied elf and port arguments.
+
+        Called once (via QTimer) after the window is shown.  On success the
+        UI switches directly to the Data Views tab so the user can start
+        monitoring right away.
+        """
+        if not self._cli_elf or not self._cli_port:
+            return
+
+        # Populate the Setup tab fields so the user can see what was used
+        self._setup_tab.elf_file_path = self._cli_elf
+        port_combo = self._setup_tab.port_combo
+        if self._cli_port in [port_combo.itemText(i) for i in range(port_combo.count())]:
+            port_combo.setCurrentText(self._cli_port)
+
+        conn_params = self._setup_tab.get_connection_params()
+        # Override with the CLI port in case it was not found in the combo box
+        if conn_params.get("interface", "UART") == "UART":
+            conn_params["port"] = self._cli_port
+
+        QApplication.processEvents()
+
+        connected = self._connection_manager.connect(self._cli_elf, **conn_params)
+
+        if connected:
+            self._setup_tab.set_connected(True)
+            self._setup_tab.save_connection_settings()
+            self._update_device_info()
+            # Activate WatchView and switch to Data Views tab
+            self._watch_view_btn.setChecked(True)
+            self._on_view_toggle_changed()
+            self._tab_widget.setCurrentIndex(1)
+        else:
+            self._setup_tab.set_connected(False)
 
     def _on_ports_refreshed(self, ports: list):
         """Handle ports refreshed signal."""
