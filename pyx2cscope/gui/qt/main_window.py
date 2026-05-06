@@ -247,6 +247,7 @@ class MainWindow(QMainWindow):
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
         self._watch_view_tab.live_polling_changed.connect(self._on_live_watch_changed)
+        self._watch_view_tab.live_interval_changed.connect(self._data_poller.set_live_interval)
 
     def _refresh_ports(self):
         """Refresh available COM ports."""

@@ -501,7 +501,7 @@ class ScopeViewTab(BaseTab):
             "trigger_delay": self._trigger_delay_combo.currentText(),
             "trigger_edge": self._trigger_edge_combo.currentText(),
             "trigger_mode": self._trigger_mode_combo.currentText(),
-            "sample_time_factor": self._sample_time_factor_edit.value(),
+            "sample_time_factor": self._sample_time_factor_edit.text(),
             "single_shot": self._single_shot_checkbox.isChecked(),
         }
 
@@ -543,5 +543,5 @@ class ScopeViewTab(BaseTab):
         self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
         self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Disable"))
-        self._sample_time_factor_edit.setValue(int(config.get("sample_time_factor", 1)))
+        self._sample_time_factor_edit.setText(str(config.get("sample_time_factor", 1)))
         self._single_shot_checkbox.setChecked(config.get("single_shot", False))

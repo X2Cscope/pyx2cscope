@@ -53,15 +53,18 @@ class ConfigManager(QObject):
         """
         try:
             if not file_path:
+                last_dir = self._settings.value("config_file_dir", os.path.expanduser("~"), type=str)
                 file_path, _ = QFileDialog.getSaveFileName(
                     self._parent,
                     "Save Configuration",
-                    "",
+                    os.path.join(last_dir, "pyx2cscope_config.json"),
                     "JSON Files (*.json)",
                 )
 
             if not file_path:
                 return False
+
+            self._settings.setValue("config_file_dir", os.path.dirname(file_path))
 
             with open(file_path, "w") as f:
                 json.dump(config, f, indent=4)
@@ -87,15 +90,18 @@ class ConfigManager(QObject):
         """
         try:
             if not file_path:
+                last_dir = self._settings.value("config_file_dir", os.path.expanduser("~"), type=str)
                 file_path, _ = QFileDialog.getOpenFileName(
                     self._parent,
                     "Load Configuration",
-                    "",
+                    last_dir,
                     "JSON Files (*.json)",
                 )
 
             if not file_path:
                 return None
+
+            self._settings.setValue("config_file_dir", os.path.dirname(file_path))
 
             with open(file_path, "r") as f:
                 config = json.load(f)

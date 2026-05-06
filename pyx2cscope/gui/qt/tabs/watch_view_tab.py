@@ -7,8 +7,10 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QDialog,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -37,6 +39,8 @@ class WatchViewTab(BaseTab):
 
     # Signal emitted when live polling state changes: (index, is_live)
     live_polling_changed = pyqtSignal(int, bool)
+    # Signal emitted when the user changes the live update rate: interval in ms
+    live_interval_changed = pyqtSignal(int)
 
     def __init__(self, app_state: "AppState", parent=None):
         """Initialize the WatchView tab.
@@ -61,14 +65,38 @@ class WatchViewTab(BaseTab):
 
         self._setup_ui()
 
+    # Mapping from combo label to interval in ms
+    _RATE_OPTIONS = [
+        ("1 s",  1000),
+        ("3 s",  3000),
+        ("5 s",  5000),
+    ]
+
     def _setup_ui(self):
         """Set up the user interface."""
-        # Set white background
+        # Set white background only on this widget, not on child popups.
+        # Using the class-name selector prevents the rule from being inherited
+        # by QAbstractItemView popups (e.g. the combo-box dropdown), which would
+        # otherwise render hover/selection text invisible against the white background.
         self.setAutoFillBackground(True)
-        self.setStyleSheet("background-color: white;")
+        self.setStyleSheet("WatchViewTab { background-color: white; }")
 
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
+
+        # --- Toolbar row: update-rate selector ---
+        toolbar = QHBoxLayout()
+        toolbar.setContentsMargins(4, 4, 4, 2)
+        toolbar.addWidget(QLabel("Live update rate:"))
+        self._rate_combo = QComboBox()
+        for label, _ in self._RATE_OPTIONS:
+            self._rate_combo.addItem(label)
+        self._rate_combo.setFixedWidth(70)
+        self._rate_combo.setToolTip("Interval between live variable reads")
+        self._rate_combo.currentIndexChanged.connect(self._on_rate_changed)
+        toolbar.addWidget(self._rate_combo)
+        toolbar.addStretch()
+        main_layout.addLayout(toolbar)
 
         # Scroll area
         scroll_area = QScrollArea()
@@ -138,7 +166,9 @@ class WatchViewTab(BaseTab):
 
         # Create widgets
         live_cb = QCheckBox()
-        live_cb.stateChanged.connect(lambda state, idx=index: self._on_live_changed(idx, state))
+        # Use the checkbox widget itself to derive the current index at signal time,
+        # so that removal+rearrange never causes stale index captures.
+        live_cb.stateChanged.connect(lambda state, cb=live_cb: self._on_live_changed(cb, state))
 
         var_edit = QLineEdit()
         var_edit.setPlaceholderText("Search Variable")
@@ -269,14 +299,25 @@ class WatchViewTab(BaseTab):
                 self._app_state.update_live_watch_var_field(index, "value", value)
                 self._update_scaled_value(index)
 
-    def _on_live_changed(self, index: int, state: int):
-        """Handle live checkbox state change."""
-        if index >= len(self._live_checkboxes):
+    def _on_live_changed(self, cb: QCheckBox, state: int):
+        """Handle live checkbox state change.
+
+        The checkbox widget is passed instead of a fixed index so that the
+        correct row is always found even after rows have been removed and
+        the list has been rearranged.
+        """
+        if cb not in self._live_checkboxes:
             return
+        index = self._live_checkboxes.index(cb)
         is_live = state == Qt.Checked
         self._app_state.update_live_watch_var_field(index, "live", is_live)
         # Emit signal to notify DataPoller
         self.live_polling_changed.emit(index, is_live)
+
+    def _on_rate_changed(self, combo_index: int):
+        """Handle live update rate combo change."""
+        _, interval_ms = self._RATE_OPTIONS[combo_index]
+        self.live_interval_changed.emit(interval_ms)
 
     def _on_value_changed(self, index: int):
         """Handle value edit finished - write to device."""
