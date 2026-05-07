@@ -82,11 +82,12 @@ class WatchViewTab(BaseTab):
         self.setStyleSheet("WatchViewTab { background-color: white; }")
 
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(8, 8, 8, 8)
         self.setLayout(main_layout)
 
         # --- Toolbar row: update-rate selector ---
         toolbar = QHBoxLayout()
-        toolbar.setContentsMargins(4, 4, 4, 2)
+        toolbar.setContentsMargins(0, 0, 0, 4)
         toolbar.addWidget(QLabel("Live update rate:"))
         self._rate_combo = QComboBox()
         for label, _ in self._RATE_OPTIONS:
@@ -109,9 +110,9 @@ class WatchViewTab(BaseTab):
 
         # Grid layout for variable rows
         self._grid_layout = QGridLayout()
-        self._grid_layout.setContentsMargins(0, 0, 0, 0)
-        self._grid_layout.setVerticalSpacing(2)
-        self._grid_layout.setHorizontalSpacing(5)
+        self._grid_layout.setContentsMargins(4, 4, 4, 4)
+        self._grid_layout.setVerticalSpacing(4)
+        self._grid_layout.setHorizontalSpacing(6)
         scroll_layout.addLayout(self._grid_layout)
 
         # Headers
@@ -138,7 +139,7 @@ class WatchViewTab(BaseTab):
         # Add stretch to push content to top
         scroll_layout.addStretch()
 
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setContentsMargins(4, 4, 4, 4)
 
     def on_connection_changed(self, connected: bool):
         """Handle connection state changes."""
@@ -178,7 +179,7 @@ class WatchViewTab(BaseTab):
 
         value_edit = QLineEdit()
         value_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        value_edit.editingFinished.connect(lambda idx=index: self._on_value_changed(idx))
+        value_edit.editingFinished.connect(lambda ve=value_edit: self._on_value_changed(ve))
 
         scaling_edit = QLineEdit("1")
         scaling_edit.editingFinished.connect(lambda idx=index: self._update_scaled_value(idx))
@@ -319,19 +320,23 @@ class WatchViewTab(BaseTab):
         _, interval_ms = self._RATE_OPTIONS[combo_index]
         self.live_interval_changed.emit(interval_ms)
 
-    def _on_value_changed(self, index: int):
-        """Handle value edit finished - write to device."""
-        if index >= len(self._variable_edits):
+    def _on_value_changed(self, ve: QLineEdit):
+        """Handle value edit finished - write to device and refresh scaled value."""
+        if ve not in self._value_edits:
             return
+        index = self._value_edits.index(ve)
 
         var_name = self._variable_edits[index].text()
         if var_name and var_name != "None":
             try:
-                value = float(self._value_edits[index].text())
+                value = float(ve.text())
                 sfr = self._app_state.get_live_watch_var(index).sfr
                 self._app_state.write_variable(var_name, value, sfr=sfr)
             except ValueError:
                 pass
+
+        # Always update scaled value so offset/gain reflect the new number
+        self._update_scaled_value(index)
 
     def _update_scaled_value(self, index: int):
         """Update the scaled value for a variable."""
