@@ -1,4 +1,3 @@
-let parameterCardEnabled = true;
 let parameterTable;
 
 const socket_wv = io("/watch-view");
@@ -42,16 +41,6 @@ function setParameterRefreshInterval(){
             socket_wv.emit("set_watch_rate", { rate: rate });
         }
     });
-}
-
-function wv_periodic_update(){
-    if(!parameterCardEnabled) return;
-    update = false;
-    cbs = $('td:first-child input:checkbox', $('#parameterTableBody'));
-    for(let cb of cbs) {
-        update |= cb.checked?1:0;
-    }
-    if(update) parameterTable.ajax.reload();
 }
 
 function setParameterTableListeners(){
