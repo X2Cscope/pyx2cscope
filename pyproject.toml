@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyx2cscope"
-version = "0.7.0"
+version = "0.7.1"
 description = "python implementation of X2Cscope"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
