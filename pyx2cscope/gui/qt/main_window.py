@@ -413,13 +413,44 @@ class MainWindow(QMainWindow):
         # Get connection parameters
         conn_params = self._setup_tab.get_connection_params()
 
+        scope_qt = self._scope_view_tab.get_config()
+        watch_qt = self._watch_view_tab.get_config()
+
+        # Build shared list-of-dicts format (compatible with web GUI)
+        scope_shared = [
+            {
+                "variable": scope_qt["variables"][i],
+                "sfr": scope_qt["sfr"][i] if i < len(scope_qt.get("sfr", [])) else False,
+                "trigger": scope_qt["trigger"][i] if i < len(scope_qt.get("trigger", [])) else False,
+                "enable": scope_qt["show"][i] if i < len(scope_qt.get("show", [])) else True,
+                "color": scope_qt["color"][i] if i < len(scope_qt.get("color", [])) else "#ff0000",
+                "gain": scope_qt["scale"][i] if i < len(scope_qt.get("scale", [])) else "1.0",
+                "offset": scope_qt["offset"][i] if i < len(scope_qt.get("offset", [])) else "0.0",
+            }
+            for i, v in enumerate(scope_qt.get("variables", []))
+            if v
+        ]
+        watch_shared = [
+            {
+                "variable": watch_qt["variables"][i],
+                "sfr": watch_qt["sfr"][i] if i < len(watch_qt.get("sfr", [])) else False,
+                "live": watch_qt["live"][i] if i < len(watch_qt.get("live", [])) else False,
+                "scaling": watch_qt["scaling"][i] if i < len(watch_qt.get("scaling", [])) else "1.0",
+                "offset": watch_qt["offsets"][i] if i < len(watch_qt.get("offsets", [])) else "0.0",
+            }
+            for i, v in enumerate(watch_qt.get("variables", []))
+            if v
+        ]
+
         config = ConfigManager.build_config(
             elf_file=self._setup_tab.elf_file_path,
             connection=conn_params,
-            scope_view=self._scope_view_tab.get_config(),
-            tab3_view=self._watch_view_tab.get_config(),
+            scope_view=scope_shared,
+            tab3_view=watch_shared,
             view_mode=view_mode,
         )
+        # "watch_view" key for web GUI compatibility (same data as "tab3_view")
+        config["watch_view"] = watch_shared
         self._config_manager.save_config(config)
 
     def _export_selected_variables(self):
@@ -486,9 +517,33 @@ class MainWindow(QMainWindow):
         if self._setup_tab.elf_file_path and not self._app_state.is_connected():
             self._on_connect_clicked()
 
-        # Load tab configurations
-        self._scope_view_tab.load_config(config.get("scope_view", {}))
-        self._watch_view_tab.load_config(config.get("tab3_view", {}))
+        # Load tab configurations — support both Qt format (dicts-of-arrays) and
+        # shared web format (list-of-dicts with "watch_view"/"scope_view" keys).
+        raw_scope = config.get("scope_view", {})
+        raw_watch = config.get("tab3_view") or config.get("watch_view", {})
+
+        # Convert shared list-of-dicts format → Qt dicts-of-arrays format
+        if isinstance(raw_scope, list):
+            raw_scope = {
+                "variables": [v.get("variable", "") for v in raw_scope],
+                "trigger": [v.get("trigger", False) for v in raw_scope],
+                "scale": [str(v.get("gain", v.get("scale", 1.0))) for v in raw_scope],
+                "offset": [str(v.get("offset", 0.0)) for v in raw_scope],
+                "color": [v.get("color", "#ff0000") for v in raw_scope],
+                "show": [v.get("enable", True) for v in raw_scope],
+                "sfr": [v.get("sfr", False) for v in raw_scope],
+            }
+        if isinstance(raw_watch, list):
+            raw_watch = {
+                "variables": [v.get("variable", "") for v in raw_watch],
+                "scaling": [str(v.get("scaling", 1.0)) for v in raw_watch],
+                "offsets": [str(v.get("offset", 0.0)) for v in raw_watch],
+                "live": [v.get("live", False) for v in raw_watch],
+                "sfr": [v.get("sfr", False) for v in raw_watch],
+            }
+
+        self._scope_view_tab.load_config(raw_scope)
+        self._watch_view_tab.load_config(raw_watch)
 
         # Load view mode and set toggle buttons
         view_mode = config.get("view_mode", "Both")

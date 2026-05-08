@@ -3,6 +3,7 @@
 This module holds and handles the main url and forward the relative urls to the specific
 pages (blueprints).
 """
+import json
 import logging
 import os
 import socket
@@ -48,6 +49,8 @@ def create_app():
     app.add_url_rule("/variables", view_func=variables_autocomplete, methods=["POST", "GET"])
     app.add_url_rule("/variables/all", view_func=get_variables, methods=["POST", "GET"])
     app.add_url_rule("/variables/export", view_func=export_variables, methods=["GET"])
+    app.add_url_rule("/config/save", view_func=save_config, methods=["GET"])
+    app.add_url_rule("/config/load", view_func=load_config, methods=["POST"])
 
     socketio.init_app(app)
 
@@ -299,6 +302,86 @@ def export_variables():
             "Content-disposition": f"attachment; filename={web_scope.get_export_filename(file_type.value)}"
         },
     )
+
+
+def save_config():
+    """Generate and download a unified JSON config with watch and scope variables.
+
+    The file contains only variable data (no connection settings), compatible
+    with the Qt app's config format for watch_view and scope_view sections.
+    """
+    watch_data = [web_scope.variable_to_json(v) for v in web_scope.watch_vars]
+    scope_data = [web_scope.variable_to_json(v) for v in web_scope.scope_vars]
+    config = {
+        "watch_view": watch_data,
+        "scope_view": scope_data,
+    }
+    return Response(
+        json.dumps(config, indent=4),
+        mimetype="application/json",
+        headers={"Content-disposition": "attachment; filename=pyx2cscope_config.json"},
+    )
+
+
+def load_config():
+    """Receive a unified JSON config and restore watch and scope variables.
+
+    Expects a JSON file with ``watch_view`` and/or ``scope_view`` keys,
+    each containing a list of variable dicts (same format as save_config).
+    Emits SocketIO events so all connected browsers reload their tables.
+    """
+    from pyx2cscope.gui.web.extensions import socketio as _socketio
+
+    cfg_file = request.files.get("file")
+    msg = "Invalid config file."
+    if cfg_file and cfg_file.filename.endswith(".json"):
+        try:
+            data = json.loads(cfg_file.read().decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            return jsonify({"status": "error", "msg": msg}), 400
+
+        if not isinstance(data, dict):
+            return jsonify({"status": "error", "msg": msg}), 400
+
+        errors = []
+
+        # Restore watch variables
+        watch_items = data.get("watch_view", [])
+        if isinstance(watch_items, list) and watch_items:
+            web_scope.clear_watch_var()
+            for item in watch_items:
+                if not isinstance(item, dict) or "variable" not in item:
+                    continue
+                var = web_scope.add_watch_var(item["variable"], sfr=item.get("sfr", False))
+                if var is None:
+                    errors.append(item["variable"])
+                else:
+                    for key, value in item.items():
+                        if key in var and key != "variable":
+                            var[key] = value
+            _socketio.emit("watch_table_update", {}, namespace="/watch-view")
+
+        # Restore scope variables
+        scope_items = data.get("scope_view", [])
+        if isinstance(scope_items, list) and scope_items:
+            web_scope.clear_scope_var()
+            for item in scope_items:
+                if not isinstance(item, dict) or "variable" not in item:
+                    continue
+                var = web_scope.add_scope_var(item["variable"], sfr=item.get("sfr", False))
+                if var is None:
+                    errors.append(item["variable"])
+                else:
+                    for key, value in item.items():
+                        if key in var and key != "variable":
+                            var[key] = value
+            _socketio.emit("scope_table_update", {}, namespace="/scope-view")
+
+        if errors:
+            return jsonify({"status": "error", "msg": "Variables not available: " + ", ".join(errors)}), 400
+        return jsonify({"status": "success"})
+
+    return jsonify({"status": "error", "msg": msg}), 400
 
 
 def open_browser(host="localhost", web_port=5000):

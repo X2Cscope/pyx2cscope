@@ -69,31 +69,6 @@ function setParameterTableListeners(){
         }
     });
 
-    // Set up Save button click handler
-    $("#parameterSave").on("click", function() {
-        window.location.href = '/watch/save';
-    });
-    $('#parameterLoad').on('change', function(event) {
-        var file = event.target.files[0];
-        var formData = new FormData();
-        formData.append('file', file);
-
-        $.ajax({
-            url: '/watch/load', // Replace with your server upload endpoint
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                parameterTable.ajax.reload();
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(jqXHR.responseJSON.msg);
-            }
-        }).always(function() {
-            $('#parameterLoad').val('');
-        });
-    });
 }
 
 function initParameterSelect(){
