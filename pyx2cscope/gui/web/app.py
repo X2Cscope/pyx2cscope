@@ -232,7 +232,11 @@ def disconnect():
 
     call {server_url}/disconnect to execute.
     """
+    from pyx2cscope.gui.web.extensions import socketio as _socketio
+
     web_scope.disconnect()
+    _socketio.emit("watch_table_update", {}, namespace="/watch-view")
+    _socketio.emit("scope_table_update", {}, namespace="/scope-view")
     return jsonify({"status": "success"})
 
 
@@ -315,6 +319,8 @@ def save_config():
     config = {
         "watch_view": watch_data,
         "scope_view": scope_data,
+        "sample_control": web_scope.sample_control,
+        "trigger_control": web_scope.trigger_control,
     }
     return Response(
         json.dumps(config, indent=4),
@@ -376,6 +382,31 @@ def load_config():
                         if key in var and key != "variable":
                             var[key] = value
             _socketio.emit("scope_table_update", {}, namespace="/scope-view")
+
+        # Restore sample control settings
+        sample_control = data.get("sample_control")
+        if isinstance(sample_control, dict):
+            trigger_action = sample_control.get("triggerAction", "off")
+            sample_time = max(int(sample_control.get("sampleTime", 1)), 1)
+            sample_freq = float(sample_control.get("sampleFreq", 20))
+            web_scope.scope_set_sample(trigger_action, sample_time, sample_freq)
+            _socketio.emit("sample_control_updated", {
+                "status": "success",
+                "data": web_scope.sample_control,
+            }, namespace="/scope-view")
+
+        # Restore trigger control settings
+        trigger_control = data.get("trigger_control")
+        if isinstance(trigger_control, dict):
+            parsed = {
+                k: (float(v) if k == "trigger_level" else int(v))
+                for k, v in trigger_control.items()
+            }
+            web_scope.scope_set_trigger(**parsed)
+            _socketio.emit("trigger_control_updated", {
+                "status": "success",
+                "data": web_scope.trigger_control,
+            }, namespace="/scope-view")
 
         if errors:
             return jsonify({"status": "error", "msg": "Variables not available: " + ", ".join(errors)}), 400
