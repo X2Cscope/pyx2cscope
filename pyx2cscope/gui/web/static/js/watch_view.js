@@ -8,6 +8,10 @@ socket_wv.on("connect", () => {
 
 socket_wv.on("watch_data_update", (data) => {
     console.log("Update from server:", data);
+    // Skip all redraws if any editable cell in the table is being edited
+    if ($('#parameterTable td[contenteditable="true"]:focus').length > 0) {
+        return;
+    }
     parameterTable.rows().every(function() {
         const rowData = this.data();
         const updatedVar = data.find(item => item.variable === rowData.variable);
