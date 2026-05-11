@@ -200,13 +200,6 @@ class ScriptingTab(QWidget):
         self._script_path_edit.setPlaceholderText("No script selected")
         script_layout.addWidget(self._script_path_edit, 1)
 
-        # New script button
-        self._new_btn = QPushButton("New Script")
-        self._new_btn.setFixedWidth(90)
-        self._new_btn.clicked.connect(self._on_new_clicked)
-        self._new_btn.setToolTip("Create a new script from the built-in template")
-        script_layout.addWidget(self._new_btn)
-
         # Browse button
         self._browse_btn = QPushButton("Browse...")
         self._browse_btn.setFixedWidth(80)
@@ -220,6 +213,13 @@ class ScriptingTab(QWidget):
         self._edit_btn.setEnabled(False)
         self._edit_btn.setToolTip("Open script in text editor")
         script_layout.addWidget(self._edit_btn)
+
+        # New script button
+        self._new_btn = QPushButton("New Script")
+        self._new_btn.setFixedWidth(90)
+        self._new_btn.clicked.connect(self._on_new_clicked)
+        self._new_btn.setToolTip("Create a new script from the built-in template")
+        script_layout.addWidget(self._new_btn)
 
         # Help button
         self._help_btn = QPushButton("Help")

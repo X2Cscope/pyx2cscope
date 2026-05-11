@@ -1,6 +1,6 @@
 """Script View Blueprint - handles scripting-related HTTP endpoints."""
 
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, Response, jsonify, render_template
 
 from pyx2cscope.gui.resources import get_resource_path
 
@@ -11,6 +11,19 @@ script_bp = Blueprint("script_view", __name__)
 def script_view():
     """Render the standalone script view page."""
     return render_template("index_scripting.html", title="Script View")
+
+
+@script_bp.route("/template")
+def script_template():
+    """Download the built-in script template file."""
+    template_path = get_resource_path("script_template.py")
+    with open(template_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return Response(
+        content,
+        mimetype="text/x-python",
+        headers={"Content-Disposition": "attachment; filename=my_script.py"},
+    )
 
 
 @script_bp.route("/help")

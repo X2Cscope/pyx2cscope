@@ -410,9 +410,6 @@ class MainWindow(QMainWindow):
         else:
             view_mode = "None"
 
-        # Get connection parameters
-        conn_params = self._setup_tab.get_connection_params()
-
         scope_qt = self._scope_view_tab.get_config()
         watch_qt = self._watch_view_tab.get_config()
 
@@ -430,27 +427,55 @@ class MainWindow(QMainWindow):
             for i, v in enumerate(scope_qt.get("variables", []))
             if v
         ]
-        watch_shared = [
-            {
-                "variable": watch_qt["variables"][i],
+        watch_shared = []
+        for i, v in enumerate(watch_qt.get("variables", [])):
+            if not v:
+                continue
+            live_var = self._app_state.get_live_watch_var(i)
+            var_ref = live_var.var_ref if live_var else None
+            primitive = var_ref.__class__.__name__.lower().replace("variable", "") if var_ref else ""
+            if not primitive:
+                primitive = watch_qt["types"][i] if i < len(watch_qt.get("types", [])) else ""
+            watch_shared.append({
+                "variable": v,
+                "type": primitive,
                 "sfr": watch_qt["sfr"][i] if i < len(watch_qt.get("sfr", [])) else False,
                 "live": watch_qt["live"][i] if i < len(watch_qt.get("live", [])) else False,
-                "scaling": watch_qt["scaling"][i] if i < len(watch_qt.get("scaling", [])) else "1.0",
-                "offset": watch_qt["offsets"][i] if i < len(watch_qt.get("offsets", [])) else "0.0",
-            }
-            for i, v in enumerate(watch_qt.get("variables", []))
-            if v
-        ]
+                "value": float(watch_qt["values"][i]) if i < len(watch_qt.get("values", [])) and watch_qt["values"][i] else 0.0,
+                "scaling": float(watch_qt["scaling"][i]) if i < len(watch_qt.get("scaling", [])) and watch_qt["scaling"][i] else 1.0,
+                "offset": float(watch_qt["offsets"][i]) if i < len(watch_qt.get("offsets", [])) and watch_qt["offsets"][i] else 0.0,
+            })
+
+        # Build sample_control and trigger_control from scope tab Qt format
+        name_to_hex = {
+            "Red": "#FF0000", "Green": "#00FF00", "Blue": "#0000FF",
+            "Yellow": "#FFFF00", "Cyan": "#00FFFF", "Magenta": "#FF00FF",
+            "Purple": "#800080", "White": "#CCCCCC", "Black": "#000000",
+        }
+        trigger_edge_map = {"Rising": 1, "Falling": 0}
+        trigger_mode_map = {"Enable": 1, "Disable": 0}
+        sample_control = {
+            "triggerAction": "shot" if scope_qt.get("single_shot") else "off",
+            "sampleTime": int(scope_qt.get("sample_time_factor", 1) or 1),
+            "sampleFreq": 20.0,
+        }
+        trigger_control = {
+            "trigger_mode": trigger_mode_map.get(scope_qt.get("trigger_mode", "Disable"), 0),
+            "trigger_edge": trigger_edge_map.get(scope_qt.get("trigger_edge", "Rising"), 1),
+            "trigger_level": float(scope_qt.get("trigger_level", 0) or 0),
+            "trigger_delay": int(scope_qt.get("trigger_delay", 0) or 0),
+        }
+        # Convert Qt color names to hex in the scope shared list
+        for entry in scope_shared:
+            entry["color"] = name_to_hex.get(entry.get("color", ""), entry.get("color", "#FF0000"))
 
         config = ConfigManager.build_config(
-            elf_file=self._setup_tab.elf_file_path,
-            connection=conn_params,
             scope_view=scope_shared,
-            tab3_view=watch_shared,
+            watch_view=watch_shared,
             view_mode=view_mode,
+            sample_control=sample_control,
+            trigger_control=trigger_control,
         )
-        # "watch_view" key for web GUI compatibility (same data as "tab3_view")
-        config["watch_view"] = watch_shared
         self._config_manager.save_config(config)
 
     def _export_selected_variables(self):
@@ -520,26 +545,44 @@ class MainWindow(QMainWindow):
         # Load tab configurations — support both Qt format (dicts-of-arrays) and
         # shared web format (list-of-dicts with "watch_view"/"scope_view" keys).
         raw_scope = config.get("scope_view", {})
-        raw_watch = config.get("tab3_view") or config.get("watch_view", {})
+        raw_watch = config.get("watch_view", {})
 
         # Convert shared list-of-dicts format → Qt dicts-of-arrays format
         if isinstance(raw_scope, list):
+            sample_ctrl = config.get("sample_control", {})
+            trigger_ctrl = config.get("trigger_control", {})
+            trigger_edge_map = {0: "Falling", 1: "Rising"}
+            trigger_mode_map = {0: "Disable", 1: "Enable"}
+            # Map web hex colors to Qt color names
+            hex_to_name = {
+                "#FF0000": "Red", "#00FF00": "Green", "#0000FF": "Blue",
+                "#FFFF00": "Yellow", "#00FFFF": "Cyan", "#FF00FF": "Magenta",
+                "#800080": "Purple", "#CCCCCC": "White",  "#000000": "Black",
+            }
             raw_scope = {
                 "variables": [v.get("variable", "") for v in raw_scope],
-                "trigger": [v.get("trigger", False) for v in raw_scope],
+                "trigger": [bool(v.get("trigger", False)) for v in raw_scope],
                 "scale": [str(v.get("gain", v.get("scale", 1.0))) for v in raw_scope],
                 "offset": [str(v.get("offset", 0.0)) for v in raw_scope],
-                "color": [v.get("color", "#ff0000") for v in raw_scope],
-                "show": [v.get("enable", True) for v in raw_scope],
-                "sfr": [v.get("sfr", False) for v in raw_scope],
+                "color": [hex_to_name.get(v.get("color", "").upper(), v.get("color", "Red")) for v in raw_scope],
+                "show": [bool(v.get("enable", True)) for v in raw_scope],
+                "sfr": [bool(v.get("sfr", False)) for v in raw_scope],
+                "sample_time_factor": str(sample_ctrl.get("sampleTime", 1)),
+                "single_shot": sample_ctrl.get("triggerAction", "off") == "shot",
+                "trigger_level": str(trigger_ctrl.get("trigger_level", 0)),
+                "trigger_delay": str(int(trigger_ctrl.get("trigger_delay", 0))),
+                "trigger_edge": trigger_edge_map.get(int(trigger_ctrl.get("trigger_edge", 1)), "Rising"),
+                "trigger_mode": trigger_mode_map.get(int(trigger_ctrl.get("trigger_mode", 0)), "Disable"),
             }
         if isinstance(raw_watch, list):
             raw_watch = {
                 "variables": [v.get("variable", "") for v in raw_watch],
+                "types": [v.get("type", "") for v in raw_watch],
+                "values": [str(v.get("value", "")) for v in raw_watch],
                 "scaling": [str(v.get("scaling", 1.0)) for v in raw_watch],
                 "offsets": [str(v.get("offset", 0.0)) for v in raw_watch],
-                "live": [v.get("live", False) for v in raw_watch],
-                "sfr": [v.get("sfr", False) for v in raw_watch],
+                "live": [bool(v.get("live", False)) for v in raw_watch],
+                "sfr": [bool(v.get("sfr", False)) for v in raw_watch],
             }
 
         self._scope_view_tab.load_config(raw_scope)

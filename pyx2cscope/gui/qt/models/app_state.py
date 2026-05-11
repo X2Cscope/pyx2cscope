@@ -20,6 +20,7 @@ class WatchVariable:
     """Represents a watch variable configuration."""
 
     name: str = ""
+    type: str = ""
     value: float = 0.0
     scaling: float = 1.0
     offset: float = 0.0
@@ -757,6 +758,9 @@ class AppState(QObject):
                     var_ref = self._x2cscope.get_variable(value, sfr=sfr)
                     if var_ref is not None:
                         self._live_watch_vars[index].var_ref = var_ref
+                        # Derive and cache the primitive type string
+                        primitive = var_ref.__class__.__name__.lower().replace("variable", "")
+                        self._live_watch_vars[index].type = primitive
         finally:
             self._mutex.unlock()
 

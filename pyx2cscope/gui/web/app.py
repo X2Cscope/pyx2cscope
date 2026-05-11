@@ -351,6 +351,12 @@ def load_config():
 
         errors = []
 
+        # Fields that must be stored as specific types in the internal dicts
+        _watch_float_fields = {"scaling", "offset", "value", "scaled_value"}
+        _watch_int_fields = {"live"}
+        _scope_float_fields = {"gain", "offset"}
+        _scope_int_fields = {"trigger", "enable"}
+
         # Restore watch variables
         watch_items = data.get("watch_view", [])
         if isinstance(watch_items, list) and watch_items:
@@ -363,8 +369,16 @@ def load_config():
                     errors.append(item["variable"])
                 else:
                     for key, value in item.items():
-                        if key in var and key != "variable":
-                            var[key] = value
+                        if key in var and key != "variable" and key != "value":
+                            if key in _watch_float_fields:
+                                var[key] = float(value)
+                            elif key in _watch_int_fields:
+                                var[key] = int(value)
+                            else:
+                                var[key] = value
+                    # Re-read current value from device (add_watch_var already did one read,
+                    # but we need it after scaling/offset are restored for scaled_value)
+                    web_scope._update_watch_fields(var)
             _socketio.emit("watch_table_update", {}, namespace="/watch-view")
 
         # Restore scope variables
@@ -380,7 +394,12 @@ def load_config():
                 else:
                     for key, value in item.items():
                         if key in var and key != "variable":
-                            var[key] = value
+                            if key in _scope_float_fields:
+                                var[key] = float(value)
+                            elif key in _scope_int_fields:
+                                var[key] = int(value)
+                            else:
+                                var[key] = value
             _socketio.emit("scope_table_update", {}, namespace="/scope-view")
 
         # Restore sample control settings
