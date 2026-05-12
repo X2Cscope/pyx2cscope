@@ -340,7 +340,7 @@ class WatchViewTab(BaseTab):
         index = self._value_edits.index(ve)
 
         var_name = self._variable_edits[index].text()
-        if var_name and var_name != "None":
+        if var_name:
             try:
                 value = float(ve.text())
                 sfr = self._app_state.get_live_watch_var(index).sfr

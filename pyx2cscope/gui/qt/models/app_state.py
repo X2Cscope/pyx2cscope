@@ -163,8 +163,6 @@ class AppState(QObject):
             self._x2cscope = x2cscope
             if x2cscope:
                 self._variable_list = x2cscope.list_variables() or []
-                if self._variable_list:
-                    self._variable_list.insert(0, "None")
                 self._connected = True
             else:
                 self._variable_list = []
@@ -236,9 +234,9 @@ class AppState(QObject):
 
             seen_items = set()
             selected_vars = []
-            selected_vars.extend((var.name, var.sfr) for var in self._watch_vars if var.name and var.name != "None")
-            selected_vars.extend((var.name, var.sfr) for var in self._live_watch_vars if var.name and var.name != "None")
-            selected_vars.extend((channel.name, channel.sfr) for channel in self._scope_channels if channel.name and channel.name != "None")
+            selected_vars.extend((var.name, var.sfr) for var in self._watch_vars if var.name)
+            selected_vars.extend((var.name, var.sfr) for var in self._live_watch_vars if var.name)
+            selected_vars.extend((channel.name, channel.sfr) for channel in self._scope_channels if channel.name)
 
             for name, sfr in selected_vars:
                 key = (name, sfr)
@@ -327,7 +325,7 @@ class AppState(QObject):
             name: The variable name to read.
             sfr: When True, look up the name in the SFR register map.
         """
-        if not name or name == "None":
+        if not name:
             return None
         self._mutex.lock()
         try:
@@ -349,7 +347,7 @@ class AppState(QObject):
                 watch_var = self._watch_vars[index]
                 if watch_var.var_ref is not None:
                     return watch_var.var_ref.get_value()
-                elif watch_var.name and watch_var.name != "None" and self._x2cscope:
+                elif watch_var.name and self._x2cscope:
                     # Fallback: get and cache the variable
                     var_ref = self._x2cscope.get_variable(watch_var.name)
                     if var_ref is not None:
@@ -369,7 +367,7 @@ class AppState(QObject):
                 live_var = self._live_watch_vars[index]
                 if live_var.var_ref is not None:
                     return live_var.var_ref.get_value()
-                elif live_var.name and live_var.name != "None" and self._x2cscope:
+                elif live_var.name and self._x2cscope:
                     # Fallback: get and cache the variable
                     var_ref = self._x2cscope.get_variable(live_var.name)
                     if var_ref is not None:
@@ -389,7 +387,7 @@ class AppState(QObject):
             value: The value to write.
             sfr: When True, look up the name in the SFR register map.
         """
-        if not name or name == "None":
+        if not name:
             return False
         self._mutex.lock()
         try:
@@ -432,7 +430,7 @@ class AppState(QObject):
             if 0 <= index < len(self._watch_vars):
                 setattr(self._watch_vars[index], field, value)
                 # Cache the x2cscope variable reference when name is set
-                if field == "name" and value and value != "None" and self._x2cscope:
+                if field == "name" and value and self._x2cscope:
                     sfr = self._watch_vars[index].sfr
                     var_ref = self._x2cscope.get_variable(value, sfr=sfr)
                     if var_ref is not None:
@@ -563,7 +561,7 @@ class AppState(QObject):
 
             # Add configured channels
             for channel in self._scope_channels:
-                if channel.name and channel.name != "None":
+                if channel.name:
                     variable = self._x2cscope.get_variable(channel.name, sfr=channel.sfr)
                     if variable is not None:
                         self._x2cscope.add_scope_channel(variable)
@@ -753,7 +751,7 @@ class AppState(QObject):
             if 0 <= index < len(self._live_watch_vars):
                 setattr(self._live_watch_vars[index], field, value)
                 # Cache the x2cscope variable reference when name is set
-                if field == "name" and value and value != "None" and self._x2cscope:
+                if field == "name" and value and self._x2cscope:
                     sfr = self._live_watch_vars[index].sfr
                     var_ref = self._x2cscope.get_variable(value, sfr=sfr)
                     if var_ref is not None:
