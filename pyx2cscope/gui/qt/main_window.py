@@ -4,7 +4,7 @@ import logging
 import os
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtCore import QSettings, QTimer, Qt
 from PyQt5.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -43,9 +43,21 @@ class MainWindow(QMainWindow):
     - Configuration save/load
     """
 
-    def __init__(self, parent=None):
-        """Initialize the main window."""
+    def __init__(self, parent=None, **kwargs):
+        """Initialize the main window.
+
+        Args:
+            parent: Optional parent widget.
+            **kwargs: Optional CLI arguments forwarded from the command line.
+                      Relevant keys: ``elf`` (path to ELF file) and
+                      ``port`` (COM port), which trigger an automatic
+                      connection attempt after the window is displayed.
+        """
         super().__init__(parent)
+
+        # Store CLI arguments for deferred auto-connect
+        self._cli_elf = kwargs.get("elf")
+        self._cli_port = kwargs.get("port")
 
         # Initialize settings
         self._settings = QSettings("Microchip", "pyX2Cscope")
@@ -69,6 +81,10 @@ class MainWindow(QMainWindow):
 
         # Refresh ports on startup
         self._refresh_ports()
+
+        # If CLI provided elf + port, schedule auto-connect after event loop starts
+        if self._cli_elf and self._cli_port:
+            QTimer.singleShot(0, self._auto_connect)
 
     def _setup_ui(self):  # noqa: PLR0915
         """Set up the user interface."""
@@ -231,10 +247,47 @@ class MainWindow(QMainWindow):
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
         self._watch_view_tab.live_polling_changed.connect(self._on_live_watch_changed)
+        self._watch_view_tab.live_interval_changed.connect(self._data_poller.set_live_interval)
 
     def _refresh_ports(self):
         """Refresh available COM ports."""
         self._connection_manager.refresh_ports()
+
+    def _auto_connect(self):
+        """Attempt automatic connection using CLI-supplied elf and port arguments.
+
+        Called once (via QTimer) after the window is shown.  On success the
+        UI switches directly to the Data Views tab so the user can start
+        monitoring right away.
+        """
+        if not self._cli_elf or not self._cli_port:
+            return
+
+        # Populate the Setup tab fields so the user can see what was used
+        self._setup_tab.elf_file_path = self._cli_elf
+        port_combo = self._setup_tab.port_combo
+        if self._cli_port in [port_combo.itemText(i) for i in range(port_combo.count())]:
+            port_combo.setCurrentText(self._cli_port)
+
+        conn_params = self._setup_tab.get_connection_params()
+        # Override with the CLI port in case it was not found in the combo box
+        if conn_params.get("interface", "UART") == "UART":
+            conn_params["port"] = self._cli_port
+
+        QApplication.processEvents()
+
+        connected = self._connection_manager.connect(self._cli_elf, **conn_params)
+
+        if connected:
+            self._setup_tab.set_connected(True)
+            self._setup_tab.save_connection_settings()
+            self._update_device_info()
+            # Activate WatchView and switch to Data Views tab
+            self._watch_view_btn.setChecked(True)
+            self._on_view_toggle_changed()
+            self._tab_widget.setCurrentIndex(1)
+        else:
+            self._setup_tab.set_connected(False)
 
     def _on_ports_refreshed(self, ports: list):
         """Handle ports refreshed signal."""
@@ -357,15 +410,71 @@ class MainWindow(QMainWindow):
         else:
             view_mode = "None"
 
-        # Get connection parameters
-        conn_params = self._setup_tab.get_connection_params()
+        scope_qt = self._scope_view_tab.get_config()
+        watch_qt = self._watch_view_tab.get_config()
+
+        # Build shared list-of-dicts format (compatible with web GUI)
+        scope_shared = [
+            {
+                "variable": scope_qt["variables"][i],
+                "sfr": scope_qt["sfr"][i] if i < len(scope_qt.get("sfr", [])) else False,
+                "trigger": scope_qt["trigger"][i] if i < len(scope_qt.get("trigger", [])) else False,
+                "enable": scope_qt["show"][i] if i < len(scope_qt.get("show", [])) else True,
+                "color": scope_qt["color"][i] if i < len(scope_qt.get("color", [])) else "#ff0000",
+                "gain": scope_qt["scale"][i] if i < len(scope_qt.get("scale", [])) else "1.0",
+                "offset": scope_qt["offset"][i] if i < len(scope_qt.get("offset", [])) else "0.0",
+            }
+            for i, v in enumerate(scope_qt.get("variables", []))
+            if v
+        ]
+        watch_shared = []
+        for i, v in enumerate(watch_qt.get("variables", [])):
+            if not v:
+                continue
+            live_var = self._app_state.get_live_watch_var(i)
+            var_ref = live_var.var_ref if live_var else None
+            primitive = var_ref.__class__.__name__.lower().replace("variable", "") if var_ref else ""
+            if not primitive:
+                primitive = watch_qt["types"][i] if i < len(watch_qt.get("types", [])) else ""
+            watch_shared.append({
+                "variable": v,
+                "type": primitive,
+                "sfr": watch_qt["sfr"][i] if i < len(watch_qt.get("sfr", [])) else False,
+                "live": watch_qt["live"][i] if i < len(watch_qt.get("live", [])) else False,
+                "value": float(watch_qt["values"][i]) if i < len(watch_qt.get("values", [])) and watch_qt["values"][i] else 0.0,
+                "scaling": float(watch_qt["scaling"][i]) if i < len(watch_qt.get("scaling", [])) and watch_qt["scaling"][i] else 1.0,
+                "offset": float(watch_qt["offsets"][i]) if i < len(watch_qt.get("offsets", [])) and watch_qt["offsets"][i] else 0.0,
+            })
+
+        # Build sample_control and trigger_control from scope tab Qt format
+        name_to_hex = {
+            "Red": "#FF0000", "Green": "#00FF00", "Blue": "#0000FF",
+            "Yellow": "#FFFF00", "Cyan": "#00FFFF", "Magenta": "#FF00FF",
+            "Purple": "#800080", "White": "#CCCCCC", "Black": "#000000",
+        }
+        trigger_edge_map = {"Rising": 1, "Falling": 0}
+        trigger_mode_map = {"Enable": 1, "Disable": 0}
+        sample_control = {
+            "triggerAction": "shot" if scope_qt.get("single_shot") else "off",
+            "sampleTime": int(scope_qt.get("sample_time_factor", 1) or 1),
+            "sampleFreq": 20.0,
+        }
+        trigger_control = {
+            "trigger_mode": trigger_mode_map.get(scope_qt.get("trigger_mode", "Disable"), 0),
+            "trigger_edge": trigger_edge_map.get(scope_qt.get("trigger_edge", "Rising"), 1),
+            "trigger_level": float(scope_qt.get("trigger_level", 0) or 0),
+            "trigger_delay": int(scope_qt.get("trigger_delay", 0) or 0),
+        }
+        # Convert Qt color names to hex in the scope shared list
+        for entry in scope_shared:
+            entry["color"] = name_to_hex.get(entry.get("color", ""), entry.get("color", "#FF0000"))
 
         config = ConfigManager.build_config(
-            elf_file=self._setup_tab.elf_file_path,
-            connection=conn_params,
-            scope_view=self._scope_view_tab.get_config(),
-            tab3_view=self._watch_view_tab.get_config(),
+            scope_view=scope_shared,
+            watch_view=watch_shared,
             view_mode=view_mode,
+            sample_control=sample_control,
+            trigger_control=trigger_control,
         )
         self._config_manager.save_config(config)
 
@@ -433,9 +542,51 @@ class MainWindow(QMainWindow):
         if self._setup_tab.elf_file_path and not self._app_state.is_connected():
             self._on_connect_clicked()
 
-        # Load tab configurations
-        self._scope_view_tab.load_config(config.get("scope_view", {}))
-        self._watch_view_tab.load_config(config.get("tab3_view", {}))
+        # Load tab configurations — support both Qt format (dicts-of-arrays) and
+        # shared web format (list-of-dicts with "watch_view"/"scope_view" keys).
+        raw_scope = config.get("scope_view", {})
+        raw_watch = config.get("watch_view", {})
+
+        # Convert shared list-of-dicts format → Qt dicts-of-arrays format
+        if isinstance(raw_scope, list):
+            sample_ctrl = config.get("sample_control", {})
+            trigger_ctrl = config.get("trigger_control", {})
+            trigger_edge_map = {0: "Falling", 1: "Rising"}
+            trigger_mode_map = {0: "Disable", 1: "Enable"}
+            # Map web hex colors to Qt color names
+            hex_to_name = {
+                "#FF0000": "Red", "#00FF00": "Green", "#0000FF": "Blue",
+                "#FFFF00": "Yellow", "#00FFFF": "Cyan", "#FF00FF": "Magenta",
+                "#800080": "Purple", "#CCCCCC": "White",  "#000000": "Black",
+            }
+            raw_scope = {
+                "variables": [v.get("variable", "") for v in raw_scope],
+                "trigger": [bool(v.get("trigger", False)) for v in raw_scope],
+                "scale": [str(v.get("gain", v.get("scale", 1.0))) for v in raw_scope],
+                "offset": [str(v.get("offset", 0.0)) for v in raw_scope],
+                "color": [hex_to_name.get(v.get("color", "").upper(), v.get("color", "Red")) for v in raw_scope],
+                "show": [bool(v.get("enable", True)) for v in raw_scope],
+                "sfr": [bool(v.get("sfr", False)) for v in raw_scope],
+                "sample_time_factor": str(sample_ctrl.get("sampleTime", 1)),
+                "single_shot": sample_ctrl.get("triggerAction", "off") == "shot",
+                "trigger_level": str(trigger_ctrl.get("trigger_level", 0)),
+                "trigger_delay": str(int(trigger_ctrl.get("trigger_delay", 0))),
+                "trigger_edge": trigger_edge_map.get(int(trigger_ctrl.get("trigger_edge", 1)), "Rising"),
+                "trigger_mode": trigger_mode_map.get(int(trigger_ctrl.get("trigger_mode", 0)), "Disable"),
+            }
+        if isinstance(raw_watch, list):
+            raw_watch = {
+                "variables": [v.get("variable", "") for v in raw_watch],
+                "types": [v.get("type", "") for v in raw_watch],
+                "values": [str(v.get("value", "")) for v in raw_watch],
+                "scaling": [str(v.get("scaling", 1.0)) for v in raw_watch],
+                "offsets": [str(v.get("offset", 0.0)) for v in raw_watch],
+                "live": [bool(v.get("live", False)) for v in raw_watch],
+                "sfr": [bool(v.get("sfr", False)) for v in raw_watch],
+            }
+
+        self._scope_view_tab.load_config(raw_scope)
+        self._watch_view_tab.load_config(raw_watch)
 
         # Load view mode and set toggle buttons
         view_mode = config.get("view_mode", "Both")

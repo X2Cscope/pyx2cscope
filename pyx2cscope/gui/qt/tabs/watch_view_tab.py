@@ -7,8 +7,10 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QDialog,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -37,6 +39,8 @@ class WatchViewTab(BaseTab):
 
     # Signal emitted when live polling state changes: (index, is_live)
     live_polling_changed = pyqtSignal(int, bool)
+    # Signal emitted when the user changes the live update rate: interval in ms
+    live_interval_changed = pyqtSignal(int)
 
     def __init__(self, app_state: "AppState", parent=None):
         """Initialize the WatchView tab.
@@ -53,6 +57,7 @@ class WatchViewTab(BaseTab):
         self._row_widgets: List[Tuple] = []
         self._live_checkboxes: List[QCheckBox] = []
         self._variable_edits: List[QLineEdit] = []
+        self._type_labels: List[QLabel] = []
         self._value_edits: List[QLineEdit] = []
         self._scaling_edits: List[QLineEdit] = []
         self._offset_edits: List[QLineEdit] = []
@@ -61,14 +66,39 @@ class WatchViewTab(BaseTab):
 
         self._setup_ui()
 
+    # Mapping from combo label to interval in ms
+    _RATE_OPTIONS = [
+        ("1 s",  1000),
+        ("3 s",  3000),
+        ("5 s",  5000),
+    ]
+
     def _setup_ui(self):
         """Set up the user interface."""
-        # Set white background
+        # Set white background only on this widget, not on child popups.
+        # Using the class-name selector prevents the rule from being inherited
+        # by QAbstractItemView popups (e.g. the combo-box dropdown), which would
+        # otherwise render hover/selection text invisible against the white background.
         self.setAutoFillBackground(True)
-        self.setStyleSheet("background-color: white;")
+        self.setStyleSheet("WatchViewTab { background-color: white; }")
 
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(8, 8, 8, 8)
         self.setLayout(main_layout)
+
+        # --- Toolbar row: update-rate selector ---
+        toolbar = QHBoxLayout()
+        toolbar.setContentsMargins(0, 0, 0, 4)
+        toolbar.addWidget(QLabel("Live update rate:"))
+        self._rate_combo = QComboBox()
+        for label, _ in self._RATE_OPTIONS:
+            self._rate_combo.addItem(label)
+        self._rate_combo.setFixedWidth(70)
+        self._rate_combo.setToolTip("Interval between live variable reads")
+        self._rate_combo.currentIndexChanged.connect(self._on_rate_changed)
+        toolbar.addWidget(self._rate_combo)
+        toolbar.addStretch()
+        main_layout.addLayout(toolbar)
 
         # Scroll area
         scroll_area = QScrollArea()
@@ -81,13 +111,13 @@ class WatchViewTab(BaseTab):
 
         # Grid layout for variable rows
         self._grid_layout = QGridLayout()
-        self._grid_layout.setContentsMargins(0, 0, 0, 0)
-        self._grid_layout.setVerticalSpacing(2)
-        self._grid_layout.setHorizontalSpacing(5)
+        self._grid_layout.setContentsMargins(4, 4, 4, 4)
+        self._grid_layout.setVerticalSpacing(4)
+        self._grid_layout.setHorizontalSpacing(6)
         scroll_layout.addLayout(self._grid_layout)
 
         # Headers
-        headers = ["Live", "Variable", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
+        headers = ["Live", "Variable", "Type", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
         for col, header in enumerate(headers):
             label = QLabel(header)
             label.setAlignment(Qt.AlignCenter)
@@ -96,11 +126,12 @@ class WatchViewTab(BaseTab):
 
         # Set column stretch
         self._grid_layout.setColumnStretch(1, 5)  # Variable
-        self._grid_layout.setColumnStretch(2, 2)  # Value
-        self._grid_layout.setColumnStretch(3, 1)  # Scaling
-        self._grid_layout.setColumnStretch(4, 1)  # Offset
-        self._grid_layout.setColumnStretch(5, 1)  # Scaled Value
-        self._grid_layout.setColumnStretch(6, 1)  # Unit
+        self._grid_layout.setColumnStretch(2, 1)  # Type
+        self._grid_layout.setColumnStretch(3, 2)  # Value
+        self._grid_layout.setColumnStretch(4, 1)  # Scaling
+        self._grid_layout.setColumnStretch(5, 1)  # Offset
+        self._grid_layout.setColumnStretch(6, 1)  # Scaled Value
+        self._grid_layout.setColumnStretch(7, 1)  # Unit
 
         # Add Variable button
         self._add_button = QPushButton("Add Variable")
@@ -110,7 +141,7 @@ class WatchViewTab(BaseTab):
         # Add stretch to push content to top
         scroll_layout.addStretch()
 
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setContentsMargins(4, 4, 4, 4)
 
     def on_connection_changed(self, connected: bool):
         """Handle connection state changes."""
@@ -138,7 +169,9 @@ class WatchViewTab(BaseTab):
 
         # Create widgets
         live_cb = QCheckBox()
-        live_cb.stateChanged.connect(lambda state, idx=index: self._on_live_changed(idx, state))
+        # Use the checkbox widget itself to derive the current index at signal time,
+        # so that removal+rearrange never causes stale index captures.
+        live_cb.stateChanged.connect(lambda state, cb=live_cb: self._on_live_changed(cb, state))
 
         var_edit = QLineEdit()
         var_edit.setPlaceholderText("Search Variable")
@@ -146,9 +179,12 @@ class WatchViewTab(BaseTab):
         var_edit.setEnabled(self._app_state.is_connected())  # Enable based on connection state
         var_edit.installEventFilter(self)
 
+        type_label = QLabel()
+        type_label.setAlignment(Qt.AlignCenter)
+
         value_edit = QLineEdit()
         value_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        value_edit.editingFinished.connect(lambda idx=index: self._on_value_changed(idx))
+        value_edit.editingFinished.connect(lambda ve=value_edit: self._on_value_changed(ve))
 
         scaling_edit = QLineEdit("1")
         scaling_edit.editingFinished.connect(lambda idx=index: self._update_scaled_value(idx))
@@ -167,18 +203,20 @@ class WatchViewTab(BaseTab):
         # Add to grid
         self._grid_layout.addWidget(live_cb, row, 0)
         self._grid_layout.addWidget(var_edit, row, 1)
-        self._grid_layout.addWidget(value_edit, row, 2)
-        self._grid_layout.addWidget(scaling_edit, row, 3)
-        self._grid_layout.addWidget(offset_edit, row, 4)
-        self._grid_layout.addWidget(scaled_value_edit, row, 5)
-        self._grid_layout.addWidget(unit_edit, row, 6)
-        self._grid_layout.addWidget(remove_btn, row, 7)
+        self._grid_layout.addWidget(type_label, row, 2)
+        self._grid_layout.addWidget(value_edit, row, 3)
+        self._grid_layout.addWidget(scaling_edit, row, 4)
+        self._grid_layout.addWidget(offset_edit, row, 5)
+        self._grid_layout.addWidget(scaled_value_edit, row, 6)
+        self._grid_layout.addWidget(unit_edit, row, 7)
+        self._grid_layout.addWidget(remove_btn, row, 8)
 
         # Track widgets
-        widgets = (live_cb, var_edit, value_edit, scaling_edit, offset_edit, scaled_value_edit, unit_edit, remove_btn)
+        widgets = (live_cb, var_edit, type_label, value_edit, scaling_edit, offset_edit, scaled_value_edit, unit_edit, remove_btn)
         self._row_widgets.append(widgets)
         self._live_checkboxes.append(live_cb)
         self._variable_edits.append(var_edit)
+        self._type_labels.append(type_label)
         self._value_edits.append(value_edit)
         self._scaling_edits.append(scaling_edit)
         self._offset_edits.append(offset_edit)
@@ -210,6 +248,7 @@ class WatchViewTab(BaseTab):
         self._row_widgets.pop(index)
         self._live_checkboxes.pop(index)
         self._variable_edits.pop(index)
+        self._type_labels.pop(index)
         self._value_edits.pop(index)
         self._scaling_edits.pop(index)
         self._offset_edits.pop(index)
@@ -233,7 +272,7 @@ class WatchViewTab(BaseTab):
                 widget.setParent(None)
 
         # Re-add headers
-        headers = ["Live", "Variable", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
+        headers = ["Live", "Variable", "Type", "Value", "Scaling", "Offset", "Scaled Value", "Unit", "Remove"]
         for col, header in enumerate(headers):
             self._grid_layout.addWidget(QLabel(header), 0, col)
 
@@ -244,7 +283,7 @@ class WatchViewTab(BaseTab):
 
         # Update remove button connections
         for i, widgets in enumerate(self._row_widgets):
-            remove_btn = widgets[7]
+            remove_btn = widgets[8]
             remove_btn.clicked.disconnect()
             remove_btn.clicked.connect(lambda checked, idx=i: self._remove_variable_row(idx))
 
@@ -262,6 +301,11 @@ class WatchViewTab(BaseTab):
             self._app_state.update_live_watch_var_field(index, "sfr", sfr)
             self._app_state.update_live_watch_var_field(index, "name", dialog.selected_variable)
 
+            # Read type from app state (set when name was updated)
+            live_var = self._app_state.get_live_watch_var(index)
+            primitive = live_var.type if live_var else ""
+            self._type_labels[index].setText(primitive)
+
             # Read initial value
             value = self._app_state.read_variable(dialog.selected_variable, sfr=sfr)
             if value is not None:
@@ -269,28 +313,43 @@ class WatchViewTab(BaseTab):
                 self._app_state.update_live_watch_var_field(index, "value", value)
                 self._update_scaled_value(index)
 
-    def _on_live_changed(self, index: int, state: int):
-        """Handle live checkbox state change."""
-        if index >= len(self._live_checkboxes):
+    def _on_live_changed(self, cb: QCheckBox, state: int):
+        """Handle live checkbox state change.
+
+        The checkbox widget is passed instead of a fixed index so that the
+        correct row is always found even after rows have been removed and
+        the list has been rearranged.
+        """
+        if cb not in self._live_checkboxes:
             return
+        index = self._live_checkboxes.index(cb)
         is_live = state == Qt.Checked
         self._app_state.update_live_watch_var_field(index, "live", is_live)
         # Emit signal to notify DataPoller
         self.live_polling_changed.emit(index, is_live)
 
-    def _on_value_changed(self, index: int):
-        """Handle value edit finished - write to device."""
-        if index >= len(self._variable_edits):
+    def _on_rate_changed(self, combo_index: int):
+        """Handle live update rate combo change."""
+        _, interval_ms = self._RATE_OPTIONS[combo_index]
+        self.live_interval_changed.emit(interval_ms)
+
+    def _on_value_changed(self, ve: QLineEdit):
+        """Handle value edit finished - write to device and refresh scaled value."""
+        if ve not in self._value_edits:
             return
+        index = self._value_edits.index(ve)
 
         var_name = self._variable_edits[index].text()
-        if var_name and var_name != "None":
+        if var_name:
             try:
-                value = float(self._value_edits[index].text())
+                value = float(ve.text())
                 sfr = self._app_state.get_live_watch_var(index).sfr
                 self._app_state.write_variable(var_name, value, sfr=sfr)
             except ValueError:
                 pass
+
+        # Always update scaled value so offset/gain reflect the new number
+        self._update_scaled_value(index)
 
     def _update_scaled_value(self, index: int):
         """Update the scaled value for a variable."""
@@ -329,6 +388,7 @@ class WatchViewTab(BaseTab):
         """Get the current tab configuration."""
         return {
             "variables": [le.text() for le in self._variable_edits],
+            "types": [lbl.text() for lbl in self._type_labels],
             "values": [ve.text() for ve in self._value_edits],
             "scaling": [sc.text() for sc in self._scaling_edits],
             "offsets": [off.text() for off in self._offset_edits],
@@ -344,6 +404,7 @@ class WatchViewTab(BaseTab):
 
         # Add rows for each variable
         variables = config.get("variables", [])
+        types = config.get("types", [])
         values = config.get("values", [])
         scalings = config.get("scaling", [])
         offsets = config.get("offsets", [])
@@ -357,20 +418,26 @@ class WatchViewTab(BaseTab):
                 self._variable_edits[i].setText(var)
                 sfr = sfrs[i] if i < len(sfrs) else False
                 self._app_state.update_live_watch_var_field(i, "sfr", sfr)
-                # Update app state with variable name
                 self._app_state.update_live_watch_var_field(i, "name", var)
-            if i < len(values) and i < len(self._value_edits):
-                self._value_edits[i].setText(values[i])
+            if i < len(types) and i < len(self._type_labels):
+                self._type_labels[i].setText(types[i])
+                self._app_state.update_live_watch_var_field(i, "type", types[i])
             if i < len(scalings) and i < len(self._scaling_edits):
                 self._scaling_edits[i].setText(scalings[i])
             if i < len(offsets) and i < len(self._offset_edits):
                 self._offset_edits[i].setText(offsets[i])
-            if i < len(scaled_values) and i < len(self._scaled_value_edits):
-                self._scaled_value_edits[i].setText(scaled_values[i])
             if i < len(lives) and i < len(self._live_checkboxes):
                 self._live_checkboxes[i].setChecked(lives[i])
-                # Update app state with live state
                 self._app_state.update_live_watch_var_field(i, "live", lives[i])
+            # Read current value from device; fall back to config value if not connected
+            sfr = sfrs[i] if i < len(sfrs) else False
+            live_value = self._app_state.read_variable(var, sfr=sfr)
+            if live_value is not None:
+                self._value_edits[i].setText(str(live_value))
+                self._app_state.update_live_watch_var_field(i, "value", live_value)
+            elif i < len(values) and i < len(self._value_edits):
+                self._value_edits[i].setText(values[i])
+            self._update_scaled_value(i)
 
     @property
     def row_count(self) -> int:

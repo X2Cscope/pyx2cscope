@@ -50,6 +50,18 @@ function disconnect(){
     });
 }
 
+function saveConfig() {
+    const toggle = $('#saveConfigToggle');
+    if (toggle.attr('aria-disabled') === 'true') return;
+    window.location.href = '/config/save';
+}
+
+function loadConfig() {
+    const toggle = $('#loadConfigToggle');
+    if (toggle.attr('aria-disabled') === 'true') return;
+    $('#configFileInput').val('').trigger('click');
+}
+
 function exportVariables() {
     const exportToggle = $('#exportVariablesToggle');
     if (exportToggle.attr('aria-disabled') === 'true') {
@@ -112,6 +124,8 @@ function setConnectState(status) {
         $("#btnConnect").prop("disabled", true);
         $("#btnConnect").html("Disconnect", true);
         $('#exportVariablesToggle').removeClass('disabled text-white-50').attr('aria-disabled', 'false');
+        $('#saveConfigToggle').removeClass('disabled text-white-50').attr('aria-disabled', 'false');
+        $('#loadConfigToggle').removeClass('disabled text-white-50').attr('aria-disabled', 'false');
         $('#connection-status').html('Connected');
         $('#desktopTabs').removeClass('disabled');
         $('#mobileTabs').removeClass('disabled');
@@ -130,6 +144,8 @@ function setConnectState(status) {
         $('#btnConnect').removeClass('btn-danger');
         $('#btnConnect').addClass('btn-primary');
         $('#exportVariablesToggle').addClass('disabled text-white-50').attr('aria-disabled', 'true');
+        $('#saveConfigToggle').addClass('disabled text-white-50').attr('aria-disabled', 'true');
+        $('#loadConfigToggle').addClass('disabled text-white-50').attr('aria-disabled', 'true');
         $('#setupView').removeClass('disabled');
         $('#desktopTabs').addClass('disabled');
         $('#mobileTabs').addClass('disabled');
@@ -146,6 +162,36 @@ function initSetupCard(){
     $('#exportVariablesToggle').on('click', function(e) {
         e.preventDefault();
         exportVariables();
+    });
+    $('#saveConfigToggle').on('click', function(e) {
+        e.preventDefault();
+        saveConfig();
+    });
+    $('#loadConfigToggle').on('click', function(e) {
+        e.preventDefault();
+        loadConfig();
+    });
+    $('#configFileInput').on('change', function(event) {
+        var file = event.target.files[0];
+        if (!file) return;
+        var formData = new FormData();
+        formData.append('file', file);
+        $.ajax({
+            url: '/config/load',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                // Tables are refreshed via SocketIO events from server
+            },
+            error: function(jqXHR) {
+                var msg = (jqXHR.responseJSON && jqXHR.responseJSON.msg) ? jqXHR.responseJSON.msg : 'Failed to load config.';
+                alert(msg);
+            }
+        }).always(function() {
+            $('#configFileInput').val('');
+        });
     });
 
     $('#connection-status').on('click', function() {

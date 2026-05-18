@@ -287,12 +287,21 @@ class ScopeViewTab(BaseTab):
             return
 
         sfr_list = self._app_state.get_sfr_list()
-        dialog = VariableSelectionDialog(self._variable_list, self, sfr_variables=sfr_list)
+        slot_populated = bool(self._var_line_edits[index].text() or self._app_state.get_scope_channel(index).name)
+        dialog = VariableSelectionDialog(self._variable_list, self, sfr_variables=sfr_list, show_clear=slot_populated)
         if dialog.exec_() == QDialog.Accepted and dialog.selected_variable:
-            self._var_line_edits[index].setText(dialog.selected_variable)
-            # Store sfr flag before updating name so sampling uses the right namespace
-            self._app_state.update_scope_channel_field(index, "sfr", dialog.sfr_selected)
-            self._app_state.update_scope_channel_field(index, "name", dialog.selected_variable)
+            if dialog.selected_variable == "[ Clear ]":
+                # Clear this channel slot
+                self._var_line_edits[index].setText("")
+                self._trigger_checkboxes[index].setChecked(False)
+                self._app_state.update_scope_channel_field(index, "name", "")
+                self._app_state.update_scope_channel_field(index, "trigger", False)
+                self._app_state.update_scope_channel_field(index, "sfr", False)
+            else:
+                self._var_line_edits[index].setText(dialog.selected_variable)
+                # Store sfr flag before updating name so sampling uses the right namespace
+                self._app_state.update_scope_channel_field(index, "sfr", dialog.sfr_selected)
+                self._app_state.update_scope_channel_field(index, "name", dialog.selected_variable)
 
     def _on_trigger_changed(self, index: int, state: int):
         """Handle trigger checkbox change - only one can be selected."""
@@ -331,7 +340,7 @@ class ScopeViewTab(BaseTab):
             # Add configured channels
             for i, line_edit in enumerate(self._var_line_edits):
                 var_name = line_edit.text()
-                if var_name and var_name != "None":
+                if var_name:
                     sfr = self._app_state.get_scope_channel(i).sfr
                     variable = x2cscope.get_variable(var_name, sfr=sfr)
                     if variable is not None:
@@ -501,12 +510,32 @@ class ScopeViewTab(BaseTab):
             "trigger_delay": self._trigger_delay_combo.currentText(),
             "trigger_edge": self._trigger_edge_combo.currentText(),
             "trigger_mode": self._trigger_mode_combo.currentText(),
-            "sample_time_factor": self._sample_time_factor_edit.value(),
+            "sample_time_factor": self._sample_time_factor_edit.text(),
             "single_shot": self._single_shot_checkbox.isChecked(),
         }
 
+    def clear_channels(self):
+        """Clear all scope channel fields to their default state."""
+        for le in self._var_line_edits:
+            le.setText("")
+        for cb in self._trigger_checkboxes:
+            cb.setChecked(False)
+        for sc in self._scaling_edits:
+            sc.setText("1")
+        for off in self._offset_edits:
+            off.setText("0")
+        for cb in self._color_combos:
+            cb.setCurrentIndex(0)
+        for cb in self._visible_checkboxes:
+            cb.setChecked(True)
+        for i in range(self.MAX_CHANNELS):
+            self._app_state.update_scope_channel_field(i, "name", "")
+            self._app_state.update_scope_channel_field(i, "trigger", False)
+            self._app_state.update_scope_channel_field(i, "visible", True)
+
     def load_config(self, config: dict):
         """Load configuration into the tab."""
+        self.clear_channels()
         variables = config.get("variables", [])
         triggers = config.get("trigger", [])
         scales = config.get("scale", [])
@@ -521,6 +550,9 @@ class ScopeViewTab(BaseTab):
             self._app_state.update_scope_channel_field(i, "sfr", sfr)
             # Update app state with variable name
             self._app_state.update_scope_channel_field(i, "name", var)
+        # Set _trigger_variable before restoring checkboxes so that _on_trigger_changed()
+        # does not overwrite it with an empty string when the signal fires.
+        self._trigger_variable = config.get("trigger_variable", "")
         for i, (cb, trigger) in enumerate(zip(self._trigger_checkboxes, triggers)):
             cb.setChecked(trigger)
             self._app_state.update_scope_channel_field(i, "trigger", trigger)
@@ -538,10 +570,9 @@ class ScopeViewTab(BaseTab):
             cb.setChecked(show)
             self._app_state.update_scope_channel_field(i, "visible", show)
 
-        self._trigger_variable = config.get("trigger_variable", "")
         self._trigger_level_edit.setText(config.get("trigger_level", "0"))
         self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
         self._trigger_mode_combo.setCurrentText(config.get("trigger_mode", "Disable"))
-        self._sample_time_factor_edit.setValue(int(config.get("sample_time_factor", 1)))
+        self._sample_time_factor_edit.setText(str(config.get("sample_time_factor", 1)))
         self._single_shot_checkbox.setChecked(config.get("single_shot", False))

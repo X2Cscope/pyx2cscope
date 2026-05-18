@@ -142,9 +142,27 @@ The **Export Variables** button in the Data Views toolbar allows you to:
 ### Save and Load Config
 
 The **Save Config** and **Load Config** buttons allow you to:
-- Save the entire configuration including ELF file path, connection settings, and all variable configurations.
+- Save the current WatchView and ScopeView variable lists to a `.json` file.
 - Load a previously saved configuration to quickly restore your setup.
-- When loading, the system automatically attempts to connect using the saved settings.
+- The saved file also stores the ELF file path and connection settings so that, when loading, the system automatically attempts to reconnect.
+
+The config file uses a **shared JSON format** that is cross-compatible with the Web GUI:
+
+```json
+{
+    "watch_view": [
+        {"variable": "motorSpeedRPM", "sfr": false, "live": true, "scaling": "1.0", "offset": "0.0"}
+    ],
+    "scope_view": [
+        {"variable": "motorSpeedRPM", "sfr": false, "trigger": false, "enable": true,
+         "color": "#ff0000", "gain": "1.0", "offset": "0.0"}
+    ],
+    "elf_file": "/path/to/firmware.elf",
+    "connection": { "interface": "UART", "port": "COM3" }
+}
+```
+
+A config file saved from the Web GUI (which omits `elf_file` and `connection`) can be loaded into the Qt app — the variable lists will be restored and the app will skip the reconnect step if no ELF path is present.
 
 ---
 

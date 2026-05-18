@@ -8,6 +8,7 @@ import os
 from flask import Blueprint, Response, jsonify, render_template, request
 
 from pyx2cscope.gui import web
+from pyx2cscope.gui.web.extensions import socketio
 from pyx2cscope.gui.web.scope import web_scope
 
 wv_bp = Blueprint("watch_view", __name__)
@@ -49,6 +50,7 @@ def load():
                         if key in var and key != "variable":
                             var[key] = item[key]
             if "not available" not in msg:
+                socketio.emit("watch_table_update", {}, namespace="/watch-view")
                 return jsonify({"status": "success"})
     return jsonify({"status": "error", "msg": msg}), 400
 

@@ -435,32 +435,6 @@ function initScopeForms(){
         $(`label[for="${this.id}"]`).addClass('active');
     });
 
-    // Set up Save button click handler
-    $("#scopeSave").on("click", function() {
-        window.location.href = '/scope/save';
-    });
-
-    $("#scopeLoad").on("change", function(event) {
-        var file = event.target.files[0];
-        var formData = new FormData();
-        formData.append('file', file);
-
-        $.ajax({
-            url: '/scope/load', // Replace with your server upload endpoint
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                scopeTable.ajax.reload();
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(jqXHR.responseJSON.msg);
-            }
-        }).always(function() {
-            $("#scopeLoad").val("");
-        });
-    });
 }
 
 $(document).ready(function () {

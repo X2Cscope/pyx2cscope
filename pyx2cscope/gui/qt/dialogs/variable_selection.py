@@ -21,7 +21,7 @@ class VariableSelectionDialog(QDialog):
     Double-clicking or pressing OK selects the highlighted variable.
     """
 
-    def __init__(self, variables: List[str], parent=None, sfr_variables: Optional[List[str]] = None):
+    def __init__(self, variables: List[str], parent=None, sfr_variables: Optional[List[str]] = None, show_clear: bool = False):
         """Initialize the variable selection dialog.
 
         Args:
@@ -30,10 +30,13 @@ class VariableSelectionDialog(QDialog):
             sfr_variables: An optional list of SFR names. When provided the SFR
                 toggle checkbox is enabled and the user can switch between the two
                 namespaces.
+            show_clear: When True, a "[ Clear ]" entry is shown at the top of the
+                list to allow removing the current variable selection.
         """
         super().__init__(parent)
         self._variables = variables
         self._sfr_variables: List[str] = sfr_variables or []
+        self._show_clear = show_clear
         self._active_list = self._variables
 
         self.selected_variable: Optional[str] = None
@@ -68,6 +71,8 @@ class VariableSelectionDialog(QDialog):
 
         # Variable list
         self.variable_list = QListWidget(self)
+        if self._show_clear:
+            self.variable_list.addItem("[ Clear ]")
         self.variable_list.addItems(self._active_list)
         self.variable_list.itemDoubleClicked.connect(self._accept_selection)
         layout.addWidget(self.variable_list)
@@ -103,6 +108,8 @@ class VariableSelectionDialog(QDialog):
             text: The input text to filter variables.
         """
         self.variable_list.clear()
+        if self._show_clear:
+            self.variable_list.addItem("[ Clear ]")
         filtered = [var for var in self._active_list if text.lower() in var.lower()]
         self.variable_list.addItems(filtered)
 
