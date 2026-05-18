@@ -550,6 +550,9 @@ class ScopeViewTab(BaseTab):
             self._app_state.update_scope_channel_field(i, "sfr", sfr)
             # Update app state with variable name
             self._app_state.update_scope_channel_field(i, "name", var)
+        # Set _trigger_variable before restoring checkboxes so that _on_trigger_changed()
+        # does not overwrite it with an empty string when the signal fires.
+        self._trigger_variable = config.get("trigger_variable", "")
         for i, (cb, trigger) in enumerate(zip(self._trigger_checkboxes, triggers)):
             cb.setChecked(trigger)
             self._app_state.update_scope_channel_field(i, "trigger", trigger)
@@ -567,7 +570,6 @@ class ScopeViewTab(BaseTab):
             cb.setChecked(show)
             self._app_state.update_scope_channel_field(i, "visible", show)
 
-        self._trigger_variable = config.get("trigger_variable", "")
         self._trigger_level_edit.setText(config.get("trigger_level", "0"))
         self._trigger_delay_combo.setCurrentText(config.get("trigger_delay", "0"))
         self._trigger_edge_combo.setCurrentText(config.get("trigger_edge", "Rising"))
