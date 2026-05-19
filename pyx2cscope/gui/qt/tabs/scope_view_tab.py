@@ -474,6 +474,7 @@ class ScopeViewTab(BaseTab):
         self._plot_widget.setLabel("left", "Value")
         self._plot_widget.setLabel("bottom", "Time", units="ms")
         self._plot_widget.showGrid(x=True, y=True)
+        self._plot_widget.getViewBox().enableAutoRange(axis=pg.ViewBox.YAxis)
 
         # Handle single-shot mode - stop sampling after receiving data
         if self._single_shot_checkbox.isChecked():
