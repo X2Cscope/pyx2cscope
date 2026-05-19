@@ -24,7 +24,7 @@ stop_requested = globals().get("stop_requested", lambda: False)
 # ------------------------------------------------------------------
 # List available variables (handy during development)
 # ------------------------------------------------------------------
-variable_names = x2cscope.get_variable_list()
+variable_names = x2cscope.list_variables()
 print(f"Connected – {len(variable_names)} variables available.")
 # Uncomment the next line to see all variable names:
 # print("\n".join(variable_names))
