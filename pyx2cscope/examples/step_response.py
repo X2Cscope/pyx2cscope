@@ -1,15 +1,12 @@
 """This example can be used to try the scope functionality of pyX2Cscope and save the data acquisition in CSV file."""
 
-import csv
 import logging
 import time
 
-import matplotlib
 import matplotlib.pyplot as plt
 
 from pyx2cscope.utils import get_elf_file_path
-from pyx2cscope.x2cscope import X2CScope
-from pyx2cscope.x2cscope import TriggerConfig
+from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
 # Set up logging
 logging.basicConfig(

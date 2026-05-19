@@ -4,7 +4,7 @@ import logging
 import os
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QSettings, QTimer, Qt
+from PyQt5.QtCore import QSettings, Qt, QTimer
 from PyQt5.QtWidgets import (
     QApplication,
     QFileDialog,

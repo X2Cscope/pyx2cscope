@@ -329,6 +329,90 @@ def save_config():
     )
 
 
+_WATCH_FLOAT_FIELDS = {"scaling", "offset", "value", "scaled_value"}
+_WATCH_INT_FIELDS = {"live"}
+_SCOPE_FLOAT_FIELDS = {"gain", "offset"}
+_SCOPE_INT_FIELDS = {"trigger", "enable"}
+
+
+def _restore_watch_vars(items, errors):
+    """Restore watch variables from a list of config dicts."""
+    from pyx2cscope.gui.web.extensions import socketio as _socketio
+
+    web_scope.clear_watch_var()
+    for item in items:
+        if not isinstance(item, dict) or "variable" not in item:
+            continue
+        var = web_scope.add_watch_var(item["variable"], sfr=item.get("sfr", False))
+        if var is None:
+            errors.append(item["variable"])
+        else:
+            for key, value in item.items():
+                if key in var and key != "variable" and key != "value":
+                    if key in _WATCH_FLOAT_FIELDS:
+                        var[key] = float(value)
+                    elif key in _WATCH_INT_FIELDS:
+                        var[key] = int(value)
+                    else:
+                        var[key] = value
+            # Re-read current value from device (add_watch_var already did one read,
+            # but we need it after scaling/offset are restored for scaled_value)
+            web_scope._update_watch_fields(var)
+    _socketio.emit("watch_table_update", {}, namespace="/watch-view")
+
+
+def _restore_scope_vars(items, errors):
+    """Restore scope variables from a list of config dicts."""
+    from pyx2cscope.gui.web.extensions import socketio as _socketio
+
+    web_scope.clear_scope_var()
+    for item in items:
+        if not isinstance(item, dict) or "variable" not in item:
+            continue
+        var = web_scope.add_scope_var(item["variable"], sfr=item.get("sfr", False))
+        if var is None:
+            errors.append(item["variable"])
+        else:
+            for key, value in item.items():
+                if key in var and key != "variable":
+                    if key in _SCOPE_FLOAT_FIELDS:
+                        var[key] = float(value)
+                    elif key in _SCOPE_INT_FIELDS:
+                        var[key] = int(value)
+                    else:
+                        var[key] = value
+    _socketio.emit("scope_table_update", {}, namespace="/scope-view")
+
+
+def _restore_sample_control(sample_control):
+    """Restore sample control settings and notify clients."""
+    from pyx2cscope.gui.web.extensions import socketio as _socketio
+
+    trigger_action = sample_control.get("triggerAction", "off")
+    sample_time = max(int(sample_control.get("sampleTime", 1)), 1)
+    sample_freq = float(sample_control.get("sampleFreq", 20))
+    web_scope.scope_set_sample(trigger_action, sample_time, sample_freq)
+    _socketio.emit("sample_control_updated", {
+        "status": "success",
+        "data": web_scope.sample_control,
+    }, namespace="/scope-view")
+
+
+def _restore_trigger_control(trigger_control):
+    """Restore trigger control settings and notify clients."""
+    from pyx2cscope.gui.web.extensions import socketio as _socketio
+
+    parsed = {
+        k: (float(v) if k == "trigger_level" else int(v))
+        for k, v in trigger_control.items()
+    }
+    web_scope.scope_set_trigger(**parsed)
+    _socketio.emit("trigger_control_updated", {
+        "status": "success",
+        "data": web_scope.trigger_control,
+    }, namespace="/scope-view")
+
+
 def load_config():
     """Receive a unified JSON config and restore watch and scope variables.
 
@@ -336,102 +420,40 @@ def load_config():
     each containing a list of variable dicts (same format as save_config).
     Emits SocketIO events so all connected browsers reload their tables.
     """
-    from pyx2cscope.gui.web.extensions import socketio as _socketio
-
     cfg_file = request.files.get("file")
     msg = "Invalid config file."
-    if cfg_file and cfg_file.filename.endswith(".json"):
-        try:
-            data = json.loads(cfg_file.read().decode("utf-8"))
-        except (ValueError, UnicodeDecodeError):
-            return jsonify({"status": "error", "msg": msg}), 400
+    if not (cfg_file and cfg_file.filename.endswith(".json")):
+        return jsonify({"status": "error", "msg": msg}), 400
 
-        if not isinstance(data, dict):
-            return jsonify({"status": "error", "msg": msg}), 400
+    try:
+        data = json.loads(cfg_file.read().decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return jsonify({"status": "error", "msg": msg}), 400
 
-        errors = []
+    if not isinstance(data, dict):
+        return jsonify({"status": "error", "msg": msg}), 400
 
-        # Fields that must be stored as specific types in the internal dicts
-        _watch_float_fields = {"scaling", "offset", "value", "scaled_value"}
-        _watch_int_fields = {"live"}
-        _scope_float_fields = {"gain", "offset"}
-        _scope_int_fields = {"trigger", "enable"}
+    errors = []
 
-        # Restore watch variables
-        watch_items = data.get("watch_view", [])
-        if isinstance(watch_items, list) and watch_items:
-            web_scope.clear_watch_var()
-            for item in watch_items:
-                if not isinstance(item, dict) or "variable" not in item:
-                    continue
-                var = web_scope.add_watch_var(item["variable"], sfr=item.get("sfr", False))
-                if var is None:
-                    errors.append(item["variable"])
-                else:
-                    for key, value in item.items():
-                        if key in var and key != "variable" and key != "value":
-                            if key in _watch_float_fields:
-                                var[key] = float(value)
-                            elif key in _watch_int_fields:
-                                var[key] = int(value)
-                            else:
-                                var[key] = value
-                    # Re-read current value from device (add_watch_var already did one read,
-                    # but we need it after scaling/offset are restored for scaled_value)
-                    web_scope._update_watch_fields(var)
-            _socketio.emit("watch_table_update", {}, namespace="/watch-view")
+    watch_items = data.get("watch_view", [])
+    if isinstance(watch_items, list) and watch_items:
+        _restore_watch_vars(watch_items, errors)
 
-        # Restore scope variables
-        scope_items = data.get("scope_view", [])
-        if isinstance(scope_items, list) and scope_items:
-            web_scope.clear_scope_var()
-            for item in scope_items:
-                if not isinstance(item, dict) or "variable" not in item:
-                    continue
-                var = web_scope.add_scope_var(item["variable"], sfr=item.get("sfr", False))
-                if var is None:
-                    errors.append(item["variable"])
-                else:
-                    for key, value in item.items():
-                        if key in var and key != "variable":
-                            if key in _scope_float_fields:
-                                var[key] = float(value)
-                            elif key in _scope_int_fields:
-                                var[key] = int(value)
-                            else:
-                                var[key] = value
-            _socketio.emit("scope_table_update", {}, namespace="/scope-view")
+    scope_items = data.get("scope_view", [])
+    if isinstance(scope_items, list) and scope_items:
+        _restore_scope_vars(scope_items, errors)
 
-        # Restore sample control settings
-        sample_control = data.get("sample_control")
-        if isinstance(sample_control, dict):
-            trigger_action = sample_control.get("triggerAction", "off")
-            sample_time = max(int(sample_control.get("sampleTime", 1)), 1)
-            sample_freq = float(sample_control.get("sampleFreq", 20))
-            web_scope.scope_set_sample(trigger_action, sample_time, sample_freq)
-            _socketio.emit("sample_control_updated", {
-                "status": "success",
-                "data": web_scope.sample_control,
-            }, namespace="/scope-view")
+    sample_control = data.get("sample_control")
+    if isinstance(sample_control, dict):
+        _restore_sample_control(sample_control)
 
-        # Restore trigger control settings
-        trigger_control = data.get("trigger_control")
-        if isinstance(trigger_control, dict):
-            parsed = {
-                k: (float(v) if k == "trigger_level" else int(v))
-                for k, v in trigger_control.items()
-            }
-            web_scope.scope_set_trigger(**parsed)
-            _socketio.emit("trigger_control_updated", {
-                "status": "success",
-                "data": web_scope.trigger_control,
-            }, namespace="/scope-view")
+    trigger_control = data.get("trigger_control")
+    if isinstance(trigger_control, dict):
+        _restore_trigger_control(trigger_control)
 
-        if errors:
-            return jsonify({"status": "error", "msg": "Variables not available: " + ", ".join(errors)}), 400
-        return jsonify({"status": "success"})
-
-    return jsonify({"status": "error", "msg": msg}), 400
+    if errors:
+        return jsonify({"status": "error", "msg": "Variables not available: " + ", ".join(errors)}), 400
+    return jsonify({"status": "success"})
 
 
 def open_browser(host="localhost", web_port=5000):

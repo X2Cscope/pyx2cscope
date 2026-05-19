@@ -2,7 +2,6 @@
 
 import ast
 import importlib
-import platform
 import sys
 from pathlib import Path
 

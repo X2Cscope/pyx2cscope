@@ -408,7 +408,6 @@ class WatchViewTab(BaseTab):
         values = config.get("values", [])
         scalings = config.get("scaling", [])
         offsets = config.get("offsets", [])
-        scaled_values = config.get("scaled_values", [])
         lives = config.get("live", [])
         sfrs = config.get("sfr", [])
 
