@@ -1,29 +1,81 @@
 <form id="sampleControlForm">
     <div class="mb-3">
-        <div class="btn-group w-100" role="group" aria-label="Trigger actions">
+        <div class="btn-group w-100" role="group" aria-label="Sampling state">
             <input type="radio" class="btn-check" name="triggerAction" id="triggerStart" value="on">
-            <label class="btn btn-outline-success" for="triggerStart">Sample</label>
-            
-            <input type="radio" class="btn-check" name="triggerAction" id="triggerStop" value="off" checked>
-            <label class="btn btn-outline-danger active" for="triggerStop">Stop</label>
-            
+            <label class="btn btn-outline-success" for="triggerStart">Run</label>
+
             <input type="radio" class="btn-check" name="triggerAction" id="triggerShot" value="shot">
             <label class="btn btn-outline-primary" for="triggerShot">Burst</label>
+
+            <input type="radio" class="btn-check" name="triggerAction" id="triggerStop" value="off" checked>
+            <label class="btn btn-outline-danger active" for="triggerStop">Stop</label>
         </div>
     </div>
-    
-    <div class="mb-3">
-        <label for="sampleTime" class="form-label">Sample Time Factor</label>
-        <div class="input-group">
-            <input type="number" id="sampleTime" name="sampleTime" class="form-control" min="1" value="1" required>
+
+    <div class="row g-2 mb-3">
+        <div class="col-6">
+            <label for="sampleTime" class="form-label form-label-sm mb-1">Time Factor</label>
+            <input type="number" id="sampleTime" name="sampleTime"
+                   class="form-control form-control-sm" min="1" value="1" required>
+        </div>
+        <div class="col-6">
+            <label for="sampleFreq" class="form-label form-label-sm mb-1">Frequency</label>
+            <div class="input-group input-group-sm">
+                <input type="number" id="sampleFreq" name="sampleFreq"
+                       class="form-control" min="1" max="30" value="20" required>
+                <span class="input-group-text">kHz</span>
+            </div>
         </div>
     </div>
-    
-    <div class="mb-3">
-        <label for="sampleFreq" class="form-label">Sampling Frequency</label>
-        <div class="input-group">
-            <input type="number" id="sampleFreq" name="sampleFreq" class="form-control" min="1" max="30" value="20" required>
-            <span class="input-group-text">KHz</span>
+
+    <hr class="my-2">
+
+    <div class="mb-2">
+        <label class="form-label fw-bold d-block mb-2">Trigger</label>
+        <div class="btn-group w-100 mb-3" role="group" aria-label="Trigger state">
+            <input type="radio" class="btn-check" name="trigger_mode" id="triggerEnable" value="1">
+            <label class="btn btn-outline-success" for="triggerEnable">Enable</label>
+
+            <input type="radio" class="btn-check" name="trigger_mode" id="triggerDisable" value="0" checked>
+            <label class="btn btn-outline-danger active" for="triggerDisable">Disable</label>
         </div>
     </div>
+
+    <div id="triggerOptions" style="display:none;">
+        <div class="mb-3">
+            <label class="form-label fw-bold d-block mb-2">Edge Detection</label>
+            <div class="btn-group w-100" role="group" aria-label="Edge detection">
+                <input type="radio" class="btn-check" name="trigger_edge" id="rising" value="1" checked>
+                <label class="btn btn-outline-primary" for="rising">Rising</label>
+
+                <input type="radio" class="btn-check" name="trigger_edge" id="falling" value="0">
+                <label class="btn btn-outline-primary" for="falling">Falling</label>
+            </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <label for="triggerLevel" class="form-label form-label-sm mb-1">Level</label>
+                <div class="input-group input-group-sm">
+                    <input type="number" step="1" class="form-control" id="triggerLevel"
+                           name="trigger_level" value="0" placeholder="0" required>
+                    <span class="input-group-text">V</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <label for="triggerDelay" class="form-label form-label-sm mb-1">Delay</label>
+                <div class="input-group input-group-sm">
+                    <input type="number" step="10" max="50" min="-50" class="form-control"
+                           id="triggerDelay" name="trigger_delay" value="0" placeholder="0" required>
+                    <span class="input-group-text">%</span>
+                </div>
+                <div class="form-text">-50% to +50%</div>
+            </div>
+        </div>
+
+        <button type="button" id="applyTrigger" class="btn btn-primary w-100">
+            Apply Trigger
+        </button>
+    </div>
+
 </form>

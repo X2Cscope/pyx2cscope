@@ -13,9 +13,15 @@ html {
     font-size: 12px;
 }
 
+/* Prevent fixed-bottom footer from overlapping page content */
+body {
+    padding-bottom: 100px;
+}
+
 .chart-container {
     position: relative;
     width: 100%;
+    height: 45vh;
     min-height: 300px;
 }
 

@@ -184,6 +184,23 @@ function initSetupCard(){
             processData: false,
             success: function(response) {
                 // Tables are refreshed via SocketIO events from server
+                // Show Watch and Scope views, hide Dashboard and Script
+                var tWatch = document.getElementById('toggleWatch');
+                var tScope = document.getElementById('toggleScope');
+                var tDashboard = document.getElementById('toggleDashboard');
+                var tScript = document.getElementById('toggleScript');
+                tWatch.checked = true;
+                tScope.checked = true;
+                tDashboard.checked = false;
+                tScript.checked = false;
+                document.getElementById('watchCol').classList.remove('d-none');
+                document.getElementById('scopeCol').classList.remove('d-none');
+                document.getElementById('dashboardCol').classList.add('d-none');
+                document.getElementById('scriptCol').classList.add('d-none');
+                document.querySelector('label[for="toggleWatch"]').classList.add('active');
+                document.querySelector('label[for="toggleScope"]').classList.add('active');
+                document.querySelector('label[for="toggleDashboard"]').classList.remove('active');
+                document.querySelector('label[for="toggleScript"]').classList.remove('active');
             },
             error: function(jqXHR) {
                 var msg = (jqXHR.responseJSON && jqXHR.responseJSON.msg) ? jqXHR.responseJSON.msg : 'Failed to load config.';
