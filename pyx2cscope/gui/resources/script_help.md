@@ -128,6 +128,22 @@ if x2cscope.is_scope_data_ready():
 
 ---
 
+## Adding Extra Libraries (Executable Only)
+
+When running the standalone executable, only the bundled packages are available by default. To use additional packages in your scripts, use the built-in `--install` flag — this ensures packages are installed using the **same Python version** that is bundled in the executable:
+
+```
+pyX2Cscope.exe --install pandas
+pyX2Cscope.exe --install pandas scipy numpy
+```
+
+The packages are installed into a `libs/` folder next to the executable and are immediately importable in scripts — no rebuild required.
+
+> **Why not use `pip install` directly?**  
+> The system `pip` may install packages for a different Python version than the one bundled in the executable, causing import errors for packages with C extensions (e.g. `numpy`, `scipy`). The `--install` flag avoids this by always using the bundled interpreter.
+
+---
+
 ## Tips
 
 1. Always check if **x2cscope** is available before using it

@@ -36,8 +36,7 @@ See the section examples to check some of the usages you may get by pyX2Cscope.
 
    install.rst
    scripting.rst
-   gui_qt.md
-   gui_web.md
+   gui.rst
    FW_Support
    example
    development.md
