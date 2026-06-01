@@ -420,6 +420,7 @@ class WatchViewTab(BaseTab):
             "scaling": [sc.text() for sc in self._scaling_edits],
             "offsets": [off.text() for off in self._offset_edits],
             "scaled_values": [sv.text() for sv in self._scaled_value_edits],
+            "units": [u.text() for u in self._unit_edits],
             "live": [cb.isChecked() for cb in self._live_checkboxes],
             "sfr": [self._app_state.get_live_watch_var(i).sfr for i in range(len(self._variable_edits))],
         }
@@ -435,6 +436,7 @@ class WatchViewTab(BaseTab):
         values = config.get("values", [])
         scalings = config.get("scaling", [])
         offsets = config.get("offsets", [])
+        units = config.get("units", [])
         lives = config.get("live", [])
         sfrs = config.get("sfr", [])
 
@@ -455,6 +457,9 @@ class WatchViewTab(BaseTab):
             if i < len(offsets) and i < len(self._offset_edits):
                 self._offset_edits[i].setText(offsets[i])
                 self._offset_edits[i].setCursorPosition(0)
+            if i < len(units) and i < len(self._unit_edits):
+                self._unit_edits[i].setText(units[i])
+                self._unit_edits[i].setCursorPosition(0)
             if i < len(lives) and i < len(self._live_checkboxes):
                 self._live_checkboxes[i].setChecked(lives[i])
                 self._app_state.update_live_watch_var_field(i, "live", lives[i])

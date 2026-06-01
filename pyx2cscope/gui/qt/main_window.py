@@ -444,6 +444,7 @@ class MainWindow(QMainWindow):
                 "value": float(watch_qt["values"][i]) if i < len(watch_qt.get("values", [])) and watch_qt["values"][i] else 0.0,
                 "scaling": float(watch_qt["scaling"][i]) if i < len(watch_qt.get("scaling", [])) and watch_qt["scaling"][i] else 1.0,
                 "offset": float(watch_qt["offsets"][i]) if i < len(watch_qt.get("offsets", [])) and watch_qt["offsets"][i] else 0.0,
+                "unit": watch_qt["units"][i] if i < len(watch_qt.get("units", [])) else "",
             })
 
         # Build sample_control and trigger_control from scope tab Qt format
@@ -581,6 +582,7 @@ class MainWindow(QMainWindow):
                 "values": [str(v.get("value", "")) for v in raw_watch],
                 "scaling": [str(v.get("scaling", 1.0)) for v in raw_watch],
                 "offsets": [str(v.get("offset", 0.0)) for v in raw_watch],
+                "units": [v.get("unit", "") for v in raw_watch],
                 "live": [bool(v.get("live", False)) for v in raw_watch],
                 "sfr": [bool(v.get("sfr", False)) for v in raw_watch],
             }
