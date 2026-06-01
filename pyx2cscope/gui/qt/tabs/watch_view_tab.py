@@ -98,6 +98,10 @@ class WatchViewTab(BaseTab):
         self._rate_combo.currentIndexChanged.connect(self._on_rate_changed)
         toolbar.addWidget(self._rate_combo)
         toolbar.addStretch()
+        self._read_all_btn = QPushButton("Read All")
+        self._read_all_btn.setToolTip("Read current value of all variables once")
+        self._read_all_btn.clicked.connect(self._on_read_all)
+        toolbar.addWidget(self._read_all_btn)
         main_layout.addLayout(toolbar)
 
         # Scroll area
@@ -176,6 +180,7 @@ class WatchViewTab(BaseTab):
         var_edit = QLineEdit()
         var_edit.setPlaceholderText("Search Variable")
         var_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        var_edit.setAlignment(Qt.AlignLeft)
         var_edit.setEnabled(self._app_state.is_connected())  # Enable based on connection state
         var_edit.installEventFilter(self)
 
@@ -188,9 +193,11 @@ class WatchViewTab(BaseTab):
         value_edit.editingFinished.connect(lambda ve=value_edit: self._on_value_changed(ve))
 
         scaling_edit = QLineEdit("1")
+        scaling_edit.setAlignment(Qt.AlignLeft)
         scaling_edit.editingFinished.connect(lambda idx=index: self._update_scaled_value(idx))
 
         offset_edit = QLineEdit("0")
+        offset_edit.setAlignment(Qt.AlignLeft)
         offset_edit.editingFinished.connect(lambda idx=index: self._update_scaled_value(idx))
 
         scaled_value_edit = QLineEdit()
@@ -198,6 +205,7 @@ class WatchViewTab(BaseTab):
         scaled_value_edit.setAlignment(Qt.AlignLeft)
 
         unit_edit = QLineEdit()
+        unit_edit.setAlignment(Qt.AlignLeft)
 
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(lambda checked, idx=index: self._remove_variable_row(idx))
@@ -335,6 +343,20 @@ class WatchViewTab(BaseTab):
         _, interval_ms = self._RATE_OPTIONS[combo_index]
         self.live_interval_changed.emit(interval_ms)
 
+    def _on_read_all(self):
+        """Read current value of every variable row, regardless of live checkbox."""
+        for i, var_edit in enumerate(self._variable_edits):
+            var_name = var_edit.text().strip()
+            if not var_name:
+                continue
+            live_var = self._app_state.get_live_watch_var(i)
+            sfr = live_var.sfr if live_var else False
+            value = self._app_state.read_variable(var_name, sfr=sfr)
+            if value is not None:
+                self._value_edits[i].setText(str(value))
+                self._value_edits[i].setCursorPosition(0)
+                self._update_scaled_value(i)
+
     def _on_value_changed(self, ve: QLineEdit):
         """Handle value edit finished - write to device and refresh scaled value."""
         if ve not in self._value_edits:
@@ -420,6 +442,7 @@ class WatchViewTab(BaseTab):
             self._add_variable_row()
             if i < len(self._variable_edits):
                 self._variable_edits[i].setText(var)
+                self._variable_edits[i].setCursorPosition(0)
                 sfr = sfrs[i] if i < len(sfrs) else False
                 self._app_state.update_live_watch_var_field(i, "sfr", sfr)
                 self._app_state.update_live_watch_var_field(i, "name", var)
@@ -428,8 +451,10 @@ class WatchViewTab(BaseTab):
                 self._app_state.update_live_watch_var_field(i, "type", types[i])
             if i < len(scalings) and i < len(self._scaling_edits):
                 self._scaling_edits[i].setText(scalings[i])
+                self._scaling_edits[i].setCursorPosition(0)
             if i < len(offsets) and i < len(self._offset_edits):
                 self._offset_edits[i].setText(offsets[i])
+                self._offset_edits[i].setCursorPosition(0)
             if i < len(lives) and i < len(self._live_checkboxes):
                 self._live_checkboxes[i].setChecked(lives[i])
                 self._app_state.update_live_watch_var_field(i, "live", lives[i])
@@ -438,9 +463,11 @@ class WatchViewTab(BaseTab):
             live_value = self._app_state.read_variable(var, sfr=sfr)
             if live_value is not None:
                 self._value_edits[i].setText(str(live_value))
+                self._value_edits[i].setCursorPosition(0)
                 self._app_state.update_live_watch_var_field(i, "value", live_value)
             elif i < len(values) and i < len(self._value_edits):
                 self._value_edits[i].setText(values[i])
+                self._value_edits[i].setCursorPosition(0)
             self._update_scaled_value(i)
 
     @property
