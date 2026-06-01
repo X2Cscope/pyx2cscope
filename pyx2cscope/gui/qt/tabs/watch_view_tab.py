@@ -184,6 +184,7 @@ class WatchViewTab(BaseTab):
 
         value_edit = QLineEdit()
         value_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        value_edit.setAlignment(Qt.AlignLeft)
         value_edit.editingFinished.connect(lambda ve=value_edit: self._on_value_changed(ve))
 
         scaling_edit = QLineEdit("1")
@@ -194,6 +195,7 @@ class WatchViewTab(BaseTab):
 
         scaled_value_edit = QLineEdit()
         scaled_value_edit.setReadOnly(True)
+        scaled_value_edit.setAlignment(Qt.AlignLeft)
 
         unit_edit = QLineEdit()
 
@@ -362,9 +364,11 @@ class WatchViewTab(BaseTab):
             offset = self.safe_float(self._offset_edits[index].text())
             scaled = self.calculate_scaled_value(value, scaling, offset)
             self._scaled_value_edits[index].setText(f"{scaled:.2f}")
+            self._scaled_value_edits[index].setCursorPosition(0)
         except Exception as e:
             logging.error(f"Error updating scaled value: {e}")
             self._scaled_value_edits[index].setText("0.00")
+            self._scaled_value_edits[index].setCursorPosition(0)
 
     @pyqtSlot(int, str, float)
     def on_live_var_updated(self, index: int, name: str, value: float):
@@ -377,6 +381,7 @@ class WatchViewTab(BaseTab):
         """
         if index < len(self._value_edits):
             self._value_edits[index].setText(str(value))
+            self._value_edits[index].setCursorPosition(0)
             self._update_scaled_value(index)
 
     def clear_all_rows(self):
