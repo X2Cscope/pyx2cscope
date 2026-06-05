@@ -166,12 +166,8 @@ class WatchViewTab(BaseTab):
                 return True  # Consume the event after handling
         return super().eventFilter(source, event)
 
-    def _add_variable_row(self):
-        """Add a new variable row to the grid."""
-        row = self._current_row
-        index = len(self._row_widgets)
-
-        # Create widgets
+    def _create_row_widgets(self, index: int):
+        """Create and return all widgets for a variable row."""
         live_cb = QCheckBox()
         # Use the checkbox widget itself to derive the current index at signal time,
         # so that removal+rearrange never causes stale index captures.
@@ -181,7 +177,7 @@ class WatchViewTab(BaseTab):
         var_edit.setPlaceholderText("Search Variable")
         var_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         var_edit.setAlignment(Qt.AlignLeft)
-        var_edit.setEnabled(self._app_state.is_connected())  # Enable based on connection state
+        var_edit.setEnabled(self._app_state.is_connected())
         var_edit.installEventFilter(self)
 
         type_label = QLabel()
@@ -210,19 +206,19 @@ class WatchViewTab(BaseTab):
         remove_btn = QPushButton("Remove")
         remove_btn.clicked.connect(lambda checked, idx=index: self._remove_variable_row(idx))
 
-        # Add to grid
-        self._grid_layout.addWidget(live_cb, row, 0)
-        self._grid_layout.addWidget(var_edit, row, 1)
-        self._grid_layout.addWidget(type_label, row, 2)
-        self._grid_layout.addWidget(value_edit, row, 3)
-        self._grid_layout.addWidget(scaling_edit, row, 4)
-        self._grid_layout.addWidget(offset_edit, row, 5)
-        self._grid_layout.addWidget(scaled_value_edit, row, 6)
-        self._grid_layout.addWidget(unit_edit, row, 7)
-        self._grid_layout.addWidget(remove_btn, row, 8)
+        return (live_cb, var_edit, type_label, value_edit, scaling_edit, offset_edit, scaled_value_edit, unit_edit, remove_btn)
 
-        # Track widgets
-        widgets = (live_cb, var_edit, type_label, value_edit, scaling_edit, offset_edit, scaled_value_edit, unit_edit, remove_btn)
+    def _add_variable_row(self):
+        """Add a new variable row to the grid."""
+        row = self._current_row
+        index = len(self._row_widgets)
+
+        widgets = self._create_row_widgets(index)
+        live_cb, var_edit, type_label, value_edit, scaling_edit, offset_edit, scaled_value_edit, unit_edit, remove_btn = widgets
+
+        for col, widget in enumerate(widgets):
+            self._grid_layout.addWidget(widget, row, col)
+
         self._row_widgets.append(widgets)
         self._live_checkboxes.append(live_cb)
         self._variable_edits.append(var_edit)
@@ -233,12 +229,8 @@ class WatchViewTab(BaseTab):
         self._scaled_value_edits.append(scaled_value_edit)
         self._unit_edits.append(unit_edit)
 
-        # Add to app state
         self._app_state.add_live_watch_var()
-
         self._current_row += 1
-
-        # Calculate initial scaled value
         self._update_scaled_value(index)
 
     def _remove_variable_row(self, index: int):
