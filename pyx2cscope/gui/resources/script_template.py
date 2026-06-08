@@ -40,11 +40,11 @@ var.set_value(42)  # set the value of the variable
 # ------------------------------------------------------------------
 # Example: read a single variable in a loop
 # ------------------------------------------------------------------
-print("Reading 'myModule.mySignal' every 100 ms (press Stop to cancel):")
+print("Reading 'myModule.mySignal' every 500 ms (press Stop to cancel):")
 while not stop_requested():
     value = var.get_value()
     print(f"  {value}")
-    time.sleep(0.1)
+    time.sleep(0.5)
 
 # ------------------------------------------------------------------
 # Example: capture scope data once
