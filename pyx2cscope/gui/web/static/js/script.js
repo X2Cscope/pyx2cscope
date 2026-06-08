@@ -201,6 +201,9 @@ function initSetupCard(){
                 document.querySelector('label[for="toggleScope"]').classList.add('active');
                 document.querySelector('label[for="toggleDashboard"]').classList.remove('active');
                 document.querySelector('label[for="toggleScript"]').classList.remove('active');
+                if (response.status === 'warning') {
+                    alert(response.msg);
+                }
             },
             error: function(jqXHR) {
                 var msg = (jqXHR.responseJSON && jqXHR.responseJSON.msg) ? jqXHR.responseJSON.msg : 'Failed to load config.';

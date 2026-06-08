@@ -452,7 +452,7 @@ def load_config():
         _restore_trigger_control(trigger_control)
 
     if errors:
-        return jsonify({"status": "error", "msg": "Variables not available: " + ", ".join(errors)}), 400
+        return jsonify({"status": "warning", "msg": "Variables not available: " + ", ".join(errors)})
     return jsonify({"status": "success"})
 
 
