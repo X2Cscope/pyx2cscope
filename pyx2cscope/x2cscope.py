@@ -58,7 +58,7 @@ class TriggerConfig:
         trigger_level (int): The trigger level value for a specified channel.
         trigger_mode (int): 0 Auto, 1 Triggered (default) .
         trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
-        trigger_edge (int): Rising 0, falling 1.
+        trigger_edge (int): Falling edge 0, rising edge 1.
     """
 
     variable: Variable

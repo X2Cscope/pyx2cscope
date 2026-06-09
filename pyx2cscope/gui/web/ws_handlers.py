@@ -14,6 +14,9 @@ from pyx2cscope.gui.web.scope import web_scope
 def background_x2cscope_task():
     """Background x2cScope thread."""
     while True:
+        if not web_scope.is_connected():
+            socketio.sleep(1)
+            continue
         watch_values = web_scope.watch_poll()
         scope_values, dashboard_scope_data = web_scope.scope_poll()
         dashboard_values = web_scope.dashboard_poll()

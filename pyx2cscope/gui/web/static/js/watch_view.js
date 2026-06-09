@@ -1,4 +1,3 @@
-let parameterCardEnabled = true;
 let parameterTable;
 
 const socket_wv = io("/watch-view");
@@ -9,6 +8,10 @@ socket_wv.on("connect", () => {
 
 socket_wv.on("watch_data_update", (data) => {
     console.log("Update from server:", data);
+    // Skip all redraws if any editable cell in the table is being edited
+    if ($('#parameterTable td[contenteditable="true"]:focus').length > 0) {
+        return;
+    }
     parameterTable.rows().every(function() {
         const rowData = this.data();
         const updatedVar = data.find(item => item.variable === rowData.variable);
@@ -44,16 +47,6 @@ function setParameterRefreshInterval(){
     });
 }
 
-function wv_periodic_update(){
-    if(!parameterCardEnabled) return;
-    update = false;
-    cbs = $('td:first-child input:checkbox', $('#parameterTableBody'));
-    for(let cb of cbs) {
-        update |= cb.checked?1:0;
-    }
-    if(update) parameterTable.ajax.reload();
-}
-
 function setParameterTableListeners(){
     // delete Row on button click
     $('#parameterTableBody').on('click', '.remove', function () {
@@ -80,31 +73,6 @@ function setParameterTableListeners(){
         }
     });
 
-    // Set up Save button click handler
-    $("#parameterSave").on("click", function() {
-        window.location.href = '/watch/save';
-    });
-    $('#parameterLoad').on('change', function(event) {
-        var file = event.target.files[0];
-        var formData = new FormData();
-        formData.append('file', file);
-
-        $.ajax({
-            url: '/watch/load', // Replace with your server upload endpoint
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                parameterTable.ajax.reload();
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(jqXHR.responseJSON.msg);
-            }
-        }).always(function() {
-            $('#parameterLoad').val('');
-        });
-    });
 }
 
 function initParameterSelect(){

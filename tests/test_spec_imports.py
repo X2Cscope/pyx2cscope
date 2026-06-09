@@ -2,7 +2,6 @@
 
 import ast
 import importlib
-import platform
 import sys
 from pathlib import Path
 
@@ -19,7 +18,7 @@ def _extract_hiddenimports(spec_path: Path) -> list[str]:
         if isinstance(node, ast.Call):
             for keyword in node.keywords:
                 if keyword.arg == "hiddenimports" and isinstance(keyword.value, ast.List):
-                    return [elt.s for elt in keyword.value.elts if isinstance(elt, ast.Constant)]
+                    return [elt.value for elt in keyword.value.elts if isinstance(elt, ast.Constant)]
     return []
 
 
