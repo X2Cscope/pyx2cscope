@@ -96,3 +96,22 @@ Install an extra library into the standalone executable:
 .. code-block:: console
 
    pyX2Cscope.exe --install scipy
+
+.. _installing-extra-libraries:
+
+Installing extra libraries (standalone executable)
+--------------------------------------------------
+
+The standalone ``pyX2Cscope.exe`` ships with a bundled Python interpreter and
+a fixed set of packages.  If your firmware uses a communication layer or
+post-processing routine that requires an additional package (e.g. ``scipy``,
+``pandas``), you can install it into the ``libs/`` folder that sits next to the
+executable:
+
+.. code-block:: console
+
+   pyX2Cscope.exe --install scipy
+   pyX2Cscope.exe --install scipy pandas   # multiple packages at once
+
+The packages are installed via the bundled ``pip`` and are isolated from your
+system Python.  They persist across restarts of the executable.
