@@ -53,15 +53,18 @@ class ConfigManager(QObject):
         """
         try:
             if not file_path:
+                last_dir = self._settings.value("config_file_dir", os.path.expanduser("~"), type=str)
                 file_path, _ = QFileDialog.getSaveFileName(
                     self._parent,
                     "Save Configuration",
-                    "",
+                    os.path.join(last_dir, "pyx2cscope_config.json"),
                     "JSON Files (*.json)",
                 )
 
             if not file_path:
                 return False
+
+            self._settings.setValue("config_file_dir", os.path.dirname(file_path))
 
             with open(file_path, "w") as f:
                 json.dump(config, f, indent=4)
@@ -87,15 +90,18 @@ class ConfigManager(QObject):
         """
         try:
             if not file_path:
+                last_dir = self._settings.value("config_file_dir", os.path.expanduser("~"), type=str)
                 file_path, _ = QFileDialog.getOpenFileName(
                     self._parent,
                     "Load Configuration",
-                    "",
+                    last_dir,
                     "JSON Files (*.json)",
                 )
 
             if not file_path:
                 return None
+
+            self._settings.setValue("config_file_dir", os.path.dirname(file_path))
 
             with open(file_path, "r") as f:
                 config = json.load(f)
@@ -165,28 +171,31 @@ class ConfigManager(QObject):
 
     @staticmethod
     def build_config(
-        elf_file: str,
-        connection: Dict[str, Any],
         scope_view: Dict[str, Any],
-        tab3_view: Dict[str, Any],
+        watch_view: Dict[str, Any],
         view_mode: str = "Both",
+        sample_control: Optional[Dict[str, Any]] = None,
+        trigger_control: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Build a configuration dictionary from component data.
 
         Args:
-            elf_file: Path to the ELF file.
-            connection: Connection parameters (interface type, port, etc.).
             scope_view: ScopeView tab configuration.
-            tab3_view: WatchView tab configuration.
+            watch_view: WatchView tab configuration.
             view_mode: Monitor view mode (WatchView, ScopeView, Both, None).
+            sample_control: Sample control settings (optional).
+            trigger_control: Trigger control settings (optional).
 
         Returns:
             Complete configuration dictionary.
         """
-        return {
-            "elf_file": elf_file,
-            "connection": connection,
+        config = {
             "scope_view": scope_view,
-            "tab3_view": tab3_view,
+            "watch_view": watch_view,
             "view_mode": view_mode,
         }
+        if sample_control is not None:
+            config["sample_control"] = sample_control
+        if trigger_control is not None:
+            config["trigger_control"] = trigger_control
+        return config

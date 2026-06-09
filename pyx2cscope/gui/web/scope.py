@@ -27,6 +27,20 @@ class WebScope:
         self.scope_time_sampling = 50e-3
         self.variables_file = ""
 
+        # Sample control state (mirrors last submitted form values)
+        self.sample_control = {
+            "triggerAction": "off",
+            "sampleTime": 1,
+            "sampleFreq": 20.0,
+        }
+        # Trigger control state (mirrors last submitted form values)
+        self.trigger_control = {
+            "trigger_mode": 0,
+            "trigger_edge": 1,
+            "trigger_level": 0.0,
+            "trigger_delay": 0,
+        }
+
         self.dashboard_vars = {}  # {var_name: Variable object}
         self.dashboard_rate = 1.0  # Fixed at 1 second for dashboard polling
         self.dashboard_next = time.time()
@@ -333,6 +347,7 @@ class WebScope:
         Args:
             **kwargs: Trigger configuration parameters.
         """
+        self.trigger_control.update(kwargs)
         if kwargs["trigger_mode"] == 1:
             for var in self.scope_vars:
                 if var["trigger"]:
@@ -349,6 +364,11 @@ class WebScope:
             sample_time (int): Sample time value.
             sample_freq (float): Sample frequency.
         """
+        self.sample_control = {
+            "triggerAction": trigger_action,
+            "sampleTime": sample_time,
+            "sampleFreq": sample_freq,
+        }
         if self.x2c_scope is None:
             return
         sample_time = 1 if sample_time < 1 else sample_time
@@ -545,10 +565,13 @@ class WebScope:
         return self.x2c_scope.list_sfr()
 
     def disconnect(self):
-        """Disconnect from X2CScope."""
+        """Disconnect from X2CScope and clear all variable lists."""
         self.x2c_scope.disconnect()
         self.x2c_scope = None
         self.variables_file = ""
+        self.watch_vars.clear()
+        self.scope_vars.clear()
+        self.dashboard_vars.clear()
 
     def is_connected(self):
         """Check if connected to X2CScope.

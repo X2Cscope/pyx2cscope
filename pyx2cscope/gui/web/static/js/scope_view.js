@@ -37,61 +37,43 @@ socket_sv.on("scope_chart_update", (data) => {
 
 socket_sv.on("sample_control_updated", function(response) {
     if (response.status === "success") {
-        // Handle triggerAction radio buttons
         if (response.data.triggerAction) {
             document.querySelectorAll('input[name="triggerAction"]').forEach(radio => {
                 const isTarget = radio.value === response.data.triggerAction;
                 radio.checked = isTarget;
-                const label = document.querySelector(`label[for="${radio.id}"]`);
-                label.classList.toggle('active', isTarget);
+                document.querySelector(`label[for="${radio.id}"]`).classList.toggle('active', isTarget);
             });
         }
-        // Handle sampleTime input
-        if (response.data.sampleTime !== undefined) {
-            const sampleTimeInput = document.getElementById('sampleTime');
-            sampleTimeInput.value = response.data.sampleTime;
-        }
-        // Handle sampleFreq input
-        if (response.data.sampleFreq !== undefined) {
-            const sampleFreqInput = document.getElementById('sampleFreq');
-            sampleFreqInput.value = response.data.sampleFreq;
-        }
+        if (response.data.sampleTime !== undefined)
+            document.getElementById('sampleTime').value = response.data.sampleTime;
+        if (response.data.sampleFreq !== undefined)
+            document.getElementById('sampleFreq').value = response.data.sampleFreq;
     } else {
         console.error("Failed to update sample control:", response.message);
     }
 });
 
-// Add this handler for the trigger control response
 socket_sv.on("trigger_control_updated", function(response) {
     if (response.status === "success" && response.data) {
-        // Handle trigger_mode radio buttons
         if (response.data.trigger_mode !== undefined) {
+            const val = response.data.trigger_mode.toString();
             document.querySelectorAll('input[name="trigger_mode"]').forEach(radio => {
-                const isTarget = radio.value === response.data.trigger_mode.toString();
-                radio.checked = isTarget;
-                const label = document.querySelector(`label[for="${radio.id}"]`);
-                label.classList.toggle('active', isTarget);
+                radio.checked = radio.value === val;
+                document.querySelector(`label[for="${radio.id}"]`).classList.toggle('active', radio.checked);
             });
+            document.getElementById('triggerOptions').style.display = val === "1" ? '' : 'none';
         }
-        // Handle trigger_edge radio buttons
         if (response.data.trigger_edge !== undefined) {
+            const val = response.data.trigger_edge.toString();
             document.querySelectorAll('input[name="trigger_edge"]').forEach(radio => {
-                const isTarget = radio.value === response.data.trigger_edge.toString();
-                radio.checked = isTarget;
-                const label = document.querySelector(`label[for="${radio.id}"]`);
-                label.classList.toggle('active', isTarget);
+                radio.checked = radio.value === val;
+                document.querySelector(`label[for="${radio.id}"]`).classList.toggle('active', radio.checked);
             });
         }
-        // Handle trigger_level input
-        if (response.data.trigger_level !== undefined) {
-            const triggerLevelInput = document.getElementById('triggerLevel');
-            triggerLevelInput.value = response.data.trigger_level;
-        }
-        // Handle trigger_delay input
-        if (response.data.trigger_delay !== undefined) {
-            const triggerDelayInput = document.getElementById('triggerDelay');
-            triggerDelayInput.value = response.data.trigger_delay;
-        }
+        if (response.data.trigger_level !== undefined)
+            document.getElementById('triggerLevel').value = response.data.trigger_level;
+        if (response.data.trigger_delay !== undefined)
+            document.getElementById('triggerDelay').value = response.data.trigger_delay;
     } else if (response.status !== "success") {
         console.error("Failed to update trigger control:", response.message);
     }
@@ -394,72 +376,49 @@ function initScopeChart() {
     $('#chartExport').attr("href", "/scope/export")
 }
 
-function initScopeForms(){
+function emitTriggerControl() {
+    const mode  = document.querySelector('input[name="trigger_mode"]:checked').value;
+    const edge  = document.querySelector('input[name="trigger_edge"]:checked')?.value ?? '1';
+    const data = {
+        trigger_mode:  mode,
+        trigger_edge:  edge,
+        trigger_level: document.getElementById('triggerLevel').value,
+        trigger_delay: document.getElementById('triggerDelay').value,
+    };
+    socket_sv.emit("update_trigger_control", new URLSearchParams(data).toString());
+}
+
+function initScopeForms() {
     $("#sampleControlForm").submit(function(e) {
-        e.preventDefault(); // avoid to execute the actual submit of the form.
-        var formData = $(this).serialize();
-        socket_sv.emit("update_sample_control", formData);
+        e.preventDefault();
+        socket_sv.emit("update_sample_control", $(this).serialize());
     });
 
-    // Add change event handlers for the sample control radio buttons
     $('input[name="triggerAction"]').on('change', function() {
-        // Remove active class from all labels in the same button group
         $(this).closest('.btn-group').find('.btn').removeClass('active');
-        // Add active class to the clicked button's label
         $(`label[for="${this.id}"]`).addClass('active');
-
-        // Submit the form
         $("#sampleControlForm").submit();
     });
 
-    // Add change event handlers for sample time and frequency inputs
     $('#sampleTime, #sampleFreq').on('change', function() {
         $("#sampleControlForm").submit();
     });
 
-    // Initialize the active state of the stop button on page load
-    $('input[name="triggerAction"][checked]').trigger('change');
-
-    // Handle trigger control form submission
-    $("#triggerControlForm").submit(function(e) {
-        e.preventDefault();
-        var formData = $(this).serialize();
-        socket_sv.emit("update_trigger_control", formData);
+    $('input[name="trigger_mode"]').on('change', function() {
+        $(this).closest('.btn-group').find('.btn').removeClass('active');
+        $(`label[for="${this.id}"]`).addClass('active');
+        const enabled = this.value === "1";
+        $('#triggerOptions').toggle(enabled);
+        emitTriggerControl();
     });
 
-    // Add change event handlers for the radio buttons to update their visual state
-    $('input[name="trigger_mode"]').on('change', function() {
-        // Remove active class from all labels in the same button group
+    $('input[name="trigger_edge"]').on('change', function() {
         $(this).closest('.btn-group').find('.btn').removeClass('active');
-        // Add active class to the clicked button's label
         $(`label[for="${this.id}"]`).addClass('active');
     });
 
-    // Set up Save button click handler
-    $("#scopeSave").on("click", function() {
-        window.location.href = '/scope/save';
-    });
-
-    $("#scopeLoad").on("change", function(event) {
-        var file = event.target.files[0];
-        var formData = new FormData();
-        formData.append('file', file);
-
-        $.ajax({
-            url: '/scope/load', // Replace with your server upload endpoint
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                scopeTable.ajax.reload();
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                alert(jqXHR.responseJSON.msg);
-            }
-        }).always(function() {
-            $("#scopeLoad").val("");
-        });
+    $('#applyTrigger').on('click', function() {
+        emitTriggerControl();
     });
 }
 

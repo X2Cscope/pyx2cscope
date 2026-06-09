@@ -157,7 +157,7 @@ class DataPoller(QThread):
         for index in indices:
             watch_var = self._app_state.get_watch_var(index)
             logging.debug(f"_poll_watch_variables: index={index}, name='{watch_var.name}'")
-            if watch_var.name and watch_var.name != "None":
+            if watch_var.name:
                 # Use cached var_ref for faster polling
                 value = self._app_state.read_watch_var_value(index)
                 logging.debug(f"_poll_watch_variables: read value={value}")
@@ -245,7 +245,7 @@ class DataPoller(QThread):
         for index in indices:
             live_var = self._app_state.get_live_watch_var(index)
             logging.debug(f"_poll_live_variables: index={index}, name='{live_var.name}'")
-            if live_var.name and live_var.name != "None":
+            if live_var.name:
                 # Use cached var_ref for faster polling
                 value = self._app_state.read_live_watch_var_value(index)
                 logging.debug(f"_poll_live_variables: read value={value}")

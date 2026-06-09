@@ -59,6 +59,29 @@ def test_x2cscope_install_script_bin():
     assert version == pyx2cscope.__version__, "x2cscope script not working"
 
 
+def test_required_libraries_importable():
+    """Check that all required libraries are importable after install."""
+    import importlib
+
+    required = {
+        "serial": "pyserial",
+        "can": "python-can",
+        "yaml": "pyyaml",
+        "numpy": "numpy",
+        "matplotlib": "matplotlib",
+        "flask": "flask",
+        "flask_socketio": "flask-socketio",
+        "elftools": "pyelftools",
+        "PyQt5": "PyQt5",
+        "pyqtgraph": "pyqtgraph",
+    }
+    missing = []
+    for module, package in required.items():
+        if importlib.util.find_spec(module) is None:
+            missing.append(package)
+    assert not missing, f"Missing required packages: {', '.join(missing)}"
+
+
 # def test_web_x2cscope_install():
 #     """Test if all dependencies are there for web x2c.
 

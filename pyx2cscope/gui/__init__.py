@@ -39,8 +39,8 @@ def execute_qt(*args, **kwargs):
     qt_args = sys.argv[:1] + args[0]
     # Initialize a PyQt5 application
     app = QApplication(qt_args)
-    # Create an instance of the main window
-    ex = MainWindow()
+    # Create an instance of the main window, forwarding CLI kwargs (elf, port, etc.)
+    ex = MainWindow(**kwargs)
     # Display the GUI
     ex.show()
     # Start the PyQt5 application event loop

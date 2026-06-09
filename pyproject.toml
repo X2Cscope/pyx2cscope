@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyx2cscope"
-version = "0.7.0"
+version = "0.7.1"
 description = "python implementation of X2Cscope"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
@@ -17,6 +17,7 @@ authors = [
 ]
 dependencies = [
   "pyserial>=3.5,<4.0",
+  "python-can>=4.0.0,<5.0.0",
   "pyelftools>=0.31,<0.32",
   "pyyaml>=6.0.1,<7.0.0",
   "numpy>=1.26.0,<3.0.0",
