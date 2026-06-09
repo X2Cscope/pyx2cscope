@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.__main__ &mdash; pyX2Cscope 0.7.0 documentation</title>
+  <title>pyx2cscope.__main__ &mdash; pyX2Cscope 0.7.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=fe7df9b0"></script>
+        <script src="../../_static/documentation_options.js?v=5a057da9"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.7.0
+                0.7.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,8 +50,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scripting.html">API Interface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../gui_qt.html">GUI Qt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../gui_web.html">GUI Web</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui.html">Graphical User Interfaces</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development.html">Development</a></li>
@@ -90,6 +89,23 @@
 <span class="sd">sets up the PyQt5 application, and launches the X2Cscope GUI.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="c1"># When running as a PyInstaller executable, add a &#39;libs&#39; folder (next to the</span>
+<span class="c1"># executable) to sys.path so scripts can import packages installed there.</span>
+<span class="c1"># Append rather than insert so bundled packages always take priority over libs/,</span>
+<span class="c1"># preventing version conflicts (e.g. a newer NumPy in libs/ shadowing the bundled one).</span>
+<span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s2">&quot;frozen&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">site</span>
+<div class="viewcode-block" id="_libs_dir">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._libs_dir">[docs]</a>
+    <span class="n">_libs_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">),</span> <span class="s2">&quot;libs&quot;</span><span class="p">)</span></div>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">_libs_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># addsitedir appends to sys.path and processes .pth files.</span>
+    <span class="n">site</span><span class="o">.</span><span class="n">addsitedir</span><span class="p">(</span><span class="n">_libs_dir</span><span class="p">)</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
@@ -98,6 +114,89 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyx2cscope</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui</span><span class="p">,</span> <span class="n">utils</span>
+
+
+<div class="viewcode-block" id="_early_install">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._early_install">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_early_install</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle --install before argparse so it never reaches _args_check.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;--install&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;--install&quot;</span><span class="p">)</span>
+    <span class="n">packages</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="s2">&quot;--with-deps&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">packages</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--install requires at least one package name.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sys</span><span class="p">,</span> <span class="s2">&quot;frozen&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--install is intended for the standalone executable.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Use:  pip install </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">packages</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="n">libs_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">),</span> <span class="s2">&quot;libs&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">libs_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Installing into: </span><span class="si">{</span><span class="n">libs_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">python</span> <span class="o">=</span> <span class="n">_find_matching_python</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">python</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ver</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR: Could not find Python </span><span class="si">{</span><span class="n">ver</span><span class="o">.</span><span class="n">major</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">ver</span><span class="o">.</span><span class="n">minor</span><span class="si">}</span><span class="s2"> on this system.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Install it from https://www.python.org/downloads/ then retry.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using Python: </span><span class="si">{</span><span class="n">python</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># --no-deps: skip pulling in packages already bundled in the exe (e.g. numpy).</span>
+    <span class="c1"># Users can override with: pyX2Cscope --install scipy --with-deps</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">python</span><span class="p">,</span> <span class="s2">&quot;-m&quot;</span><span class="p">,</span> <span class="s2">&quot;pip&quot;</span><span class="p">,</span> <span class="s2">&quot;install&quot;</span><span class="p">,</span> <span class="s2">&quot;--target&quot;</span><span class="p">,</span> <span class="n">libs_dir</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">&quot;--with-deps&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
+        <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;--no-deps&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">+=</span> <span class="n">packages</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="_find_matching_python">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._find_matching_python">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_matching_python</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find a system Python executable whose version matches the frozen bundle.&quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+    <span class="n">major</span><span class="p">,</span> <span class="n">minor</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">major</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="o">.</span><span class="n">minor</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">major</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">minor</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># Candidates in order of preference.</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># Versioned names on PATH (most reliable cross-platform).</span>
+        <span class="sa">f</span><span class="s2">&quot;python</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;python</span><span class="si">{</span><span class="n">major</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;python3&quot;</span><span class="p">,</span>
+        <span class="c1"># Common Windows install locations.</span>
+        <span class="o">*</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;C:/Users/*/AppData/Local/Programs/Python/Python</span><span class="si">{</span><span class="n">major</span><span class="si">}{</span><span class="n">minor</span><span class="si">}</span><span class="s2">/python.exe&quot;</span>
+        <span class="p">),</span>
+        <span class="o">*</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;C:/Python</span><span class="si">{</span><span class="n">major</span><span class="si">}{</span><span class="n">minor</span><span class="si">}</span><span class="s2">/python.exe&quot;</span><span class="p">),</span>
+        <span class="o">*</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;C:/Program Files/Python</span><span class="si">{</span><span class="n">major</span><span class="si">}{</span><span class="n">minor</span><span class="si">}</span><span class="s2">/python.exe&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">candidate</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
+                 <span class="sa">f</span><span class="s2">&quot;import sys; v=sys.version_info; exit(0 if (v.major,v.minor)==(</span><span class="si">{</span><span class="n">major</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">minor</span><span class="si">}</span><span class="s2">) else 1)&quot;</span><span class="p">],</span>
+                <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">candidate</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">):</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
 
 
 <div class="viewcode-block" id="parse_arguments">
@@ -172,41 +271,26 @@
 <div class="viewcode-block" id="_args_check">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._args_check">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_args_check</span><span class="p">(</span><span class="n">k_args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">):</span>
-    <span class="c1"># if both elf and port are not supplied, check if there is a valid config file</span>
-    <span class="k">if</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_elf_file_path</span><span class="p">()</span>
-        <span class="n">com_port</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_com_port</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">com_port</span><span class="p">:</span>
-            <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="o">=</span> <span class="n">path</span>
-            <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">com_port</span>
-    <span class="c1"># if we supplied and elf but no port</span>
-    <span class="k">elif</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-        <span class="n">com_port</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_com_port</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">com_port</span><span class="p">:</span>
-            <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">com_port</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A communication port must be supplied!&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="ow">not</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">and</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="c1"># if elf is not supplied, check if there is a valid config file</span>
+    <span class="k">if</span> <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_elf_file_path</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
-            <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="o">=</span> <span class="n">path</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;An elf-file path must be supplied!&quot;</span><span class="p">)</span></div>
+            <span class="n">k_args</span><span class="o">.</span><span class="n">elf</span> <span class="o">=</span> <span class="n">path</span></div>
 
 
 
-<span class="n">known_args</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">()</span>
-<span class="c1"># if arguments logic is correct,</span>
-<span class="n">_args_check</span><span class="p">(</span><span class="n">known_args</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">_early_install</span><span class="p">():</span>
+    <span class="n">known_args</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">()</span>
+    <span class="n">_args_check</span><span class="p">(</span><span class="n">known_args</span><span class="p">)</span>
 
-<span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-<span class="n">pyx2cscope</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">console</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_console</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">console</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_console</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">qt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
-    <span class="n">gui</span><span class="o">.</span><span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">,</span> <span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">qt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
+        <span class="n">gui</span><span class="o">.</span><span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">,</span> <span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
-    <span class="n">gui</span><span class="o">.</span><span class="n">execute_web</span><span class="p">(</span><span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
+        <span class="n">gui</span><span class="o">.</span><span class="n">execute_web</span><span class="p">(</span><span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
 </pre></div>
 
            </div>

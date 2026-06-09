@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.__main__ &mdash; pyX2Cscope 0.7.0 documentation</title>
+  <title>pyx2cscope.__main__ &mdash; pyX2Cscope 0.7.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=fe7df9b0"></script>
+        <script src="../../../_static/documentation_options.js?v=5a057da9"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.7.0
+                0.7.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -53,8 +53,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../scripting.html">API Interface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../gui_qt.html">GUI Qt</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../gui_web.html">GUI Web</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gui.html">Graphical User Interfaces</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../development.html">Development</a></li>
@@ -111,6 +110,12 @@ sets up the PyQt5 application, and launches the X2Cscope GUI.</p>
 <h3>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__._early_install" title="pyx2cscope.__main__._early_install"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_early_install</span></code></a>(→ bool)</p></td>
+<td><p>Handle --install before argparse so it never reaches _args_check.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.__main__._find_matching_python" title="pyx2cscope.__main__._find_matching_python"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_find_matching_python</span></code></a>(→ str | None)</p></td>
+<td><p>Find a system Python executable whose version matches the frozen bundle.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__.parse_arguments" title="pyx2cscope.__main__.parse_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_arguments</span></code></a>()</p></td>
 <td><p>Forward the received arguments to ArgParse and parse them.</p></td>
 </tr>
@@ -119,6 +124,33 @@ sets up the PyQt5 application, and launches the X2Cscope GUI.</p>
 </tr>
 </tbody>
 </table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.__main__._libs_dir" title="pyx2cscope.__main__._libs_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_libs_dir</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.__main__._libs_dir">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">_libs_dir</span></span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#_libs_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__._libs_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.__main__._early_install">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">_early_install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#_early_install"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__._early_install" title="Link to this definition"></a></dt>
+<dd><p>Handle –install before argparse so it never reaches _args_check.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.__main__._find_matching_python">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">_find_matching_python</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#_find_matching_python"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__._find_matching_python" title="Link to this definition"></a></dt>
+<dd><p>Find a system Python executable whose version matches the frozen bundle.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="pyx2cscope.__main__.parse_arguments">
 <span class="sig-prename descclassname"><span class="pre">pyx2cscope.__main__.</span></span><span class="sig-name descname"><span class="pre">parse_arguments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/pyx2cscope/__main__.html#parse_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.__main__.parse_arguments" title="Link to this definition"></a></dt>

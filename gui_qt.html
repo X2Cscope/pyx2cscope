@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GUI Qt &mdash; pyX2Cscope 0.7.0 documentation</title>
+  <title>GUI Qt &mdash; pyX2Cscope 0.7.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,14 +17,14 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=fe7df9b0"></script>
+        <script src="_static/documentation_options.js?v=5a057da9"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="GUI Web" href="gui_web.html" />
-    <link rel="prev" title="API Interface" href="scripting.html" /> 
+    <link rel="prev" title="Command-Line Interface" href="cli.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.7.0
+                0.7.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -53,36 +53,42 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scripting.html">API Interface</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">GUI Qt</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#starting-the-gui-qt">Starting the GUI Qt</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#getting-started-with-pyx2cscope-reference-gui">Getting Started with pyX2Cscope Reference GUI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tab-setup">Tab: Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#connection-settings">Connection Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#uart-settings">UART Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#tcp-ip-settings">TCP/IP Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#can-settings">CAN Settings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#device-information">Device Information</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="gui.html">Graphical User Interfaces</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cli.html">Command-Line Interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">GUI Qt</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#starting-the-gui-qt">Starting the GUI Qt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-started-with-pyx2cscope-reference-gui">Getting Started with pyX2Cscope Reference GUI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tab-setup">Tab: Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#connection-settings">Connection Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#uart-settings">UART Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tcp-ip-settings">TCP/IP Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#can-settings">CAN Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#device-information">Device Information</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#tab-data-views">Tab: Data Views</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#watchview">WatchView</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scopeview">ScopeView</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#special-function-registers-sfr">Special Function Registers (SFR)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#export-variables">Export Variables</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#save-and-load-config">Save and Load Config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tab-data-views">Tab: Data Views</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#watchview">WatchView</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#scopeview">ScopeView</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#special-function-registers-sfr">Special Function Registers (SFR)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-variables">Export Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#save-and-load-config">Save and Load Config</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#tab-scripting">Tab: Scripting</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#script-selection">Script Selection</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#execution-controls">Execution Controls</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#output-tabs">Output Tabs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#available-objects-in-scripts">Available Objects in Scripts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example-script">Example Script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tab-scripting">Tab: Scripting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#script-selection">Script Selection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#execution-controls">Execution Controls</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#output-tabs">Output Tabs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#available-objects-in-scripts">Available Objects in Scripts</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-script">Example Script</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gui_web.html">GUI Web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui_web.html">GUI Web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting_scripts.html">Running Scripts in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vscode.html">VSCode Integration</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="FW_Support.html">Firmware Support</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
@@ -103,6 +109,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="gui.html">Graphical User Interfaces</a></li>
       <li class="breadcrumb-item active">GUI Qt</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/gui_qt.md.txt" rel="nofollow"> View page source</a>
@@ -278,10 +285,25 @@ variable — values can be read, polled live (WatchView), or captured as a scope
 <h3>Save and Load Config<a class="headerlink" href="#save-and-load-config" title="Link to this heading"></a></h3>
 <p>The <strong>Save Config</strong> and <strong>Load Config</strong> buttons allow you to:</p>
 <ul class="simple">
-<li><p>Save the entire configuration including ELF file path, connection settings, and all variable configurations.</p></li>
+<li><p>Save the current WatchView and ScopeView variable lists to a <code class="docutils literal notranslate"><span class="pre">.json</span></code> file.</p></li>
 <li><p>Load a previously saved configuration to quickly restore your setup.</p></li>
-<li><p>When loading, the system automatically attempts to connect using the saved settings.</p></li>
+<li><p>The saved file also stores the ELF file path and connection settings so that, when loading, the system automatically attempts to reconnect.</p></li>
 </ul>
+<p>The config file uses a <strong>shared JSON format</strong> that is cross-compatible with the Web GUI:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;watch_view&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">&quot;variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;motorSpeedRPM&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;sfr&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;live&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;scaling&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;offset&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;scope_view&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span><span class="nt">&quot;variable&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;motorSpeedRPM&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;sfr&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;trigger&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;color&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#ff0000&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;gain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;offset&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0.0&quot;</span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;elf_file&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/firmware.elf&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;connection&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;interface&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;UART&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COM3&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A config file saved from the Web GUI (which omits <code class="docutils literal notranslate"><span class="pre">elf_file</span></code> and <code class="docutils literal notranslate"><span class="pre">connection</span></code>) can be loaded into the Qt app — the variable lists will be restored and the app will skip the reconnect step if no ELF path is present.</p>
 </section>
 </section>
 <hr class="docutils" />
@@ -346,7 +368,7 @@ variable — values can be read, polled live (WatchView), or captured as a scope
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="scripting.html" class="btn btn-neutral float-left" title="API Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cli.html" class="btn btn-neutral float-left" title="Command-Line Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="gui_web.html" class="btn btn-neutral float-right" title="GUI Web" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

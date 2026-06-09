@@ -102,10 +102,37 @@ Supported formats: `.elf`, `.pkl`, `.yml`
 
 ### Export Variables
 
-After connecting, click the export icon in the header to export the variables currently used in
+After connecting, click the **export** icon (upload_file) in the header to export the variables currently used in
 Watch View, Scope View, and Dashboard.
 
 Choose either `.yml` or `.pkl`. SFR selections are preserved in the exported file too.
+
+### Save / Load Config
+
+Two additional icons appear in the header once connected:
+
+| Icon | Description |
+|------|-------------|
+| **save** | Download the current Watch View and Scope View variable list as `pyx2cscope_config.json` |
+| **folder_open** | Open a file picker to load a previously saved `pyx2cscope_config.json` |
+
+The config file is a JSON file containing **only variable data** (no connection settings):
+
+```json
+{
+    "watch_view": [
+        {"variable": "motorSpeedRPM", "sfr": false, "live": true, "scaling": 1, "offset": 0}
+    ],
+    "scope_view": [
+        {"variable": "motorSpeedRPM", "sfr": false, "trigger": false, "enable": true,
+         "color": "#FF0000", "gain": 1, "offset": 0}
+    ]
+}
+```
+
+This format is **shared with the Qt desktop app** — a config file saved from one GUI can be
+loaded into the other. When a config is loaded, all connected browser tabs are updated
+automatically via the WebSocket connection.
 
 ### Connecting
 
@@ -150,11 +177,6 @@ To modify a variable value on the target:
 
 1. Enter a new value in the **Value** column
 2. Click the **Write** button (pencil icon) in the Actions column
-
-### Save/Load Configuration
-
-- **Save** - Export the current watch list to a `.cfg` file
-- **Load** - Import a previously saved watch list configuration
 
 ---
 
@@ -449,5 +471,7 @@ For advanced users, the Web GUI exposes REST API endpoints:
 | `/is-connected` | GET | Check connection status |
 | `/variables` | GET | Get list of available variables |
 | `/serial-ports` | GET | Get available COM ports |
+| `/config/save` | GET | Download Watch & Scope config as `pyx2cscope_config.json` |
+| `/config/load` | POST | Upload and apply a `pyx2cscope_config.json` file |
 
 Additional information can be found in the API documentation.

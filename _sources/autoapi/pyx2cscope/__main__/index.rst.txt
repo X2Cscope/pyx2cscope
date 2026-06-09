@@ -21,9 +21,33 @@ Functions
 
 .. autoapisummary::
 
+   pyx2cscope.__main__._early_install
+   pyx2cscope.__main__._find_matching_python
    pyx2cscope.__main__.parse_arguments
    pyx2cscope.__main__._args_check
 
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   pyx2cscope.__main__._libs_dir
+
+
+.. py:data:: _libs_dir
+
+   
+
+.. py:function:: _early_install() -> bool
+
+   Handle --install before argparse so it never reaches _args_check.
+
+
+.. py:function:: _find_matching_python() -> str | None
+
+   Find a system Python executable whose version matches the frozen bundle.
 
 
 .. py:function:: parse_arguments()

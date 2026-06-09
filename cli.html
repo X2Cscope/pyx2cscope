@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command-Line Interface &mdash; pyX2Cscope 0.7.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
+
+  
+    <link rel="shortcut icon" href="_static/pyx2cscope.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5a057da9"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GUI Qt" href="gui_qt.html" />
+    <link rel="prev" title="Graphical User Interfaces" href="gui.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pyX2Cscope
+          </a>
+              <div class="version">
+                0.7.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scripting.html">API Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="gui.html">Graphical User Interfaces</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Command-Line Interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quick-reference">Quick reference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-extra-libraries-standalone-executable">Installing extra libraries (standalone executable)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gui_qt.html">GUI Qt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui_web.html">GUI Web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting_scripts.html">Running Scripts in the GUI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vscode.html">VSCode Integration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="FW_Support.html">Firmware Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyX2Cscope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="gui.html">Graphical User Interfaces</a></li>
+      <li class="breadcrumb-item active">Command-Line Interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="command-line-interface">
+<h1>Command-Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h1>
+<p>pyX2Cscope can be launched from the terminal with arguments that control which
+GUI is started, which ELF file is loaded, and how the connection is
+established.  Providing <code class="docutils literal notranslate"><span class="pre">-e</span></code> and <code class="docutils literal notranslate"><span class="pre">-p</span></code> at launch skips all manual input —
+the application loads the ELF and connects to the target immediately.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m pyx2cscope [options]        # when installed with pip</span>
+<span class="go">pyX2Cscope.exe [options]              # standalone executable</span>
+</pre></div>
+</div>
+<section id="quick-reference">
+<h2>Quick reference<a class="headerlink" href="#quick-reference" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 12.0%" />
+<col style="width: 66.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<th class="head"><p>Short</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--elf</span> <span class="pre">&lt;path&gt;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-e</span></code></p></td>
+<td><p>Path to the ELF file generated by the firmware build.
+Required to load variable information.  If omitted, pyX2Cscope looks
+for a path stored in <code class="docutils literal notranslate"><span class="pre">config.ini</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--port</span> <span class="pre">&lt;port&gt;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code></p></td>
+<td><p>Serial port to connect to (e.g. <code class="docutils literal notranslate"><span class="pre">COM3</span></code>, <code class="docutils literal notranslate"><span class="pre">/dev/ttyUSB0</span></code>).
+Use <code class="docutils literal notranslate"><span class="pre">AUTO</span></code> to scan for the first available LNet device automatically.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--web</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-w</span></code></p></td>
+<td><p>Start the Web GUI instead of the Qt GUI.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--qt</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-q</span></code></p></td>
+<td><p>Explicitly start the Qt GUI (default when <code class="docutils literal notranslate"><span class="pre">-w</span></code> is not given).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--web-port</span> <span class="pre">&lt;port&gt;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-wp</span></code></p></td>
+<td><p>TCP port for the web server (default: <code class="docutils literal notranslate"><span class="pre">5000</span></code>).
+Only used with <code class="docutils literal notranslate"><span class="pre">-w</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--host</span> <span class="pre">&lt;host&gt;</span></code></p></td>
+<td><p>—</p></td>
+<td><p>Host address for the web server (default: <code class="docutils literal notranslate"><span class="pre">localhost</span></code>).
+Set to <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code> to allow connections from other devices on the
+network.  Only used with <code class="docutils literal notranslate"><span class="pre">-w</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span> <span class="pre">&lt;level&gt;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-l</span></code></p></td>
+<td><p>Logging verbosity.  One of <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">INFO</span></code>, <code class="docutils literal notranslate"><span class="pre">WARNING</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ERROR</span></code> (default), <code class="docutils literal notranslate"><span class="pre">CRITICAL</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--log-console</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-c</span></code></p></td>
+<td><p>Print log output to the terminal in addition to the log file.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--install</span> <span class="pre">&lt;pkg&gt;</span> <span class="pre">…</span></code></p></td>
+<td><p>—</p></td>
+<td><p><em>Standalone executable only.</em> Install one or more Python packages
+into the <code class="docutils literal notranslate"><span class="pre">libs/</span></code> folder using the bundled interpreter.
+See <a class="reference internal" href="#installing-extra-libraries"><span class="std std-ref">Installing extra libraries (standalone executable)</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--version</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-v</span></code></p></td>
+<td><p>Print the version number and exit.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--help</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-h</span></code></p></td>
+<td><p>Print the full help message and exit.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<p>Start the Qt GUI, load an ELF, and auto-connect:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe -e firmware.elf -p AUTO</span>
+</pre></div>
+</div>
+<p>Start the Web GUI on the default port:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe -e firmware.elf -p COM3 -w</span>
+</pre></div>
+</div>
+<p>Start the Web GUI and allow access from other devices on the network:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe -e firmware.elf -w --host 0.0.0.0 -wp 8080</span>
+</pre></div>
+</div>
+<p>Run with verbose logging to the terminal:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe -e firmware.elf -l DEBUG -c</span>
+</pre></div>
+</div>
+<p>Install an extra library into the standalone executable:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --install scipy</span>
+</pre></div>
+</div>
+</section>
+<section id="installing-extra-libraries-standalone-executable">
+<span id="installing-extra-libraries"></span><h2>Installing extra libraries (standalone executable)<a class="headerlink" href="#installing-extra-libraries-standalone-executable" title="Link to this heading"></a></h2>
+<p>The standalone <code class="docutils literal notranslate"><span class="pre">pyX2Cscope.exe</span></code> ships with a bundled Python interpreter and
+a fixed set of packages.  If your firmware uses a communication layer or
+post-processing routine that requires an additional package (e.g. <code class="docutils literal notranslate"><span class="pre">scipy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pandas</span></code>), you can install it into the <code class="docutils literal notranslate"><span class="pre">libs/</span></code> folder that sits next to the
+executable:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --install scipy</span>
+<span class="go">pyX2Cscope.exe --install scipy pandas   # multiple packages at once</span>
+</pre></div>
+</div>
+<p>The packages are installed via the bundled <code class="docutils literal notranslate"><span class="pre">pip</span></code> and are isolated from your
+system Python.  They persist across restarts of the executable.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gui.html" class="btn btn-neutral float-left" title="Graphical User Interfaces" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gui_qt.html" class="btn btn-neutral float-right" title="GUI Qt" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Microchip Technology Inc.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
