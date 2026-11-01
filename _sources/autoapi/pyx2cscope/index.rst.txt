@@ -7,7 +7,7 @@
 
    This module contains the pyx2cscope package.
 
-   Version: 0.7.1
+   Version: 0.7.2
 
 
 
@@ -29,6 +29,7 @@ Submodules
 
    __main__/index.rst
    utils/index.rst
+   vscode/index.rst
    x2cscope/index.rst
 
 
@@ -54,7 +55,7 @@ Attributes
 
 
 .. py:data:: __version__
-   :value: '0.7.1'
+   :value: '0.7.2'
 
    
 

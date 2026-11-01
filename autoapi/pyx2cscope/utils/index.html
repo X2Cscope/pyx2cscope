@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.7.1 documentation</title>
+  <title>pyx2cscope.utils &mdash; pyX2Cscope 0.7.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
@@ -17,13 +17,13 @@
   
         <script src="../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=5a057da9"></script>
+        <script src="../../../_static/documentation_options.js?v=6dfdf7c3"></script>
         <script src="../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="pyx2cscope.x2cscope" href="../x2cscope/index.html" />
+    <link rel="next" title="pyx2cscope.vscode" href="../vscode/index.html" />
     <link rel="prev" title="pyx2cscope.__main__" href="../__main__/index.html" /> 
 </head>
 
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.7.1
+                0.7.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -63,6 +63,7 @@
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../__main__/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.__main__</span></code></a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.utils</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../vscode/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.vscode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../x2cscope/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.x2cscope</span></code></a></li>
 </ul>
 </li>
@@ -107,7 +108,8 @@
 get_elf_file_path(key=”path”) -&gt; str: Gets the path to the ELF file from the configuration.
 get_com_port(key=”com_port”) -&gt; str: Gets the COM port from the configuration.
 get_host_address(key=”host_ip”) -&gt; str: Gets the host IP address from the configuration.
-get_can_config() -&gt; dict: Gets the CAN interface configuration parameters.</p>
+get_can_config() -&gt; dict: Gets the CAN interface configuration parameters.
+get_project_name(file_path) -&gt; str: Derives the project name from an ELF/YML/PKL file path.</p>
 </dd>
 </dl>
 <section id="module-contents">
@@ -116,6 +118,12 @@ get_can_config() -&gt; dict: Gets the CAN interface configuration parameters.</p
 <h3>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.utils._find_ide_project_name" title="pyx2cscope.utils._find_ide_project_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_find_ide_project_name</span></code></a>(→ str)</p></td>
+<td><p>Return the name of the MPLAB X or VS Code project folder that contains the file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.utils.get_project_name" title="pyx2cscope.utils.get_project_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_project_name</span></code></a>(→ str)</p></td>
+<td><p>Derive the project name from the path of an ELF, YML or PKL file.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.utils.get_config_file" title="pyx2cscope.utils.get_config_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config_file</span></code></a>(→ configparser.ConfigParser)</p></td>
 <td><p>Retrieves the configuration file. If the configuration file does not exist, it creates one with default values.</p></td>
 </tr>
@@ -133,6 +141,68 @@ get_can_config() -&gt; dict: Gets the CAN interface configuration parameters.</p
 </tr>
 </tbody>
 </table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.utils._PROJECT_ROOT_SEARCH_DEPTH" title="pyx2cscope.utils._PROJECT_ROOT_SEARCH_DEPTH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_PROJECT_ROOT_SEARCH_DEPTH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pyx2cscope.utils._MPLABX_PROJECT_SUFFIX" title="pyx2cscope.utils._MPLABX_PROJECT_SUFFIX"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_MPLABX_PROJECT_SUFFIX</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pyx2cscope.utils._VSCODE_PROJECT_SUFFIX" title="pyx2cscope.utils._VSCODE_PROJECT_SUFFIX"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_VSCODE_PROJECT_SUFFIX</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.utils._PROJECT_ROOT_SEARCH_DEPTH">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">_PROJECT_ROOT_SEARCH_DEPTH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#_PROJECT_ROOT_SEARCH_DEPTH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils._PROJECT_ROOT_SEARCH_DEPTH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.utils._MPLABX_PROJECT_SUFFIX">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">_MPLABX_PROJECT_SUFFIX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.x'</span></em><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#_MPLABX_PROJECT_SUFFIX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils._MPLABX_PROJECT_SUFFIX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pyx2cscope.utils._VSCODE_PROJECT_SUFFIX">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">_VSCODE_PROJECT_SUFFIX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'.mplab.json'</span></em><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#_VSCODE_PROJECT_SUFFIX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils._VSCODE_PROJECT_SUFFIX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.utils._find_ide_project_name">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">_find_ide_project_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#_find_ide_project_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils._find_ide_project_name" title="Link to this definition"></a></dt>
+<dd><p>Return the name of the MPLAB X or VS Code project folder that contains the file.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>path (Path): Path of the ELF, YML or PKL file.</p>
+</dd>
+<dt>Returns:</dt><dd><p>str: The project name, or an empty string if no project folder is found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyx2cscope.utils.get_project_name">
+<span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_project_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_project_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_project_name" title="Link to this definition"></a></dt>
+<dd><p>Derive the project name from the path of an ELF, YML or PKL file.</p>
+<p>The name is the MPLAB X or VS Code project that generated the file:</p>
+<ol class="arabic simple">
+<li><p>MPLAB X: the project folder <code class="docutils literal notranslate"><span class="pre">my_project.X</span></code> gives <code class="docutils literal notranslate"><span class="pre">my_project</span></code>.</p></li>
+<li><p>VS Code with the MPLAB extension: the project file <code class="docutils literal notranslate"><span class="pre">.vscode/my_project.mplab.json</span></code>
+gives <code class="docutils literal notranslate"><span class="pre">my_project</span></code>.</p></li>
+<li><p>If no project is found, the file name without extension, e.g. <code class="docutils literal notranslate"><span class="pre">firmware.elf</span></code> gives <code class="docutils literal notranslate"><span class="pre">firmware</span></code>.</p></li>
+</ol>
+<dl class="simple">
+<dt>Args:</dt><dd><p>file_path (str): Path of the ELF, YML or PKL file. May be only a file name.</p>
+</dd>
+<dt>Returns:</dt><dd><p>str: The project name, or an empty string if no path is given.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="pyx2cscope.utils.get_config_file">
 <span class="sig-prename descclassname"><span class="pre">pyx2cscope.utils.</span></span><span class="sig-name descname"><span class="pre">get_config_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/configparser.html#configparser.ConfigParser" title="(in Python v3.15)"><span class="pre">configparser.ConfigParser</span></a></span></span><a class="reference internal" href="../../../_modules/pyx2cscope/utils.html#get_config_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyx2cscope.utils.get_config_file" title="Link to this definition"></a></dt>
@@ -216,7 +286,7 @@ returns default values.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../__main__/index.html" class="btn btn-neutral float-left" title="pyx2cscope.__main__" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../x2cscope/index.html" class="btn btn-neutral float-right" title="pyx2cscope.x2cscope" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../vscode/index.html" class="btn btn-neutral float-right" title="pyx2cscope.vscode" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

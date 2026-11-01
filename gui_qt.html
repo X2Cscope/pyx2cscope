@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GUI Qt &mdash; pyX2Cscope 0.7.1 documentation</title>
+  <title>GUI Qt &mdash; pyX2Cscope 0.7.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5a057da9"></script>
+        <script src="_static/documentation_options.js?v=6dfdf7c3"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,7 +39,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.7.1
+                0.7.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -59,6 +59,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#starting-the-gui-qt">Starting the GUI Qt</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#getting-started-with-pyx2cscope-reference-gui">Getting Started with pyX2Cscope Reference GUI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tab-setup">Tab: Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sessions">Sessions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#connection-settings">Connection Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#uart-settings">UART Settings</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tcp-ip-settings">TCP/IP Settings</a></li>
@@ -67,6 +68,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#tab-data-views">Tab: Data Views</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#run-script">Run Script</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#watchview">WatchView</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#scopeview">ScopeView</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#special-function-registers-sfr">Special Function Registers (SFR)</a></li>
@@ -131,7 +133,7 @@ application.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pyx2cscope</span>
 </pre></div>
 </div>
-<p>It can also be executed with the argument -q:</p>
+<p>It can also be started explicitly with the argument -q:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pyx2cscope</span> <span class="o">-</span><span class="n">q</span>
 </pre></div>
 </div>
@@ -139,11 +141,45 @@ application.</p>
 <section id="getting-started-with-pyx2cscope-reference-gui">
 <h2>Getting Started with pyX2Cscope Reference GUI<a class="headerlink" href="#getting-started-with-pyx2cscope-reference-gui" title="Link to this heading"></a></h2>
 <p>The GUI consists of three main tabs: <strong>Setup</strong>, <strong>Data Views</strong>, and <strong>Scripting</strong>.</p>
+<p>The window title shows the pyX2Cscope version and the project of the selected ELF file, e.g.
+<code class="docutils literal notranslate"><span class="pre">pyX2Cscope</span> <span class="pre">-</span> <span class="pre">v0.7.2</span> <span class="pre">-</span> <span class="pre">my_project</span></code>, so several pyX2Cscope windows running in parallel can be told
+apart. The project name is taken from the project that generated the ELF file:</p>
+<ul class="simple">
+<li><p>MPLAB X: the project folder <code class="docutils literal notranslate"><span class="pre">my_project.X</span></code>.</p></li>
+<li><p>VS Code with the MPLAB extension: the project file <code class="docutils literal notranslate"><span class="pre">.vscode/my_project.mplab.json</span></code>.</p></li>
+<li><p>Otherwise the ELF file name without the <code class="docutils literal notranslate"><span class="pre">.elf</span></code> extension.</p></li>
+</ul>
 </section>
 <hr class="docutils" />
 <section id="tab-setup">
 <h2>Tab: Setup<a class="headerlink" href="#tab-setup" title="Link to this heading"></a></h2>
 <p>The Setup tab is where you configure the connection to your microcontroller.</p>
+<section id="sessions">
+<h3>Sessions<a class="headerlink" href="#sessions" title="Link to this heading"></a></h3>
+<p>The Sessions group, below Device Information, reopens a project with everything you set up for it.
+Sessions are available in the Qt GUI only.</p>
+<p>A session holds the ELF/YML/PKL file, the connection settings, the WatchView and ScopeView variables
+with trigger and sample settings, the view mode, and the script loaded in the Scripting tab.</p>
+<ul class="simple">
+<li><p><strong>Recent</strong>: the last 10 projects, most recent first, shown as project name and date
+(e.g. <code class="docutils literal notranslate"><span class="pre">LAB1_HALL</span> <span class="pre">-</span> <span class="pre">01.11.2026</span> <span class="pre">21:30</span></code>). Choosing an entry only selects it. A session whose file was
+deleted is marked <code class="docutils literal notranslate"><span class="pre">(file</span> <span class="pre">not</span> <span class="pre">found)</span></code>.</p></li>
+<li><p><strong>Load Session</strong>: opens the selected session. It fills in the file, connection and script, connects,
+and restores the WatchView and ScopeView variables. Variables that are no longer in a rebuilt ELF
+file, and a script that was moved, are reported.</p></li>
+<li><p><strong>Remove</strong>: removes the selected session from the list.</p></li>
+<li><p><strong>Save to File… / Load from File…</strong>: save the current session to a <code class="docutils literal notranslate"><span class="pre">.json</span></code> file or load one,
+e.g. to pass a setup to a colleague. They write and read the same file as <strong>Save Config</strong> and
+<strong>Load Config</strong> on the Data Views tab.</p></li>
+</ul>
+<p>The recent list is updated automatically: when you connect (file and connection), and when you
+disconnect or close the window (also the variables and the script). When you connect to a project for
+the first time, its entry starts without variables, so the variables of the previous project are not
+stored under the new one. It is stored in <code class="docutils literal notranslate"><span class="pre">recent_sessions.json</span></code> in the user configuration folder
+(on Windows <code class="docutils literal notranslate"><span class="pre">%LOCALAPPDATA%\Microchip\pyX2Cscope</span></code>).</p>
+<p>While connected, the Recent list, <strong>Load Session</strong>, <strong>Remove</strong> and <strong>Load from File…</strong> are disabled;
+disconnect first to switch to another project.</p>
+</section>
 <section id="connection-settings">
 <h3>Connection Settings<a class="headerlink" href="#connection-settings" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
@@ -227,6 +263,18 @@ application.</p>
 <li><p><strong>ScopeView</strong>: Capture and visualize variable waveforms</p></li>
 </ul>
 <p>You can enable both views simultaneously for a split-screen layout. You can change the width of each column by dragging the line between them. For this to take effect, adjust the App window size accordingly.</p>
+<section id="run-script">
+<h3>Run Script<a class="headerlink" href="#run-script" title="Link to this heading"></a></h3>
+<p>The <strong>Run Script</strong> button beside the view toggles runs the script loaded in the <strong>Scripting</strong> tab (see below),
+so you can start a script and watch its effect in WatchView and ScopeView without switching tabs.</p>
+<ul class="simple">
+<li><p>The button is disabled until a script is loaded in the Scripting tab with <strong>Browse</strong> or <strong>New Script</strong>.</p></li>
+<li><p>While the script runs, the button changes to <strong>Stop Script</strong>. Clicking it requests the script to stop, like
+the <strong>Stop</strong> button of the Scripting tab (the script must check <code class="docutils literal notranslate"><span class="pre">stop_requested()</span></code> in its loops).</p></li>
+<li><p>The status beside the button shows <strong>Running…</strong>, <strong>Completed</strong>, or the exit code if the script ended with
+an error. The script output and error messages are shown in the Scripting tab.</p></li>
+</ul>
+</section>
 <section id="watchview">
 <h3>WatchView<a class="headerlink" href="#watchview" title="Link to this heading"></a></h3>
 <ol class="arabic simple">
@@ -287,8 +335,12 @@ variable — values can be read, polled live (WatchView), or captured as a scope
 <ul class="simple">
 <li><p>Save the current WatchView and ScopeView variable lists to a <code class="docutils literal notranslate"><span class="pre">.json</span></code> file.</p></li>
 <li><p>Load a previously saved configuration to quickly restore your setup.</p></li>
-<li><p>The saved file also stores the ELF file path and connection settings so that, when loading, the system automatically attempts to reconnect.</p></li>
+<li><p>The saved file also stores the ELF file path, the connection settings and the loaded script, so that,
+when loading, the script is loaded and the system automatically attempts to reconnect.</p></li>
+<li><p>When a configuration is loaded while connected, the current file and connection are kept and only the
+variables and the script are loaded.</p></li>
 </ul>
+<p>These are the same files as <strong>Save to File…</strong> and <strong>Load from File…</strong> in the Sessions group of the Setup tab.</p>
 <p>The config file uses a <strong>shared JSON format</strong> that is cross-compatible with the Web GUI:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">    </span><span class="nt">"watch_view"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
@@ -299,11 +351,12 @@ variable — values can be read, polled live (WatchView), or captured as a scope
 <span class="w">         </span><span class="nt">"color"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#ff0000"</span><span class="p">,</span><span class="w"> </span><span class="nt">"gain"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0"</span><span class="p">,</span><span class="w"> </span><span class="nt">"offset"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0"</span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">"elf_file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/firmware.elf"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"connection"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"interface"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UART"</span><span class="p">,</span><span class="w"> </span><span class="nt">"port"</span><span class="p">:</span><span class="w"> </span><span class="s2">"COM3"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="nt">"connection"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"interface"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UART"</span><span class="p">,</span><span class="w"> </span><span class="nt">"port"</span><span class="p">:</span><span class="w"> </span><span class="s2">"COM3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"baud_rate"</span><span class="p">:</span><span class="w"> </span><span class="mi">115200</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"script"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/my_script.py"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>A config file saved from the Web GUI (which omits <code class="docutils literal notranslate"><span class="pre">elf_file</span></code> and <code class="docutils literal notranslate"><span class="pre">connection</span></code>) can be loaded into the Qt app — the variable lists will be restored and the app will skip the reconnect step if no ELF path is present.</p>
+<p>A config file saved from the Web GUI (which omits <code class="docutils literal notranslate"><span class="pre">elf_file</span></code>, <code class="docutils literal notranslate"><span class="pre">connection</span></code> and <code class="docutils literal notranslate"><span class="pre">script</span></code>) can be loaded into the Qt app — the variable lists will be restored and the app will skip the reconnect step if no ELF path is present. The Web GUI ignores these keys when it loads a file saved by the Qt app.</p>
 </section>
 </section>
 <hr class="docutils" />
@@ -325,6 +378,7 @@ variable — values can be read, polled live (WatchView), or captured as a scope
 <li><p>Click <strong>Stop</strong> to request the script to stop (scripts must check <code class="docutils literal notranslate"><span class="pre">stop_requested()</span></code> in loops).</p></li>
 <li><p>Enable <strong>Log output to file</strong> and select a location to save script output.</p></li>
 </ol>
+<p>The loaded script can also be started and stopped from the <strong>Run Script</strong> button on the Data Views tab.</p>
 </section>
 <section id="output-tabs">
 <h3>Output Tabs<a class="headerlink" href="#output-tabs" title="Link to this heading"></a></h3>
@@ -343,22 +397,27 @@ variable — values can be read, polled live (WatchView), or captured as a scope
 </section>
 <section id="example-script">
 <h3>Example Script<a class="headerlink" href="#example-script" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: Read and print a variable value</span>
-<span class="k">if</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"x2cscope"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="n">var</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"myVariable"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Value: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="c1"># x2cscope is None when the GUI is not connected via the Setup tab</span>
+<span class="k">if</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"x2cscope"</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">"Connect to the target in the Setup tab first."</span><span class="p">)</span>
+
+<span class="n">stop_requested</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"stop_requested"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Example: Read and print a variable value</span>
+<span class="n">var</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"myVar"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Value: </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Example: Loop with stop support</span>
-<span class="n">stop_requested</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"stop_requested"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">False</span><span class="p">)</span>
 <span class="k">while</span> <span class="ow">not</span> <span class="n">stop_requested</span><span class="p">():</span>
-    <span class="n">var</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"myVar"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Script stopped."</span><span class="p">)</span>
 </pre></div>
 </div>
 <blockquote>
-<div><p><strong>Note</strong>: Scripts run in the same process as the GUI. If connected via the Setup tab, scripts share the same x2cscope connection. Scripts can also create their own connections when running standalone.</p>
+<div><p><strong>Note</strong>: Scripts run in the same process as the GUI. If connected via the Setup tab, scripts share the same x2cscope connection, so a script must not call <code class="docutils literal notranslate"><span class="pre">x2cscope.disconnect()</span></code> on it. To write scripts that also run standalone, see <a class="reference internal" href="scripting_scripts.html"><span class="std std-doc">Running Scripts in the GUI</span></a>.</p>
 </div></blockquote>
 </section>
 </section>
