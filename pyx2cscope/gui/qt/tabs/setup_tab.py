@@ -44,10 +44,10 @@ class SetupTab(QWidget):
     connect_requested = pyqtSignal()
     elf_file_selected = pyqtSignal(str)  # the user picked a file in the dialog
     elf_file_changed = pyqtSignal(str)  # the file path changed, by the dialog or programmatically
-    recent_session_selected = pyqtSignal(str)  # ELF/YML/PKL file of the chosen recent session
+    recent_session_load_requested = pyqtSignal(str)  # ELF/YML/PKL file of the session to open (Load Session)
     recent_session_remove_requested = pyqtSignal(str)  # ELF/YML/PKL file of the session to remove
-    save_session_requested = pyqtSignal()
-    load_session_requested = pyqtSignal()
+    save_session_requested = pyqtSignal()  # Save to File...
+    load_session_requested = pyqtSignal()  # Load from File...
 
     RECENT_PLACEHOLDER = "Select a recent session..."
 
@@ -79,8 +79,6 @@ class SetupTab(QWidget):
         # Left side: Connection settings
         left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignTop)
-
-        left_layout.addWidget(self._create_sessions_group())
 
         # === Connection Settings Group (file + interface selection) ===
         connection_group = QGroupBox("Connection Settings")
@@ -295,6 +293,8 @@ class SetupTab(QWidget):
             device_layout.addWidget(label, i, 1, Qt.AlignLeft)
 
         right_layout.addWidget(device_group)
+        right_layout.addSpacing(10)
+        right_layout.addWidget(self._create_sessions_group())
         right_layout.addStretch()
 
         main_layout.addLayout(right_layout)
@@ -306,7 +306,7 @@ class SetupTab(QWidget):
         self._on_interface_changed("UART")
 
     def _create_sessions_group(self) -> QGroupBox:
-        """Create the Sessions group: recent sessions list and Save/Load Session buttons."""
+        """Create the Sessions group: recent sessions list, Load Session and file buttons."""
         sessions_group = QGroupBox("Sessions")
         sessions_layout = QGridLayout()
         sessions_layout.setSpacing(8)
@@ -314,36 +314,48 @@ class SetupTab(QWidget):
         sessions_group.setLayout(sessions_layout)
         sessions_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
+        # Row 0: recent sessions; choosing one only selects it
         sessions_layout.addWidget(QLabel("Recent:"), 0, 0, Qt.AlignRight)
         self._recent_combo = QComboBox()
         self._recent_combo.setFixedWidth(260)
-        self._recent_combo.setToolTip(
-            "Reopen a project: file, connection, WatchView/ScopeView variables and script, then connect."
-        )
-        self._recent_combo.activated.connect(self._on_recent_activated)
+        self._recent_combo.setToolTip("Select a recent project, then click Load Session.")
         self._recent_combo.currentIndexChanged.connect(self._update_session_buttons)
         sessions_layout.addWidget(self._recent_combo, 0, 1)
 
+        # Row 1: open or remove the selected session
+        recent_buttons = QHBoxLayout()
+        recent_buttons.setContentsMargins(0, 0, 0, 0)
+        self._load_recent_btn = QPushButton("Load Session")
+        self._load_recent_btn.setFixedWidth(125)
+        self._load_recent_btn.setToolTip(
+            "Fill in file, connection and script of the selected session, connect, "
+            "and restore the WatchView/ScopeView variables"
+        )
+        self._load_recent_btn.clicked.connect(self._on_load_recent_clicked)
         self._remove_recent_btn = QPushButton("Remove")
-        self._remove_recent_btn.setFixedWidth(70)
+        self._remove_recent_btn.setFixedWidth(125)
         self._remove_recent_btn.setToolTip("Remove the selected session from the list")
         self._remove_recent_btn.clicked.connect(self._on_remove_recent_clicked)
-        sessions_layout.addWidget(self._remove_recent_btn, 0, 2)
+        recent_buttons.addWidget(self._load_recent_btn)
+        recent_buttons.addWidget(self._remove_recent_btn)
+        recent_buttons.addStretch()
+        sessions_layout.addLayout(recent_buttons, 1, 1)
 
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setContentsMargins(0, 0, 0, 0)
-        self._save_session_btn = QPushButton("Save Session...")
+        # Row 2: session files, e.g. to pass a setup to a colleague
+        file_buttons = QHBoxLayout()
+        file_buttons.setContentsMargins(0, 0, 0, 0)
+        self._save_session_btn = QPushButton("Save to File...")
         self._save_session_btn.setFixedWidth(125)
         self._save_session_btn.setToolTip("Save file, connection, variables and script to a JSON file")
         self._save_session_btn.clicked.connect(self.save_session_requested.emit)
-        self._load_session_btn = QPushButton("Load Session...")
+        self._load_session_btn = QPushButton("Load from File...")
         self._load_session_btn.setFixedWidth(125)
         self._load_session_btn.setToolTip("Load a session or config JSON file and connect")
         self._load_session_btn.clicked.connect(self.load_session_requested.emit)
-        buttons_layout.addWidget(self._save_session_btn)
-        buttons_layout.addWidget(self._load_session_btn)
-        buttons_layout.addStretch()
-        sessions_layout.addLayout(buttons_layout, 1, 1)
+        file_buttons.addWidget(self._save_session_btn)
+        file_buttons.addWidget(self._load_session_btn)
+        file_buttons.addStretch()
+        sessions_layout.addLayout(file_buttons, 2, 1)
 
         self.set_recent_sessions([])
         return sessions_group
@@ -380,11 +392,10 @@ class SetupTab(QWidget):
         """The Recent sessions list."""
         return self._recent_combo
 
-    def _on_recent_activated(self, index: int):
-        """Emit recent_session_selected when the user picks a session."""
-        file_path = self._recent_combo.itemData(index)
-        if file_path:
-            self.recent_session_selected.emit(file_path)
+    def _on_load_recent_clicked(self):
+        """Emit recent_session_load_requested for the selected session."""
+        if self.selected_recent_session:
+            self.recent_session_load_requested.emit(self.selected_recent_session)
 
     def _on_remove_recent_clicked(self):
         """Emit recent_session_remove_requested for the selected session."""
@@ -392,8 +403,10 @@ class SetupTab(QWidget):
             self.recent_session_remove_requested.emit(self.selected_recent_session)
 
     def _update_session_buttons(self, *_args):
-        """Enable the Remove button only when a session is selected."""
-        self._remove_recent_btn.setEnabled(bool(self.selected_recent_session) and self._recent_combo.isEnabled())
+        """Enable Load Session and Remove only when a session is selected and the list is enabled."""
+        enabled = bool(self.selected_recent_session) and self._recent_combo.isEnabled()
+        self._load_recent_btn.setEnabled(enabled)
+        self._remove_recent_btn.setEnabled(enabled)
 
     def _on_interface_changed(self, interface: str):
         """Handle interface selection change."""

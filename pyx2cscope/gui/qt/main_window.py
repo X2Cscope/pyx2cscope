@@ -274,7 +274,7 @@ class MainWindow(QMainWindow):
         self._setup_tab.elf_file_selected.connect(self._on_elf_file_selected)
         self._setup_tab.elf_file_changed.connect(self._update_window_title)
         self._setup_tab.refresh_btn.clicked.connect(self._refresh_ports)
-        self._setup_tab.recent_session_selected.connect(self._open_recent_session)
+        self._setup_tab.recent_session_load_requested.connect(self._open_recent_session)
         self._setup_tab.recent_session_remove_requested.connect(self._remove_recent_session)
         self._setup_tab.save_session_requested.connect(self._save_config)
         self._setup_tab.load_session_requested.connect(self._load_config)

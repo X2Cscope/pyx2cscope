@@ -38,18 +38,21 @@ The Setup tab is where you configure the connection to your microcontroller.
 
 ### Sessions
 
-A session is everything you set up for one project: the ELF/YML/PKL file, the connection settings,
-the WatchView and ScopeView variables with trigger and sample settings, the view mode, and the script
-loaded in the Scripting tab.
+The Sessions group, below Device Information, reopens a project with everything you set up for it.
+Sessions are available in the Qt GUI only.
+
+A session holds the ELF/YML/PKL file, the connection settings, the WatchView and ScopeView variables
+with trigger and sample settings, the view mode, and the script loaded in the Scripting tab.
 
 - **Recent**: the last 10 projects, most recent first, shown as project name and date
-  (e.g. `LAB1_HALL - 01.11.2026 21:30`). Choosing one fills in the file, connection and script,
-  connects, and restores the WatchView and ScopeView variables. Variables that are no longer in a
-  rebuilt ELF file, and a script that was moved, are reported. A session whose file was deleted is
-  marked `(file not found)`.
+  (e.g. `LAB1_HALL - 01.11.2026 21:30`). Choosing an entry only selects it. A session whose file was
+  deleted is marked `(file not found)`.
+- **Load Session**: opens the selected session. It fills in the file, connection and script, connects,
+  and restores the WatchView and ScopeView variables. Variables that are no longer in a rebuilt ELF
+  file, and a script that was moved, are reported.
 - **Remove**: removes the selected session from the list.
-- **Save Session... / Load Session...**: save the current session to a `.json` file or load one, e.g.
-  to pass a setup to a colleague. They write and read the same file as **Save Config** and
+- **Save to File... / Load from File...**: save the current session to a `.json` file or load one,
+  e.g. to pass a setup to a colleague. They write and read the same file as **Save Config** and
   **Load Config** on the Data Views tab.
 
 The recent list is updated automatically: when you connect (file and connection), and when you
@@ -58,8 +61,8 @@ the first time, its entry starts without variables, so the variables of the prev
 stored under the new one. It is stored in `recent_sessions.json` in the user configuration folder
 (on Windows `%LOCALAPPDATA%\Microchip\pyX2Cscope`).
 
-While connected, the Recent list and **Load Session...** are disabled; disconnect first to switch to
-another project.
+While connected, the Recent list, **Load Session**, **Remove** and **Load from File...** are disabled;
+disconnect first to switch to another project.
 
 ### Connection Settings
 
@@ -193,7 +196,7 @@ The **Save Config** and **Load Config** buttons allow you to:
 - When a configuration is loaded while connected, the current file and connection are kept and only the
   variables and the script are loaded.
 
-These are the same files as **Save Session...** and **Load Session...** on the Setup tab.
+These are the same files as **Save to File...** and **Load from File...** in the Sessions group of the Setup tab.
 
 The config file uses a **shared JSON format** that is cross-compatible with the Web GUI:
 

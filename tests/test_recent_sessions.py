@@ -207,8 +207,20 @@ class TestMainWindowSessions:
         assert [v["variable"] for v in config["watch_view"]] == [variable]
         assert config["script"] == str(script)
 
+    def test_selecting_entry_does_not_connect(self, window, elf_file_path):
+        """Test choosing an entry in the Recent list only selects it; nothing is loaded or connected."""
+        _connect(window, elf_file_path)
+        _disconnect(window)
+        window._setup_tab.elf_file_path = ""
+
+        window._setup_tab.recent_combo.setCurrentIndex(1)
+
+        assert not window._app_state.is_connected()
+        assert window._setup_tab.elf_file_path == ""
+        assert window._setup_tab._load_recent_btn.isEnabled()
+
     def test_open_recent_session_restores_everything(self, window, elf_file_path, tmp_path):
-        """Test choosing a recent session fills in file, connection and script, connects and restores variables."""
+        """Test Load Session fills in file, connection and script, connects and restores variables."""
         script = tmp_path / "my_script.py"
         script.write_text("print('hi')\n", encoding="utf-8")
         _connect(window, elf_file_path)
@@ -221,7 +233,8 @@ class TestMainWindowSessions:
         window._setup_tab.elf_file_path = ""
         window._scripting_tab._script_path = ""
 
-        window._setup_tab.recent_session_selected.emit(os.path.abspath(elf_file_path))
+        window._setup_tab.recent_combo.setCurrentIndex(1)
+        window._setup_tab._load_recent_btn.click()
 
         assert window._app_state.is_connected()
         assert window._setup_tab.elf_file_path == os.path.abspath(elf_file_path)
@@ -320,12 +333,29 @@ class TestSetupTabSessions:
         assert setup_tab.selected_recent_session == "b.elf"
         assert setup_tab._remove_recent_btn.isEnabled()
 
-    def test_choosing_entry_emits_file(self, setup_tab, qtbot):
-        """Test choosing a session emits its file."""
+    def test_load_session_needs_selection(self, setup_tab):
+        """Test Load Session and Remove are disabled while the placeholder is selected."""
         setup_tab.set_recent_sessions([("A - date", "a.elf")])
 
-        with qtbot.waitSignal(setup_tab.recent_session_selected, timeout=1000) as blocker:
+        assert setup_tab.selected_recent_session == ""
+        assert not setup_tab._load_recent_btn.isEnabled()
+        assert not setup_tab._remove_recent_btn.isEnabled()
+
+    def test_choosing_entry_emits_nothing(self, setup_tab, qtbot):
+        """Test choosing an entry in the list does not request loading it."""
+        setup_tab.set_recent_sessions([("A - date", "a.elf")])
+
+        with qtbot.assertNotEmitted(setup_tab.recent_session_load_requested):
+            setup_tab.recent_combo.setCurrentIndex(1)
             setup_tab.recent_combo.activated.emit(1)
+
+    def test_load_session_emits_file(self, setup_tab, qtbot):
+        """Test Load Session requests the selected session."""
+        setup_tab.set_recent_sessions([("A - date", "a.elf")])
+        setup_tab.recent_combo.setCurrentIndex(1)
+
+        with qtbot.waitSignal(setup_tab.recent_session_load_requested, timeout=1000) as blocker:
+            setup_tab._load_recent_btn.click()
 
         assert blocker.args == ["a.elf"]
 
@@ -336,6 +366,7 @@ class TestSetupTabSessions:
         setup_tab.set_connected(True)
 
         assert not setup_tab.recent_combo.isEnabled()
+        assert not setup_tab._load_recent_btn.isEnabled()
         assert not setup_tab._remove_recent_btn.isEnabled()
         assert not setup_tab._load_session_btn.isEnabled()
         assert setup_tab._save_session_btn.isEnabled()
