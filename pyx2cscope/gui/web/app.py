@@ -52,6 +52,11 @@ def create_app():
     app.add_url_rule("/config/save", view_func=save_config, methods=["GET"])
     app.add_url_rule("/config/load", view_func=load_config, methods=["POST"])
 
+    @app.context_processor
+    def inject_project_name():
+        """Make the project name of the loaded ELF file available to all templates (navbar, title)."""
+        return {"project_name": web_scope.project_name}
+
     socketio.init_app(app)
 
     # IMPORTANT: Import after socketio exists to register all @socketio.on handlers
@@ -208,8 +213,9 @@ def connect():
         try:
             elf_file.save(file_name)
             web_scope.connect(**interface_kwargs)
-            web_scope.set_file(file_name)
-            return jsonify({"status": "success"})
+            # The browser only sends the file name, so the project name is derived from it
+            web_scope.set_file(file_name, source_name=os.path.basename(elf_file.filename))
+            return jsonify({"status": "success", "project": web_scope.project_name})
         except RuntimeError as e:
             return jsonify({"status": "error", "msg": str(e)}), 401
         except ValueError as e:
@@ -220,11 +226,11 @@ def connect():
 
 
 def is_connected():
-    """Check if pyX2Cscope is connected.
+    """Check if pyX2Cscope is connected and return the project name of the loaded ELF file.
 
-    call {server_url}/is_disconnect to execute.
+    call {server_url}/is-connected to execute.
     """
-    return jsonify({"status": web_scope.is_connected()})
+    return jsonify({"status": web_scope.is_connected(), "project": web_scope.project_name})
 
 
 def disconnect():

@@ -22,6 +22,14 @@ python -m pyx2cscope -q
 
 The GUI consists of three main tabs: **Setup**, **Data Views**, and **Scripting**.
 
+The window title shows the pyX2Cscope version and the project of the selected ELF file, e.g.
+`pyX2Cscope - v0.7.1 - my_project`, so several pyX2Cscope windows running in parallel can be told
+apart. The project name is taken from the project that generated the ELF file:
+
+- MPLAB X: the project folder `my_project.X`.
+- VS Code with the MPLAB extension: the project file `.vscode/my_project.mplab.json`.
+- Otherwise the ELF file name without the `.elf` extension.
+
 ---
 
 ## Tab: Setup

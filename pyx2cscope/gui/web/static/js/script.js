@@ -32,6 +32,7 @@ function connect(){
         success: function(response) {
             if (response.status === 'success') {
                 setConnectState(true);
+                setProjectName(response.project);
             }
         },
         error: function(data) {
@@ -47,7 +48,18 @@ function connect(){
 function disconnect(){
     $.getJSON('/disconnect', function() {
         setConnectState(false);
+        setProjectName('');
     });
+}
+
+// Show the project name of the loaded ELF file beside the version and in the browser tab title,
+// so several pyX2Cscope sessions can be told apart.
+function setProjectName(name) {
+    const badge = $('#project-name');
+    const baseTitle = badge.data('base-title') || 'pyX2Cscope';
+    badge.text(name || '');
+    badge.toggleClass('d-none', !name);
+    document.title = name ? baseTitle + ' - ' + name : baseTitle;
 }
 
 function saveConfig() {
@@ -470,6 +482,7 @@ $(document).ready(function() {
 
     $.getJSON('/is-connected', function(data) {
         setConnectState(data.status);
+        setProjectName(data.project);
     });
 
 });
