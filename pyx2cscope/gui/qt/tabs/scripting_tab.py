@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QPlainTextEdit,
     QPushButton,
+    QStyle,
     QTabWidget,
     QTextBrowser,
     QVBoxLayout,
@@ -161,6 +162,7 @@ class ScriptingTab(QWidget):
     """
 
     # Signals
+    script_selected = pyqtSignal(str)  # path of the loaded script
     script_started = pyqtSignal()
     script_finished = pyqtSignal(int)  # exit code
 
@@ -444,11 +446,8 @@ class ScriptingTab(QWidget):
             return
 
         # Load the new file into the tab
-        self._script_path = file_path
-        self._script_path_edit.setText(file_path)
         self._settings.setValue("script_file_dir", os.path.dirname(file_path))
-        self._edit_btn.setEnabled(True)
-        self._execute_btn.setEnabled(True)
+        self.set_script(file_path)
         self._log_message(f"New script created: {file_path}")
 
         # Open immediately in the system editor so the user can start writing
@@ -469,19 +468,48 @@ class ScriptingTab(QWidget):
             "Python Files (*.py);;All Files (*.*)",
         )
         if file_path:
-            self._script_path = file_path
-            self._script_path_edit.setText(file_path)
             self._settings.setValue("script_file_dir", os.path.dirname(file_path))
-            self._edit_btn.setEnabled(True)
-            self._execute_btn.setEnabled(True)
+            self.set_script(file_path)
             self._log_message(f"Selected script: {file_path}")
 
-            # Update suggested log path if logging is enabled
-            if self._log_checkbox.isChecked():
-                script_dir = os.path.dirname(file_path)
-                script_name = os.path.splitext(os.path.basename(file_path))[0]
-                self._log_file_path = os.path.join(script_dir, f"{script_name}_log.txt")
-                self._log_path_edit.setText(self._log_file_path)
+    # Public API, also used by the Run Script button on the Data Views tab
+
+    @property
+    def script_path(self) -> str:
+        """Path of the loaded script, or an empty string if none is loaded."""
+        return self._script_path
+
+    def is_running(self) -> bool:
+        """Return True while a script is running."""
+        return self._worker is not None and self._worker.isRunning()
+
+    def set_script(self, file_path: str):
+        """Load a script into the tab and emit script_selected.
+
+        Args:
+            file_path: Path of the Python script.
+        """
+        self._script_path = file_path
+        self._script_path_edit.setText(file_path)
+        self._edit_btn.setEnabled(True)
+        self._execute_btn.setEnabled(not self.is_running())
+
+        # Update suggested log path if logging is enabled
+        if self._log_checkbox.isChecked():
+            script_dir = os.path.dirname(file_path)
+            script_name = os.path.splitext(os.path.basename(file_path))[0]
+            self._log_file_path = os.path.join(script_dir, f"{script_name}_log.txt")
+            self._log_path_edit.setText(self._log_file_path)
+
+        self.script_selected.emit(file_path)
+
+    def run_script(self):
+        """Run the loaded script, as the Execute button does."""
+        self._on_execute_clicked()
+
+    def stop_script(self):
+        """Request the running script to stop, as the Stop button does."""
+        self._on_stop_clicked()
 
     def _on_edit_clicked(self):
         """Open the script in the system's default editor."""
@@ -504,7 +532,7 @@ class ScriptingTab(QWidget):
             self._log_message(f"Error: Script file not found: {self._script_path}")
             return
 
-        if self._worker is not None and self._worker.isRunning():
+        if self.is_running():
             self._log_message("A script is already running.")
             return
 
@@ -568,7 +596,7 @@ class ScriptingTab(QWidget):
 
     def _on_stop_clicked(self):
         """Stop the running script."""
-        if self._worker and self._worker.isRunning():
+        if self.is_running():
             self._worker.request_stop()
             self._log_message("Stop requested (may not work for blocking operations)")
             self._status_label.setText("Stop requested...")
@@ -647,3 +675,92 @@ class ScriptingTab(QWidget):
         else:
             self._status_label.setText("Ready (x2cscope not connected)")
             self._log_message("Disconnected - x2cscope not available")
+
+
+class ScriptRunControl(QWidget):
+    """Run/Stop button and status for the script loaded in the Scripting tab.
+
+    Placed on the Data Views tab, so a script can be started and its effect watched in
+    WatchView and ScopeView without switching tabs. The button is disabled until a
+    script is loaded in the Scripting tab.
+    """
+
+    RUN_TEXT = "Run Script"
+    STOP_TEXT = "Stop Script"
+    NO_SCRIPT_TIP = "Load a script in the Scripting tab to run it from here."
+
+    def __init__(self, scripting_tab: ScriptingTab, parent=None):
+        """Initialize the control and follow the state of the Scripting tab.
+
+        Args:
+            scripting_tab: The Scripting tab that holds and runs the script.
+            parent: Optional parent widget.
+        """
+        super().__init__(parent)
+        self._scripting_tab = scripting_tab
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+
+        self._button = QPushButton(self.RUN_TEXT)
+        self._button.setFixedSize(110, 28)
+        self._button.clicked.connect(self._on_clicked)
+        layout.addWidget(self._button)
+
+        self._status_label = QLabel("")
+        self._status_label.setStyleSheet("color: #666;")
+        layout.addWidget(self._status_label)
+
+        scripting_tab.script_selected.connect(self._update)
+        scripting_tab.script_started.connect(self._on_started)
+        scripting_tab.script_finished.connect(self._on_finished)
+        self._update()
+
+    @property
+    def button(self) -> QPushButton:
+        """The Run/Stop button."""
+        return self._button
+
+    @property
+    def status_text(self) -> str:
+        """The status shown beside the button."""
+        return self._status_label.text()
+
+    def _on_clicked(self):
+        """Start the script, or request it to stop when it is running."""
+        if self._scripting_tab.is_running():
+            self._scripting_tab.stop_script()
+            self._status_label.setText("Stop requested...")
+        else:
+            self._scripting_tab.run_script()
+
+    def _on_started(self):
+        """Show the running state."""
+        self._status_label.setText("Running...")
+        self._status_label.setStyleSheet("color: #0078d4;")
+        self._update()
+
+    def _on_finished(self, exit_code: int):
+        """Show the result of the last run; details are in the Scripting tab output."""
+        if exit_code == 0:
+            self._status_label.setText("Completed")
+            self._status_label.setStyleSheet("color: green;")
+        else:
+            self._status_label.setText(f"Finished (code {exit_code}), see Scripting tab")
+            self._status_label.setStyleSheet("color: orange;")
+        self._update()
+
+    def _update(self, *_args):
+        """Update the button text, icon, tooltip and enabled state."""
+        script_path = self._scripting_tab.script_path
+        running = self._scripting_tab.is_running()
+        icon = QStyle.SP_MediaStop if running else QStyle.SP_MediaPlay
+        self._button.setIcon(self.style().standardIcon(icon))
+        self._button.setText(self.STOP_TEXT if running else self.RUN_TEXT)
+        self._button.setEnabled(bool(script_path))
+        if not script_path:
+            self._button.setToolTip(self.NO_SCRIPT_TIP)
+        else:
+            action = "Stop" if running else "Run"
+            self._button.setToolTip(f"{action} {os.path.basename(script_path)}")
