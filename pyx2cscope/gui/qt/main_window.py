@@ -333,7 +333,7 @@ class MainWindow(QMainWindow):
         """Show the version and the project name of the selected ELF file in the window title.
 
         Several pyX2Cscope windows running in parallel can then be told apart, e.g.
-        ``pyX2Cscope - v0.7.1 - my_project``.
+        ``pyX2Cscope - v0.7.2 - my_project``.
         """
         title = f"pyX2Cscope - v{pyx2cscope.__version__}"
         project_name = get_project_name(self._setup_tab.elf_file_path)
