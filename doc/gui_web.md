@@ -139,7 +139,11 @@ The config file is a JSON file containing **only variable data** (no connection 
 
 This format is **shared with the Qt desktop app** — a config file saved from one GUI can be
 loaded into the other. When a config is loaded, all connected browser tabs are updated
-automatically via the WebSocket connection.
+automatically via the WebSocket connection. A file saved by the Qt app also contains `elf_file`,
+`connection` and `script`; the Web GUI ignores them.
+
+Recent sessions (reopening a project with its file, connection, variables and script) are only
+available in the Qt GUI.
 
 ### Connecting
 

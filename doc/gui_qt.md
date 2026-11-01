@@ -36,6 +36,34 @@ apart. The project name is taken from the project that generated the ELF file:
 
 The Setup tab is where you configure the connection to your microcontroller.
 
+### Sessions
+
+The Sessions group, below Device Information, reopens a project with everything you set up for it.
+Sessions are available in the Qt GUI only.
+
+A session holds the ELF/YML/PKL file, the connection settings, the WatchView and ScopeView variables
+with trigger and sample settings, the view mode, and the script loaded in the Scripting tab.
+
+- **Recent**: the last 10 projects, most recent first, shown as project name and date
+  (e.g. `LAB1_HALL - 01.11.2026 21:30`). Choosing an entry only selects it. A session whose file was
+  deleted is marked `(file not found)`.
+- **Load Session**: opens the selected session. It fills in the file, connection and script, connects,
+  and restores the WatchView and ScopeView variables. Variables that are no longer in a rebuilt ELF
+  file, and a script that was moved, are reported.
+- **Remove**: removes the selected session from the list.
+- **Save to File... / Load from File...**: save the current session to a `.json` file or load one,
+  e.g. to pass a setup to a colleague. They write and read the same file as **Save Config** and
+  **Load Config** on the Data Views tab.
+
+The recent list is updated automatically: when you connect (file and connection), and when you
+disconnect or close the window (also the variables and the script). When you connect to a project for
+the first time, its entry starts without variables, so the variables of the previous project are not
+stored under the new one. It is stored in `recent_sessions.json` in the user configuration folder
+(on Windows `%LOCALAPPDATA%\Microchip\pyX2Cscope`).
+
+While connected, the Recent list, **Load Session**, **Remove** and **Load from File...** are disabled;
+disconnect first to switch to another project.
+
 ### Connection Settings
 
 1. **Select File**: Click `ELF / YML / PKL` to load variable information. Supported formats are `.elf`, `.yml`, and `.pkl`.
@@ -163,7 +191,12 @@ The **Export Variables** button in the Data Views toolbar allows you to:
 The **Save Config** and **Load Config** buttons allow you to:
 - Save the current WatchView and ScopeView variable lists to a `.json` file.
 - Load a previously saved configuration to quickly restore your setup.
-- The saved file also stores the ELF file path and connection settings so that, when loading, the system automatically attempts to reconnect.
+- The saved file also stores the ELF file path, the connection settings and the loaded script, so that,
+  when loading, the script is loaded and the system automatically attempts to reconnect.
+- When a configuration is loaded while connected, the current file and connection are kept and only the
+  variables and the script are loaded.
+
+These are the same files as **Save to File...** and **Load from File...** in the Sessions group of the Setup tab.
 
 The config file uses a **shared JSON format** that is cross-compatible with the Web GUI:
 
@@ -177,11 +210,12 @@ The config file uses a **shared JSON format** that is cross-compatible with the 
          "color": "#ff0000", "gain": "1.0", "offset": "0.0"}
     ],
     "elf_file": "/path/to/firmware.elf",
-    "connection": { "interface": "UART", "port": "COM3" }
+    "connection": { "interface": "UART", "port": "COM3", "baud_rate": 115200 },
+    "script": "/path/to/my_script.py"
 }
 ```
 
-A config file saved from the Web GUI (which omits `elf_file` and `connection`) can be loaded into the Qt app — the variable lists will be restored and the app will skip the reconnect step if no ELF path is present.
+A config file saved from the Web GUI (which omits `elf_file`, `connection` and `script`) can be loaded into the Qt app — the variable lists will be restored and the app will skip the reconnect step if no ELF path is present. The Web GUI ignores these keys when it loads a file saved by the Qt app.
 
 ---
 
