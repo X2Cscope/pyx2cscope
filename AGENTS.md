@@ -19,7 +19,7 @@ embedded target (dsPIC, PIC32, SAM/ARM, dsPIC33A). Human-facing docs live in `RE
 ```
 pyx2cscope/                 Package source
   __init__.py               __version__ and set_logger()
-  __main__.py               CLI (argparse), launches the Qt or web GUI
+  __main__.py               CLI: build_parser() (argparse) and main(), launches the Qt or web GUI
   x2cscope.py               Public API: X2CScope class, TriggerConfig
   utils.py                  Reads/creates config.ini in the current working directory
   parser/                   ELF parsing: ElfParser (ABC), DummyParser, GenericParser (pyelftools)
@@ -63,8 +63,9 @@ git submodule update --init       # only needed to browse mchplnet sources; runt
 | Wheel/sdist | `python -m build` |
 | Windows exe | `pyinstaller --noconfirm pyx2cscope_win.spec` or `python scripts/build.py` |
 | Linux exe | `pyinstaller --noconfirm pyx2cscope_linux.spec` |
-| Run Qt GUI | `python -m pyx2cscope` |
-| Run web GUI | `python -m pyx2cscope -w` (port 5000 by default) |
+| CLI help | `pyx2cscope --help` |
+| Run Qt GUI | `pyx2cscope` or `python -m pyx2cscope` |
+| Run web GUI | `pyx2cscope -w` (port 5000 by default) |
 
 Before finishing a change, run `ruff check .` and `pytest`. If you changed docs or docstrings, also
 build the docs.
@@ -283,8 +284,10 @@ back at the top of the `finally:` block.
   not run `examples/` scripts as a way to verify a change.
 - Importing `pyx2cscope.x2cscope` calls `logging.basicConfig` and writes `pyx2cscope.x2cscope.log`.
   Running `__main__` resets the root log handlers.
-- `pyx2cscope/__main__.py` runs its logic at module level and defines no `main()`, even though
-  `[project.scripts]` points to `pyx2cscope.__main__:main`. Use `python -m pyx2cscope` for local runs.
+- `pyx2cscope/__main__.py:main()` is the single entry point for the `pyx2cscope` console script,
+  `python -m pyx2cscope` and the PyInstaller executables. Importing the module must not start a GUI.
+  `--install` is handled before argparse; all other options are defined in `build_parser()`. When you
+  add or change an option, update `doc/cli.rst` and `tests/test_cli.py`, which test the real parser.
 - Qt code needs a display. Use `QT_QPA_PLATFORM=offscreen` for tests. Linux CI also uses Xvfb.
 - The web server uses CORS `*`. Binding it with `--host 0.0.0.0` exposes it on the network, and the
   scripting tabs (Qt and web) run arbitrary Python. Do not weaken these defaults further.
