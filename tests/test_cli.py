@@ -1,82 +1,42 @@
 """Unit tests for CLI argument parsing and execution modes.
 
 Tests cover:
-- Argument parsing via subprocess (end-to-end)
-- Version flag
-- Qt mode (default)
-- Web mode (-w flag)
+- Argument parsing with the parser defined in pyx2cscope.__main__
+- Help output, including the serial AUTO port and the --install option
+- Version flag (end-to-end via subprocess)
+- Qt mode (default and -q) and Web mode (-w)
+- main() entry point used by the pyx2cscope console script
 - Logging configuration
-- Execution mode selection
 """
 
-import argparse
+import re
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
 import pyx2cscope
+from pyx2cscope import __main__ as cli
+
+WEB_PORT_DEFAULT = 5000
+WEB_PORT_CUSTOM = 8080
+ARGPARSE_ERROR = 2
 
 
 def _create_argument_parser():
-    """Create a fresh argument parser matching __main__.py for testing.
+    """Return the argument parser used by pyx2cscope.__main__."""
+    return cli.build_parser()
 
-    This avoids importing __main__ which executes module-level code.
-    """
-    parser = argparse.ArgumentParser(
-        prog="pyX2Cscope",
-        description="Microchip python implementation of X2Cscope and LNet protocol.",
-        epilog="For documentation visit https://x2cscope.github.io/pyx2cscope/.",
-    )
 
-    parser.add_argument(
-        "-l",
-        "--log-level",
-        default="ERROR",
-        type=str,
-        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="Configure the logging level, INFO is the default value.",
+def _run_cli(*args):
+    """Run python -m pyx2cscope with the given arguments and return the completed process."""
+    return subprocess.run(
+        [sys.executable, "-m", "pyx2cscope", *args],
+        capture_output=True,
+        text=True,
+        timeout=30, check=False,
     )
-    parser.add_argument(
-        "-c", "--log-console", action="store_true", help="Output log to the console."
-    )
-    parser.add_argument("-e", "--elf", help="Path to elf-file, i.e. -e my_elf.elf.")
-    parser.add_argument(
-        "-p", "--port", help="The serial COM port to be used. Use together with -e"
-    )
-    parser.add_argument(
-        "-q",
-        "--qt",
-        action="store_false",
-        help="Start the Qt user interface, pyx2cscope.gui.qt.main_window.MainWindow",
-    )
-    parser.add_argument(
-        "-w",
-        "--web",
-        action="store_true",
-        help="Start the Web user interface, pyx2cscope.gui.web.app.",
-    )
-    parser.add_argument(
-        "-wp",
-        "--web-port",
-        type=int,
-        default="5000",
-        help="Configure the Web Server port. Use together with -w",
-    )
-    parser.add_argument(
-        "--host",
-        type=str,
-        default="localhost",
-        help="Configure the Web Server address. Use together with -w",
-    )
-    parser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version="%(prog)s " + pyx2cscope.__version__,
-    )
-
-    return parser
 
 
 class TestCLIArgumentParsing:
@@ -91,10 +51,12 @@ class TestCLIArgumentParsing:
         assert args.log_console is False
         assert args.elf is None
         assert args.port is None
-        assert args.qt is True  # Default (store_false means True when not provided)
+        assert args.qt is False
         assert args.web is False
-        assert args.web_port == 5000  # noqa: PLR2004
+        assert args.web_port == WEB_PORT_DEFAULT
         assert args.host == "localhost"
+        assert args.install is None
+        assert args.with_deps is False
 
     def test_parse_web_mode_arguments(self):
         """Test -w flag enables web mode."""
@@ -102,7 +64,7 @@ class TestCLIArgumentParsing:
         args, unknown = parser.parse_known_args(["-w"])
 
         assert args.web is True
-        assert args.qt is True  # -q not provided
+        assert args.qt is False
 
     def test_parse_web_mode_with_port(self):
         """Test web mode with custom port."""
@@ -110,7 +72,7 @@ class TestCLIArgumentParsing:
         args, unknown = parser.parse_known_args(["-w", "-wp", "8080"])
 
         assert args.web is True
-        assert args.web_port == 8080  # noqa: PLR2004
+        assert args.web_port == WEB_PORT_CUSTOM
 
     def test_parse_web_mode_with_host(self):
         """Test web mode with custom host."""
@@ -127,6 +89,13 @@ class TestCLIArgumentParsing:
 
         assert args.elf == elf_file_path
         assert args.port == "COM3"
+
+    def test_parse_auto_port(self, elf_file_path):
+        """Test AUTO is accepted as port value."""
+        parser = _create_argument_parser()
+        args, unknown = parser.parse_known_args(["-e", elf_file_path, "-p", "AUTO"])
+
+        assert args.port == "AUTO"
 
     def test_parse_log_level_debug(self):
         """Test log level argument."""
@@ -149,12 +118,21 @@ class TestCLIArgumentParsing:
 
         assert args.log_console is True
 
-    def test_parse_qt_disabled(self):
-        """Test -q flag disables Qt mode."""
+    def test_parse_qt_flag(self):
+        """Test -q flag selects the Qt GUI."""
         parser = _create_argument_parser()
         args, unknown = parser.parse_known_args(["-q"])
 
-        assert args.qt is False
+        assert args.qt is True
+        assert args.web is False
+
+    def test_qt_and_web_are_mutually_exclusive(self):
+        """Test -q and -w cannot be used together."""
+        parser = _create_argument_parser()
+
+        with pytest.raises(SystemExit) as exc:
+            parser.parse_args(["-q", "-w"])
+        assert exc.value.code == ARGPARSE_ERROR
 
     def test_parse_unknown_args_passed_through(self):
         """Test that unknown arguments are passed through."""
@@ -170,24 +148,14 @@ class TestCLIVersionFlag:
 
     def test_version_flag_short(self):
         """Test -v flag shows version."""
-        result = subprocess.run(
-            [sys.executable, "-m", "pyx2cscope", "-v"],
-            capture_output=True,
-            text=True,
-            timeout=10, check=False,
-        )
+        result = _run_cli("-v")
 
         assert result.returncode == 0
         assert pyx2cscope.__version__ in result.stdout
 
     def test_version_flag_long(self):
         """Test --version flag shows version."""
-        result = subprocess.run(
-            [sys.executable, "-m", "pyx2cscope", "--version"],
-            capture_output=True,
-            text=True,
-            timeout=10, check=False,
-        )
+        result = _run_cli("--version")
 
         assert result.returncode == 0
         assert pyx2cscope.__version__ in result.stdout
@@ -198,12 +166,7 @@ class TestCLIHelpFlag:
 
     def test_help_flag_short(self):
         """Test -h flag shows help."""
-        result = subprocess.run(
-            [sys.executable, "-m", "pyx2cscope", "-h"],
-            capture_output=True,
-            text=True,
-            timeout=10, check=False,
-        )
+        result = _run_cli("-h")
 
         assert result.returncode == 0
         assert "pyX2Cscope" in result.stdout
@@ -212,76 +175,133 @@ class TestCLIHelpFlag:
 
     def test_help_flag_long(self):
         """Test --help flag shows help."""
-        result = subprocess.run(
-            [sys.executable, "-m", "pyx2cscope", "--help"],
-            capture_output=True,
-            text=True,
-            timeout=10, check=False,
-        )
+        result = _run_cli("--help")
 
         assert result.returncode == 0
         assert "pyX2Cscope" in result.stdout
 
+    def test_help_describes_auto_port(self):
+        """Test the help text describes the AUTO serial port detection."""
+        help_text = _create_argument_parser().format_help()
+
+        assert "AUTO" in help_text
+
+    def test_help_describes_install(self):
+        """Test the help text lists --install and --with-deps."""
+        help_text = _create_argument_parser().format_help()
+
+        assert "--install" in help_text
+        assert "--with-deps" in help_text
+
+
+class TestCLIInstall:
+    """Tests for the --install option."""
+
+    def test_install_outside_executable_prints_pip_hint(self):
+        """Test --install outside the standalone executable points to pip and exits."""
+        result = _run_cli("--install", "scipy")
+
+        assert result.returncode == 0
+        assert "pip install scipy" in result.stdout
+
+    def test_install_without_packages(self):
+        """Test --install without package names prints an error message."""
+        result = _run_cli("--install")
+
+        assert result.returncode == 0
+        assert "requires at least one package" in result.stdout
+
+    def test_install_does_not_start_gui(self, mocker):
+        """Test main() returns after handling --install without starting any GUI."""
+        mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
+        mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
+
+        cli.main(["--install", "scipy"])
+
+        mock_execute_qt.assert_not_called()
+        mock_execute_web.assert_not_called()
+
 
 class TestCLIExecutionModes:
-    """Tests for CLI execution mode selection."""
+    """Tests for CLI execution mode selection in main()."""
+
+    @pytest.fixture(autouse=True)
+    def _no_logger_and_config(self, mocker):
+        """Avoid writing log files and reading config.ini during the tests."""
+        mocker.patch("pyx2cscope.set_logger")
+        mocker.patch("pyx2cscope.utils.get_elf_file_path", return_value="")
 
     def test_qt_mode_called_by_default(self, mocker):
         """Test Qt GUI is launched by default."""
         mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
         mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
 
-        args = argparse.Namespace(
-            qt=True, web=False, log_level="ERROR", log_console=False
-        )
-        unknown_args = []
+        cli.main([])
 
-        # Simulate the execution logic from __main__
-        if args.qt and not args.web:
-            from pyx2cscope import gui
+        mock_execute_qt.assert_called_once()
+        mock_execute_web.assert_not_called()
 
-            gui.execute_qt(unknown_args, **args.__dict__)
+    def test_qt_mode_called_with_q_flag(self, mocker):
+        """Test Qt GUI is launched with -q flag."""
+        mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
+        mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
+
+        cli.main(["-q"])
 
         mock_execute_qt.assert_called_once()
         mock_execute_web.assert_not_called()
 
     def test_web_mode_called_with_w_flag(self, mocker):
         """Test Web GUI is launched with -w flag."""
-        _mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
-        mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
-
-        args = argparse.Namespace(
-            qt=True, web=True, log_level="ERROR", log_console=False
-        )
-
-        # Simulate the execution logic from __main__
-        if args.web:
-            from pyx2cscope import gui
-
-            gui.execute_web(**args.__dict__)
-
-        mock_execute_web.assert_called_once()
-
-    def test_no_gui_when_both_disabled(self, mocker):
-        """Test no GUI is launched when both are disabled."""
         mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
         mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
 
-        args = argparse.Namespace(
-            qt=False, web=False, log_level="ERROR", log_console=False
-        )
-        unknown_args = []
+        cli.main(["-w"])
 
-        # Simulate the execution logic from __main__
-        if args.qt and not args.web:
-            from pyx2cscope import gui
+        mock_execute_web.assert_called_once()
+        mock_execute_qt.assert_not_called()
 
-            gui.execute_qt(unknown_args, **args.__dict__)
+    def test_elf_and_port_forwarded_to_gui(self, mocker, elf_file_path):
+        """Test -e and -p are forwarded to the GUI."""
+        mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
 
-        if args.web:
-            from pyx2cscope import gui
+        cli.main(["-e", elf_file_path, "-p", "AUTO"])
 
-            gui.execute_web(**args.__dict__)
+        kwargs = mock_execute_qt.call_args.kwargs
+        assert kwargs["elf"] == elf_file_path
+        assert kwargs["port"] == "AUTO"
+
+    def test_unknown_args_forwarded_to_qt(self, mocker):
+        """Test unknown arguments are forwarded to the Qt application."""
+        mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
+
+        cli.main(["-style", "fusion"])
+
+        assert mock_execute_qt.call_args.args[0] == ["-style", "fusion"]
+
+
+class TestCLIEntryPoint:
+    """Tests for the pyx2cscope console script entry point."""
+
+    def test_console_script_target_exists(self):
+        """Test the [project.scripts] entry point refers to a callable main()."""
+        # tomllib is only available from Python 3.11, so read the entry with a regex
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        match = re.search(r'^pyx2cscope\s*=\s*"([^"]+)"', pyproject.read_text(encoding="utf-8"), re.MULTILINE)
+        assert match, "pyx2cscope console script not found in pyproject.toml"
+
+        module_name, func_name = match.group(1).split(":")
+        assert module_name == "pyx2cscope.__main__"
+        assert callable(getattr(cli, func_name))
+
+    def test_import_does_not_start_gui(self, mocker):
+        """Test importing pyx2cscope.__main__ does not run the application."""
+        import importlib
+
+        mock_execute_qt = mocker.patch("pyx2cscope.gui.execute_qt")
+        mock_execute_web = mocker.patch("pyx2cscope.gui.execute_web")
+
+        importlib.reload(cli)
 
         mock_execute_qt.assert_not_called()
         mock_execute_web.assert_not_called()
@@ -291,11 +311,12 @@ class TestCLILogging:
     """Tests for CLI logging configuration."""
 
     def test_set_logger_called_with_level(self, mocker):
-        """Test that set_logger is called with correct level."""
+        """Test that main() configures the logger with the given level."""
         mock_set_logger = mocker.patch("pyx2cscope.set_logger")
+        mocker.patch("pyx2cscope.gui.execute_qt")
+        mocker.patch("pyx2cscope.utils.get_elf_file_path", return_value="")
 
-        # Simulate logger setup
-        pyx2cscope.set_logger(level="DEBUG", console=True)
+        cli.main(["-l", "DEBUG", "-c"])
 
         mock_set_logger.assert_called_once_with(level="DEBUG", console=True)
 

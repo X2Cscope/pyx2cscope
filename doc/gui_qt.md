@@ -12,7 +12,7 @@ The GUI Qt is currently the default GUI, it runs out-of-the-box when running the
 python -m pyx2cscope
 ```
 
-It can also be executed with the argument -q:
+It can also be started explicitly with the argument -q:
 
 ```
 python -m pyx2cscope -q
