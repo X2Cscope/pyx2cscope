@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.ERROR)
 import argparse
 
 import pyx2cscope
-from pyx2cscope import gui, utils
+from pyx2cscope import gui, utils, vscode
 
 _EPILOG = """\
 examples:
@@ -36,6 +36,7 @@ examples:
   pyX2Cscope -e my_elf.elf -p COM3 -w        Web GUI, connect via COM3
   pyX2Cscope -w --host 0.0.0.0 -wp 8080      Web GUI reachable from other devices
   pyX2Cscope --install scipy pandas          install packages for scripts (executable only)
+  pyX2Cscope --vscode-task ../my_project     add a 'Run pyX2Cscope' task to the VS Code project
 
 For documentation visit https://x2cscope.github.io/pyx2cscope/."""
 
@@ -210,6 +211,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Use together with --install to also install the dependencies of the packages.",
     )
 
+    vscode_group = parser.add_argument_group("VS Code")
+    vscode_group.add_argument(
+        "--vscode-task",
+        nargs="?",
+        const=".",
+        metavar="PROJECT_DIR",
+        help="Add a 'Run pyX2Cscope' task to .vscode/tasks.json of an MPLAB VS Code project "
+        "(default: current folder) and exit. The ELF file is taken from .vscode/<project>.mplab.json. "
+        "The options -p, -w, -wp and --host given here are used in the task, the port defaults to AUTO.",
+    )
+
     return parser
 
 
@@ -236,6 +248,45 @@ def _args_check(k_args: argparse.Namespace):
             k_args.elf = path
 
 
+def _task_gui_args(k_args: argparse.Namespace) -> list:
+    """Return the pyX2Cscope arguments to store in the VS Code task.
+
+    Args:
+        k_args: The parsed command-line arguments.
+
+    Returns:
+        list: The arguments, e.g. ["-p", "AUTO", "-w"].
+    """
+    defaults = build_parser().parse_args([])
+    args = ["-p", k_args.port or vscode.DEFAULT_PORT]
+    if k_args.web:
+        args.append("-w")
+    if k_args.web_port != defaults.web_port:
+        args += ["-wp", str(k_args.web_port)]
+    if k_args.host != defaults.host:
+        args += ["--host", k_args.host]
+    return args
+
+
+def _create_vscode_task(k_args: argparse.Namespace):
+    """Write the VS Code task and report the result.
+
+    Args:
+        k_args: The parsed command-line arguments.
+
+    Raises:
+        SystemExit: If the task cannot be created.
+    """
+    try:
+        tasks_file, tasks = vscode.write_vscode_tasks(k_args.vscode_task, _task_gui_args(k_args))
+    except (vscode.VSCodeTaskError, OSError) as e:
+        raise SystemExit(f"ERROR: {e}") from e
+    print(f"Updated {tasks_file}")
+    for task in tasks:
+        print(f"  {task['label']}: {task['command']} {' '.join(task['args'])}")
+    print("Run it in VS Code with Terminal > Run Task.")
+
+
 def main(argv: list | None = None):
     """Run pyX2Cscope from the command line.
 
@@ -247,6 +298,9 @@ def main(argv: list | None = None):
         return
 
     known_args, unknown_args = parse_arguments(argv)
+    if known_args.vscode_task is not None:
+        _create_vscode_task(known_args)
+        return
     _args_check(known_args)
 
     logging.root.handlers.clear()

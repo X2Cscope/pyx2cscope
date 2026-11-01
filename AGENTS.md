@@ -21,7 +21,8 @@ pyx2cscope/                 Package source
   __init__.py               __version__ and set_logger()
   __main__.py               CLI: build_parser() (argparse) and main(), launches the Qt or web GUI
   x2cscope.py               Public API: X2CScope class, TriggerConfig
-  utils.py                  Reads/creates config.ini in the current working directory
+  utils.py                  Reads/creates config.ini in the current working directory, get_project_name()
+  vscode.py                 Writes the "Run pyX2Cscope" task to .vscode/tasks.json (--vscode-task)
   parser/                   ELF parsing: ElfParser (ABC), DummyParser, GenericParser (pyelftools)
   variable/                 Variable types (Int8..Uint64, Float, Enum) and VariableFactory (ELF/YAML/PKL)
   gui/qt/                   Qt GUI: main_window, controllers/, models/, tabs/, workers/, dialogs/
@@ -64,6 +65,7 @@ git submodule update --init       # only needed to browse mchplnet sources; runt
 | Windows exe | `pyinstaller --noconfirm pyx2cscope_win.spec` or `python scripts/build.py` |
 | Linux exe | `pyinstaller --noconfirm pyx2cscope_linux.spec` |
 | CLI help | `pyx2cscope --help` |
+| VS Code task for a firmware project | `pyx2cscope --vscode-task path/to/project` |
 | Run Qt GUI | `pyx2cscope` or `python -m pyx2cscope` |
 | Run web GUI | `pyx2cscope -w` (port 5000 by default) |
 
@@ -260,6 +262,34 @@ finally:
 
 If the script writes variables, read their original values before the `try:` work starts and write them
 back at the top of the `finally:` block.
+
+## Starting pyX2Cscope from a VS Code firmware project
+
+When you work in a firmware project built with the MPLAB extension for VS Code (it has
+`.vscode/<project>.mplab.json`) and the user wants to run pyX2Cscope or a script against that firmware,
+check whether `.vscode/tasks.json` already has a task labelled `Run pyX2Cscope`. If it does not, create it
+with the CLI instead of writing it by hand:
+
+```bash
+pyx2cscope --vscode-task path/to/project            # Qt GUI, serial port AUTO
+pyx2cscope --vscode-task path/to/project -w         # Web GUI
+pyx2cscope --vscode-task path/to/project -p COM3    # fixed serial port
+```
+
+Use the same program the user runs pyX2Cscope with (`pyX2Cscope.exe` for the standalone executable,
+`pyx2cscope` or `python -m pyx2cscope` for a pip install), because the task starts that program.
+
+- The ELF file of each build configuration is read from `imagePath` in `.mplab.json`
+  (e.g. `./out/<project>/default.elf`). Several configurations give one task each,
+  `Run pyX2Cscope (<configuration>)`.
+- Paths use `${workspaceFolder:<project>}` and stay relative when pyX2Cscope is inside or next to the
+  project folder, otherwise they are absolute.
+- Existing tasks are kept and a task with the same label is replaced. A `tasks.json` with comments is
+  rewritten without them and the original is saved as `tasks.json.bak`; tell the user about it.
+- The user runs the task with **Terminal > Run Task > Run pyX2Cscope**. The task starts the GUI and
+  connects with `-p` and `-e`.
+- Projects without `.mplab.json` (e.g. MPLAB X only) are rejected with an error. For those, describe the
+  manual task from `doc/vscode.rst` instead.
 
 ## Versioning, branches and PRs
 

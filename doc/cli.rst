@@ -66,6 +66,12 @@ Quick reference
      - —
      - Use together with ``--install`` to also install the dependencies of
        the packages.
+   * - ``--vscode-task [<dir>]``
+     - —
+     - Add a ``Run pyX2Cscope`` task to ``.vscode/tasks.json`` of an MPLAB
+       VS Code project (default: current folder) and exit.  The ELF file is
+       taken from ``.vscode/<project>.mplab.json``; ``-p``, ``-w``, ``-wp``
+       and ``--host`` are used in the task.  See :doc:`vscode`.
    * - ``--version``
      - ``-v``
      - Print the version number and exit.
@@ -105,6 +111,12 @@ Install an extra library into the standalone executable:
 .. code-block:: console
 
    pyX2Cscope.exe --install scipy
+
+Add a ``Run pyX2Cscope`` task to an MPLAB VS Code firmware project:
+
+.. code-block:: console
+
+   pyX2Cscope.exe --vscode-task path\to\my_project
 
 .. _installing-extra-libraries:
 
