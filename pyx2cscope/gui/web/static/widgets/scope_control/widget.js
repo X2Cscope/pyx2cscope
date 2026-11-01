@@ -213,7 +213,7 @@ function createScopeControlWidget(widget) {
                            ${isDashboardEditMode ? 'disabled' : ''}>
                 </div>
                 <div class="col-6">
-                    <label class="form-label mb-0" style="font-size: 0.75rem;">Delay (%)</label>
+                    <label class="form-label mb-0" style="font-size: 0.75rem;">Delay (samples)</label>
                     <input type="number" class="form-control form-control-sm" id="scopeCtrlTriggerDelay-${widget.id}"
                            value="${triggerDelay}" min="-50" max="50" step="10"
                            onchange="updateScopeControlTrigger(${widget.id})"

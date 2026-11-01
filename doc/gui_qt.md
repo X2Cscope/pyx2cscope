@@ -197,18 +197,23 @@ When running from the Scripting tab, your script has access to:
 ### Example Script
 
 ```python
+import time
+
+# x2cscope is None when the GUI is not connected via the Setup tab
+if globals().get("x2cscope") is None:
+    raise SystemExit("Connect to the target in the Setup tab first.")
+
+stop_requested = globals().get("stop_requested", lambda: False)
+
 # Example: Read and print a variable value
-if globals().get("x2cscope") is not None:
-    var = x2cscope.get_variable("myVariable")
-    print(f"Value: {var.get_value()}")
+var = x2cscope.get_variable("myVar")
+print(f"Value: {var.get_value()}")
 
 # Example: Loop with stop support
-stop_requested = globals().get("stop_requested", lambda: False)
 while not stop_requested():
-    var = x2cscope.get_variable("myVar")
     print(var.get_value())
     time.sleep(0.5)
 print("Script stopped.")
 ```
 
-> **Note**: Scripts run in the same process as the GUI. If connected via the Setup tab, scripts share the same x2cscope connection. Scripts can also create their own connections when running standalone.
+> **Note**: Scripts run in the same process as the GUI. If connected via the Setup tab, scripts share the same x2cscope connection, so a script must not call `x2cscope.disconnect()` on it. To write scripts that also run standalone, see [Running Scripts in the GUI](scripting_scripts.rst).
