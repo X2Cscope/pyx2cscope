@@ -441,11 +441,16 @@ Step-by-step you need:
 
 2. Check if the data is ready: 
 Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.
+With a trigger configured, the data only becomes ready after the trigger condition happens,
+so always use a timeout.
 
 .. code-block:: python
 
+    deadline = time.time() + 10  # seconds
     while not x2c_scope.is_scope_data_ready():
-            time.sleep(0.1)
+        if time.time() > deadline:
+            raise TimeoutError("Scope data not ready, the trigger did not happen.")
+        time.sleep(0.1)
 
 3. Get the scope data once sampling is completed
 
@@ -460,9 +465,12 @@ A simple loop request example to get only 1 frame of scope data is depicted belo
     # request scope to start sampling data
     x2c_scope.request_scope_data()
 
-    # wait while the data is not yet ready for reading
+    # wait while the data is not yet ready for reading, with a timeout
+    deadline = time.time() + 10  # seconds
     while not x2c_scope.is_scope_data_ready():
-            time.sleep(0.1)
+        if time.time() > deadline:
+            raise TimeoutError("Scope data not ready, the trigger did not happen.")
+        time.sleep(0.1)
 
     for channel, data in x2c_scope.get_scope_channel_data().items():
             # Do something with the data. 
@@ -485,7 +493,7 @@ TriggerConfig needs some parameters like the variable and some trigger values li
 * Variable: the variable which will be monitored
 * Trigger_Level: at which level the trigger will start executing (float)
 * Trigger_mode: 1 for triggered, 0 for Auto (No trigger)
-* Trigger_delay: Value > 0 Pre-trigger, Value < 0 Post trigger
+* Trigger_delay: number of samples. Value > 0 Pre-trigger, Value < 0 Post trigger
 * Trigger_Edge: Rising (1) or Falling (0)
 
 Data resolution

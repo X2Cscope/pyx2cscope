@@ -471,7 +471,10 @@ class TestCANConnectionManager:
         from pyx2cscope.gui.qt.models.app_state import AppState
 
         app = QCoreApplication.instance()
-        if app is None:
+        # Only quit an application created here. Quitting the shared QApplication makes every
+        # later event loop (e.g. qtbot.waitSignal) return at once, so queued signals are lost.
+        owns_app = app is None
+        if owns_app:
             app = QCoreApplication([])
 
         try:
@@ -521,7 +524,7 @@ class TestCANConnectionManager:
                 assert mock_bus_instance.shutdown.called
 
         finally:
-            if app:
+            if owns_app:
                 app.quit()
 
 

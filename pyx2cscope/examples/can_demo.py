@@ -5,7 +5,8 @@ from pyx2cscope.utils import get_can_config, get_elf_file_path
 from pyx2cscope.x2cscope import X2CScope
 
 # Check if x2cscope was injected by the Scripting tab, otherwise create our own
-if globals().get("x2cscope") is None:
+owns_connection = globals().get("x2cscope") is None
+if owns_connection:
     # Get configuration from config.ini
     # check documentation for details on how to set up CAN parameters in the config file
     can_config = get_can_config()
@@ -41,5 +42,7 @@ try:
     print("Script stopped.")
 
 finally:
-    # Disconnect from the device
-    x2cscope.disconnect()
+    # Disconnect only if this script opened the connection; an injected
+    # instance belongs to the GUI and must stay connected.
+    if owns_connection:
+        x2cscope.disconnect()

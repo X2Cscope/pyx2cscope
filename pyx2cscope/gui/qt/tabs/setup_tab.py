@@ -42,7 +42,14 @@ class SetupTab(QWidget):
 
     # Signals
     connect_requested = pyqtSignal()
-    elf_file_selected = pyqtSignal(str)
+    elf_file_selected = pyqtSignal(str)  # the user picked a file in the dialog
+    elf_file_changed = pyqtSignal(str)  # the file path changed, by the dialog or programmatically
+    recent_session_load_requested = pyqtSignal(str)  # ELF/YML/PKL file of the session to open (Load Session)
+    recent_session_remove_requested = pyqtSignal(str)  # ELF/YML/PKL file of the session to remove
+    save_session_requested = pyqtSignal()  # Save to File...
+    load_session_requested = pyqtSignal()  # Load from File...
+
+    RECENT_PLACEHOLDER = "Select a recent session..."
 
     def __init__(self, app_state: "AppState", parent=None):
         """Initialize the Setup tab.
@@ -286,6 +293,8 @@ class SetupTab(QWidget):
             device_layout.addWidget(label, i, 1, Qt.AlignLeft)
 
         right_layout.addWidget(device_group)
+        right_layout.addSpacing(10)
+        right_layout.addWidget(self._create_sessions_group())
         right_layout.addStretch()
 
         main_layout.addLayout(right_layout)
@@ -295,6 +304,109 @@ class SetupTab(QWidget):
 
         # Set initial interface visibility
         self._on_interface_changed("UART")
+
+    def _create_sessions_group(self) -> QGroupBox:
+        """Create the Sessions group: recent sessions list, Load Session and file buttons."""
+        sessions_group = QGroupBox("Sessions")
+        sessions_layout = QGridLayout()
+        sessions_layout.setSpacing(8)
+        sessions_layout.setContentsMargins(10, 15, 10, 10)
+        sessions_group.setLayout(sessions_layout)
+        sessions_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        # Row 0: recent sessions; choosing one only selects it
+        sessions_layout.addWidget(QLabel("Recent:"), 0, 0, Qt.AlignRight)
+        self._recent_combo = QComboBox()
+        self._recent_combo.setFixedWidth(260)
+        self._recent_combo.setToolTip("Select a recent project, then click Load Session.")
+        self._recent_combo.currentIndexChanged.connect(self._update_session_buttons)
+        sessions_layout.addWidget(self._recent_combo, 0, 1)
+
+        # Row 1: open or remove the selected session
+        recent_buttons = QHBoxLayout()
+        recent_buttons.setContentsMargins(0, 0, 0, 0)
+        self._load_recent_btn = QPushButton("Load Session")
+        self._load_recent_btn.setFixedWidth(125)
+        self._load_recent_btn.setToolTip(
+            "Fill in file, connection and script of the selected session, connect, "
+            "and restore the WatchView/ScopeView variables"
+        )
+        self._load_recent_btn.clicked.connect(self._on_load_recent_clicked)
+        self._remove_recent_btn = QPushButton("Remove")
+        self._remove_recent_btn.setFixedWidth(125)
+        self._remove_recent_btn.setToolTip("Remove the selected session from the list")
+        self._remove_recent_btn.clicked.connect(self._on_remove_recent_clicked)
+        recent_buttons.addWidget(self._load_recent_btn)
+        recent_buttons.addWidget(self._remove_recent_btn)
+        recent_buttons.addStretch()
+        sessions_layout.addLayout(recent_buttons, 1, 1)
+
+        # Row 2: session files, e.g. to pass a setup to a colleague
+        file_buttons = QHBoxLayout()
+        file_buttons.setContentsMargins(0, 0, 0, 0)
+        self._save_session_btn = QPushButton("Save to File...")
+        self._save_session_btn.setFixedWidth(125)
+        self._save_session_btn.setToolTip("Save file, connection, variables and script to a JSON file")
+        self._save_session_btn.clicked.connect(self.save_session_requested.emit)
+        self._load_session_btn = QPushButton("Load from File...")
+        self._load_session_btn.setFixedWidth(125)
+        self._load_session_btn.setToolTip("Load a session or config JSON file and connect")
+        self._load_session_btn.clicked.connect(self.load_session_requested.emit)
+        file_buttons.addWidget(self._save_session_btn)
+        file_buttons.addWidget(self._load_session_btn)
+        file_buttons.addStretch()
+        sessions_layout.addLayout(file_buttons, 2, 1)
+
+        self.set_recent_sessions([])
+        return sessions_group
+
+    def set_recent_sessions(self, sessions: list, current_file: str = ""):
+        """Fill the Recent sessions list.
+
+        Args:
+            sessions: (text, file) tuples, most recent first.
+            current_file: File of the session to show as selected, if it is in the list.
+        """
+        self._recent_combo.blockSignals(True)
+        self._recent_combo.clear()
+        self._recent_combo.addItem(self.RECENT_PLACEHOLDER, "")
+        selected = 0
+        for text, file_path in sessions:
+            self._recent_combo.addItem(text, file_path)
+            self._recent_combo.setItemData(self._recent_combo.count() - 1, file_path, Qt.ToolTipRole)
+            if current_file and os.path.normcase(os.path.abspath(file_path)) == os.path.normcase(
+                os.path.abspath(current_file)
+            ):
+                selected = self._recent_combo.count() - 1
+        self._recent_combo.setCurrentIndex(selected)
+        self._recent_combo.blockSignals(False)
+        self._update_session_buttons()
+
+    @property
+    def selected_recent_session(self) -> str:
+        """File of the session selected in the Recent list, or an empty string."""
+        return self._recent_combo.currentData() or ""
+
+    @property
+    def recent_combo(self) -> QComboBox:
+        """The Recent sessions list."""
+        return self._recent_combo
+
+    def _on_load_recent_clicked(self):
+        """Emit recent_session_load_requested for the selected session."""
+        if self.selected_recent_session:
+            self.recent_session_load_requested.emit(self.selected_recent_session)
+
+    def _on_remove_recent_clicked(self):
+        """Emit recent_session_remove_requested for the selected session."""
+        if self.selected_recent_session:
+            self.recent_session_remove_requested.emit(self.selected_recent_session)
+
+    def _update_session_buttons(self, *_args):
+        """Enable Load Session and Remove only when a session is selected and the list is enabled."""
+        enabled = bool(self.selected_recent_session) and self._recent_combo.isEnabled()
+        self._load_recent_btn.setEnabled(enabled)
+        self._remove_recent_btn.setEnabled(enabled)
 
     def _on_interface_changed(self, interface: str):
         """Handle interface selection change."""
@@ -323,15 +435,9 @@ class SetupTab(QWidget):
             "Variable Files (*.elf *.yml *.pkl);;ELF Files (*.elf);;YAML Files (*.yml);;Pickle Files (*.pkl);;All Files (*.*)",
         )
         if file_path:
-            self._elf_file_path = file_path
             # Save the directory for next time
             self._settings.setValue("elf_file_dir", os.path.dirname(file_path))
-            # Show shortened filename
-            basename = os.path.basename(file_path)
-            if len(basename) > self.MAX_FILENAME_DISPLAY_LENGTH:
-                basename = basename[: self.MAX_FILENAME_DISPLAY_LENGTH - 3] + "..."
-            self._elf_button.setText(basename)
-            self._elf_button.setToolTip(file_path)
+            self.elf_file_path = file_path
             self.elf_file_selected.emit(file_path)
 
     # Public properties and methods
@@ -381,14 +487,16 @@ class SetupTab(QWidget):
 
     @elf_file_path.setter
     def elf_file_path(self, path: str):
-        """Set the selected file path."""
+        """Set the selected file path and emit elf_file_changed."""
         self._elf_file_path = path
         if path:
+            # Show shortened filename
             basename = os.path.basename(path)
             if len(basename) > self.MAX_FILENAME_DISPLAY_LENGTH:
                 basename = basename[: self.MAX_FILENAME_DISPLAY_LENGTH - 3] + "..."
             self._elf_button.setText(basename)
             self._elf_button.setToolTip(path)
+        self.elf_file_changed.emit(path)
 
     def set_ports(self, ports: list):
         """Set available COM ports."""
@@ -408,6 +516,11 @@ class SetupTab(QWidget):
         # Disable/enable interface selection and ELF button
         self._interface_combo.setEnabled(not connected)
         self._elf_button.setEnabled(not connected)
+
+        # A different session can only be opened while disconnected
+        self._recent_combo.setEnabled(not connected)
+        self._load_session_btn.setEnabled(not connected)
+        self._update_session_buttons()
 
         # Disable/enable interface settings groups when connected
         self._uart_group.setEnabled(not connected)
@@ -478,24 +591,35 @@ class SetupTab(QWidget):
         if interface == "UART":
             if "baud_rate" in params:
                 self._baud_combo.setCurrentText(str(params["baud_rate"]))
+            port = params.get("port", "")
+            if port:
+                # A port that is not available now falls back to AUTO detection
+                index = self._port_combo.findText(port)
+                self._port_combo.setCurrentIndex(index if index >= 0 else max(self._port_combo.findText("AUTO"), 0))
         elif interface == "TCP/IP":
             if "host" in params:
                 self._ip_edit.setText(params["host"])
-            if "port" in params:
-                self._tcp_port_edit.setText(str(params["port"]))
+            # get_connection_params writes "tcp_port"; older config files use "port"
+            tcp_port = params.get("tcp_port", params.get("port"))
+            if tcp_port is not None:
+                self._tcp_port_edit.setText(str(tcp_port))
         elif interface == "CAN":
-            if "bus_type" in params:
-                self._can_bus_type_combo.setCurrentText(params["bus_type"])
-            if "channel" in params:
-                self._can_channel_edit.setText(str(params["channel"]))
-            if "baudrate" in params:
-                self._can_baudrate_combo.setCurrentText(params["baudrate"])
-            if "mode" in params:
-                self._can_mode_combo.setCurrentText(params["mode"])
-            if "tx_id" in params:
-                self._can_tx_id_edit.setText(params["tx_id"])
-            if "rx_id" in params:
-                self._can_rx_id_edit.setText(params["rx_id"])
+            self._set_can_params(params)
+
+    def _set_can_params(self, params: dict):
+        """Set the CAN settings that are present in params."""
+        if "bus_type" in params:
+            self._can_bus_type_combo.setCurrentText(params["bus_type"])
+        if "channel" in params:
+            self._can_channel_edit.setText(str(params["channel"]))
+        if "baudrate" in params:
+            self._can_baudrate_combo.setCurrentText(params["baudrate"])
+        if "mode" in params:
+            self._can_mode_combo.setCurrentText(params["mode"])
+        if "tx_id" in params:
+            self._can_tx_id_edit.setText(params["tx_id"])
+        if "rx_id" in params:
+            self._can_rx_id_edit.setText(params["rx_id"])
 
     def save_connection_settings(self):
         """Save current connection settings to persistent storage."""

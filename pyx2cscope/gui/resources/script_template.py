@@ -58,11 +58,12 @@ x2cscope.add_scope_channel(signal_b)
 x2cscope.set_sample_time(1) # capture every sample, adapt as needed
 
 # Uncomment and adapt the following lines to set up triggering if needed:
+# from pyx2cscope.x2cscope import TriggerConfig
 # trigger = TriggerConfig(signal_a)
 # trigger.trigger_level = 600
 # trigger.trigger_delay = 50
-# trigger.trigger_edge = 1 # trigger enable
-# trigger.trigger_mode = 1 # rising edge
+# trigger.trigger_edge = 1 # 1 rising edge, 0 falling edge
+# trigger.trigger_mode = 1 # 1 triggered, 0 auto (free-running)
 # x2cscope.set_scope_trigger(trigger)
 
 x2cscope.request_scope_data()
