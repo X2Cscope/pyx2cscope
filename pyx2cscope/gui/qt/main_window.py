@@ -31,6 +31,7 @@ from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab
 from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
+from pyx2cscope.utils import get_project_name
 
 
 class MainWindow(QMainWindow):
@@ -212,7 +213,7 @@ class MainWindow(QMainWindow):
         self._on_view_toggle_changed()
 
         # Window properties
-        self.setWindowTitle(f"pyX2Cscope - v{pyx2cscope.__version__}")
+        self._update_window_title()
         icon_path = os.path.join(os.path.dirname(img_src.__file__), "pyx2cscope.jpg")
         if os.path.exists(icon_path):
             self.setWindowIcon(QtGui.QIcon(icon_path))
@@ -242,6 +243,7 @@ class MainWindow(QMainWindow):
         # Setup tab signals
         self._setup_tab.connect_requested.connect(self._on_connect_clicked)
         self._setup_tab.elf_file_selected.connect(self._on_elf_file_selected)
+        self._setup_tab.elf_file_changed.connect(self._update_window_title)
         self._setup_tab.refresh_btn.clicked.connect(self._refresh_ports)
 
         # Tab polling control signals -> DataPoller
@@ -292,6 +294,18 @@ class MainWindow(QMainWindow):
     def _on_ports_refreshed(self, ports: list):
         """Handle ports refreshed signal."""
         self._setup_tab.set_ports(ports)
+
+    def _update_window_title(self, *_args):
+        """Show the version and the project name of the selected ELF file in the window title.
+
+        Several pyX2Cscope windows running in parallel can then be told apart, e.g.
+        ``pyX2Cscope - v0.7.1 - my_project``.
+        """
+        title = f"pyX2Cscope - v{pyx2cscope.__version__}"
+        project_name = get_project_name(self._setup_tab.elf_file_path)
+        if project_name:
+            title += f" - {project_name}"
+        self.setWindowTitle(title)
 
     def _on_elf_file_selected(self, file_path: str):
         """Handle variable file selection from setup tab."""

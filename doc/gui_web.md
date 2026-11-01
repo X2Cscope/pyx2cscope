@@ -45,6 +45,13 @@ The Web GUI consists of four main views accessible via the navigation bar:
 4. **Dashboard** - Custom widget-based monitoring
 4. **Scripting** - Allows to run Python scritps with direct access to the x2cscope connection
 
+When connected, the navigation bar shows the project of the loaded ELF file beside the version, and
+the browser tab title shows it too, so several pyX2Cscope sessions can be told apart. The browser
+only sends the file name, so for an uploaded file the name is the file name without its extension.
+When the server is started with `-e`, the project is taken from the MPLAB X project folder
+(`my_project.X`) or the VS Code project file (`.vscode/my_project.mplab.json`) that contains the ELF
+file, as in the Qt GUI.
+
 ---
 
 ## Setup View
@@ -475,7 +482,7 @@ For advanced users, the Web GUI exposes REST API endpoints:
 |----------|--------|-------------|
 | `/connect` | POST | Establish connection |
 | `/disconnect` | POST | Close connection |
-| `/is-connected` | GET | Check connection status |
+| `/is-connected` | GET | Check connection status and get the project name of the loaded ELF file |
 | `/variables` | GET | Get list of available variables |
 | `/serial-ports` | GET | Get available COM ports |
 | `/config/save` | GET | Download Watch & Scope config as `pyx2cscope_config.json` |

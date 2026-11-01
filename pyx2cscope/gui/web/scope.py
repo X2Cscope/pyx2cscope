@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from pyx2cscope.gui.web import extensions
+from pyx2cscope.utils import get_project_name
 from pyx2cscope.x2cscope import TriggerConfig, X2CScope
 
 
@@ -26,6 +27,7 @@ class WebScope:
         self.scope_sample_time = 1
         self.scope_time_sampling = 50e-3
         self.variables_file = ""
+        self.project_name = ""  # derived from the selected ELF/YML/PKL file, shown in the navbar
 
         # Sample control state (mirrors last submitted form values)
         self.sample_control = {
@@ -503,14 +505,18 @@ class WebScope:
         """
         self.x2c_scope = X2CScope(*args, **kwargs)
 
-    def set_file(self, import_file):
+    def set_file(self, import_file, source_name=None):
         """Import variables from a variable database file.
 
         Args:
             import_file (str): Path to the import file.
+            source_name (str, optional): Original path or name of the file, used to derive the
+                project name. Defaults to import_file. Uploaded files are stored in a server
+                folder, so their original name is passed here.
         """
         self.variables_file = import_file
         self.x2c_scope.import_variables(import_file)
+        self.project_name = get_project_name(source_name or import_file)
 
     def get_export_filename(self, extension: str) -> str:
         """Build a default export filename for the current variable database."""
@@ -569,6 +575,7 @@ class WebScope:
         self.x2c_scope.disconnect()
         self.x2c_scope = None
         self.variables_file = ""
+        self.project_name = ""
         self.watch_vars.clear()
         self.scope_vars.clear()
         self.dashboard_vars.clear()

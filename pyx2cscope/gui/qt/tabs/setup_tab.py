@@ -42,7 +42,8 @@ class SetupTab(QWidget):
 
     # Signals
     connect_requested = pyqtSignal()
-    elf_file_selected = pyqtSignal(str)
+    elf_file_selected = pyqtSignal(str)  # the user picked a file in the dialog
+    elf_file_changed = pyqtSignal(str)  # the file path changed, by the dialog or programmatically
 
     def __init__(self, app_state: "AppState", parent=None):
         """Initialize the Setup tab.
@@ -323,15 +324,9 @@ class SetupTab(QWidget):
             "Variable Files (*.elf *.yml *.pkl);;ELF Files (*.elf);;YAML Files (*.yml);;Pickle Files (*.pkl);;All Files (*.*)",
         )
         if file_path:
-            self._elf_file_path = file_path
             # Save the directory for next time
             self._settings.setValue("elf_file_dir", os.path.dirname(file_path))
-            # Show shortened filename
-            basename = os.path.basename(file_path)
-            if len(basename) > self.MAX_FILENAME_DISPLAY_LENGTH:
-                basename = basename[: self.MAX_FILENAME_DISPLAY_LENGTH - 3] + "..."
-            self._elf_button.setText(basename)
-            self._elf_button.setToolTip(file_path)
+            self.elf_file_path = file_path
             self.elf_file_selected.emit(file_path)
 
     # Public properties and methods
@@ -381,14 +376,16 @@ class SetupTab(QWidget):
 
     @elf_file_path.setter
     def elf_file_path(self, path: str):
-        """Set the selected file path."""
+        """Set the selected file path and emit elf_file_changed."""
         self._elf_file_path = path
         if path:
+            # Show shortened filename
             basename = os.path.basename(path)
             if len(basename) > self.MAX_FILENAME_DISPLAY_LENGTH:
                 basename = basename[: self.MAX_FILENAME_DISPLAY_LENGTH - 3] + "..."
             self._elf_button.setText(basename)
             self._elf_button.setToolTip(path)
+        self.elf_file_changed.emit(path)
 
     def set_ports(self, ports: list):
         """Set available COM ports."""
