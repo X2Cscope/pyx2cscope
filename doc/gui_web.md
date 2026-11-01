@@ -234,7 +234,7 @@ The Trigger Control panel configures when data capture begins:
 - Sampling waits until the trigger condition is met
 - The trigger variable crosses the specified level in the specified direction
 - Pre-trigger delay (positive): Capture data before the trigger event
-- Post-trigger delay (negative): Start capturing some samples after the trigger event
+- Post-trigger delay (negative): Start capturing samples after the trigger event
 
 #### Setting Up a Trigger
 
@@ -243,7 +243,7 @@ The Trigger Control panel configures when data capture begins:
 3. Enter the trigger **Level** value
 4. Set the **Delay** as a number of samples:
    - Positive values (0 to +50): Pre-trigger - keep that many samples from before the event
-   - Negative values (-50 to 0): Post-trigger - start capturing that many samples after the event
+   - Negative values (-50 to 0): Post-trigger - start capturing samples after the event
 5. Click **Update Trigger** to apply settings
 6. In the Source Configuration, select which variable acts as the trigger source
 
