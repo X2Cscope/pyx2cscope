@@ -27,7 +27,7 @@ from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
 from pyx2cscope.gui.qt.models.app_state import AppState
 from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
-from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab
+from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab, ScriptRunControl
 from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
@@ -104,6 +104,10 @@ class MainWindow(QMainWindow):
         self._setup_tab = SetupTab(self._app_state, self)
         self._tab_widget.addTab(self._setup_tab, "Setup")
 
+        # The Scripting tab is created here because the Data Views tab has a button that runs its script.
+        # It is added to the tab widget after Data Views.
+        self._scripting_tab = ScriptingTab(self._app_state, self)
+
         # Tab 2: Data Views (contains WatchView and/or ScopeView)
         self._data_views_tab = QWidget()
         data_views_layout = QVBoxLayout(self._data_views_tab)
@@ -148,6 +152,11 @@ class MainWindow(QMainWindow):
         self._scope_view_btn.setStyleSheet(toggle_style)
         self._scope_view_btn.clicked.connect(self._on_view_toggle_changed)
         top_bar_layout.addWidget(self._scope_view_btn)
+
+        # Run/Stop the script loaded in the Scripting tab while watching the views
+        top_bar_layout.addSpacing(20)
+        self._run_script_control = ScriptRunControl(self._scripting_tab, self)
+        top_bar_layout.addWidget(self._run_script_control)
 
         top_bar_layout.addStretch()
 
@@ -202,7 +211,6 @@ class MainWindow(QMainWindow):
         self._tab_widget.addTab(self._data_views_tab, "Data Views")
 
         # Tab 3: Scripting
-        self._scripting_tab = ScriptingTab(self._app_state, self)
         self._tab_widget.addTab(self._scripting_tab, "Scripting")
 
         # Tab 4: Help

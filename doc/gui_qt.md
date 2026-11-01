@@ -100,6 +100,17 @@ The Data Views tab provides two views that can be toggled independently using th
 
 You can enable both views simultaneously for a split-screen layout. You can change the width of each column by dragging the line between them. For this to take effect, adjust the App window size accordingly.
 
+### Run Script
+
+The **Run Script** button beside the view toggles runs the script loaded in the **Scripting** tab (see below),
+so you can start a script and watch its effect in WatchView and ScopeView without switching tabs.
+
+- The button is disabled until a script is loaded in the Scripting tab with **Browse** or **New Script**.
+- While the script runs, the button changes to **Stop Script**. Clicking it requests the script to stop, like
+  the **Stop** button of the Scripting tab (the script must check `stop_requested()` in its loops).
+- The status beside the button shows **Running...**, **Completed**, or the exit code if the script ended with
+  an error. The script output and error messages are shown in the Scripting tab.
+
 ### WatchView
 
 1. Click "Add Variable" to add variables to monitor.
@@ -189,6 +200,8 @@ The Scripting tab allows you to run Python scripts with direct access to the x2c
 1. Click **Execute** to run the selected script.
 2. Click **Stop** to request the script to stop (scripts must check `stop_requested()` in loops).
 3. Enable **Log output to file** and select a location to save script output.
+
+The loaded script can also be started and stopped from the **Run Script** button on the Data Views tab.
 
 ### Output Tabs
 
