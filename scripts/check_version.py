@@ -1,10 +1,10 @@
 """Check the package version before a release.
 
-Used by the GitHub workflows:
+Used by the GitHub workflows (pull requests into ``develop`` are not checked):
 
-- every pull request: the version in ``pyproject.toml`` and ``pyx2cscope/__init__.py`` must match;
-- pull requests into ``main`` (``--compare-ref origin/main --pypi``): the version must be higher
-  than the one on ``main`` and must not be on PyPI yet;
+- pull requests into ``main`` (``--compare-ref origin/main --pypi``): the version in
+  ``pyproject.toml`` and ``pyx2cscope/__init__.py`` must match, be higher than the one on
+  ``main``, and must not be on PyPI yet;
 - the release workflow (``--pypi``): the version must not be on PyPI yet, so a merge without a
   version bump stops before the documentation is published.
 

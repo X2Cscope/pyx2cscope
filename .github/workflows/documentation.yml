@@ -26,16 +26,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
 
-    - name: Version check
+    # Only for pull requests into main (releases): pyproject.toml and __init__.py match,
+    # the version is higher than on main and not on PyPI yet. Not run for develop.
+    - name: Version check (PR into main)
+      if: github.base_ref == 'main'
       run: |
-        if [ "${{ github.base_ref }}" = "main" ]; then
-          # Into main: higher than main and not on PyPI yet
-          git fetch --no-tags --depth=1 origin main
-          python scripts/check_version.py --compare-ref origin/main --pypi
-        else
-          # Into develop: pyproject.toml and __init__.py must match
-          python scripts/check_version.py
-        fi
+        git fetch --no-tags --depth=1 origin main
+        python scripts/check_version.py --compare-ref origin/main --pypi
 
     - name: Code Format Check
       run: |
