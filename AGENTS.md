@@ -299,7 +299,10 @@ Use the same program the user runs pyX2Cscope with (`pyX2Cscope.exe` for the sta
 - Branch from `develop` and name the branch `feature/<issue-number>-<short-slug>`. PRs target
   `develop`. `main` is for releases only: merging to `main` publishes docs to gh-pages and the package
   to PyPI.
-- PRs into `main` must bump the version (CI `version-check`).
+- PRs into `main` must bump the version. The required `format` check runs `scripts/check_version.py`, which
+  fails if the version is not higher than on `main` or is already on PyPI; the release workflow runs it
+  again before publishing anything. Never open a feature PR against `main`: GitHub suggests `main` as the
+  base because it is the default branch, so always set the base to `develop`.
 - Commit messages are short, imperative subject lines. Reference the issue or PR number when there is
   one.
 
