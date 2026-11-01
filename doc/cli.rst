@@ -8,8 +8,11 @@ the application loads the ELF and connects to the target immediately.
 
 .. code-block:: console
 
+   pyx2cscope [options]                  # when installed with pip
    python -m pyx2cscope [options]        # when installed with pip
    pyX2Cscope.exe [options]              # standalone executable
+
+``pyx2cscope --help`` lists all arguments.
 
 Quick reference
 ---------------
@@ -29,13 +32,15 @@ Quick reference
    * - ``--port <port>``
      - ``-p``
      - Serial port to connect to (e.g. ``COM3``, ``/dev/ttyUSB0``).
-       Use ``AUTO`` to scan for the first available LNet device automatically.
+       Use ``AUTO`` to try every available serial port and connect to the
+       first one with an LNet device.  Together with an ELF file (``-e`` or
+       ``config.ini``), the GUI connects at startup.
    * - ``--web``
      - ``-w``
-     - Start the Web GUI instead of the Qt GUI.
+     - Start the Web GUI instead of the Qt GUI.  Cannot be combined with ``-q``.
    * - ``--qt``
      - ``-q``
-     - Explicitly start the Qt GUI (default when ``-w`` is not given).
+     - Start the Qt GUI.  This is the default when ``-w`` is not given.
    * - ``--web-port <port>``
      - ``-wp``
      - TCP port for the web server (default: ``5000``).
@@ -55,8 +60,12 @@ Quick reference
    * - ``--install <pkg> …``
      - —
      - *Standalone executable only.* Install one or more Python packages
-       into the ``libs/`` folder using the bundled interpreter.
-       See :ref:`installing-extra-libraries`.
+       into the ``libs/`` folder next to the executable, without their
+       dependencies.  See :ref:`installing-extra-libraries`.
+   * - ``--with-deps``
+     - —
+     - Use together with ``--install`` to also install the dependencies of
+       the packages.
    * - ``--version``
      - ``-v``
      - Print the version number and exit.
@@ -112,6 +121,15 @@ executable:
 
    pyX2Cscope.exe --install scipy
    pyX2Cscope.exe --install scipy pandas   # multiple packages at once
+   pyX2Cscope.exe --install mypackage --with-deps
 
-The packages are installed via the bundled ``pip`` and are isolated from your
-system Python.  They persist across restarts of the executable.
+The packages are installed with ``pip`` of a system Python whose version
+matches the Python bundled in the executable (e.g. Python 3.12), so that
+version must be installed on the system.  By default the dependencies are not
+installed, so packages already bundled in the executable (such as ``numpy``)
+are not replaced.  Add ``--with-deps`` when a package needs dependencies that
+are not bundled.  The ``libs/`` folder is added to the import path when the
+executable starts, so the packages persist across restarts.
+
+When pyX2Cscope is installed with pip, ``--install`` only prints the
+``pip install`` command to use instead.
