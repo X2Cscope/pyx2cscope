@@ -6,47 +6,10 @@ add a task to ``.vscode/tasks.json`` in your project that launches
 pyX2Cscope automatically after a build or flash, pointing directly at the
 generated ELF file.
 
-Creating the task automatically
--------------------------------
-
-For a project created with the MPLAB extension for VS Code (it contains
-``.vscode/<project>.mplab.json``), pyX2Cscope writes the task for you:
-
-.. code-block:: console
-
-   pyX2Cscope.exe --vscode-task path\to\my_project      # standalone executable
-   pyx2cscope --vscode-task path/to/my_project          # pip install
-
-Without a folder, the current folder is used.  The task:
-
-* takes the ELF file of each build configuration from ``imagePath`` in
-  ``.mplab.json`` (e.g. ``./out/my_project/default.elf``).  Several
-  configurations give one task each, ``Run pyX2Cscope (<configuration>)``;
-* starts the same program that created it (``pyX2Cscope.exe``, or Python with
-  ``-m pyx2cscope``), with ``-p AUTO`` by default;
-* uses ``${workspaceFolder:my_project}`` paths.  If pyX2Cscope is inside or
-  next to the project folder (e.g. ``../pyX2Cscope/pyX2Cscope.exe``) the paths
-  stay relative, so both folders can be copied together; otherwise they are
-  absolute.
-
-The options ``-p``, ``-w``, ``-wp`` and ``--host`` given together with
-``--vscode-task`` are used in the task:
-
-.. code-block:: console
-
-   pyX2Cscope.exe --vscode-task path\to\my_project -w        # Web GUI
-   pyX2Cscope.exe --vscode-task path\to\my_project -p COM3   # fixed serial port
-
-Other tasks in ``tasks.json`` are kept, and a task with the same label is
-replaced, so the command can be run again after moving pyX2Cscope.  VS Code
-allows comments in ``tasks.json``; they cannot be kept, so the original file is
-saved as ``tasks.json.bak`` first.
-
 tasks.json example
 ------------------
 
-To write the task by hand, create or edit ``.vscode/tasks.json`` in your
-firmware project:
+Create or edit ``.vscode/tasks.json`` in your firmware project:
 
 **Single-folder workspace** — use ``${workspaceFolder}`` when the workspace
 contains only one project:

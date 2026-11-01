@@ -23,7 +23,7 @@
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="prev" title="pyx2cscope.vscode" href="../vscode/index.html" /> 
+    <link rel="prev" title="pyx2cscope.utils" href="../utils/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -62,7 +62,6 @@
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../__main__/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.__main__</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../utils/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.utils</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../vscode/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.vscode</span></code></a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">pyx2cscope.x2cscope</span></code></a></li>
 </ul>
 </li>
@@ -173,7 +172,7 @@ received data.</p>
 <dt>Attributes:</dt><dd><p>variable (Variable): The variable to use as the trigger source.
 trigger_level (int): The trigger level value for a specified channel.
 trigger_mode (int): 0 Auto, 1 Triggered (default) .
-trigger_delay (int): Number of samples, &gt; 0 pre-trigger, &lt; 0 post-trigger (default 0).
+trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
 trigger_edge (int): Falling edge 0, rising edge 1.</p>
 </dd>
 </dl>
@@ -547,7 +546,7 @@ set_sample_time</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../vscode/index.html" class="btn btn-neutral float-left" title="pyx2cscope.vscode" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../utils/index.html" class="btn btn-neutral float-left" title="pyx2cscope.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

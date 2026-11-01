@@ -13,7 +13,6 @@
        get_com_port(key="com_port") -> str: Gets the COM port from the configuration.
        get_host_address(key="host_ip") -> str: Gets the host IP address from the configuration.
        get_can_config() -> dict: Gets the CAN interface configuration parameters.
-       get_project_name(file_path) -> str: Derives the project name from an ELF/YML/PKL file path.
 
 
 
@@ -26,68 +25,12 @@ Functions
 
 .. autoapisummary::
 
-   pyx2cscope.utils._find_ide_project_name
-   pyx2cscope.utils.get_project_name
    pyx2cscope.utils.get_config_file
    pyx2cscope.utils.get_elf_file_path
    pyx2cscope.utils.get_com_port
    pyx2cscope.utils.get_host_address
    pyx2cscope.utils.get_can_config
 
-
-
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   pyx2cscope.utils._PROJECT_ROOT_SEARCH_DEPTH
-   pyx2cscope.utils._MPLABX_PROJECT_SUFFIX
-   pyx2cscope.utils._VSCODE_PROJECT_SUFFIX
-
-
-.. py:data:: _PROJECT_ROOT_SEARCH_DEPTH
-   :value: 6
-
-   
-
-.. py:data:: _MPLABX_PROJECT_SUFFIX
-   :value: '.x'
-
-   
-
-.. py:data:: _VSCODE_PROJECT_SUFFIX
-   :value: '.mplab.json'
-
-   
-
-.. py:function:: _find_ide_project_name(path: pathlib.Path) -> str
-
-   Return the name of the MPLAB X or VS Code project folder that contains the file.
-
-   Args:
-       path (Path): Path of the ELF, YML or PKL file.
-
-   Returns:
-       str: The project name, or an empty string if no project folder is found.
-
-
-.. py:function:: get_project_name(file_path: str) -> str
-
-   Derive the project name from the path of an ELF, YML or PKL file.
-
-   The name is the MPLAB X or VS Code project that generated the file:
-
-   1. MPLAB X: the project folder ``my_project.X`` gives ``my_project``.
-   2. VS Code with the MPLAB extension: the project file ``.vscode/my_project.mplab.json``
-      gives ``my_project``.
-   3. If no project is found, the file name without extension, e.g. ``firmware.elf`` gives ``firmware``.
-
-   Args:
-       file_path (str): Path of the ELF, YML or PKL file. May be only a file name.
-
-   Returns:
-       str: The project name, or an empty string if no path is given.
 
 
 .. py:function:: get_config_file() -> configparser.ConfigParser

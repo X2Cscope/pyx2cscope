@@ -209,12 +209,6 @@ The default port is 5000 and the interface will be accessible at http://localhos
 <li><p><strong>Dashboard</strong> - Custom widget-based monitoring</p></li>
 <li><p><strong>Scripting</strong> - Allows to run Python scritps with direct access to the x2cscope connection</p></li>
 </ol>
-<p>When connected, the navigation bar shows the project of the loaded ELF file beside the version, and
-the browser tab title shows it too, so several pyX2Cscope sessions can be told apart. The browser
-only sends the file name, so for an uploaded file the name is the file name without its extension.
-When the server is started with <code class="docutils literal notranslate"><span class="pre">-e</span></code>, the project is taken from the MPLAB X project folder
-(<code class="docutils literal notranslate"><span class="pre">my_project.X</span></code>) or the VS Code project file (<code class="docutils literal notranslate"><span class="pre">.vscode/my_project.mplab.json</span></code>) that contains the ELF
-file, as in the Qt GUI.</p>
 </section>
 <hr class="docutils" />
 <section id="setup-view">
@@ -319,10 +313,7 @@ Watch View, Scope View, and Dashboard.</p>
 </div>
 <p>This format is <strong>shared with the Qt desktop app</strong> — a config file saved from one GUI can be
 loaded into the other. When a config is loaded, all connected browser tabs are updated
-automatically via the WebSocket connection. A file saved by the Qt app also contains <code class="docutils literal notranslate"><span class="pre">elf_file</span></code>,
-<code class="docutils literal notranslate"><span class="pre">connection</span></code> and <code class="docutils literal notranslate"><span class="pre">script</span></code>; the Web GUI ignores them.</p>
-<p>Recent sessions (reopening a project with its file, connection, variables and script) are only
-available in the Qt GUI.</p>
+automatically via the WebSocket connection.</p>
 </section>
 <section id="connecting">
 <h3>Connecting<a class="headerlink" href="#connecting" title="Link to this heading"></a></h3>
@@ -471,7 +462,7 @@ Once connected, the other views (Watch View, Scope View, Dashboard) become funct
 <td><p>The value threshold that triggers data capture</p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>Delay</strong></p></td>
-<td><p>Pre/post trigger delay in samples (-50 to +50)</p></td>
+<td><p>Pre/post trigger delay (-50% to +50%)</p></td>
 </tr>
 </tbody>
 </table>
@@ -486,8 +477,8 @@ Once connected, the other views (Watch View, Scope View, Dashboard) become funct
 <ul class="simple">
 <li><p>Sampling waits until the trigger condition is met</p></li>
 <li><p>The trigger variable crosses the specified level in the specified direction</p></li>
-<li><p>Pre-trigger delay (positive): Capture data before the trigger event</p></li>
-<li><p>Post-trigger delay (negative): Start capturing samples after the trigger event</p></li>
+<li><p>Pre-trigger delay (negative): Capture data before the trigger event</p></li>
+<li><p>Post-trigger delay (positive): Capture data after the trigger event</p></li>
 </ul>
 </section>
 <section id="setting-up-a-trigger">
@@ -496,10 +487,10 @@ Once connected, the other views (Watch View, Scope View, Dashboard) become funct
 <li><p>Enable the trigger by clicking <strong>Enable</strong></p></li>
 <li><p>Select <strong>Rising</strong> or <strong>Falling</strong> edge</p></li>
 <li><p>Enter the trigger <strong>Level</strong> value</p></li>
-<li><p>Set the <strong>Delay</strong> as a number of samples:</p>
+<li><p>Set the <strong>Delay</strong> percentage:</p>
 <ul class="simple">
-<li><p>Positive values (0 to +50): Pre-trigger - keep that many samples from before the event</p></li>
-<li><p>Negative values (-50 to 0): Post-trigger - start capturing samples after the event</p></li>
+<li><p>Negative values (-50 to 0): Pre-trigger - see what happened before the event</p></li>
+<li><p>Positive values (0 to +50): Post-trigger - see what happens after the event</p></li>
 </ul>
 </li>
 <li><p>Click <strong>Update Trigger</strong> to apply settings</p></li>
@@ -773,13 +764,8 @@ Once connected, the other views (Watch View, Scope View, Dashboard) become funct
 </section>
 <section id="script-api">
 <h3>Script API<a class="headerlink" href="#script-api" title="Link to this heading"></a></h3>
-<p>Scripts can use the <code class="docutils literal notranslate"><span class="pre">x2cscope</span></code> global variable, you don’t need to instantiate it.
-It is <code class="docutils literal notranslate"><span class="pre">None</span></code> when the web GUI is not connected to a target. The script runs on the server,
-so files it writes are stored on the server and not on the browser’s machine.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">x2cscope</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s2">"Connect to the target first."</span><span class="p">)</span>
-
-<span class="c1"># Read a variable</span>
+<p>Scripts can use the <code class="docutils literal notranslate"><span class="pre">x2cscope</span></code> global variable, you don’t need to instantiate it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read a variable</span>
 <span class="n">value</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"motor_speed"</span><span class="p">)</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Motor speed: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
@@ -791,7 +777,6 @@ so files it writes are stored on the server and not on the browser’s machine.<
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Script stopped by user"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To write scripts that also run standalone, see <a class="reference internal" href="scripting_scripts.html"><span class="std std-doc">Running Scripts in the GUI</span></a>.</p>
 </section>
 </section>
 <hr class="docutils" />
@@ -897,7 +882,7 @@ to the Watch/Scope toggles described above.</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/is-connected</span></code></p></td>
 <td><p>GET</p></td>
-<td><p>Check connection status and get the project name of the loaded ELF file</p></td>
+<td><p>Check connection status</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/variables</span></code></p></td>
 <td><p>GET</p></td>

@@ -648,14 +648,9 @@ on the channel are returned.</p>
 </pre></div>
 </div>
 <p>2. Check if the data is ready:
-Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.
-With a trigger configured, the data only becomes ready after the trigger condition happens,
-so always use a timeout.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span>  <span class="c1"># seconds</span>
-<span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">deadline</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"Scope data not ready, the trigger did not happen."</span><span class="p">)</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -668,12 +663,9 @@ so always use a timeout.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># request scope to start sampling data</span>
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
 
-<span class="c1"># wait while the data is not yet ready for reading, with a timeout</span>
-<span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span>  <span class="c1"># seconds</span>
+<span class="c1"># wait while the data is not yet ready for reading</span>
 <span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">deadline</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"Scope data not ready, the trigger did not happen."</span><span class="p">)</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">channel</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="c1"># Do something with the data.</span>
@@ -695,7 +687,7 @@ To set any trigger configuration, you need to pass a TriggerConfig imported from
 <li><p>Variable: the variable which will be monitored</p></li>
 <li><p>Trigger_Level: at which level the trigger will start executing (float)</p></li>
 <li><p>Trigger_mode: 1 for triggered, 0 for Auto (No trigger)</p></li>
-<li><p>Trigger_delay: number of samples. Value &gt; 0 Pre-trigger, Value &lt; 0 Post trigger</p></li>
+<li><p>Trigger_delay: Value &gt; 0 Pre-trigger, Value &lt; 0 Post trigger</p></li>
 <li><p>Trigger_Edge: Rising (1) or Falling (0)</p></li>
 </ul>
 </section>

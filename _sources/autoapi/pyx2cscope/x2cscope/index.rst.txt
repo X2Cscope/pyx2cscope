@@ -75,7 +75,7 @@ Attributes
        variable (Variable): The variable to use as the trigger source.
        trigger_level (int): The trigger level value for a specified channel.
        trigger_mode (int): 0 Auto, 1 Triggered (default) .
-       trigger_delay (int): Number of samples, > 0 pre-trigger, < 0 post-trigger (default 0).
+       trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).
        trigger_edge (int): Falling edge 0, rising edge 1.
 
    .. py:attribute:: variable

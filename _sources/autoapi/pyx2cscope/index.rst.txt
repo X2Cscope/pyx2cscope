@@ -29,7 +29,6 @@ Submodules
 
    __main__/index.rst
    utils/index.rst
-   vscode/index.rst
    x2cscope/index.rst
 
 

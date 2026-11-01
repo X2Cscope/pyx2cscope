@@ -85,11 +85,8 @@
   <h1>Source code for pyx2cscope.__main__</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Main entry point for the X2Cscope application.</span>
 
-<span class="sd">This module parses the command-line arguments, initializes the logging configuration,</span>
-<span class="sd">and launches the Qt or the Web user interface.</span>
-
-<span class="sd">It is used by ``python -m pyx2cscope``, by the ``pyx2cscope`` console script</span>
-<span class="sd">(``pyx2cscope.__main__:main``) and by the standalone executable.</span>
+<span class="sd">This module initializes the logging configuration based on a command-line argument,</span>
+<span class="sd">sets up the PyQt5 application, and launches the X2Cscope GUI.</span>
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -116,38 +113,18 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyx2cscope</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui</span><span class="p">,</span> <span class="n">utils</span><span class="p">,</span> <span class="n">vscode</span>
-
-<div class="viewcode-block" id="_EPILOG">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._EPILOG">[docs]</a>
-<span class="n">_EPILOG</span> <span class="o">=</span> <span class="s2">"""</span><span class="se">\</span>
-<span class="s2">examples:</span>
-<span class="s2">  pyX2Cscope -e my_elf.elf -p AUTO           Qt GUI, connect via auto-detected serial port</span>
-<span class="s2">  pyX2Cscope -e my_elf.elf -p COM3 -w        Web GUI, connect via COM3</span>
-<span class="s2">  pyX2Cscope -w --host 0.0.0.0 -wp 8080      Web GUI reachable from other devices</span>
-<span class="s2">  pyX2Cscope --install scipy pandas          install packages for scripts (executable only)</span>
-<span class="s2">  pyX2Cscope --vscode-task ../my_project     add a 'Run pyX2Cscope' task to the VS Code project</span>
-
-<span class="s2">For documentation visit https://x2cscope.github.io/pyx2cscope/."""</span></div>
-
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope</span><span class="w"> </span><span class="kn">import</span> <span class="n">gui</span><span class="p">,</span> <span class="n">utils</span>
 
 
 <div class="viewcode-block" id="_early_install">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._early_install">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_early_install</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Handle --install before argparse so it never reaches _args_check.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        argv: The command-line arguments without the program name.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        bool: True if --install was given and handled, False otherwise.</span>
-<span class="sd">    """</span>
-    <span class="k">if</span> <span class="s2">"--install"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argv</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_early_install</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Handle --install before argparse so it never reaches _args_check."""</span>
+    <span class="k">if</span> <span class="s2">"--install"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="n">idx</span> <span class="o">=</span> <span class="n">argv</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"--install"</span><span class="p">)</span>
-    <span class="n">packages</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">argv</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="s2">"--with-deps"</span><span class="p">]</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"--install"</span><span class="p">)</span>
+    <span class="n">packages</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="s2">"--with-deps"</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">packages</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"--install requires at least one package name."</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -173,7 +150,7 @@
     <span class="c1"># --no-deps: skip pulling in packages already bundled in the exe (e.g. numpy).</span>
     <span class="c1"># Users can override with: pyX2Cscope --install scipy --with-deps</span>
     <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">python</span><span class="p">,</span> <span class="s2">"-m"</span><span class="p">,</span> <span class="s2">"pip"</span><span class="p">,</span> <span class="s2">"install"</span><span class="p">,</span> <span class="s2">"--target"</span><span class="p">,</span> <span class="n">libs_dir</span><span class="p">]</span>
-    <span class="k">if</span> <span class="s2">"--with-deps"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">argv</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">"--with-deps"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">:</span>
         <span class="n">cmd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--no-deps"</span><span class="p">)</span>
     <span class="n">cmd</span> <span class="o">+=</span> <span class="n">packages</span>
     <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -222,19 +199,22 @@
 
 
 
-<div class="viewcode-block" id="build_parser">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.build_parser">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Create the command-line argument parser.</span>
+<div class="viewcode-block" id="parse_arguments">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.parse_arguments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_arguments</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Forward the received arguments to ArgParse and parse them.</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        argparse.ArgumentParser: The parser with all supported arguments.</span>
+<span class="sd">    possible arguments are:</span>
+<span class="sd">      | "-l", Configure the logging level, INFO is the default value</span>
+<span class="sd">      | "-v", action='version'</span>
+<span class="sd">      | "-w", Start the Web user interface, pyx2cscope.gui.web.app.</span>
+<span class="sd">      |</span>
+<span class="sd">      | For a complete list of arguments, execute python -m pyx2cscope --help</span>
 <span class="sd">    """</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
         <span class="n">prog</span><span class="o">=</span><span class="s2">"pyX2Cscope"</span><span class="p">,</span>
         <span class="n">description</span><span class="o">=</span><span class="s2">"Microchip python implementation of X2Cscope and LNet protocol."</span><span class="p">,</span>
-        <span class="n">epilog</span><span class="o">=</span><span class="n">_EPILOG</span><span class="p">,</span>
-        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s2">"For documentation visit https://x2cscope.github.io/pyx2cscope/."</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
@@ -243,50 +223,39 @@
         <span class="n">default</span><span class="o">=</span><span class="s2">"ERROR"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">"DEBUG"</span><span class="p">,</span> <span class="s2">"INFO"</span><span class="p">,</span> <span class="s2">"WARNING"</span><span class="p">,</span> <span class="s2">"ERROR"</span><span class="p">,</span> <span class="s2">"CRITICAL"</span><span class="p">],</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Configure the logging level, ERROR is the default value."</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Configure the logging level, INFO is the default value."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-c"</span><span class="p">,</span> <span class="s2">"--log-console"</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Output log to the console."</span>
     <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"-e"</span><span class="p">,</span> <span class="s2">"--elf"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Path to elf-file, i.e. -e my_elf.elf."</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"-e"</span><span class="p">,</span>
-        <span class="s2">"--elf"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Path to elf-file, i.e. -e my_elf.elf. If omitted, the path stored in config.ini is used."</span><span class="p">,</span>
+        <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"--port"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"The serial COM port to be used. Use together with -e"</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"-p"</span><span class="p">,</span>
-        <span class="s2">"--port"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"The serial port to be used, i.e. COM3 or /dev/ttyUSB0. "</span>
-        <span class="s2">"Use AUTO to try every available serial port and connect to the first one with an LNet device. "</span>
-        <span class="s2">"Together with an elf-file, the GUI connects at startup."</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">gui_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">()</span>
-    <span class="n">gui_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-q"</span><span class="p">,</span>
         <span class="s2">"--qt"</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Start the Qt user interface (default)."</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_false"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Start the Qt user interface, pyx2cscope.gui.qt.main_window.MainWindow"</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">gui_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-w"</span><span class="p">,</span>
         <span class="s2">"--web"</span><span class="p">,</span>
         <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Start the Web user interface."</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Start the Web user interface, pyx2cscope.gui.web.app."</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-wp"</span><span class="p">,</span>
         <span class="s2">"--web-port"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"5000"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Configure the Web Server port, 5000 is the default value. Use together with -w."</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Configure the Web Server port. Use together with -w"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"--host"</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="s2">"localhost"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Configure the Web Server address, localhost is the default value. "</span>
-        <span class="s2">"Use 0.0.0.0 to accept connections from other devices. Use together with -w."</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Configure the Web Server address. Use together with -w"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">"-v"</span><span class="p">,</span>
@@ -295,51 +264,7 @@
         <span class="n">version</span><span class="o">=</span><span class="s2">"</span><span class="si">%(prog)s</span><span class="s2"> "</span> <span class="o">+</span> <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># --install is handled by _early_install before parsing; it is declared here for the help output.</span>
-    <span class="n">install_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">"standalone executable"</span><span class="p">)</span>
-    <span class="n">install_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"--install"</span><span class="p">,</span>
-        <span class="n">nargs</span><span class="o">=</span><span class="s2">"+"</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="s2">"PACKAGE"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Install Python packages into the libs folder next to the executable, "</span>
-        <span class="s2">"so scripts can import them. Dependencies are not installed."</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">install_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"--with-deps"</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Use together with --install to also install the dependencies of the packages."</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">vscode_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s2">"VS Code"</span><span class="p">)</span>
-    <span class="n">vscode_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">"--vscode-task"</span><span class="p">,</span>
-        <span class="n">nargs</span><span class="o">=</span><span class="s2">"?"</span><span class="p">,</span>
-        <span class="n">const</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span>
-        <span class="n">metavar</span><span class="o">=</span><span class="s2">"PROJECT_DIR"</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">"Add a 'Run pyX2Cscope' task to .vscode/tasks.json of an MPLAB VS Code project "</span>
-        <span class="s2">"(default: current folder) and exit. The ELF file is taken from .vscode/&lt;project&gt;.mplab.json. "</span>
-        <span class="s2">"The options -p, -w, -wp and --host given here are used in the task, the port defaults to AUTO."</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">parser</span></div>
-
-
-
-<div class="viewcode-block" id="parse_arguments">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.parse_arguments">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_arguments</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Parse the command-line arguments.</span>
-
-<span class="sd">    For a complete list of arguments, execute python -m pyx2cscope --help</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        argv: The arguments to parse without the program name. Defaults to sys.argv[1:].</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: The known arguments (argparse.Namespace) and the list of unknown arguments,</span>
-<span class="sd">        which are forwarded to the Qt application.</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">build_parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span></div>
 
 
 
@@ -354,81 +279,18 @@
 
 
 
-<div class="viewcode-block" id="_task_gui_args">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._task_gui_args">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_task_gui_args</span><span class="p">(</span><span class="n">k_args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return the pyX2Cscope arguments to store in the VS Code task.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        k_args: The parsed command-line arguments.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        list: The arguments, e.g. ["-p", "AUTO", "-w"].</span>
-<span class="sd">    """</span>
-    <span class="n">defaults</span> <span class="o">=</span> <span class="n">build_parser</span><span class="p">()</span><span class="o">.</span><span class="n">parse_args</span><span class="p">([])</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-p"</span><span class="p">,</span> <span class="n">k_args</span><span class="o">.</span><span class="n">port</span> <span class="ow">or</span> <span class="n">vscode</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">k_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
-        <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"-w"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">k_args</span><span class="o">.</span><span class="n">web_port</span> <span class="o">!=</span> <span class="n">defaults</span><span class="o">.</span><span class="n">web_port</span><span class="p">:</span>
-        <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"-wp"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">k_args</span><span class="o">.</span><span class="n">web_port</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">k_args</span><span class="o">.</span><span class="n">host</span> <span class="o">!=</span> <span class="n">defaults</span><span class="o">.</span><span class="n">host</span><span class="p">:</span>
-        <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">"--host"</span><span class="p">,</span> <span class="n">k_args</span><span class="o">.</span><span class="n">host</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">args</span></div>
-
-
-
-<div class="viewcode-block" id="_create_vscode_task">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__._create_vscode_task">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">_create_vscode_task</span><span class="p">(</span><span class="n">k_args</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Write the VS Code task and report the result.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        k_args: The parsed command-line arguments.</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        SystemExit: If the task cannot be created.</span>
-<span class="sd">    """</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">tasks_file</span><span class="p">,</span> <span class="n">tasks</span> <span class="o">=</span> <span class="n">vscode</span><span class="o">.</span><span class="n">write_vscode_tasks</span><span class="p">(</span><span class="n">k_args</span><span class="o">.</span><span class="n">vscode_task</span><span class="p">,</span> <span class="n">_task_gui_args</span><span class="p">(</span><span class="n">k_args</span><span class="p">))</span>
-    <span class="k">except</span> <span class="p">(</span><span class="n">vscode</span><span class="o">.</span><span class="n">VSCodeTaskError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ERROR: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Updated </span><span class="si">{</span><span class="n">tasks_file</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">task</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">task</span><span class="p">[</span><span class="s1">'command'</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">task</span><span class="p">[</span><span class="s1">'args'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Run it in VS Code with Terminal &gt; Run Task."</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="main">
-<a class="viewcode-back" href="../../autoapi/pyx2cscope/__main__/index.html#pyx2cscope.__main__.main">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">argv</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Run pyX2Cscope from the command line.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        argv: The arguments without the program name. Defaults to sys.argv[1:].</span>
-<span class="sd">    """</span>
-    <span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="n">argv</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">argv</span>
-    <span class="k">if</span> <span class="n">_early_install</span><span class="p">(</span><span class="n">argv</span><span class="p">):</span>
-        <span class="k">return</span>
-
-    <span class="n">known_args</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">vscode_task</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_create_vscode_task</span><span class="p">(</span><span class="n">known_args</span><span class="p">)</span>
-        <span class="k">return</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">_early_install</span><span class="p">():</span>
+    <span class="n">known_args</span><span class="p">,</span> <span class="n">unknown_args</span> <span class="o">=</span> <span class="n">parse_arguments</span><span class="p">()</span>
     <span class="n">_args_check</span><span class="p">(</span><span class="n">known_args</span><span class="p">)</span>
 
     <span class="n">logging</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
     <span class="n">pyx2cscope</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_level</span><span class="p">,</span> <span class="n">console</span><span class="o">=</span><span class="n">known_args</span><span class="o">.</span><span class="n">log_console</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">qt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
+        <span class="n">gui</span><span class="o">.</span><span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">,</span> <span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">known_args</span><span class="o">.</span><span class="n">web</span><span class="p">:</span>
         <span class="n">gui</span><span class="o">.</span><span class="n">execute_web</span><span class="p">(</span><span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">gui</span><span class="o">.</span><span class="n">execute_qt</span><span class="p">(</span><span class="n">unknown_args</span><span class="p">,</span> <span class="o">**</span><span class="n">known_args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span></div>
-
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 
            </div>
