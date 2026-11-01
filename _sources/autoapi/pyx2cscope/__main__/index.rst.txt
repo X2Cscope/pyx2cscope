@@ -7,8 +7,11 @@
 
    Main entry point for the X2Cscope application.
 
-   This module initializes the logging configuration based on a command-line argument,
-   sets up the PyQt5 application, and launches the X2Cscope GUI.
+   This module parses the command-line arguments, initializes the logging configuration,
+   and launches the Qt or the Web user interface.
+
+   It is used by ``python -m pyx2cscope``, by the ``pyx2cscope`` console script
+   (``pyx2cscope.__main__:main``) and by the standalone executable.
 
 
 
@@ -23,8 +26,12 @@ Functions
 
    pyx2cscope.__main__._early_install
    pyx2cscope.__main__._find_matching_python
+   pyx2cscope.__main__.build_parser
    pyx2cscope.__main__.parse_arguments
    pyx2cscope.__main__._args_check
+   pyx2cscope.__main__._task_gui_args
+   pyx2cscope.__main__._create_vscode_task
+   pyx2cscope.__main__.main
 
 
 
@@ -34,15 +41,46 @@ Attributes
 .. autoapisummary::
 
    pyx2cscope.__main__._libs_dir
+   pyx2cscope.__main__._EPILOG
 
 
 .. py:data:: _libs_dir
 
    
 
-.. py:function:: _early_install() -> bool
+.. py:data:: _EPILOG
+   :value: Multiline-String
+
+    .. raw:: html
+
+        <details><summary>Show Value</summary>
+
+    .. code-block:: python
+
+        """examples:
+          pyX2Cscope -e my_elf.elf -p AUTO           Qt GUI, connect via auto-detected serial port
+          pyX2Cscope -e my_elf.elf -p COM3 -w        Web GUI, connect via COM3
+          pyX2Cscope -w --host 0.0.0.0 -wp 8080      Web GUI reachable from other devices
+          pyX2Cscope --install scipy pandas          install packages for scripts (executable only)
+          pyX2Cscope --vscode-task ../my_project     add a 'Run pyX2Cscope' task to the VS Code project
+        
+        For documentation visit https://x2cscope.github.io/pyx2cscope/."""
+
+    .. raw:: html
+
+        </details>
+
+   
+
+.. py:function:: _early_install(argv: list) -> bool
 
    Handle --install before argparse so it never reaches _args_check.
+
+   Args:
+       argv: The command-line arguments without the program name.
+
+   Returns:
+       bool: True if --install was given and handled, False otherwise.
 
 
 .. py:function:: _find_matching_python() -> str | None
@@ -50,18 +88,58 @@ Attributes
    Find a system Python executable whose version matches the frozen bundle.
 
 
-.. py:function:: parse_arguments()
+.. py:function:: build_parser() -> argparse.ArgumentParser
 
-   Forward the received arguments to ArgParse and parse them.
+   Create the command-line argument parser.
 
-   possible arguments are:
-     | "-l", Configure the logging level, INFO is the default value
-     | "-v", action='version'
-     | "-w", Start the Web user interface, pyx2cscope.gui.web.app.
-     |
-     | For a complete list of arguments, execute python -m pyx2cscope --help
+   Returns:
+       argparse.ArgumentParser: The parser with all supported arguments.
+
+
+.. py:function:: parse_arguments(argv: list | None = None)
+
+   Parse the command-line arguments.
+
+   For a complete list of arguments, execute python -m pyx2cscope --help
+
+   Args:
+       argv: The arguments to parse without the program name. Defaults to sys.argv[1:].
+
+   Returns:
+       tuple: The known arguments (argparse.Namespace) and the list of unknown arguments,
+       which are forwarded to the Qt application.
 
 
 .. py:function:: _args_check(k_args: argparse.Namespace)
+
+
+.. py:function:: _task_gui_args(k_args: argparse.Namespace) -> list
+
+   Return the pyX2Cscope arguments to store in the VS Code task.
+
+   Args:
+       k_args: The parsed command-line arguments.
+
+   Returns:
+       list: The arguments, e.g. ["-p", "AUTO", "-w"].
+
+
+.. py:function:: _create_vscode_task(k_args: argparse.Namespace)
+
+   Write the VS Code task and report the result.
+
+   Args:
+       k_args: The parsed command-line arguments.
+
+   Raises:
+       SystemExit: If the task cannot be created.
+
+
+.. py:function:: main(argv: list | None = None)
+
+   Run pyX2Cscope from the command line.
+
+   Args:
+       argv: The arguments without the program name. Defaults to sys.argv[1:].
 
 

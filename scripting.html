@@ -122,11 +122,11 @@
 <p>The API interface is managed over the X2CScope class.</p>
 <section id="simplest-example">
 <h2>Simplest example<a class="headerlink" href="#simplest-example" title="Link to this heading"></a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="sd">&quot;&quot;&quot;The simplest usage of the pyX2Cscope library.</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="sd">"""The simplest usage of the pyX2Cscope library.</span>
 <span class="linenos"> 2</span>
 <span class="linenos"> 3</span><span class="sd">The script initializes the X2CScope class with a specified serial port and ELF file,</span>
 <span class="linenos"> 4</span><span class="sd">retrieves specific variables, reads their values, and writes new values to them.</span>
-<span class="linenos"> 5</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos"> 5</span><span class="sd">"""</span>
 <span class="linenos"> 6</span>
 <span class="linenos"> 7</span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_com_port</span>
 <span class="linenos"> 8</span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.x2cscope</span><span class="w"> </span><span class="kn">import</span> <span class="n">X2CScope</span>
@@ -134,15 +134,15 @@
 <span class="linenos">10</span><span class="c1"># initialize the X2CScope class with serial port, by default baud rate is 115200</span>
 <span class="linenos">11</span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">get_com_port</span><span class="p">())</span>
 <span class="linenos">12</span><span class="c1"># instead of loading directly the elf file, we can import it after instantiating the X2CScope class</span>
-<span class="linenos">13</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;..\..\tests\data\qspin_foc_same54.elf&quot;</span><span class="p">)</span>
+<span class="linenos">13</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">"..\..\tests\data\qspin_foc_same54.elf"</span><span class="p">)</span>
 <span class="linenos">14</span>
 <span class="linenos">15</span><span class="c1"># Collect some variables.</span>
-<span class="linenos">16</span><span class="n">speed_reference</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;motor.apiData.velocityReference&quot;</span><span class="p">)</span>
-<span class="linenos">17</span><span class="n">speed_measured</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;motor.apiData.velocityMeasured&quot;</span><span class="p">)</span>
+<span class="linenos">16</span><span class="n">speed_reference</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"motor.apiData.velocityReference"</span><span class="p">)</span>
+<span class="linenos">17</span><span class="n">speed_measured</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"motor.apiData.velocityMeasured"</span><span class="p">)</span>
 <span class="linenos">18</span>
-<span class="linenos">19</span><span class="c1"># Read the value of the &quot;motor.apiData.velocityMeasured&quot; variable from the target</span>
+<span class="linenos">19</span><span class="c1"># Read the value of the "motor.apiData.velocityMeasured" variable from the target</span>
 <span class="linenos">20</span><span class="nb">print</span><span class="p">(</span><span class="n">speed_measured</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
-<span class="linenos">21</span><span class="c1"># Write a new value to the &quot;motor.apiData.velocityReference&quot; variable on the target</span>
+<span class="linenos">21</span><span class="c1"># Write a new value to the "motor.apiData.velocityReference" variable on the target</span>
 <span class="linenos">22</span><span class="n">speed_reference</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -204,11 +204,11 @@
 </tbody>
 </table>
 <p>Example - Serial connection with default baud rate:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">"COM16"</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Example - Serial connection with custom baud rate:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">baud_rate</span><span class="o">=</span><span class="mi">9600</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">"COM16"</span><span class="p">,</span> <span class="n">baud_rate</span><span class="o">=</span><span class="mi">9600</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>TCP/IP Interface</strong></p>
@@ -246,11 +246,11 @@
 </tbody>
 </table>
 <p>Example - TCP/IP connection with default tcp_port:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">"192.168.1.100"</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Example - TCP/IP with custom tcp_port:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span> <span class="n">tcp_port</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">"192.168.1.100"</span><span class="p">,</span> <span class="n">tcp_port</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>CAN Interface</strong></p>
@@ -323,27 +323,27 @@
 drivers must be installed separately according to each vendor’s documentation.</p>
 </div>
 <p>Example - CAN connection with PCAN USB (default settings):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">bustype</span><span class="o">=</span><span class="s2">&quot;pcan_usb&quot;</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">bustype</span><span class="o">=</span><span class="s2">"pcan_usb"</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Example - CAN connection with custom parameters:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span>
-    <span class="n">bustype</span><span class="o">=</span><span class="s2">&quot;pcan_usb&quot;</span><span class="p">,</span>
+    <span class="n">bustype</span><span class="o">=</span><span class="s2">"pcan_usb"</span><span class="p">,</span>
     <span class="n">channel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">baud_rate</span><span class="o">=</span><span class="mi">250000</span><span class="p">,</span>
     <span class="n">id_tx</span><span class="o">=</span><span class="mh">0x120</span><span class="p">,</span>
     <span class="n">id_rx</span><span class="o">=</span><span class="mh">0x110</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;extended&quot;</span><span class="p">,</span>
-    <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">"extended"</span><span class="p">,</span>
+    <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Example - SocketCAN on Linux:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span>
-    <span class="n">bustype</span><span class="o">=</span><span class="s2">&quot;socketcan&quot;</span><span class="p">,</span>
+    <span class="n">bustype</span><span class="o">=</span><span class="s2">"socketcan"</span><span class="p">,</span>
     <span class="n">channel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Maps to can0</span>
     <span class="n">baud_rate</span><span class="o">=</span><span class="mi">500000</span><span class="p">,</span>
-    <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span>
+    <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -362,10 +362,10 @@ drivers must be installed separately according to each vendor’s documentation.
 <li><p>Basic instantiation examples:</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Serial connection (most common)</span>
-<span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM16&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">"COM16"</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 
 <span class="c1"># TCP/IP connection</span>
-<span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;192.168.1.100&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+<span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">"192.168.1.100"</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -382,7 +382,7 @@ The list of variables can be loaded from multiple file formats:</p>
 <p>See more details at <a class="reference internal" href="#import-and-export-variables"><span class="std std-ref">Import and Export variables</span></a> section.
 The ELF file is one artifact generated during code compilation. To load the variables, Execute
 the code below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;..\..\tests\data\dsPIC33ak128mc106_foc.elf&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">"..\..\tests\data\dsPIC33ak128mc106_foc.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -395,7 +395,7 @@ is a string containing the variable name.</p>
 <ol class="arabic simple" start="3">
 <li><p>Create a Variable object for the variable you want to monitor:</p></li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">&#39;variable_name&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s1">'variable_name'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Replace ‘variable_name’ with the name of the variable you want to monitor. You can create multiple variable
@@ -431,7 +431,7 @@ hardware peripheral registers with fixed addresses defined in the MCU’s ELF fi
 <p>Use <code class="docutils literal notranslate"><span class="pre">list_sfr()</span></code> to retrieve a sorted list of all SFR names parsed from the ELF file:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sfr_names</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">list_sfr</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">sfr_names</span><span class="p">)</span>
-<span class="c1"># [&#39;ADCON1&#39;, &#39;ADCON2&#39;, ..., &#39;LATD&#39;, ..., &#39;TMR1&#39;, ...]</span>
+<span class="c1"># ['ADCON1', 'ADCON2', ..., 'LATD', ..., 'TMR1', ...]</span>
 </pre></div>
 </div>
 <p>This is the SFR counterpart of <code class="docutils literal notranslate"><span class="pre">list_variables()</span></code>, which lists firmware variables only.</p>
@@ -459,14 +459,14 @@ hardware peripheral registers with fixed addresses defined in the MCU’s ELF fi
 <h3>Retrieving an SFR variable<a class="headerlink" href="#retrieving-an-sfr-variable" title="Link to this heading"></a></h3>
 <p>Pass <code class="docutils literal notranslate"><span class="pre">sfr=True</span></code> to <code class="docutils literal notranslate"><span class="pre">get_variable()</span></code> to look up the name in the SFR register map instead of
 the firmware variable table:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">latd</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;LATD&quot;</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">tmr1</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;TMR1&quot;</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">latd</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"LATD"</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">tmr1</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"TMR1"</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The returned object is a standard <code class="docutils literal notranslate"><span class="pre">Variable</span></code> instance — read and write it the same way:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read the current register value</span>
 <span class="n">value</span> <span class="o">=</span> <span class="n">latd</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LATD = 0x</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LATD = 0x</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># Write a new value to the register</span>
 <span class="n">latd</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span> <span class="o">|</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span><span class="p">))</span>   <span class="c1"># set bit 12 (LATE12)</span>
@@ -481,7 +481,7 @@ namespaces are independent — a name can exist in both without conflict.</p>
 </section>
 <section id="full-sfr-example">
 <h3>Full SFR example<a class="headerlink" href="#full-sfr-example" title="Link to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="sd">&quot;&quot;&quot;Example to read LATD and TMR1 registers using Special Function Register (SFR) access.&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="sd">"""Example to read LATD and TMR1 registers using Special Function Register (SFR) access."""</span>
 <span class="linenos"> 2</span>
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_com_port</span><span class="p">,</span> <span class="n">get_elf_file_path</span>
@@ -495,13 +495,13 @@ namespaces are independent — a name can exist in both without conflict.</p>
 <span class="linenos">12</span><span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="n">elf_file</span><span class="p">)</span>
 <span class="linenos">13</span>
 <span class="linenos">14</span><span class="c1"># Get the LATD register using the sfr parameter</span>
-<span class="linenos">15</span><span class="n">latd_register</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;LATD&quot;</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">15</span><span class="n">latd_register</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"LATD"</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="linenos">16</span>
 <span class="linenos">17</span><span class="c1"># Get the TMR1 register using the sfr parameter</span>
-<span class="linenos">18</span><span class="n">tmr1_register</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;TMR1&quot;</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">18</span><span class="n">tmr1_register</span> <span class="o">=</span> <span class="n">x2cscope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"TMR1"</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="linenos">19</span>
-<span class="linenos">20</span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading LATD and TMR1 registers...&quot;</span><span class="p">)</span>
-<span class="linenos">21</span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Press Ctrl+C to stop</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">20</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Reading LATD and TMR1 registers..."</span><span class="p">)</span>
+<span class="linenos">21</span><span class="nb">print</span><span class="p">(</span><span class="s2">"Press Ctrl+C to stop</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 <span class="linenos">22</span>
 <span class="linenos">23</span>
 <span class="linenos">24</span><span class="c1"># Read the current value of LATD register</span>
@@ -511,9 +511,9 @@ namespaces are independent — a name can exist in both without conflict.</p>
 <span class="linenos">28</span><span class="n">tmr1_value</span> <span class="o">=</span> <span class="n">tmr1_register</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
 <span class="linenos">29</span>
 <span class="linenos">30</span><span class="c1"># Print the register values</span>
-<span class="linenos">31</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;LATD: 0x</span><span class="si">{</span><span class="n">latd_value</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">latd_value</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="linenos">32</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TMR1: 0x</span><span class="si">{</span><span class="n">tmr1_value</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">tmr1_value</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<span class="linenos">33</span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+<span class="linenos">31</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"LATD: 0x</span><span class="si">{</span><span class="n">latd_value</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">latd_value</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="linenos">32</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"TMR1: 0x</span><span class="si">{</span><span class="n">tmr1_value</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">tmr1_value</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="linenos">33</span><span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -530,7 +530,7 @@ YML is human readable and can be edited with any text editor, while pickle is a 
 they are stored in the register section of the export file and can be imported again with
 <code class="docutils literal notranslate"><span class="pre">get_variable(&quot;NAME&quot;,</span> <span class="pre">sfr=True)</span></code>.</p>
 <p>See the example below:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="sd">&quot;&quot;&quot;Example of importing and exporting variable.</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="sd">"""Example of importing and exporting variable.</span>
 <span class="linenos"> 2</span>
 <span class="linenos"> 3</span><span class="sd">The script initializes the X2CScope class with a specified serial port,</span>
 <span class="linenos"> 4</span><span class="sd">retrieves specific variables, reads their values, export them to a yaml file</span>
@@ -538,7 +538,7 @@ they are stored in the register section of the export file and can be imported a
 <span class="linenos"> 6</span>
 <span class="linenos"> 7</span><span class="sd">We define a new instance of X2Cscope, and we reload the variables over the exported</span>
 <span class="linenos"> 8</span><span class="sd">files instead of the elf file.</span>
-<span class="linenos"> 9</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos"> 9</span><span class="sd">"""</span>
 <span class="linenos">10</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="linenos">11</span>
 <span class="linenos">12</span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_com_port</span>
@@ -549,19 +549,19 @@ they are stored in the register section of the export file and can be imported a
 <span class="linenos">17</span><span class="n">com_port</span> <span class="o">=</span> <span class="n">get_com_port</span><span class="p">()</span>  <span class="c1"># Get the COM port from the utility function</span>
 <span class="linenos">18</span><span class="n">x2c_scope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">com_port</span><span class="p">)</span>
 <span class="linenos">19</span><span class="c1"># instead of loading directly the elf file, we can import it after instantiating the X2CScope class</span>
-<span class="linenos">20</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;..\..\tests\data\qspin_foc_same54.elf&quot;</span><span class="p">)</span>
+<span class="linenos">20</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="sa">r</span><span class="s2">"..\..\tests\data\qspin_foc_same54.elf"</span><span class="p">)</span>
 <span class="linenos">21</span>
 <span class="linenos">22</span><span class="c1"># Collect some variables, i.e.: from QSPIN on SAME54 MCLV-48V-300W</span>
-<span class="linenos">23</span><span class="n">angle_reference</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;mcFocI_ModuleData_gds.dOutput.elecAngle&quot;</span><span class="p">)</span>
-<span class="linenos">24</span><span class="n">speed_measured</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;mcFocI_ModuleData_gds.dOutput.elecSpeed&quot;</span><span class="p">)</span>
+<span class="linenos">23</span><span class="n">angle_reference</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"mcFocI_ModuleData_gds.dOutput.elecAngle"</span><span class="p">)</span>
+<span class="linenos">24</span><span class="n">speed_measured</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"mcFocI_ModuleData_gds.dOutput.elecSpeed"</span><span class="p">)</span>
 <span class="linenos">25</span>
-<span class="linenos">26</span><span class="c1"># Read the value of the &quot;motor.apiData.velocityMeasured&quot; variable from the target</span>
+<span class="linenos">26</span><span class="c1"># Read the value of the "motor.apiData.velocityMeasured" variable from the target</span>
 <span class="linenos">27</span><span class="nb">print</span><span class="p">(</span><span class="n">speed_measured</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
 <span class="linenos">28</span>
 <span class="linenos">29</span><span class="c1"># you can export only these two variables as yaml file (plain text)</span>
-<span class="linenos">30</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">export_variables</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;my_two_variables&quot;</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="n">angle_reference</span><span class="p">,</span> <span class="n">speed_measured</span><span class="p">])</span>
-<span class="linenos">31</span><span class="c1"># you can export all the variables available. For a different file format, define &#39;ext&#39; variable, i.e. pickle (binary)</span>
-<span class="linenos">32</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">export_variables</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;my_variables&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">PICKLE</span><span class="p">)</span>
+<span class="linenos">30</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">export_variables</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"my_two_variables"</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="p">[</span><span class="n">angle_reference</span><span class="p">,</span> <span class="n">speed_measured</span><span class="p">])</span>
+<span class="linenos">31</span><span class="c1"># you can export all the variables available. For a different file format, define 'ext' variable, i.e. pickle (binary)</span>
+<span class="linenos">32</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">export_variables</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"my_variables"</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">PICKLE</span><span class="p">)</span>
 <span class="linenos">33</span>
 <span class="linenos">34</span><span class="c1"># disconnect x2cscope so we can reconnect with another instance</span>
 <span class="linenos">35</span><span class="n">x2c_scope</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
@@ -569,22 +569,22 @@ they are stored in the register section of the export file and can be imported a
 <span class="linenos">37</span><span class="c1"># Instantiate a different X2Cscope to ensure we have an empty variable list, i.e. x2c</span>
 <span class="linenos">38</span><span class="n">x2c</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">com_port</span><span class="p">)</span>
 <span class="linenos">39</span><span class="c1"># instead of loading the elf file, we load our exported file with all variable</span>
-<span class="linenos">40</span><span class="n">x2c</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="s2">&quot;my_variables.pkl&quot;</span><span class="p">)</span>
+<span class="linenos">40</span><span class="n">x2c</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="s2">"my_variables.pkl"</span><span class="p">)</span>
 <span class="linenos">41</span><span class="c1"># or we can load only our two variables</span>
-<span class="linenos">42</span><span class="c1"># x2c.import_variables(&quot;my_two_variables.yml&quot;)</span>
+<span class="linenos">42</span><span class="c1"># x2c.import_variables("my_two_variables.yml")</span>
 <span class="linenos">43</span><span class="c1"># or we can load our elf file again</span>
-<span class="linenos">44</span><span class="c1"># x2c.import_variables(filename=r&quot;..\..\tests\data\qspin_foc_same54.elf&quot;)</span>
+<span class="linenos">44</span><span class="c1"># x2c.import_variables(filename=r"..\..\tests\data\qspin_foc_same54.elf")</span>
 <span class="linenos">45</span>
 <span class="linenos">46</span><span class="c1"># Collect some variables, i.e.: from QSPIN on SAME54 MCLV-48V-300W</span>
-<span class="linenos">47</span><span class="n">angle_ref2</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;mcFocI_ModuleData_gds.dOutput.elecAngle&quot;</span><span class="p">)</span>
-<span class="linenos">48</span><span class="n">speed_ref2</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;mcFocI_ModuleData_gds.dOutput.elecSpeed&quot;</span><span class="p">)</span>
+<span class="linenos">47</span><span class="n">angle_ref2</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"mcFocI_ModuleData_gds.dOutput.elecAngle"</span><span class="p">)</span>
+<span class="linenos">48</span><span class="n">speed_ref2</span> <span class="o">=</span> <span class="n">x2c</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"mcFocI_ModuleData_gds.dOutput.elecSpeed"</span><span class="p">)</span>
 <span class="linenos">49</span>
-<span class="linenos">50</span><span class="c1"># Read the value of the &quot;speed_ref2&quot; variable from the target</span>
+<span class="linenos">50</span><span class="c1"># Read the value of the "speed_ref2" variable from the target</span>
 <span class="linenos">51</span><span class="nb">print</span><span class="p">(</span><span class="n">speed_ref2</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
 <span class="linenos">52</span>
 <span class="linenos">53</span><span class="c1"># housekeeping</span>
-<span class="linenos">54</span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;my_variables.pkl&quot;</span><span class="p">)</span>
-<span class="linenos">55</span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;my_two_variables.yml&quot;</span><span class="p">)</span>
+<span class="linenos">54</span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">"my_variables.pkl"</span><span class="p">)</span>
+<span class="linenos">55</span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">"my_two_variables.yml"</span><span class="p">)</span>
 <span class="linenos">56</span>
 </pre></div>
 </div>
@@ -597,8 +597,8 @@ and return and array that could be plotted with any available python graphic fra
 seaborn, etc.</p>
 <p>1. To use the scope functionality, first you need to link a variable as previously explained, and
 add this variable to the scope by means of the method: <strong>add_scope_channel(variable: Variable)</strong> :</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable1</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable1&quot;</span><span class="p">)</span>
-<span class="n">variable2</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;variable2&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">variable1</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"variable1"</span><span class="p">)</span>
+<span class="n">variable2</span> <span class="o">=</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"variable2"</span><span class="p">)</span>
 
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable1</span><span class="p">)</span>
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">add_scope_channel</span><span class="p">(</span><span class="n">variable2</span><span class="p">)</span>
@@ -648,9 +648,14 @@ on the channel are returned.</p>
 </pre></div>
 </div>
 <p>2. Check if the data is ready:
-Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+Returns Scope sampling state. Returns: true if sampling has completed, false if it’s yet in progress.
+With a trigger configured, the data only becomes ready after the trigger condition happens,
+so always use a timeout.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span>  <span class="c1"># seconds</span>
+<span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">deadline</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"Scope data not ready, the trigger did not happen."</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -663,9 +668,12 @@ Returns Scope sampling state. Returns: true if sampling has completed, false if 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># request scope to start sampling data</span>
 <span class="n">x2c_scope</span><span class="o">.</span><span class="n">request_scope_data</span><span class="p">()</span>
 
-<span class="c1"># wait while the data is not yet ready for reading</span>
+<span class="c1"># wait while the data is not yet ready for reading, with a timeout</span>
+<span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span>  <span class="c1"># seconds</span>
 <span class="k">while</span> <span class="ow">not</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">is_scope_data_ready</span><span class="p">():</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">deadline</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"Scope data not ready, the trigger did not happen."</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">channel</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">x2c_scope</span><span class="o">.</span><span class="n">get_scope_channel_data</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="c1"># Do something with the data.</span>
@@ -687,7 +695,7 @@ To set any trigger configuration, you need to pass a TriggerConfig imported from
 <li><p>Variable: the variable which will be monitored</p></li>
 <li><p>Trigger_Level: at which level the trigger will start executing (float)</p></li>
 <li><p>Trigger_mode: 1 for triggered, 0 for Auto (No trigger)</p></li>
-<li><p>Trigger_delay: Value &gt; 0 Pre-trigger, Value &lt; 0 Post trigger</p></li>
+<li><p>Trigger_delay: number of samples. Value &gt; 0 Pre-trigger, Value &lt; 0 Post trigger</p></li>
 <li><p>Trigger_Edge: Rising (1) or Falling (0)</p></li>
 </ul>
 </section>
@@ -764,7 +772,7 @@ needed for Serial, TCP/IP, or CAN.</p>
 
 <span class="n">elf_path</span> <span class="o">=</span> <span class="n">get_elf_file_path</span><span class="p">()</span>
 <span class="k">if</span> <span class="n">elf_path</span><span class="p">:</span>
-    <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">&quot;COM8&quot;</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="n">elf_path</span><span class="p">)</span>
+    <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="s2">"COM8"</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="n">elf_path</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>get_com_port()</strong></p>
@@ -773,7 +781,7 @@ needed for Serial, TCP/IP, or CAN.</p>
 
 <span class="n">port</span> <span class="o">=</span> <span class="n">get_com_port</span><span class="p">()</span>
 <span class="k">if</span> <span class="n">port</span><span class="p">:</span>
-    <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+    <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>get_host_address()</strong></p>
@@ -782,7 +790,7 @@ needed for Serial, TCP/IP, or CAN.</p>
 
 <span class="n">host</span> <span class="o">=</span> <span class="n">get_host_address</span><span class="p">()</span>
 <span class="k">if</span> <span class="n">host</span><span class="p">:</span>
-    <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">tcp_port</span><span class="o">=</span><span class="mi">12666</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">)</span>
+    <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">tcp_port</span><span class="o">=</span><span class="mi">12666</span><span class="p">,</span> <span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>get_can_config()</strong></p>
@@ -790,7 +798,7 @@ needed for Serial, TCP/IP, or CAN.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pyx2cscope.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_can_config</span>
 
 <span class="n">can_config</span> <span class="o">=</span> <span class="n">get_can_config</span><span class="p">()</span>
-<span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">elf_file</span><span class="o">=</span><span class="s2">&quot;firmware.elf&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">can_config</span><span class="p">)</span>
+<span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">elf_file</span><span class="o">=</span><span class="s2">"firmware.elf"</span><span class="p">,</span> <span class="o">**</span><span class="n">can_config</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The returned dictionary contains these parameters:</p>
@@ -815,7 +823,7 @@ hardcoding paths and interface settings:</p>
 <span class="n">port</span> <span class="o">=</span> <span class="n">get_com_port</span><span class="p">()</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">elf_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">port</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please configure config.ini with your ELF file path and COM port&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Please configure config.ini with your ELF file path and COM port"</span><span class="p">)</span>
     <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Initialize X2CScope with configured values</span>
@@ -830,7 +838,7 @@ hardcoding paths and interface settings:</p>
 <span class="n">can_config</span> <span class="o">=</span> <span class="n">get_can_config</span><span class="p">()</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">elf_path</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please configure config.ini with your ELF file path&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Please configure config.ini with your ELF file path"</span><span class="p">)</span>
     <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">elf_file</span><span class="o">=</span><span class="n">elf_path</span><span class="p">,</span> <span class="o">**</span><span class="n">can_config</span><span class="p">)</span>
@@ -844,7 +852,7 @@ hardcoding paths and interface settings:</p>
 <span class="n">host</span> <span class="o">=</span> <span class="n">get_host_address</span><span class="p">()</span>
 
 <span class="k">if</span> <span class="ow">not</span> <span class="n">elf_path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">host</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please configure config.ini with your ELF file path and host IP&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Please configure config.ini with your ELF file path and host IP"</span><span class="p">)</span>
     <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">x2cscope</span> <span class="o">=</span> <span class="n">X2CScope</span><span class="p">(</span><span class="n">elf_file</span><span class="o">=</span><span class="n">elf_path</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)</span>

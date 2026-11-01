@@ -82,16 +82,16 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyx2cscope</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;This module contains the pyx2cscope package.</span>
+<span></span><span class="sd">"""This module contains the pyx2cscope package.</span>
 
 <span class="sd">Version: 0.7.1</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <div class="viewcode-block" id="__version__">
 <a class="viewcode-back" href="../autoapi/pyx2cscope/index.html#pyx2cscope.__version__">[docs]</a>
-<span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;0.7.1&quot;</span></div>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s2">"0.7.1"</span></div>
 
 
 <div class="viewcode-block" id="set_logger">
@@ -100,9 +100,9 @@
     <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="vm">__name__</span><span class="p">,</span>
     <span class="n">console</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"a"</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call the logging basicConfig.</span>
+<span class="w">    </span><span class="sd">"""Call the logging basicConfig.</span>
 
 <span class="sd">    call set_logger on every file that could be run as standalone. a filename.log file will be created on the local</span>
 <span class="sd">    folder where the program is running. this function calls BasicConfig and BasicConfig only executes when called</span>
@@ -110,12 +110,12 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">         level (int): the log level logging.(WARNING, DEBUG, INFO, ERROR, CRITICAL, etc.)</span>
-<span class="sd">         filename (str): only the filename without extension, it will receive &quot;.log&quot; extension</span>
+<span class="sd">         filename (str): only the filename without extension, it will receive ".log" extension</span>
 <span class="sd">         console (bool): True outputs the log messages to file AND console, False (default) only to file.</span>
-<span class="sd">         mode (bool): &#39;w&#39; create a new file for every run, &#39;a&#39; (default) append the messages to the file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">         mode (bool): 'w' create a new file for every run, 'a' (default) append the messages to the file.</span>
+<span class="sd">    """</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
-        <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.log&quot;</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="n">mode</span>
+        <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">".log"</span><span class="p">,</span> <span class="n">filemode</span><span class="o">=</span><span class="n">mode</span>
     <span class="p">)</span>
 
     <span class="c1"># add console only if not yet added</span>

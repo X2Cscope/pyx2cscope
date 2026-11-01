@@ -103,10 +103,12 @@
 GUI is started, which ELF file is loaded, and how the connection is
 established.  Providing <code class="docutils literal notranslate"><span class="pre">-e</span></code> and <code class="docutils literal notranslate"><span class="pre">-p</span></code> at launch skips all manual input —
 the application loads the ELF and connects to the target immediately.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m pyx2cscope [options]        # when installed with pip</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyx2cscope [options]                  # when installed with pip</span>
+<span class="go">python -m pyx2cscope [options]        # when installed with pip</span>
 <span class="go">pyX2Cscope.exe [options]              # standalone executable</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">pyx2cscope</span> <span class="pre">--help</span></code> lists all arguments.</p>
 <section id="quick-reference">
 <h2>Quick reference<a class="headerlink" href="#quick-reference" title="Link to this heading"></a></h2>
 <table class="docutils align-default">
@@ -131,15 +133,17 @@ for a path stored in <code class="docutils literal notranslate"><span class="pre
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--port</span> <span class="pre">&lt;port&gt;</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code></p></td>
 <td><p>Serial port to connect to (e.g. <code class="docutils literal notranslate"><span class="pre">COM3</span></code>, <code class="docutils literal notranslate"><span class="pre">/dev/ttyUSB0</span></code>).
-Use <code class="docutils literal notranslate"><span class="pre">AUTO</span></code> to scan for the first available LNet device automatically.</p></td>
+Use <code class="docutils literal notranslate"><span class="pre">AUTO</span></code> to try every available serial port and connect to the
+first one with an LNet device.  Together with an ELF file (<code class="docutils literal notranslate"><span class="pre">-e</span></code> or
+<code class="docutils literal notranslate"><span class="pre">config.ini</span></code>), the GUI connects at startup.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--web</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-w</span></code></p></td>
-<td><p>Start the Web GUI instead of the Qt GUI.</p></td>
+<td><p>Start the Web GUI instead of the Qt GUI.  Cannot be combined with <code class="docutils literal notranslate"><span class="pre">-q</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--qt</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-q</span></code></p></td>
-<td><p>Explicitly start the Qt GUI (default when <code class="docutils literal notranslate"><span class="pre">-w</span></code> is not given).</p></td>
+<td><p>Start the Qt GUI.  This is the default when <code class="docutils literal notranslate"><span class="pre">-w</span></code> is not given.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--web-port</span> <span class="pre">&lt;port&gt;</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-wp</span></code></p></td>
@@ -164,8 +168,20 @@ network.  Only used with <code class="docutils literal notranslate"><span class=
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--install</span> <span class="pre">&lt;pkg&gt;</span> <span class="pre">…</span></code></p></td>
 <td><p>—</p></td>
 <td><p><em>Standalone executable only.</em> Install one or more Python packages
-into the <code class="docutils literal notranslate"><span class="pre">libs/</span></code> folder using the bundled interpreter.
-See <a class="reference internal" href="#installing-extra-libraries"><span class="std std-ref">Installing extra libraries (standalone executable)</span></a>.</p></td>
+into the <code class="docutils literal notranslate"><span class="pre">libs/</span></code> folder next to the executable, without their
+dependencies.  See <a class="reference internal" href="#installing-extra-libraries"><span class="std std-ref">Installing extra libraries (standalone executable)</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--with-deps</span></code></p></td>
+<td><p>—</p></td>
+<td><p>Use together with <code class="docutils literal notranslate"><span class="pre">--install</span></code> to also install the dependencies of
+the packages.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--vscode-task</span> <span class="pre">[&lt;dir&gt;]</span></code></p></td>
+<td><p>—</p></td>
+<td><p>Add a <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">pyX2Cscope</span></code> task to <code class="docutils literal notranslate"><span class="pre">.vscode/tasks.json</span></code> of an MPLAB
+VS Code project (default: current folder) and exit.  The ELF file is
+taken from <code class="docutils literal notranslate"><span class="pre">.vscode/&lt;project&gt;.mplab.json</span></code>; <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span></code>, <code class="docutils literal notranslate"><span class="pre">-wp</span></code>
+and <code class="docutils literal notranslate"><span class="pre">--host</span></code> are used in the task.  See <a class="reference internal" href="vscode.html"><span class="doc">VSCode Integration</span></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--version</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-v</span></code></p></td>
@@ -200,6 +216,10 @@ See <a class="reference internal" href="#installing-extra-libraries"><span class
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --install scipy</span>
 </pre></div>
 </div>
+<p>Add a <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">pyX2Cscope</span></code> task to an MPLAB VS Code firmware project:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --vscode-task path\to\my_project</span>
+</pre></div>
+</div>
 </section>
 <section id="installing-extra-libraries-standalone-executable">
 <span id="installing-extra-libraries"></span><h2>Installing extra libraries (standalone executable)<a class="headerlink" href="#installing-extra-libraries-standalone-executable" title="Link to this heading"></a></h2>
@@ -210,10 +230,18 @@ post-processing routine that requires an additional package (e.g. <code class="d
 executable:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --install scipy</span>
 <span class="go">pyX2Cscope.exe --install scipy pandas   # multiple packages at once</span>
+<span class="go">pyX2Cscope.exe --install mypackage --with-deps</span>
 </pre></div>
 </div>
-<p>The packages are installed via the bundled <code class="docutils literal notranslate"><span class="pre">pip</span></code> and are isolated from your
-system Python.  They persist across restarts of the executable.</p>
+<p>The packages are installed with <code class="docutils literal notranslate"><span class="pre">pip</span></code> of a system Python whose version
+matches the Python bundled in the executable (e.g. Python 3.12), so that
+version must be installed on the system.  By default the dependencies are not
+installed, so packages already bundled in the executable (such as <code class="docutils literal notranslate"><span class="pre">numpy</span></code>)
+are not replaced.  Add <code class="docutils literal notranslate"><span class="pre">--with-deps</span></code> when a package needs dependencies that
+are not bundled.  The <code class="docutils literal notranslate"><span class="pre">libs/</span></code> folder is added to the import path when the
+executable starts, so the packages persist across restarts.</p>
+<p>When pyX2Cscope is installed with pip, <code class="docutils literal notranslate"><span class="pre">--install</span></code> only prints the
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> command to use instead.</p>
 </section>
 </section>
 

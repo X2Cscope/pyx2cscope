@@ -83,14 +83,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyx2cscope.parser.elf_parser</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;This module provides abstract base classes and data structures for parsing ELF files.</span>
+<span></span><span class="sd">"""This module provides abstract base classes and data structures for parsing ELF files.</span>
 
 <span class="sd">Classes:</span>
 <span class="sd">    VariableInfo: A data class representing information about a variable in an ELF file.</span>
 <span class="sd">    ElfParser: An abstract base class for parsing ELF files and extracting variable information.</span>
 
 <span class="sd">The module is designed to be extended by specific implementations for different ELF file formats.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -99,9 +99,9 @@
 <div class="viewcode-block" id="ELF_MACHINE_TO_FAMILY">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ELF_MACHINE_TO_FAMILY">[docs]</a>
 <span class="n">ELF_MACHINE_TO_FAMILY</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;EM_ARM&quot;</span><span class="p">:</span> <span class="s2">&quot;arm&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;EM_DSPIC30F&quot;</span><span class="p">:</span> <span class="s2">&quot;dspic&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;EM_MIPS&quot;</span><span class="p">:</span> <span class="s2">&quot;pic32&quot;</span><span class="p">,</span>
+    <span class="s2">"EM_ARM"</span><span class="p">:</span> <span class="s2">"arm"</span><span class="p">,</span>
+    <span class="s2">"EM_DSPIC30F"</span><span class="p">:</span> <span class="s2">"dspic"</span><span class="p">,</span>
+    <span class="s2">"EM_MIPS"</span><span class="p">:</span> <span class="s2">"pic32"</span><span class="p">,</span>
 <span class="p">}</span></div>
 
 
@@ -109,7 +109,7 @@
 <div class="viewcode-block" id="ElfParser">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ElfParser</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for parsing ELF files.</span>
+<span class="w">    </span><span class="sd">"""Abstract base class for parsing ELF files.</span>
 
 <span class="sd">    This class provides a general interface for parsing ELF files and extracting</span>
 <span class="sd">    information about variables contained within. Subclasses should provide specific</span>
@@ -125,14 +125,14 @@
 <span class="sd">        get_var_info: Return information about a specified variable.</span>
 <span class="sd">        get_var_list: Return a list of variable names from the ELF file.</span>
 <span class="sd">        map_variables: Map variables from the parsed DWARF information.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the ElfParser with the path to the ELF file.</span>
+<span class="w">        </span><span class="sd">"""Initialize the ElfParser with the path to the ELF file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            elf_path (str): Path to the ELF file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span> <span class="o">=</span> <span class="n">elf_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span> <span class="o">=</span> <span class="kc">None</span>
@@ -152,32 +152,32 @@
 <div class="viewcode-block" id="ElfParser.get_register_info">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_register_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_register_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VariableInfo</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the VariableInfo associated with a given register name, or None if not found.</span>
+<span class="w">        </span><span class="sd">"""Return the VariableInfo associated with a given register name, or None if not found.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name (str): The name of the register (e.g. &quot;U1STA&quot;, &quot;U1STAbits.URXDA&quot;).</span>
+<span class="sd">            name (str): The name of the register (e.g. "U1STA", "U1STAbits.URXDA").</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Optional[VariableInfo]: The information of the register, if available.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ElfParser.get_register_list">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_register_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_register_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a sorted list of all MCU peripheral register names found in the ELF.</span>
+<span class="w">        </span><span class="sd">"""Return a sorted list of all MCU peripheral register names found in the ELF.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[str]: A sorted list of register names.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="ElfParser.get_var_info">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_var_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_var_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sfr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VariableInfo</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the VariableInfo associated with a given variable name, or None if not found.</span>
+<span class="w">        </span><span class="sd">"""Return the VariableInfo associated with a given variable name, or None if not found.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): The name of the variable.</span>
@@ -185,25 +185,25 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Optional[VariableInfo]: The information of the variable, if available.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="n">sfr</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ElfParser.get_var_list">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_var_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_var_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of all variable names available in the ELF file.</span>
+<span class="w">        </span><span class="sd">"""Return a list of all variable names available in the ELF file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[str]: A sorted list of variable names.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="ElfParser.get_target_family">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_target_family">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_target_family</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the MCU family inferred from the ELF machine type, if known.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the MCU family inferred from the ELF machine type, if known."""</span>
         <span class="n">elf_machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_machine</span>
         <span class="k">if</span> <span class="n">elf_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -213,7 +213,7 @@
 <div class="viewcode-block" id="ElfParser.get_target_signature">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser.get_target_signature">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_target_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the best available ELF target signature for compatibility checks.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the best available ELF target signature for compatibility checks."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_signature</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_family</span><span class="p">()</span></div>
 
 
@@ -221,40 +221,40 @@
 <div class="viewcode-block" id="ElfParser._load_elf_file">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser._load_elf_file">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load the ELF file according to the specific hardware architecture.</span>
+<span class="w">        </span><span class="sd">"""Load the ELF file according to the specific hardware architecture.</span>
 
 <span class="sd">        This method should be implemented by subclasses to handle different ELF file formats.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="ElfParser._load_symbol_table">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser._load_symbol_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_symbol_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load symbol table according to the specific hardware architecture.</span>
+<span class="w">        </span><span class="sd">"""Load symbol table according to the specific hardware architecture.</span>
 
 <span class="sd">        This method should be implemented by subclasses to handle different ELF file formats.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="ElfParser._map_variables">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser._map_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to map variables from the parsed DWARF information.</span>
+<span class="w">        </span><span class="sd">"""Abstract method to map variables from the parsed DWARF information.</span>
 
 <span class="sd">        Subclasses should implement this method to extract variable information specific to their ELF format.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, VariableInfo]: A dictionary of variable names to VariableInfo objects.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="ElfParser._map_registers">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser._map_registers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_registers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to map MCU peripheral registers from DWARF / symbol table.</span>
+<span class="w">        </span><span class="sd">"""Abstract method to map MCU peripheral registers from DWARF / symbol table.</span>
 
 <span class="sd">        Implementations should populate ``self.register_map`` with entries for every</span>
 <span class="sd">        peripheral register (SFR) found, including their bitfield sub-entries where</span>
@@ -263,14 +263,14 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, VariableInfo]: A dictionary of register names to VariableInfo objects.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="ElfParser._close_elf_file">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.ElfParser._close_elf_file">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_close_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to close any open file connection after parsing is done.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""Abstract method to close any open file connection after parsing is done."""</span></div>
 </div>
 
 
@@ -278,15 +278,15 @@
 <div class="viewcode-block" id="DummyParser">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/elf_parser/index.html#pyx2cscope.parser.elf_parser.DummyParser">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DummyParser</span><span class="p">(</span><span class="n">ElfParser</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dummy implementation of ElfParser class.</span>
+<span class="w">    </span><span class="sd">"""Dummy implementation of ElfParser class.</span>
 
 <span class="sd">    This class provides basic functionality of a parser in case an elf_file is</span>
 <span class="sd">    not supplied. It is a pure implementation of class ElfParser.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;DummyParser constructor takes no argument.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span> <span class="o">=</span> <span class="s2">""</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""DummyParser constructor takes no argument."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">elf_path</span> <span class="o">=</span> <span class="n">elf_path</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DummyParser._load_elf_file">

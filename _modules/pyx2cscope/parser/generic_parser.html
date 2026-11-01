@@ -83,10 +83,10 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyx2cscope.parser.generic_parser</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;This module provides functionalities for parsing ELF files.</span>
+<span></span><span class="sd">"""This module provides functionalities for parsing ELF files.</span>
 
 <span class="sd">It focuses on extracting structure members and variable information from DWARF debugging information.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
@@ -104,23 +104,23 @@
 <div class="viewcode-block" id="TARGET_SIGNATURE_PATTERNS">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.TARGET_SIGNATURE_PATTERNS">[docs]</a>
 <span class="n">TARGET_SIGNATURE_PATTERNS</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">(</span><span class="s2">&quot;dspic33a&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__DSPIC33A&quot;</span><span class="p">,</span> <span class="s2">&quot;__33AK&quot;</span><span class="p">)),</span>
-    <span class="p">(</span><span class="s2">&quot;arm&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__PIC32C&quot;</span><span class="p">,</span> <span class="s2">&quot;PIC32C/&quot;</span><span class="p">,</span> <span class="s2">&quot;SAME&quot;</span><span class="p">,</span> <span class="s2">&quot;__GENERIC_ARM_&quot;</span><span class="p">,</span> <span class="s2">&quot;ARMV6&quot;</span><span class="p">,</span> <span class="s2">&quot;ARMV7&quot;</span><span class="p">)),</span>
-    <span class="p">(</span><span class="s2">&quot;pic32&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__PIC32&quot;</span><span class="p">,)),</span>
-    <span class="p">(</span><span class="s2">&quot;dspic&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;__DSPIC&quot;</span><span class="p">,</span> <span class="s2">&quot;__PIC24&quot;</span><span class="p">,</span> <span class="s2">&quot;__33CK&quot;</span><span class="p">,</span> <span class="s2">&quot;__33CH&quot;</span><span class="p">,</span> <span class="s2">&quot;__33EP&quot;</span><span class="p">,</span> <span class="s2">&quot;__33FJ&quot;</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"dspic33a"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"__DSPIC33A"</span><span class="p">,</span> <span class="s2">"__33AK"</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"arm"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"__PIC32C"</span><span class="p">,</span> <span class="s2">"PIC32C/"</span><span class="p">,</span> <span class="s2">"SAME"</span><span class="p">,</span> <span class="s2">"__GENERIC_ARM_"</span><span class="p">,</span> <span class="s2">"ARMV6"</span><span class="p">,</span> <span class="s2">"ARMV7"</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s2">"pic32"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"__PIC32"</span><span class="p">,)),</span>
+    <span class="p">(</span><span class="s2">"dspic"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"__DSPIC"</span><span class="p">,</span> <span class="s2">"__PIC24"</span><span class="p">,</span> <span class="s2">"__33CK"</span><span class="p">,</span> <span class="s2">"__33CH"</span><span class="p">,</span> <span class="s2">"__33EP"</span><span class="p">,</span> <span class="s2">"__33FJ"</span><span class="p">)),</span>
 <span class="p">)</span></div>
 
 <div class="viewcode-block" id="REGISTER_SYMBOL_PATTERN">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.REGISTER_SYMBOL_PATTERN">[docs]</a>
-<span class="n">REGISTER_SYMBOL_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Z][A-Z0-9]*$&quot;</span><span class="p">)</span></div>
+<span class="n">REGISTER_SYMBOL_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[A-Z][A-Z0-9]*$"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FAMILY_REGISTER_BYTE_SIZE">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.FAMILY_REGISTER_BYTE_SIZE">[docs]</a>
 <span class="n">FAMILY_REGISTER_BYTE_SIZE</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;arm&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="s2">&quot;pic32&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="s2">&quot;dspic33a&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="s2">&quot;dspic&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"arm"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">"pic32"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">"dspic33a"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="s2">"dspic"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
 <span class="p">}</span></div>
 
 
@@ -128,10 +128,10 @@
 <div class="viewcode-block" id="GenericParser">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GenericParser</span><span class="p">(</span><span class="n">ElfParser</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for parsing ELF files compatible with 32-bit architectures.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Class for parsing ELF files compatible with 32-bit architectures."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the GenericParser with the given ELF file path.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize the GenericParser with the given ELF file path."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">elf_path</span><span class="p">)</span>
 
         <span class="c1"># These variables are used as local holders during the file parsing</span>
@@ -144,18 +144,18 @@
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._load_elf_file">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span> <span class="o">=</span> <span class="n">ELFFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">elf_machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="p">[</span><span class="s2">&quot;e_machine&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">elf_machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="p">[</span><span class="s2">"e_machine"</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="o">.</span><span class="n">get_dwarf_info</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading ELF file: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error loading ELF file: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">elf_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._close_elf_file">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._close_elf_file">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_close_elf_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Closes the ELF file stream.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Closes the ELF file stream."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
@@ -163,13 +163,13 @@
 <div class="viewcode-block" id="GenericParser._get_die_variable">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_die_variable">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_die_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die_struct</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the die_struct to obtain the die containing the variable and its info.</span>
+<span class="w">        </span><span class="sd">"""Process the die_struct to obtain the die containing the variable and its info.</span>
 
 <span class="sd">        This method populates class members:</span>
 <span class="sd">        - self.die_variable</span>
 <span class="sd">        - self.var_name</span>
 <span class="sd">        - self.address</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="kc">None</span>
@@ -177,36 +177,36 @@
 
         <span class="c1"># In DIE structure, a variable to be considered valid, has under</span>
         <span class="c1"># its attributes the attribute DW_AT_specification or DW_AT_location</span>
-        <span class="k">if</span> <span class="s2">&quot;DW_AT_specification&quot;</span> <span class="ow">in</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
-            <span class="n">spec_ref_addr</span> <span class="o">=</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;DW_AT_specification&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">cu_offset</span>
+        <span class="k">if</span> <span class="s2">"DW_AT_specification"</span> <span class="ow">in</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+            <span class="n">spec_ref_addr</span> <span class="o">=</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">"DW_AT_specification"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">cu_offset</span>
             <span class="n">spec_die</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span><span class="o">.</span><span class="n">get_DIE_from_refaddr</span><span class="p">(</span><span class="n">spec_ref_addr</span><span class="p">)</span>
             <span class="c1"># if it is not a concrete variable, return</span>
-            <span class="k">if</span> <span class="n">spec_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="s2">&quot;DW_TAG_variable&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spec_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="s2">"DW_TAG_variable"</span><span class="p">:</span>
                 <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span> <span class="o">=</span> <span class="n">spec_die</span>
-        <span class="k">elif</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_location&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_location"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span> <span class="o">=</span> <span class="n">die_struct</span>
-        <span class="k">elif</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_external&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="s2">&quot;DW_TAG_variable&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_external"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">die_struct</span><span class="o">.</span><span class="n">tag</span> <span class="o">!=</span> <span class="s2">"DW_TAG_variable"</span><span class="p">:</span>
                 <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span> <span class="o">=</span> <span class="n">die_struct</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">is_sfr</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_address</span><span class="p">(</span><span class="n">die_struct</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._process_die">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_die">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_die</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a DIE structure containing the variable and its members.</span>
+<span class="w">        </span><span class="sd">"""Process a DIE structure containing the variable and its members.</span>
 
 <span class="sd">        Firmware variables (no DW_AT_external) are stored in variable_map.</span>
 <span class="sd">        Peripheral registers / SFRs (DW_AT_external, address from symbol table) are</span>
 <span class="sd">        stored in register_map, including any bitfield sub-entries.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_die_variable</span><span class="p">(</span><span class="n">die</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -218,13 +218,13 @@
         <span class="k">for</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">member_data</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">target_map</span><span class="p">[</span><span class="n">member_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">VariableInfo</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">member_name</span><span class="p">,</span>
-                <span class="n">byte_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;byte_size&quot;</span><span class="p">],</span>
-                <span class="n">bit_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;bit_size&quot;</span><span class="p">],</span>
-                <span class="n">bit_offset</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;bit_offset&quot;</span><span class="p">],</span>
-                <span class="nb">type</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span>
-                <span class="n">address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">+</span> <span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;address_offset&quot;</span><span class="p">],</span>
-                <span class="n">array_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;array_size&quot;</span><span class="p">],</span>
-                <span class="n">valid_values</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">&quot;valid_values&quot;</span><span class="p">],</span>
+                <span class="n">byte_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">"byte_size"</span><span class="p">],</span>
+                <span class="n">bit_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">"bit_size"</span><span class="p">],</span>
+                <span class="n">bit_offset</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">"bit_offset"</span><span class="p">],</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">"type"</span><span class="p">],</span>
+                <span class="n">address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">+</span> <span class="n">member_data</span><span class="p">[</span><span class="s2">"address_offset"</span><span class="p">],</span>
+                <span class="n">array_size</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">"array_size"</span><span class="p">],</span>
+                <span class="n">valid_values</span><span class="o">=</span><span class="n">member_data</span><span class="p">[</span><span class="s2">"valid_values"</span><span class="p">],</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_sfr</span><span class="p">:</span>
@@ -235,12 +235,12 @@
 <div class="viewcode-block" id="GenericParser._get_sfr_alias_names">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_sfr_alias_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_sfr_alias_names</span><span class="p">(</span><span class="n">register_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">member_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return alternate names for SFR bitfield members.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return alternate names for SFR bitfield members."""</span>
         <span class="n">aliases</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">member_name</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"."</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">member_name</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">aliases</span>
 
-        <span class="n">member_leaf</span> <span class="o">=</span> <span class="n">member_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">member_leaf</span> <span class="o">=</span> <span class="n">member_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">aliases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">member_leaf</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">aliases</span></div>
@@ -249,10 +249,10 @@
 <div class="viewcode-block" id="GenericParser._add_sfr_aliases">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._add_sfr_aliases">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_sfr_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add convenience aliases for parsed SFR bitfield members.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Add convenience aliases for parsed SFR bitfield members."""</span>
         <span class="n">register_entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">target_map</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">variable_info</span> <span class="ow">in</span> <span class="n">register_entries</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">member_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">register_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">member_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">register_name</span> <span class="o">+</span> <span class="s2">"."</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="k">for</span> <span class="n">alias_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sfr_alias_names</span><span class="p">(</span><span class="n">register_name</span><span class="p">,</span> <span class="n">member_name</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">alias_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">target_map</span><span class="p">:</span>
@@ -271,8 +271,8 @@
 <div class="viewcode-block" id="GenericParser._get_base_type_die">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_base_type_die">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_base_type_die</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_die</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the base type die regarding the current selected die, i.e. array_type.&quot;&quot;&quot;</span>
-        <span class="n">type_attr</span> <span class="o">=</span> <span class="n">current_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_type&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Find the base type die regarding the current selected die, i.e. array_type."""</span>
+        <span class="n">type_attr</span> <span class="o">=</span> <span class="n">current_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_type"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">type_attr</span><span class="p">:</span>
             <span class="n">ref_addr</span> <span class="o">=</span> <span class="n">type_attr</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">current_die</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">cu_offset</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span><span class="o">.</span><span class="n">get_DIE_from_refaddr</span><span class="p">(</span><span class="n">ref_addr</span><span class="p">)</span>
@@ -282,21 +282,21 @@
 <div class="viewcode-block" id="GenericParser._get_end_die">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_end_die">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_end_die</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_die</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the end DIE of a type iteratively.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Find the end DIE of a type iteratively."""</span>
         <span class="n">ref_addr</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">end_die</span> <span class="o">=</span> <span class="n">current_die</span>
         <span class="n">valid_tags</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;DW_TAG_base_type&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DW_TAG_pointer_type&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DW_TAG_structure_type&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DW_TAG_array_type&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DW_TAG_enumeration_type&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DW_TAG_union_type&quot;</span>
+            <span class="s2">"DW_TAG_base_type"</span><span class="p">,</span>
+            <span class="s2">"DW_TAG_pointer_type"</span><span class="p">,</span>
+            <span class="s2">"DW_TAG_structure_type"</span><span class="p">,</span>
+            <span class="s2">"DW_TAG_array_type"</span><span class="p">,</span>
+            <span class="s2">"DW_TAG_enumeration_type"</span><span class="p">,</span>
+            <span class="s2">"DW_TAG_union_type"</span>
         <span class="p">}</span>
         <span class="k">while</span> <span class="n">end_die</span> <span class="ow">and</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_tags</span><span class="p">:</span>
-            <span class="n">type_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_type&quot;</span><span class="p">)</span>
+            <span class="n">type_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_type"</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">type_attr</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping DIE at offset </span><span class="si">{</span><span class="n">current_die</span><span class="o">.</span><span class="n">offset</span><span class="si">}</span><span class="s2"> with no &#39;DW_AT_type&#39;&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping DIE at offset </span><span class="si">{</span><span class="n">current_die</span><span class="o">.</span><span class="n">offset</span><span class="si">}</span><span class="s2"> with no 'DW_AT_type'"</span><span class="p">)</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
             <span class="n">ref_addr</span> <span class="o">=</span> <span class="n">type_attr</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">end_die</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">cu_offset</span>
             <span class="n">end_die</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span><span class="o">.</span><span class="n">get_DIE_from_refaddr</span><span class="p">(</span><span class="n">ref_addr</span><span class="p">)</span>
@@ -306,38 +306,38 @@
 <div class="viewcode-block" id="GenericParser._extract_address_from_expression">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._extract_address_from_expression">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_address_from_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr_value</span><span class="p">,</span> <span class="n">structs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extracts an address from DWARF expression.</span>
+<span class="w">        </span><span class="sd">"""Extracts an address from DWARF expression.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            expr_value: The raw DWARF expression bytes.</span>
 <span class="sd">            structs: The DWARF structs used for parsing expressions.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            int or None: The extracted address, or None if it couldn&#39;t be determined.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            int or None: The extracted address, or None if it couldn't be determined.</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">expression</span> <span class="o">=</span> <span class="n">DWARFExprParser</span><span class="p">(</span><span class="n">structs</span><span class="p">)</span><span class="o">.</span><span class="n">parse_expr</span><span class="p">(</span><span class="n">expr_value</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">expression</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">op_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;DW_OP_plus_uconst&quot;</span><span class="p">,</span> <span class="s2">&quot;DW_OP_plus_const&quot;</span><span class="p">,</span> <span class="s2">&quot;DW_OP_addr&quot;</span><span class="p">}:</span>
+                <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">op_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"DW_OP_plus_uconst"</span><span class="p">,</span> <span class="s2">"DW_OP_plus_const"</span><span class="p">,</span> <span class="s2">"DW_OP_addr"</span><span class="p">}:</span>
                     <span class="k">return</span> <span class="n">op</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error parsing DWARF expression: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error parsing DWARF expression: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._extract_address">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._extract_address">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die_variable</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extracts the address of the current variable or fetches it from the symbol table if not found.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Extracts the address of the current variable or fetches it from the symbol table if not found."""</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;DW_AT_location&quot;</span> <span class="ow">in</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
-                <span class="n">expr_value</span> <span class="o">=</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;DW_AT_location&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">if</span> <span class="s2">"DW_AT_location"</span> <span class="ow">in</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+                <span class="n">expr_value</span> <span class="o">=</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">"DW_AT_location"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_address_from_expression</span><span class="p">(</span>
                     <span class="n">expr_value</span><span class="p">,</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">structs</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_address_from_symtab</span><span class="p">(</span>
-                    <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                    <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
                 <span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
@@ -347,20 +347,20 @@
 <div class="viewcode-block" id="GenericParser._load_symbol_table">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._load_symbol_table">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_symbol_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Loads symbol table entries into a dictionary for fast access.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Loads symbol table entries into a dictionary for fast access."""</span>
         <span class="n">all_symbol_names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elf_file</span><span class="o">.</span><span class="n">iter_sections</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">SymbolTableSection</span><span class="p">):</span>
                 <span class="k">for</span> <span class="n">symbol</span> <span class="ow">in</span> <span class="n">section</span><span class="o">.</span><span class="n">iter_symbols</span><span class="p">():</span>
                     <span class="n">all_symbol_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_value&quot;</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_shndx&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;SHN_ABS&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">symbol_table</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">"st_value"</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">"st_shndx"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"SHN_ABS"</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">absolute_symbol_table</span><span class="p">[</span><span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                                <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_value&quot;</span><span class="p">],</span>
-                                <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_size&quot;</span><span class="p">],</span>
-                                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
-                                <span class="s2">&quot;bind&quot;</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">&quot;st_info&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span>
+                                <span class="s2">"address"</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">"st_value"</span><span class="p">],</span>
+                                <span class="s2">"size"</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">"st_size"</span><span class="p">],</span>
+                                <span class="s2">"type"</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">"st_info"</span><span class="p">]</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                                <span class="s2">"bind"</span><span class="p">:</span> <span class="n">symbol</span><span class="p">[</span><span class="s2">"st_info"</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">,</span>
                             <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_target_signature</span><span class="p">(</span><span class="n">all_symbol_names</span><span class="p">)</span></div>
 
@@ -368,8 +368,8 @@
 <div class="viewcode-block" id="GenericParser._infer_target_signature">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._infer_target_signature">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_infer_target_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol_names</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Infer a more specific target signature from the ELF symbol table.&quot;&quot;&quot;</span>
-        <span class="n">symbol_names</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">symbol_names</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="w">        </span><span class="sd">"""Infer a more specific target signature from the ELF symbol table."""</span>
+        <span class="n">symbol_names</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">symbol_names</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">signature</span><span class="p">,</span> <span class="n">markers</span> <span class="ow">in</span> <span class="n">TARGET_SIGNATURE_PATTERNS</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">marker</span> <span class="ow">in</span> <span class="n">symbol_names</span> <span class="k">for</span> <span class="n">marker</span> <span class="ow">in</span> <span class="n">markers</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">signature</span>
@@ -379,10 +379,10 @@
 <div class="viewcode-block" id="GenericParser._fetch_address_from_symtab">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._fetch_address_from_symtab">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_fetch_address_from_symtab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetches the address of a variable from the preloaded symbol table.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Fetches the address of a variable from the preloaded symbol table."""</span>
         <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">variable_name</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">variable_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
-            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">variable_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variable_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">):</span>
+            <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"_"</span> <span class="o">+</span> <span class="n">variable_name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">candidates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variable_name</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
@@ -395,10 +395,10 @@
 <div class="viewcode-block" id="GenericParser._find_actual_declaration">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._find_actual_declaration">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_actual_declaration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die_variable</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find the actual declaration of an extern variable.&quot;&quot;&quot;</span>
-        <span class="k">while</span> <span class="s2">&quot;DW_AT_specification&quot;</span> <span class="ow">in</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Find the actual declaration of an extern variable."""</span>
+        <span class="k">while</span> <span class="s2">"DW_AT_specification"</span> <span class="ow">in</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
             <span class="n">spec_ref_addr</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;DW_AT_specification&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">die_variable</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="s2">"DW_AT_specification"</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
                 <span class="o">+</span> <span class="n">die_variable</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">cu_offset</span>
             <span class="p">)</span>
             <span class="n">die_variable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span><span class="o">.</span><span class="n">get_DIE_from_refaddr</span><span class="p">(</span><span class="n">spec_ref_addr</span><span class="p">)</span>
@@ -408,22 +408,22 @@
 <div class="viewcode-block" id="GenericParser._get_member_offset">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_member_offset">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_member_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extracts the offset for a structure member.</span>
+<span class="w">        </span><span class="sd">"""Extracts the offset for a structure member.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            die: The DIE of the structure member.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int, int, int: The offset value, the bit_size (union) and bit offset (union).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">bit_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">bit_offset</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="s2">&quot;DW_AT_data_member_location&quot;</span> <span class="ow">in</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
-            <span class="n">data_member_location</span> <span class="o">=</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_data_member_location&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;DW_AT_bit_size&quot;</span> <span class="ow">in</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
-                <span class="n">bit_size</span> <span class="o">=</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_bit_size&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-                <span class="n">bit_offset</span> <span class="o">=</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_bit_offset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="s2">"DW_AT_data_member_location"</span> <span class="ow">in</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+            <span class="n">data_member_location</span> <span class="o">=</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_data_member_location"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">"DW_AT_bit_size"</span> <span class="ow">in</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
+                <span class="n">bit_size</span> <span class="o">=</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_bit_size"</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">bit_offset</span> <span class="o">=</span> <span class="n">die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_bit_offset"</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="n">data_member_location</span><span class="o">.</span><span class="n">value</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">offset</span><span class="p">,</span> <span class="n">bit_size</span><span class="p">,</span> <span class="n">bit_offset</span>
@@ -431,22 +431,22 @@
                 <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_address_from_expression</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">die</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">structs</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">offset</span><span class="p">,</span> <span class="n">bit_size</span><span class="p">,</span> <span class="n">bit_offset</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown data_member_location value: </span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown data_member_location value: </span><span class="si">{</span><span class="n">offset</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">offset</span><span class="p">,</span> <span class="n">bit_size</span><span class="p">,</span> <span class="n">bit_offset</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._process_array_type">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_array_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_array_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">end_die</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process array type members recursively.</span>
+<span class="w">        </span><span class="sd">"""Process array type members recursively.</span>
 
 <span class="sd">        The easiest implementation is the array of primitives, which contains only primitives,</span>
 <span class="sd">        e.g.: char my_array[10]. In this case, function _process_end_die(...) will return the</span>
-<span class="sd">        variable &#39;members&#39; with only one element. Considering multidimensional arrays, arrays of</span>
-<span class="sd">        structs, and arrays of unions, the variable &#39;members&#39; will have multiple elements, that should</span>
+<span class="sd">        variable 'members' with only one element. Considering multidimensional arrays, arrays of</span>
+<span class="sd">        structs, and arrays of unions, the variable 'members' will have multiple elements, that should</span>
 <span class="sd">        be considered when calculating the size of the main array element. Afterward, each element need</span>
 <span class="sd">        to be added as single indexed element in the array_members variable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">array_members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">array_dimensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_array_dimensions</span><span class="p">(</span><span class="n">end_die</span><span class="p">)</span>
@@ -454,26 +454,26 @@
         <span class="n">base_type_die</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_type_die</span><span class="p">(</span><span class="n">end_die</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_process_end_die</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="n">base_type_die</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">idx_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;byte_size&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">idx_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"byte_size"</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
             <span class="c1"># Generate array variable</span>
             <span class="n">array_members</span><span class="p">[</span><span class="n">member_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">members</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">members</span><span class="p">))][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;byte_size&quot;</span><span class="p">:</span> <span class="n">array_size</span> <span class="o">*</span> <span class="n">idx_size</span><span class="p">,</span>
-                <span class="s2">&quot;bit_size&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;bit_offset&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;address_offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
-                <span class="s2">&quot;array_size&quot;</span><span class="p">:</span> <span class="n">array_size</span><span class="p">,</span>  <span class="c1"># Individual elements aren&#39;t arrays</span>
-                <span class="s2">&quot;valid_values&quot;</span><span class="p">:</span> <span class="p">{}</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="n">members</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">members</span><span class="p">))][</span><span class="s2">"type"</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"array"</span><span class="p">,</span>
+                <span class="s2">"byte_size"</span><span class="p">:</span> <span class="n">array_size</span> <span class="o">*</span> <span class="n">idx_size</span><span class="p">,</span>
+                <span class="s2">"bit_size"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"bit_offset"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"address_offset"</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="s2">"array_size"</span><span class="p">:</span> <span class="n">array_size</span><span class="p">,</span>  <span class="c1"># Individual elements aren't arrays</span>
+                <span class="s2">"valid_values"</span><span class="p">:</span> <span class="p">{}</span>
             <span class="p">}</span>
 
             <span class="c1"># Generate array members, e.g.: array[0], array[1], ..., array[i]</span>
             <span class="n">ranges</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">array_dimensions</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">idx_tuple</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">ranges</span><span class="p">)):</span>
-                <span class="n">idx_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">]&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx_tuple</span><span class="p">)</span>
+                <span class="n">idx_str</span> <span class="o">=</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">'[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">]'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx_tuple</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">element_name</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="n">idx_str</span>
                     <span class="n">array_members</span><span class="p">[</span><span class="n">element_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-                    <span class="n">array_members</span><span class="p">[</span><span class="n">element_name</span><span class="p">][</span><span class="s2">&quot;address_offset&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">idx</span> <span class="o">*</span> <span class="n">idx_size</span>
+                    <span class="n">array_members</span><span class="p">[</span><span class="n">element_name</span><span class="p">][</span><span class="s2">"address_offset"</span><span class="p">]</span> <span class="o">+=</span> <span class="n">idx</span> <span class="o">*</span> <span class="n">idx_size</span>
 
         <span class="k">return</span> <span class="n">array_members</span></div>
 
@@ -481,25 +481,25 @@
 <div class="viewcode-block" id="GenericParser._process_end_die">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_end_die">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_end_die</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">child_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process the current die according to its tag.</span>
+<span class="w">        </span><span class="sd">"""Process the current die according to its tag.</span>
 
 <span class="sd">        A variable can be a primitive or can have multiple children, e.g., a struct or and array of structs.</span>
 <span class="sd">        After calling this method, members is populated with details of the variable and its children.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">end_die</span><span class="p">,</span> <span class="n">type_ref_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_end_die</span><span class="p">(</span><span class="n">child_die</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">end_die</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
         <span class="n">nested_member</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_pointer_type&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_pointer_type"</span><span class="p">:</span>
             <span class="k">pass</span>
-        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_enumeration_type&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_enumeration_type"</span><span class="p">:</span>
             <span class="n">nested_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_enum_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_array_type&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_array_type"</span><span class="p">:</span>
             <span class="n">nested_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_array_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_structure_type&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_structure_type"</span><span class="p">:</span>
             <span class="n">nested_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_structure_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_union_type&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">end_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_union_type"</span><span class="p">:</span>
             <span class="n">nested_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_union_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nested_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_base_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
@@ -512,32 +512,32 @@
 <div class="viewcode-block" id="GenericParser._process_enum_type">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_enum_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_enum_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process an enum type variable and map its members.&quot;&quot;&quot;</span>
-        <span class="n">enum_name_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Process an enum type variable and map its members."""</span>
+        <span class="n">enum_name_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span>
         <span class="n">enum_name</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">enum_name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">enum_name_attr</span> <span class="k">else</span> <span class="s2">&quot;anonymous_enum&quot;</span>
+            <span class="n">enum_name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">if</span> <span class="n">enum_name_attr</span> <span class="k">else</span> <span class="s2">"anonymous_enum"</span>
         <span class="p">)</span>
 
         <span class="c1"># Dictionary to store enum member names and values</span>
         <span class="n">enum_members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">end_die</span><span class="o">.</span><span class="n">iter_children</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_enumerator&quot;</span><span class="p">:</span>
-                <span class="n">name_attr</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span>
-                <span class="n">value_attr</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_const_value&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_enumerator"</span><span class="p">:</span>
+                <span class="n">name_attr</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span>
+                <span class="n">value_attr</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_const_value"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">name_attr</span> <span class="ow">and</span> <span class="n">value_attr</span><span class="p">:</span>
-                    <span class="n">member_name</span> <span class="o">=</span> <span class="n">name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                    <span class="n">member_name</span> <span class="o">=</span> <span class="n">name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
                     <span class="n">member_value</span> <span class="o">=</span> <span class="n">value_attr</span><span class="o">.</span><span class="n">value</span>
                     <span class="n">enum_members</span><span class="p">[</span><span class="n">member_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">member_value</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">parent_name</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;enum </span><span class="si">{</span><span class="n">enum_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;byte_size&quot;</span><span class="p">:</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_byte_size&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-                <span class="s2">&quot;bit_size&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;bit_offset&quot;</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;address_offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
-                <span class="s2">&quot;array_size&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;valid_values&quot;</span><span class="p">:</span> <span class="n">enum_members</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"enum </span><span class="si">{</span><span class="n">enum_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="s2">"byte_size"</span><span class="p">:</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_byte_size"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">"bit_size"</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"bit_offset"</span> <span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"address_offset"</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="s2">"array_size"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"valid_values"</span><span class="p">:</span> <span class="n">enum_members</span>
             <span class="p">}</span>
         <span class="p">}</span></div>
 
@@ -545,15 +545,15 @@
 <div class="viewcode-block" id="GenericParser._process_union_type">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_union_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_union_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extracts union members from a DWARF DIE.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Recursively extracts union members from a DWARF DIE."""</span>
         <span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">child_die</span> <span class="ow">in</span> <span class="n">die</span><span class="o">.</span><span class="n">iter_children</span><span class="p">():</span>
             <span class="n">member</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">if</span> <span class="n">child_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_member&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">child_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_member"</span><span class="p">:</span>
                 <span class="n">member_name</span> <span class="o">=</span> <span class="n">parent_name</span>
-                <span class="n">name_attr</span> <span class="o">=</span> <span class="n">child_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span>
+                <span class="n">name_attr</span> <span class="o">=</span> <span class="n">child_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">name_attr</span><span class="p">:</span>
-                    <span class="n">member_name</span> <span class="o">+=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                    <span class="n">member_name</span> <span class="o">+=</span> <span class="s2">"."</span> <span class="o">+</span> <span class="n">name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_process_end_die</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="n">child_die</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
                 <span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">members</span></div>
@@ -562,24 +562,24 @@
 <div class="viewcode-block" id="GenericParser._process_structure_type">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_structure_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_structure_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively extracts structure members from a DWARF DIE, including arrays.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Recursively extracts structure members from a DWARF DIE, including arrays."""</span>
         <span class="n">members</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">child_die</span> <span class="ow">in</span> <span class="n">die</span><span class="o">.</span><span class="n">iter_children</span><span class="p">():</span>
             <span class="n">member</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">if</span> <span class="n">child_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_member&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">child_die</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_member"</span><span class="p">:</span>
                 <span class="n">member_offset</span><span class="p">,</span> <span class="n">bit_size</span><span class="p">,</span> <span class="n">bit_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_member_offset</span><span class="p">(</span><span class="n">child_die</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">member_offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="n">member_name</span> <span class="o">=</span> <span class="n">parent_name</span>
-                <span class="n">name_attr</span> <span class="o">=</span> <span class="n">child_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span>
+                <span class="n">name_attr</span> <span class="o">=</span> <span class="n">child_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">name_attr</span><span class="p">:</span>
-                    <span class="n">member_name</span> <span class="o">+=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                    <span class="n">member_name</span> <span class="o">+=</span> <span class="s2">"."</span> <span class="o">+</span> <span class="n">name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_process_end_die</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="n">child_die</span><span class="p">,</span> <span class="n">member_name</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">member_offset</span><span class="p">)</span>
                 <span class="c1"># in case of a union, here is the location where the bit size and offset are registered.</span>
                 <span class="c1"># on later versions of DWARF, it is available on the base type.</span>
                 <span class="k">if</span> <span class="n">bit_size</span><span class="p">:</span>
-                    <span class="n">member</span><span class="p">[</span><span class="n">member_name</span><span class="p">][</span><span class="s2">&quot;bit_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit_size</span>
-                    <span class="n">member</span><span class="p">[</span><span class="n">member_name</span><span class="p">][</span><span class="s2">&quot;bit_offset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit_offset</span>
+                    <span class="n">member</span><span class="p">[</span><span class="n">member_name</span><span class="p">][</span><span class="s2">"bit_size"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit_size</span>
+                    <span class="n">member</span><span class="p">[</span><span class="n">member_name</span><span class="p">][</span><span class="s2">"bit_offset"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bit_offset</span>
                 <span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">member</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">members</span></div>
 
@@ -588,14 +588,14 @@
 <div class="viewcode-block" id="GenericParser._get_array_dimensions">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_array_dimensions">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_array_dimensions</span><span class="p">(</span><span class="n">type_die</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the length of an array type.</span>
+<span class="w">        </span><span class="sd">"""Gets the length of an array type.</span>
 
 <span class="sd">        Multidimensional arrays have multiple children with the tag DW_TAG_subrange_type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">dimensions</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">type_die</span><span class="o">.</span><span class="n">iter_children</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_subrange_type&quot;</span><span class="p">:</span>
-                <span class="n">array_length_attr</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_upper_bound&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_subrange_type"</span><span class="p">:</span>
+                <span class="n">array_length_attr</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_upper_bound"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">array_length_attr</span><span class="p">:</span>
                     <span class="n">dimensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">array_length_attr</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dimensions</span></div>
@@ -605,20 +605,20 @@
 <div class="viewcode-block" id="GenericParser._process_base_type">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._process_base_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_process_base_type</span><span class="p">(</span><span class="n">end_die</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process a base type variable.&quot;&quot;&quot;</span>
-        <span class="n">type_name_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_name&quot;</span><span class="p">)</span>
-        <span class="n">type_name</span> <span class="o">=</span> <span class="n">type_name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">type_name_attr</span> <span class="k">else</span> <span class="s2">&quot;base unknown&quot;</span>
-        <span class="n">byte_size_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DW_AT_byte_size&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Process a base type variable."""</span>
+        <span class="n">type_name_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_name"</span><span class="p">)</span>
+        <span class="n">type_name</span> <span class="o">=</span> <span class="n">type_name_attr</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">if</span> <span class="n">type_name_attr</span> <span class="k">else</span> <span class="s2">"base unknown"</span>
+        <span class="n">byte_size_attr</span> <span class="o">=</span> <span class="n">end_die</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"DW_AT_byte_size"</span><span class="p">)</span>
         <span class="n">byte_size</span> <span class="o">=</span> <span class="n">byte_size_attr</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="n">byte_size_attr</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="n">parent_name</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">type_name</span><span class="p">,</span>
-                <span class="s2">&quot;byte_size&quot;</span><span class="p">:</span> <span class="n">byte_size</span><span class="p">,</span>
-                <span class="s2">&quot;bit_size&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;bit_offset&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;address_offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
-                <span class="s2">&quot;array_size&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s2">&quot;valid_values&quot;</span><span class="p">:</span> <span class="p">{}</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="n">type_name</span><span class="p">,</span>
+                <span class="s2">"byte_size"</span><span class="p">:</span> <span class="n">byte_size</span><span class="p">,</span>
+                <span class="s2">"bit_size"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"bit_offset"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"address_offset"</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="s2">"array_size"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">"valid_values"</span><span class="p">:</span> <span class="p">{}</span>
             <span class="p">}</span>
         <span class="p">}</span></div>
 
@@ -626,7 +626,7 @@
 <div class="viewcode-block" id="GenericParser._get_dwarf_die_by_offset">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_dwarf_die_by_offset">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_dwarf_die_by_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a DWARF DIE given its offset.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Retrieve a DWARF DIE given its offset."""</span>
         <span class="k">for</span> <span class="n">compilation_unit</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span><span class="o">.</span><span class="n">iter_CUs</span><span class="p">():</span>
             <span class="n">root_die</span> <span class="o">=</span> <span class="n">compilation_unit</span><span class="o">.</span><span class="n">iter_DIEs</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">die</span> <span class="ow">in</span> <span class="n">root_die</span><span class="p">:</span>
@@ -638,19 +638,19 @@
 <div class="viewcode-block" id="GenericParser._map_registers">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._map_registers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_registers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;No-op: register_map is populated as part of _map_variables() in a single pass.</span>
+<span class="w">        </span><span class="sd">"""No-op: register_map is populated as part of _map_variables() in a single pass.</span>
 
 <span class="sd">        Both firmware variables and peripheral registers (SFRs) are processed together</span>
 <span class="sd">        in ``_map_variables()``. The ``self.is_sfr`` flag set in ``_get_die_variable()``</span>
 <span class="sd">        determines which map each entry is written to inside ``_process_die()``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._get_symbol_only_register_byte_size">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_byte_size">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_symbol_only_register_byte_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a best-effort byte size for symbol-only SFR entries.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return a best-effort byte size for symbol-only SFR entries."""</span>
         <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_signature</span><span class="p">()</span>
         <span class="n">family</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_family</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">FAMILY_REGISTER_BYTE_SIZE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">FAMILY_REGISTER_BYTE_SIZE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span></div>
@@ -660,20 +660,20 @@
 <div class="viewcode-block" id="GenericParser._get_symbol_only_register_type">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._get_symbol_only_register_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_symbol_only_register_type</span><span class="p">(</span><span class="n">byte_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the variable type string for a symbol-only SFR entry.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the variable type string for a symbol-only SFR entry."""</span>
         <span class="n">type_by_size</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;unsigned char&quot;</span><span class="p">,</span>
-            <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;unsigned int&quot;</span><span class="p">,</span>
-            <span class="mi">4</span><span class="p">:</span> <span class="s2">&quot;unsigned long&quot;</span><span class="p">,</span>
-            <span class="mi">8</span><span class="p">:</span> <span class="s2">&quot;unsigned long long&quot;</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="s2">"unsigned char"</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="s2">"unsigned int"</span><span class="p">,</span>
+            <span class="mi">4</span><span class="p">:</span> <span class="s2">"unsigned long"</span><span class="p">,</span>
+            <span class="mi">8</span><span class="p">:</span> <span class="s2">"unsigned long long"</span><span class="p">,</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="n">type_by_size</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">byte_size</span><span class="p">,</span> <span class="s2">&quot;unsigned int&quot;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">type_by_size</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">byte_size</span><span class="p">,</span> <span class="s2">"unsigned int"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="GenericParser._map_symbol_only_registers">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._map_symbol_only_registers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_symbol_only_registers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Populate missing SFRs from absolute symbol-table entries when DWARF lacks variables.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Populate missing SFRs from absolute symbol-table entries when DWARF lacks variables."""</span>
         <span class="n">byte_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_symbol_only_register_byte_size</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">symbol_name</span><span class="p">,</span> <span class="n">symbol_data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">absolute_symbol_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">REGISTER_SYMBOL_PATTERN</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">symbol_name</span><span class="p">):</span>
@@ -686,7 +686,7 @@
                 <span class="n">byte_size</span><span class="o">=</span><span class="n">byte_size</span><span class="p">,</span>
                 <span class="n">bit_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">bit_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                <span class="n">address</span><span class="o">=</span><span class="n">symbol_data</span><span class="p">[</span><span class="s2">&quot;address&quot;</span><span class="p">],</span>
+                <span class="n">address</span><span class="o">=</span><span class="n">symbol_data</span><span class="p">[</span><span class="s2">"address"</span><span class="p">],</span>
                 <span class="n">array_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">valid_values</span><span class="o">=</span><span class="p">{},</span>
             <span class="p">)</span></div>
@@ -695,11 +695,11 @@
 <div class="viewcode-block" id="GenericParser._map_variables">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.GenericParser._map_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">VariableInfo</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Maps all variables in the ELF file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Maps all variables in the ELF file."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_map</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_map</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">cu</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dwarf_info</span><span class="o">.</span><span class="n">iter_CUs</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">die</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;DW_TAG_variable&quot;</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">iter_DIEs</span><span class="p">()):</span>
+            <span class="k">for</span> <span class="n">die</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"DW_TAG_variable"</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">iter_DIEs</span><span class="p">()):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">expression_parser</span> <span class="o">=</span> <span class="n">DWARFExprParser</span><span class="p">(</span><span class="n">die</span><span class="o">.</span><span class="n">cu</span><span class="o">.</span><span class="n">structs</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_process_die</span><span class="p">(</span><span class="n">die</span><span class="p">)</span>
 
@@ -710,12 +710,12 @@
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
 
-    <span class="c1"># elf_file = r&quot;..\..\tests\data\qspin_foc_same54.elf&quot;</span>
+    <span class="c1"># elf_file = r"..\..\tests\data\qspin_foc_same54.elf"</span>
 <div class="viewcode-block" id="elf_file">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/parser/generic_parser/index.html#pyx2cscope.parser.generic_parser.elf_file">[docs]</a>
-    <span class="n">elf_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;..\..\..\tests\data\dsPIC33ak128mc106_foc.elf&quot;</span></div>
+    <span class="n">elf_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"..\..\..\tests\data\dsPIC33ak128mc106_foc.elf"</span></div>
 
     <span class="n">elf_reader</span> <span class="o">=</span> <span class="n">GenericParser</span><span class="p">(</span><span class="n">elf_file</span><span class="p">)</span>
     <span class="n">variable_map</span> <span class="o">=</span> <span class="n">elf_reader</span><span class="o">.</span><span class="n">_map_variables</span><span class="p">()</span>
@@ -723,18 +723,18 @@
 
     <span class="nb">print</span><span class="p">(</span><span class="n">variable_map</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_map</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"'''''''''''''''''''''''''''''''''''''''' "</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Array variables:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Array variables:"</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">var_info</span> <span class="ow">in</span> <span class="n">variable_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">var_info</span><span class="o">.</span><span class="n">array_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">var_info</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"'''''''''''''''''''''''''''''''''''''''' "</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;register variables:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"register variables:"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">register_map</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">register_map</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39;&#39; &quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"'''''''''''''''''''''''''''''''''''''''' "</span><span class="p">)</span>
 </pre></div>
 
            </div>

@@ -59,6 +59,7 @@
 <li class="toctree-l2"><a class="reference internal" href="gui_web.html">GUI Web</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scripting_scripts.html">Running Scripts in the GUI</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">VSCode Integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-task-automatically">Creating the task automatically</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#tasks-json-example">tasks.json example</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running-the-task">Running the task</a></li>
 </ul>
@@ -102,30 +103,62 @@
 add a task to <code class="docutils literal notranslate"><span class="pre">.vscode/tasks.json</span></code> in your project that launches
 pyX2Cscope automatically after a build or flash, pointing directly at the
 generated ELF file.</p>
+<section id="creating-the-task-automatically">
+<h2>Creating the task automatically<a class="headerlink" href="#creating-the-task-automatically" title="Link to this heading"></a></h2>
+<p>For a project created with the MPLAB extension for VS Code (it contains
+<code class="docutils literal notranslate"><span class="pre">.vscode/&lt;project&gt;.mplab.json</span></code>), pyX2Cscope writes the task for you:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --vscode-task path\to\my_project      # standalone executable</span>
+<span class="go">pyx2cscope --vscode-task path/to/my_project          # pip install</span>
+</pre></div>
+</div>
+<p>Without a folder, the current folder is used.  The task:</p>
+<ul class="simple">
+<li><p>takes the ELF file of each build configuration from <code class="docutils literal notranslate"><span class="pre">imagePath</span></code> in
+<code class="docutils literal notranslate"><span class="pre">.mplab.json</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">./out/my_project/default.elf</span></code>).  Several
+configurations give one task each, <code class="docutils literal notranslate"><span class="pre">Run</span> <span class="pre">pyX2Cscope</span> <span class="pre">(&lt;configuration&gt;)</span></code>;</p></li>
+<li><p>starts the same program that created it (<code class="docutils literal notranslate"><span class="pre">pyX2Cscope.exe</span></code>, or Python with
+<code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">pyx2cscope</span></code>), with <code class="docutils literal notranslate"><span class="pre">-p</span> <span class="pre">AUTO</span></code> by default;</p></li>
+<li><p>uses <code class="docutils literal notranslate"><span class="pre">${workspaceFolder:my_project}</span></code> paths.  If pyX2Cscope is inside or
+next to the project folder (e.g. <code class="docutils literal notranslate"><span class="pre">../pyX2Cscope/pyX2Cscope.exe</span></code>) the paths
+stay relative, so both folders can be copied together; otherwise they are
+absolute.</p></li>
+</ul>
+<p>The options <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span></code>, <code class="docutils literal notranslate"><span class="pre">-wp</span></code> and <code class="docutils literal notranslate"><span class="pre">--host</span></code> given together with
+<code class="docutils literal notranslate"><span class="pre">--vscode-task</span></code> are used in the task:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pyX2Cscope.exe --vscode-task path\to\my_project -w        # Web GUI</span>
+<span class="go">pyX2Cscope.exe --vscode-task path\to\my_project -p COM3   # fixed serial port</span>
+</pre></div>
+</div>
+<p>Other tasks in <code class="docutils literal notranslate"><span class="pre">tasks.json</span></code> are kept, and a task with the same label is
+replaced, so the command can be run again after moving pyX2Cscope.  VS Code
+allows comments in <code class="docutils literal notranslate"><span class="pre">tasks.json</span></code>; they cannot be kept, so the original file is
+saved as <code class="docutils literal notranslate"><span class="pre">tasks.json.bak</span></code> first.</p>
+</section>
 <section id="tasks-json-example">
 <h2>tasks.json example<a class="headerlink" href="#tasks-json-example" title="Link to this heading"></a></h2>
-<p>Create or edit <code class="docutils literal notranslate"><span class="pre">.vscode/tasks.json</span></code> in your firmware project:</p>
+<p>To write the task by hand, create or edit <code class="docutils literal notranslate"><span class="pre">.vscode/tasks.json</span></code> in your
+firmware project:</p>
 <p><strong>Single-folder workspace</strong> — use <code class="docutils literal notranslate"><span class="pre">${workspaceFolder}</span></code> when the workspace
 contains only one project:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0.0"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Run pyX2Cscope&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;process&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder}/../pyX2Cscope/pyX2Cscope.exe&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="s2">&quot;-p&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;-e&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder}/out/default.elf&quot;</span>
+<span class="w">            </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Run pyX2Cscope"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"process"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder}/../pyX2Cscope/pyX2Cscope.exe"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">"-p"</span><span class="p">,</span><span class="w"> </span><span class="s2">"AUTO"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"-e"</span><span class="p">,</span><span class="w"> </span><span class="s2">"${workspaceFolder}/out/default.elf"</span>
 <span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">&quot;cwd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder}/../pyX2Cscope&quot;</span>
+<span class="w">            </span><span class="nt">"options"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"cwd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder}/../pyX2Cscope"</span>
 <span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">&quot;presentation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">&quot;reveal&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;always&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="nt">&quot;panel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new&quot;</span>
+<span class="w">            </span><span class="nt">"presentation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"reveal"</span><span class="p">:</span><span class="w"> </span><span class="s2">"always"</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">"panel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span>
 <span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">&quot;problemMatcher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">            </span><span class="nt">"problemMatcher"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
@@ -135,24 +168,24 @@ contains only one project:</p>
 several folders (e.g. <code class="docutils literal notranslate"><span class="pre">MY_Project1</span></code>, <code class="docutils literal notranslate"><span class="pre">MY_Project2</span></code>), use
 <code class="docutils literal notranslate"><span class="pre">${workspaceFolder:MY_Project1}</span></code> to refer to a specific folder by name:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0.0&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;tasks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0.0"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Run pyX2Cscope (MY_Project1)&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;process&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder:MY_Project1}/../pyX2Cscope/pyX2Cscope.exe&quot;</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">                </span><span class="s2">&quot;-p&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="s2">&quot;-e&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder:MY_Project1}/out/MY_Project1/default.elf&quot;</span>
+<span class="w">            </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Run pyX2Cscope (MY_Project1)"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"process"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder:MY_Project1}/../pyX2Cscope/pyX2Cscope.exe"</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">                </span><span class="s2">"-p"</span><span class="p">,</span><span class="w"> </span><span class="s2">"AUTO"</span><span class="p">,</span>
+<span class="w">                </span><span class="s2">"-e"</span><span class="p">,</span><span class="w"> </span><span class="s2">"${workspaceFolder:MY_Project1}/out/MY_Project1/default.elf"</span>
 <span class="w">            </span><span class="p">],</span>
-<span class="w">            </span><span class="nt">&quot;options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">&quot;cwd&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder:MY_Project1}/../pyX2Cscope&quot;</span>
+<span class="w">            </span><span class="nt">"options"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"cwd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder:MY_Project1}/../pyX2Cscope"</span>
 <span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">&quot;presentation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="nt">&quot;reveal&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;always&quot;</span><span class="p">,</span>
-<span class="w">                </span><span class="nt">&quot;panel&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;new&quot;</span>
+<span class="w">            </span><span class="nt">"presentation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="nt">"reveal"</span><span class="p">:</span><span class="w"> </span><span class="s2">"always"</span><span class="p">,</span>
+<span class="w">                </span><span class="nt">"panel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span>
 <span class="w">            </span><span class="p">},</span>
-<span class="w">            </span><span class="nt">&quot;problemMatcher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">            </span><span class="nt">"problemMatcher"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="p">}</span>
@@ -164,7 +197,7 @@ For multi-folder workspaces, replace <code class="docutils literal notranslate">
 as it appears in your <code class="docutils literal notranslate"><span class="pre">.code-workspace</span></code> file.</p>
 <p>To launch the Web GUI instead of the Qt GUI, add <code class="docutils literal notranslate"><span class="pre">&quot;-w&quot;</span></code> to the <code class="docutils literal notranslate"><span class="pre">args</span></code>
 list:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;-p&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;AUTO&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-e&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;${workspaceFolder:MY_Project1}/out/MY_Project1/default.elf&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-w&quot;</span><span class="p">]</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"-p"</span><span class="p">,</span><span class="w"> </span><span class="s2">"AUTO"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-e"</span><span class="p">,</span><span class="w"> </span><span class="s2">"${workspaceFolder:MY_Project1}/out/MY_Project1/default.elf"</span><span class="p">,</span><span class="w"> </span><span class="s2">"-w"</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
@@ -179,10 +212,10 @@ no manual input needed.</p>
 <p>Combine this with a build or flash task using <code class="docutils literal notranslate"><span class="pre">dependsOn</span></code> so that
 pyX2Cscope launches automatically after every successful firmware flash:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Flash and Run pyX2Cscope&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;dependsOn&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Flash Device&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Run pyX2Cscope&quot;</span><span class="p">],</span>
-<span class="w">    </span><span class="nt">&quot;dependsOrder&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sequence&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;problemMatcher&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">    </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Flash and Run pyX2Cscope"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"dependsOn"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"Flash Device"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Run pyX2Cscope"</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">"dependsOrder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sequence"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"problemMatcher"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>

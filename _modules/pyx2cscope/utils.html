@@ -83,113 +83,186 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyx2cscope.utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;This module provides utility functions for handling configuration settings.</span>
+<span></span><span class="sd">"""This module provides utility functions for handling configuration settings.</span>
 
 <span class="sd">Functions:</span>
 <span class="sd">    get_config_file() -&gt; ConfigParser: Retrieves the configuration file.</span>
-<span class="sd">    get_elf_file_path(key=&quot;path&quot;) -&gt; str: Gets the path to the ELF file from the configuration.</span>
-<span class="sd">    get_com_port(key=&quot;com_port&quot;) -&gt; str: Gets the COM port from the configuration.</span>
-<span class="sd">    get_host_address(key=&quot;host_ip&quot;) -&gt; str: Gets the host IP address from the configuration.</span>
+<span class="sd">    get_elf_file_path(key="path") -&gt; str: Gets the path to the ELF file from the configuration.</span>
+<span class="sd">    get_com_port(key="com_port") -&gt; str: Gets the COM port from the configuration.</span>
+<span class="sd">    get_host_address(key="host_ip") -&gt; str: Gets the host IP address from the configuration.</span>
 <span class="sd">    get_can_config() -&gt; dict: Gets the CAN interface configuration parameters.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get_project_name(file_path) -&gt; str: Derives the project name from an ELF/YML/PKL file path.</span>
+<span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">configparser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigParser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># How many parent folders are searched for an MPLAB X or VS Code project folder.</span>
+<div class="viewcode-block" id="_PROJECT_ROOT_SEARCH_DEPTH">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils._PROJECT_ROOT_SEARCH_DEPTH">[docs]</a>
+<span class="n">_PROJECT_ROOT_SEARCH_DEPTH</span> <span class="o">=</span> <span class="mi">6</span></div>
+
+<span class="c1"># Suffix of the MPLAB X project folder, e.g. "my_project.X".</span>
+<div class="viewcode-block" id="_MPLABX_PROJECT_SUFFIX">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils._MPLABX_PROJECT_SUFFIX">[docs]</a>
+<span class="n">_MPLABX_PROJECT_SUFFIX</span> <span class="o">=</span> <span class="s2">".x"</span></div>
+
+<span class="c1"># Suffix of the project file the MPLAB extension for VS Code creates in ".vscode".</span>
+<div class="viewcode-block" id="_VSCODE_PROJECT_SUFFIX">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils._VSCODE_PROJECT_SUFFIX">[docs]</a>
+<span class="n">_VSCODE_PROJECT_SUFFIX</span> <span class="o">=</span> <span class="s2">".mplab.json"</span></div>
+
+
+
+<div class="viewcode-block" id="_find_ide_project_name">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils._find_ide_project_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_ide_project_name</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return the name of the MPLAB X or VS Code project folder that contains the file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path (Path): Path of the ELF, YML or PKL file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The project name, or an empty string if no project folder is found.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Only folders that are part of the given path; a bare file name has no project folder.</span>
+    <span class="n">folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">folder</span> <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">parents</span> <span class="k">if</span> <span class="n">folder</span> <span class="o">!=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"."</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">folders</span><span class="p">[:</span><span class="n">_PROJECT_ROOT_SEARCH_DEPTH</span><span class="p">]:</span>
+        <span class="c1"># MPLAB X project folder, e.g. "my_project.X/dist/default/production/my_project.X.production.elf"</span>
+        <span class="k">if</span> <span class="n">folder</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_MPLABX_PROJECT_SUFFIX</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">folder</span><span class="o">.</span><span class="n">name</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">_MPLABX_PROJECT_SUFFIX</span><span class="p">)]</span>
+        <span class="c1"># VS Code project with the MPLAB extension: ".vscode/my_project.mplab.json"</span>
+        <span class="n">vscode_dir</span> <span class="o">=</span> <span class="n">folder</span> <span class="o">/</span> <span class="s2">".vscode"</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">vscode_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">vscode_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+                    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">_VSCODE_PROJECT_SUFFIX</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">_VSCODE_PROJECT_SUFFIX</span><span class="p">)]</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="s2">""</span></div>
+
+
+
+<div class="viewcode-block" id="get_project_name">
+<a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_project_name">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_project_name</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Derive the project name from the path of an ELF, YML or PKL file.</span>
+
+<span class="sd">    The name is the MPLAB X or VS Code project that generated the file:</span>
+
+<span class="sd">    1. MPLAB X: the project folder ``my_project.X`` gives ``my_project``.</span>
+<span class="sd">    2. VS Code with the MPLAB extension: the project file ``.vscode/my_project.mplab.json``</span>
+<span class="sd">       gives ``my_project``.</span>
+<span class="sd">    3. If no project is found, the file name without extension, e.g. ``firmware.elf`` gives ``firmware``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file_path (str): Path of the ELF, YML or PKL file. May be only a file name.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: The project name, or an empty string if no path is given.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_find_ide_project_name</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span></div>
+
 
 
 <div class="viewcode-block" id="get_config_file">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_config_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_config_file</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ConfigParser</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves the configuration file. If the configuration file does not exist, it creates one with default values.</span>
+<span class="w">    </span><span class="sd">"""Retrieves the configuration file. If the configuration file does not exist, it creates one with default values.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ConfigParser: The configuration parser object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">config_file</span> <span class="o">=</span> <span class="s2">&quot;config.ini&quot;</span>
-    <span class="n">default_path</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;path_to_your_elf_file&quot;</span><span class="p">}</span>
-    <span class="n">default_com</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;com_port&quot;</span><span class="p">:</span> <span class="s2">&quot;your_com_port, ex:COM3&quot;</span><span class="p">}</span>
-    <span class="n">default_host_ip</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;host_ip&quot;</span><span class="p">:</span> <span class="s2">&quot;your_host_ip, ex:192.168.1.100&quot;</span><span class="p">}</span>
+<span class="sd">    """</span>
+    <span class="n">config_file</span> <span class="o">=</span> <span class="s2">"config.ini"</span>
+    <span class="n">default_path</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"path"</span><span class="p">:</span> <span class="s2">"path_to_your_elf_file"</span><span class="p">}</span>
+    <span class="n">default_com</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"com_port"</span><span class="p">:</span> <span class="s2">"your_com_port, ex:COM3"</span><span class="p">}</span>
+    <span class="n">default_host_ip</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"host_ip"</span><span class="p">:</span> <span class="s2">"your_host_ip, ex:192.168.1.100"</span><span class="p">}</span>
     <span class="n">default_can</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;bustype&quot;</span><span class="p">:</span> <span class="s2">&quot;pcan_usb&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;baud_rate&quot;</span><span class="p">:</span> <span class="s2">&quot;500000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;id_tx&quot;</span><span class="p">:</span> <span class="s2">&quot;0x110&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;id_rx&quot;</span><span class="p">:</span> <span class="s2">&quot;0x100&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;standard&quot;</span>
+        <span class="s2">"bustype"</span><span class="p">:</span> <span class="s2">"pcan_usb"</span><span class="p">,</span>
+        <span class="s2">"channel"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+        <span class="s2">"baud_rate"</span><span class="p">:</span> <span class="s2">"500000"</span><span class="p">,</span>
+        <span class="s2">"id_tx"</span><span class="p">:</span> <span class="s2">"0x110"</span><span class="p">,</span>
+        <span class="s2">"id_rx"</span><span class="p">:</span> <span class="s2">"0x100"</span><span class="p">,</span>
+        <span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"standard"</span>
     <span class="p">}</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
         <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Create the config file with the default value</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;ELF_FILE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_path</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_com</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_host_ip</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;CAN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_can</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">configfile</span><span class="p">:</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">"ELF_FILE"</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_path</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">"COM_PORT"</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_com</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">"HOST_IP"</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_host_ip</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">"CAN"</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_can</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">configfile</span><span class="p">:</span>
             <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">configfile</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Config file &#39;</span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">&#39; created with default values&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Config file '</span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">' created with default values"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">config</span></div>
 
 
 
 <div class="viewcode-block" id="get_elf_file_path">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_elf_file_path">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_elf_file_path</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;path&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the path to the ELF file from the configuration.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_elf_file_path</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"path"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Gets the path to the ELF file from the configuration.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        key (str): The key for the ELF file path in the configuration. Default is &quot;path&quot;.</span>
+<span class="sd">        key (str): The key for the ELF file path in the configuration. Default is "path".</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The path to the ELF file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_config_file</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;ELF_FILE&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;your&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;ELF_FILE&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;ELF_FILE&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">"ELF_FILE"</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"your"</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">"ELF_FILE"</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">"ELF_FILE"</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
 
 
 
 <div class="viewcode-block" id="get_com_port">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_com_port">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_com_port</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;com_port&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the COM port from the configuration.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_com_port</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"com_port"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Gets the COM port from the configuration.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        key (str): The key for the COM port in the configuration. Default is &quot;com_port&quot;.</span>
+<span class="sd">        key (str): The key for the COM port in the configuration. Default is "com_port".</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The COM port.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_config_file</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;your&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;COM_PORT&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">"COM_PORT"</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"your"</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">"COM_PORT"</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">"COM_PORT"</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="get_host_address">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_host_address">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_host_address</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;host_ip&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the Host IP Address from the configuration.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_host_address</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">"host_ip"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Gets the Host IP Address from the configuration.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        key (str): The key for the Host IP Address in the configuration. Default is &quot;host_ip&quot;.</span>
+<span class="sd">        key (str): The key for the Host IP Address in the configuration. Default is "host_ip".</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        str: The IP address.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_config_file</span><span class="p">()</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;your&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;HOST_IP&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">config</span><span class="p">[</span><span class="s2">"HOST_IP"</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"your"</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">"HOST_IP"</span><span class="p">][</span><span class="n">key</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="k">return</span> <span class="n">config</span><span class="p">[</span><span class="s2">"HOST_IP"</span><span class="p">][</span><span class="n">key</span><span class="p">]</span></div>
 
 
 
 <div class="viewcode-block" id="get_can_config">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/utils/index.html#pyx2cscope.utils.get_can_config">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_can_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the CAN interface configuration parameters from the configuration file.</span>
+<span class="w">    </span><span class="sd">"""Gets the CAN interface configuration parameters from the configuration file.</span>
 
 <span class="sd">    Returns a dictionary with all CAN interface parameters including bustype, channel,</span>
 <span class="sd">    baud_rate, id_tx, id_rx, and mode. If values are not properly configured,</span>
@@ -197,69 +270,69 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: Dictionary containing CAN configuration parameters:</span>
-<span class="sd">            - bustype (str): CAN interface type (default: &#39;pcan_usb&#39;)</span>
+<span class="sd">            - bustype (str): CAN interface type (default: 'pcan_usb')</span>
 <span class="sd">            - channel (int): CAN channel number (default: 1)</span>
 <span class="sd">            - baud_rate (int): CAN baud rate in bps (default: 500000)</span>
 <span class="sd">            - id_tx (int): TX arbitration ID (default: 0x110)</span>
 <span class="sd">            - id_rx (int): RX arbitration ID (default: 0x100)</span>
-<span class="sd">            - mode (str): CAN ID mode &#39;standard&#39; or &#39;extended&#39; (default: &#39;standard&#39;)</span>
+<span class="sd">            - mode (str): CAN ID mode 'standard' or 'extended' (default: 'standard')</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; can_config = get_can_config()</span>
-<span class="sd">        &gt;&gt;&gt; x2c = X2CScope(elf_file=&quot;firmware.elf&quot;, **can_config)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; x2c = X2CScope(elf_file="firmware.elf", **can_config)</span>
+<span class="sd">    """</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">get_config_file</span><span class="p">()</span>
 
     <span class="c1"># Default values</span>
     <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;bustype&quot;</span><span class="p">:</span> <span class="s2">&quot;pcan_usb&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;baud_rate&quot;</span><span class="p">:</span> <span class="mi">500000</span><span class="p">,</span>
-        <span class="s2">&quot;id_tx&quot;</span><span class="p">:</span> <span class="mh">0x110</span><span class="p">,</span>
-        <span class="s2">&quot;id_rx&quot;</span><span class="p">:</span> <span class="mh">0x100</span><span class="p">,</span>
-        <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;standard&quot;</span>
+        <span class="s2">"bustype"</span><span class="p">:</span> <span class="s2">"pcan_usb"</span><span class="p">,</span>
+        <span class="s2">"channel"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">"baud_rate"</span><span class="p">:</span> <span class="mi">500000</span><span class="p">,</span>
+        <span class="s2">"id_tx"</span><span class="p">:</span> <span class="mh">0x110</span><span class="p">,</span>
+        <span class="s2">"id_rx"</span><span class="p">:</span> <span class="mh">0x100</span><span class="p">,</span>
+        <span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"standard"</span>
     <span class="p">}</span>
 
     <span class="c1"># Check if CAN section exists</span>
-    <span class="k">if</span> <span class="s2">&quot;CAN&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">"CAN"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">defaults</span>
 
-    <span class="n">can_section</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;CAN&quot;</span><span class="p">]</span>
+    <span class="n">can_section</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"CAN"</span><span class="p">]</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="c1"># Get bustype</span>
-    <span class="n">bustype</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bustype&quot;</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;bustype&quot;</span><span class="p">])</span>
-    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;bustype&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bustype</span> <span class="k">if</span> <span class="n">bustype</span> <span class="ow">and</span> <span class="s2">&quot;your&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">bustype</span> <span class="k">else</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;bustype&quot;</span><span class="p">]</span>
+    <span class="n">bustype</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bustype"</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"bustype"</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">"bustype"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bustype</span> <span class="k">if</span> <span class="n">bustype</span> <span class="ow">and</span> <span class="s2">"your"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">bustype</span> <span class="k">else</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"bustype"</span><span class="p">]</span>
 
     <span class="c1"># Get channel (convert to int)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;channel&quot;</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]))</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"channel"</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">]))</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"channel"</span><span class="p">]</span>
 
     <span class="c1"># Get baud_rate (convert to int)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;baud_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;baud_rate&quot;</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;baud_rate&quot;</span><span class="p">]))</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"baud_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"baud_rate"</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"baud_rate"</span><span class="p">]))</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;baud_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;baud_rate&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"baud_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"baud_rate"</span><span class="p">]</span>
 
     <span class="c1"># Get id_tx (convert hex string to int)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">id_tx_str</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id_tx&quot;</span><span class="p">,</span> <span class="nb">hex</span><span class="p">(</span><span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;id_tx&quot;</span><span class="p">]))</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;id_tx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_tx_str</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;0x&quot;</span> <span class="ow">in</span> <span class="n">id_tx_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_tx_str</span><span class="p">)</span>
+        <span class="n">id_tx_str</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id_tx"</span><span class="p">,</span> <span class="nb">hex</span><span class="p">(</span><span class="n">defaults</span><span class="p">[</span><span class="s2">"id_tx"</span><span class="p">]))</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"id_tx"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_tx_str</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"0x"</span> <span class="ow">in</span> <span class="n">id_tx_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_tx_str</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;id_tx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;id_tx&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"id_tx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"id_tx"</span><span class="p">]</span>
 
     <span class="c1"># Get id_rx (convert hex string to int)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">id_rx_str</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id_rx&quot;</span><span class="p">,</span> <span class="nb">hex</span><span class="p">(</span><span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;id_rx&quot;</span><span class="p">]))</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;id_rx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_rx_str</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;0x&quot;</span> <span class="ow">in</span> <span class="n">id_rx_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_rx_str</span><span class="p">)</span>
+        <span class="n">id_rx_str</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id_rx"</span><span class="p">,</span> <span class="nb">hex</span><span class="p">(</span><span class="n">defaults</span><span class="p">[</span><span class="s2">"id_rx"</span><span class="p">]))</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"id_rx"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_rx_str</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="k">if</span> <span class="s2">"0x"</span> <span class="ow">in</span> <span class="n">id_rx_str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">id_rx_str</span><span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;id_rx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;id_rx&quot;</span><span class="p">]</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">"id_rx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"id_rx"</span><span class="p">]</span>
 
     <span class="c1"># Get mode</span>
-    <span class="n">mode</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">])</span>
-    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mode</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;standard&quot;</span><span class="p">,</span> <span class="s2">&quot;extended&quot;</span><span class="p">,</span> <span class="s2">&quot;ext&quot;</span><span class="p">,</span> <span class="s2">&quot;29bit&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;mode&quot;</span><span class="p">]</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">can_section</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mode"</span><span class="p">,</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"mode"</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">"mode"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mode</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">and</span> <span class="n">mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"standard"</span><span class="p">,</span> <span class="s2">"extended"</span><span class="p">,</span> <span class="s2">"ext"</span><span class="p">,</span> <span class="s2">"29bit"</span><span class="p">]</span> <span class="k">else</span> <span class="n">defaults</span><span class="p">[</span><span class="s2">"mode"</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">result</span></div>
 

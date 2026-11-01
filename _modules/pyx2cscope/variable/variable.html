@@ -83,7 +83,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyx2cscope.variable.variable</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;This module contains the Variable class and its subclasses.</span>
+<span></span><span class="sd">"""This module contains the Variable class and its subclasses.</span>
 
 <span class="sd">The Variable class represents a variable in the MCU data memory. It provides methods for retrieving and setting the value of the variable, as well as handling arrays of variables.</span>
 
@@ -102,7 +102,7 @@
 <span class="sd">    - VariableFloat: Represents a floating-point number variable.</span>
 <span class="sd">    - VariableEnum: Represents an enum variable.</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
@@ -118,7 +118,7 @@
 <div class="viewcode-block" id="VariableInfo">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableInfo</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A raw representation about a variable.</span>
+<span class="w">    </span><span class="sd">"""A raw representation about a variable.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str): The name of the variable.</span>
@@ -129,7 +129,7 @@
 <span class="sd">        address (int): The memory address of the variable.</span>
 <span class="sd">        array_size (int): The size of the array if the variable is an array, default is 0.</span>
 <span class="sd">        valid_values (dict): enum type of valid values</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="VariableInfo.name">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInfo.name">[docs]</a>
@@ -169,17 +169,17 @@
 <div class="viewcode-block" id="Variable">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Variable</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a variable in the MCU data memory."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l_net</span><span class="p">:</span> <span class="n">LNet</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">VariableInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Variable object.</span>
+<span class="w">        </span><span class="sd">"""Initialize the Variable object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            l_net (LNet): LNet protocol that handles the communication with the target device.</span>
 <span class="sd">            info (VariableInfo): Information of the variable in the MCU memory.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="n">Variable</span><span class="p">:</span>  <span class="c1"># protect super class to be initiated directly</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;&lt;Variable&gt; must be subclassed.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"&lt;Variable&gt; must be subclassed."</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">l_net</span> <span class="o">=</span> <span class="n">l_net</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span>
@@ -187,7 +187,7 @@
 <div class="viewcode-block" id="Variable.__getitem__">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.__getitem__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve value regarding an indexed address from the variable&#39;s base address.</span>
+<span class="w">        </span><span class="sd">"""Retrieve value regarding an indexed address from the variable's base address.</span>
 
 <span class="sd">        Subclasses will handle the conversion to the real value.</span>
 
@@ -198,10 +198,10 @@
 <span class="sd">            IndexError: If the index is outside the variable scope.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            the value of the variable&#39;s index position.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            the value of the variable's index position.</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Index outside scope&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">"Index outside scope"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span> <span class="o">+</span> <span class="n">item</span> <span class="k">if</span> <span class="n">item</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">item</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_value_raw</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
@@ -213,14 +213,14 @@
 <div class="viewcode-block" id="Variable.__setitem__">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.__setitem__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value regarding an indexed address from the variable&#39;s base address.</span>
+<span class="w">        </span><span class="sd">"""Set the value regarding an indexed address from the variable's base address.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            key (int): the index of the variable.</span>
 <span class="sd">            value (Number): The value to be stored in the MCU.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Index outside scope&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">"Index outside scope"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">tmp_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">address</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span> <span class="o">+</span> <span class="n">key</span> <span class="k">if</span> <span class="n">key</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">key</span>
@@ -234,36 +234,36 @@
 <div class="viewcode-block" id="Variable.__len__">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.__len__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of elements on this variable.</span>
+<span class="w">        </span><span class="sd">"""Get the number of elements on this variable.</span>
 
 <span class="sd">        In case the variable is an array, we will get the array size.</span>
 <span class="sd">        In case of a single object, we will get the value 0.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: The number of elements in the array or 0 for a single variable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span></div>
 
 
 <div class="viewcode-block" id="Variable.__repr__">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.__repr__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;String representation of the Variable.</span>
+<span class="w">        </span><span class="sd">"""String representation of the Variable.</span>
 
 <span class="sd">        When printing the variable on a terminal or with str() operator, instead of printing the object and</span>
 <span class="sd">        class attributes, the name of the variable will be printed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span></div>
 
 
 <div class="viewcode-block" id="Variable._get_array_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_array_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_array_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve all values of the array from the MCU memory.</span>
+<span class="w">        </span><span class="sd">"""Retrieve all values of the array from the MCU memory.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[Number]: The list of values in the array.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">chunk_data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
         <span class="n">data_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>  <span class="c1"># width of the array elements.</span>
         <span class="n">chunk_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span> <span class="o">*</span> <span class="n">data_type</span>
@@ -287,7 +287,7 @@
 <div class="viewcode-block" id="Variable._get_bit_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_bit_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_bit_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byte_value</span><span class="p">:</span> <span class="n">Number</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract the valid data in case of a union with bit size and offset.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Extract the valid data in case of a union with bit size and offset."""</span>
         <span class="n">shift</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">byte_size</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_size</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">byte_value</span> <span class="o">&gt;&gt;</span> <span class="n">shift</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_size</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
 
@@ -295,7 +295,7 @@
 <div class="viewcode-block" id="Variable._set_bit_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._set_bit_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_bit_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Number</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert data into the correct bit position in case of a union with bit size and offset.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Insert data into the correct bit position in case of a union with bit size and offset."""</span>
         <span class="n">current_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_value_raw</span><span class="p">())</span>
         <span class="n">shift</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">byte_size</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_size</span><span class="p">)</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_size</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">shift</span>
@@ -306,11 +306,11 @@
 <div class="viewcode-block" id="Variable.get_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.get_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the stored value from the MCU.</span>
+<span class="w">        </span><span class="sd">"""Get the stored value from the MCU.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The stored value from the MCU.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_array</span><span class="p">():</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_array_values</span><span class="p">()</span>
@@ -328,18 +328,18 @@
 <div class="viewcode-block" id="Variable._check_value_range">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._check_value_range">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_value_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Number</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the given value is in range of min and max variable values.</span>
+<span class="w">        </span><span class="sd">"""Check if the given value is in range of min and max variable values.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value: the variable value</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if value is outside min-max range.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">min_value</span><span class="p">,</span> <span class="n">max_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_min_max_values</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">max_value</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="n">min_value</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Value = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">: Expected in range </span><span class="si">{</span><span class="n">min_value</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">max_value</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"Value = </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">: Expected in range </span><span class="si">{</span><span class="n">min_value</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">max_value</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span></div>
 
 
@@ -347,39 +347,39 @@
 <div class="viewcode-block" id="Variable._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a tuple with allowed [min, max] values.</span>
+<span class="w">        </span><span class="sd">"""Return a tuple with allowed [min, max] values.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum allowed values.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="Variable.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to the respective variable number value.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to the respective variable number value.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: the variable value as a number.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="Variable.bytes_to_array">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.bytes_to_array">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a byte array to a list of numbers based on variable width.</span>
+<span class="w">        </span><span class="sd">"""Convert a byte array to a list of numbers based on variable width.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[Number]: The list of numbers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">array</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()):</span>
             <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
@@ -390,11 +390,11 @@
 <div class="viewcode-block" id="Variable.set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">Number</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value to be stored in the MCU.</span>
+<span class="w">        </span><span class="sd">"""Set the value to be stored in the MCU.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            new_value (Number): The value to be stored in the MCU.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_value_range</span><span class="p">(</span><span class="n">new_value</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">bit_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># for bit-size variables, we should first read the current value (byte-size), mask out the old bits,</span>
@@ -407,11 +407,11 @@
 <div class="viewcode-block" id="Variable._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">Number</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value to be stored in the MCU.</span>
+<span class="w">        </span><span class="sd">"""Set the value to be stored in the MCU.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            new_value (Number): The value to be stored in the MCU.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
@@ -419,29 +419,29 @@
 <div class="viewcode-block" id="Variable.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the variable.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the variable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="Variable.is_array">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.is_array">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_array</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an array in the MCU.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an array in the MCU.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the variable is an array, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">array_size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="Variable._get_value_raw">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._get_value_raw">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_value_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ask LNet and get the raw &quot;bytearray&quot; value from the hardware.</span>
+<span class="w">        </span><span class="sd">"""Ask LNet and get the raw "bytearray" value from the hardware.</span>
 
 <span class="sd">        Subclasses will handle the conversion to the real value.</span>
 
@@ -453,7 +453,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bytearray: Raw data returned from LNet, must be reconstructed to the right value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Calculate relative address in case of array element</span>
             <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">address</span> <span class="o">+</span> <span class="n">index</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
@@ -462,7 +462,7 @@
             <span class="n">data_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">data_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">():</span>  <span class="c1"># double check validity</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Expecting only </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="si">}</span><span class="s2"> bytes from LNET, but got </span><span class="si">{</span><span class="n">data_length</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"Expecting only </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span><span class="si">}</span><span class="s2"> bytes from LNET, but got </span><span class="si">{</span><span class="n">data_length</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
             <span class="k">return</span> <span class="n">bytes_data</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -472,62 +472,62 @@
 <div class="viewcode-block" id="Variable._set_value_raw">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable._set_value_raw">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bytes_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of a variable in the microcontroller&#39;s RAM using raw bytes.</span>
+<span class="w">        </span><span class="sd">"""Set the value of a variable in the microcontroller's RAM using raw bytes.</span>
 
-<span class="sd">        This method sends the raw byte data to the specified memory address in the microcontroller&#39;s RAM.</span>
+<span class="sd">        This method sends the raw byte data to the specified memory address in the microcontroller's RAM.</span>
 <span class="sd">        It handles the low-level communication with the microcontroller using the LNet interface.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            bytes_data (bytes): The raw byte data to be written to the variable&#39;s memory location.</span>
+<span class="sd">            bytes_data (bytes): The raw byte data to be written to the variable's memory location.</span>
 <span class="sd">            index (int): The variable index (in case of an array). Default to zero.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            Exception: If there is an error in writing the data to the microcontroller&#39;s RAM.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            Exception: If there is an error in writing the data to the microcontroller's RAM.</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Calculate relative address in case of array element</span>
             <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">address</span> <span class="o">+</span> <span class="n">index</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="o">.</span><span class="n">put_ram</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_width</span><span class="p">(),</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error setting value: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error setting value: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="Variable.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to determine if the variable&#39;s data type is signed.</span>
+<span class="w">        </span><span class="sd">"""Abstract method to determine if the variable's data type is signed.</span>
 
-<span class="sd">        Implementations of this method should return True if the variable&#39;s data type</span>
+<span class="sd">        Implementations of this method should return True if the variable's data type</span>
 <span class="sd">        is a signed type (like signed integers), otherwise False.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the variable is of a signed data type, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="Variable.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abstract method to determine if the variable&#39;s data type is an integer.</span>
+<span class="w">        </span><span class="sd">"""Abstract method to determine if the variable's data type is an integer.</span>
 
-<span class="sd">        Implementations of this method should return True if the variable&#39;s data type</span>
+<span class="sd">        Implementations of this method should return True if the variable's data type</span>
 <span class="sd">        is an integer (signed or unsigned), otherwise False for non-integer data types.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the variable is of an integer data type, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">        """</span></div>
 
 
 <div class="viewcode-block" id="Variable.is_enum">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.Variable.is_enum">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_enum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to determine if the variable&#39;s data type is an enum.</span>
+<span class="w">        </span><span class="sd">"""Method to determine if the variable's data type is an enum.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the variable is of an enum data type, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="p">)</span></div>
 </div>
 
@@ -539,56 +539,56 @@
 <div class="viewcode-block" id="VariableInt8">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableInt8</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an 8-bit signed integer variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents an 8-bit signed integer variable."""</span>
 
 <div class="viewcode-block" id="VariableInt8._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 8-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 8-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">128</span><span class="p">,</span> <span class="mi">127</span></div>
 
 
 <div class="viewcode-block" id="VariableInt8.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Override: INT8 is an integer type.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Override: INT8 is an integer type."""</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt8.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Override: INT8 is a signed type.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Override: INT8 is a signed type."""</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt8.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 8-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 8-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 1.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">1</span></div>
 
 
 <div class="viewcode-block" id="VariableInt8._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 8-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 8-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -598,15 +598,15 @@
 <div class="viewcode-block" id="VariableInt8.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt8.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to an 8-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to an 8-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 8-bit signed integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 </div>
 
 
@@ -617,63 +617,63 @@
 <div class="viewcode-block" id="VariableUint8">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableUint8</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an 8-bit unsigned integer variable.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents an 8-bit unsigned integer variable."""</span>
 
 <div class="viewcode-block" id="VariableUint8._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 8-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 8-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span></div>
 
 
 <div class="viewcode-block" id="VariableUint8.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableUint8.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: False, because this variable is unsigned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="VariableUint8.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 8-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 8-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 1.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">1</span></div>
 
 
 <div class="viewcode-block" id="VariableUint8._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Override: Set the value of the variable in the MCU memory.</span>
+<span class="w">        </span><span class="sd">"""Override: Set the value of the variable in the MCU memory.</span>
 
 <span class="sd">        Checks if the value is within the allowed range and converts it to bytes representation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -683,15 +683,15 @@
 <div class="viewcode-block" id="VariableUint8.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint8.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to an 8-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to an 8-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 8-bit unsigned integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 </div>
 
 
@@ -702,64 +702,64 @@
 <div class="viewcode-block" id="VariableInt16">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableInt16</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 16-bit signed integer variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 16-bit signed integer variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableInt16._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 16-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 16-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">32768</span><span class="p">,</span> <span class="mi">32767</span></div>
 
 
 <div class="viewcode-block" id="VariableInt16.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt16.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is signed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt16.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 16-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 16-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 2.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">2</span></div>
 
 
 <div class="viewcode-block" id="VariableInt16._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 16-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 16-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -769,15 +769,15 @@
 <div class="viewcode-block" id="VariableInt16.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt16.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 16-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 16-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 16-bit signed integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 </div>
 
 
@@ -788,64 +788,64 @@
 <div class="viewcode-block" id="VariableUint16">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableUint16</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 16-bit unsigned integer variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 16-bit unsigned integer variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableUint16._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 16-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 16-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">65535</span></div>
 
 
 <div class="viewcode-block" id="VariableUint16.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableUint16.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: False, because this variable is unsigned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="VariableUint16.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 16-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 16-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 2.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">2</span></div>
 
 
 <div class="viewcode-block" id="VariableUint16._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 16-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 16-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -855,15 +855,15 @@
 <div class="viewcode-block" id="VariableUint16.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint16.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 16-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 16-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 16-bit unsigned integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 </div>
 
 
@@ -874,64 +874,64 @@
 <div class="viewcode-block" id="VariableInt32">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableInt32</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 32-bit signed integer variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 32-bit signed integer variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableInt32._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 32-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 32-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="mh">0x80000000</span><span class="p">,</span> <span class="mh">0x7FFFFFFF</span></div>
 
 
 <div class="viewcode-block" id="VariableInt32.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt32.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is signed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt32.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 32-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 32-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 4.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">4</span></div>
 
 
 <div class="viewcode-block" id="VariableInt32._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 32-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 32-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -941,15 +941,15 @@
 <div class="viewcode-block" id="VariableInt32.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt32.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 32-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 32-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 32-bit signed integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 </div>
 
 
@@ -960,64 +960,64 @@
 <div class="viewcode-block" id="VariableUint32">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableUint32</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 32-bit unsigned integer variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 32-bit unsigned integer variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableUint32._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 32-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 32-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mh">0xFFFFFFFF</span></div>
 
 
 <div class="viewcode-block" id="VariableUint32.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableUint32.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: False, because this variable is unsigned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="VariableUint32.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 32-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 32-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 4.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">4</span></div>
 
 
 <div class="viewcode-block" id="VariableUint32._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 32-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 32-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1027,15 +1027,15 @@
 <div class="viewcode-block" id="VariableUint32.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint32.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 32-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 32-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 32-bit unsigned integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 </div>
 
 
@@ -1043,63 +1043,63 @@
 <div class="viewcode-block" id="VariableUint64">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableUint64</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 64-bit unsigned integer variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 64-bit unsigned integer variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableUint64._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 64-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 64-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mh">0xFFFFFFFFFFFFFFFF</span></div>
 
 
 <div class="viewcode-block" id="VariableUint64.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableUint64.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: False, because this variable is unsigned.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="VariableUint64.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 64-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 64-bit unsigned integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 8.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">8</span></div>
 
 
 <div class="viewcode-block" id="VariableUint64._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 64-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 64-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1109,15 +1109,15 @@
 <div class="viewcode-block" id="VariableUint64.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableUint64.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 64-bit unsigned integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 64-bit unsigned integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 64-bit unsigned integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 </div>
 
 
@@ -1125,63 +1125,63 @@
 <div class="viewcode-block" id="VariableInt64">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableInt64</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 64-bit signed integer variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 64-bit signed integer variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableInt64._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 64-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 64-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="mh">0x8000000000000000</span><span class="p">,</span> <span class="mh">0x7FFFFFFFFFFFFFFF</span></div>
 
 
 <div class="viewcode-block" id="VariableInt64.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt64.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is signed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableInt64.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 64-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 64-bit signed integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 8.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">8</span></div>
 
 
 <div class="viewcode-block" id="VariableInt64._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 64-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 64-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
+                <span class="n">length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1191,15 +1191,15 @@
 <div class="viewcode-block" id="VariableInt64.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableInt64.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 64-bit signed integer.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 64-bit signed integer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 64-bit signed integer value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 </div>
 
 
@@ -1210,63 +1210,63 @@
 <div class="viewcode-block" id="VariableFloat">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableFloat</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 32-bit floating point variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents a 32-bit floating point variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableFloat._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 32-bit floating point.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 32-bit floating point.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="o">-</span><span class="mh">0x80000000</span><span class="p">,</span> <span class="mh">0x7FFFFFFF</span></div>
 
 
 <div class="viewcode-block" id="VariableFloat.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: False, because this variable is a float.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
 
 <div class="viewcode-block" id="VariableFloat.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True, because this variable is signed.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableFloat.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the 32-bit floating point.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the 32-bit floating point.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable, which is 4.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">4</span></div>
 
 
 <div class="viewcode-block" id="VariableFloat._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 32-bit floating point.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 32-bit floating point.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (float): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">float_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="n">bytes_data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">float_value</span><span class="p">))</span>
+            <span class="n">bytes_data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">"f"</span><span class="p">,</span> <span class="n">float_value</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
@@ -1275,16 +1275,16 @@
 <div class="viewcode-block" id="VariableFloat.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableFloat.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to a 32-bit floating point.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to a 32-bit floating point.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The 32-bit floating point value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&lt;f&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">"&lt;f"</span><span class="p">,</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 </div>
 
 
@@ -1293,38 +1293,38 @@
 <div class="viewcode-block" id="VariableEnum">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">VariableEnum</span><span class="p">(</span><span class="n">Variable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents enum variable in the MCU data memory.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Represents enum variable in the MCU data memory."""</span>
 
 <div class="viewcode-block" id="VariableEnum._get_min_max_values">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum._get_min_max_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_min_max_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Number</span><span class="p">,</span> <span class="n">Number</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the minimum and maximum values for the 16-bit enum.</span>
+<span class="w">        </span><span class="sd">"""Get the minimum and maximum values for the 16-bit enum.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            tuple[Number, Number]: The minimum and maximum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="VariableEnum.is_integer">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.is_integer">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_integer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is an integer.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is an integer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: Enumeration is strictly an integer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="VariableEnum.is_signed">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.is_signed">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_signed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the variable is signed.</span>
+<span class="w">        </span><span class="sd">"""Check if the variable is signed.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: Depending on the enum values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1334,7 +1334,7 @@
 <div class="viewcode-block" id="VariableEnum.get_width">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.get_width">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the width of the enum.</span>
+<span class="w">        </span><span class="sd">"""Get the width of the enum.</span>
 
 <span class="sd">        The enum may have variable byte size, depending on the mcu architecture and the</span>
 <span class="sd">        amount of elements contained under each specific enumeration. The size is obtained</span>
@@ -1342,7 +1342,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: Width of the variable in bytes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">byte_size</span></div>
 
  
@@ -1350,15 +1350,15 @@
 <div class="viewcode-block" id="VariableEnum._set_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum._set_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the 16-bit enum.</span>
+<span class="w">        </span><span class="sd">"""Set the value of the 16-bit enum.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            value (int): The value to set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">int_value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="n">bytes_data</span> <span class="o">=</span> <span class="n">int_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span>
-                <span class="n">length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_signed</span><span class="p">()</span>
+                <span class="n">length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">l_net</span><span class="o">.</span><span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_signed</span><span class="p">()</span>
             <span class="p">)</span>  <span class="c1"># construct the bytes representation of the value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_value_raw</span><span class="p">(</span><span class="n">bytes_data</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1368,36 +1368,36 @@
 <div class="viewcode-block" id="VariableEnum.bytes_to_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.bytes_to_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bytes_to_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Number</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the byte array to enum.</span>
+<span class="w">        </span><span class="sd">"""Convert the byte array to enum.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The byte array to convert.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Number: The enum value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_signed</span><span class="p">())</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"little"</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_signed</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="VariableEnum.get_enum_list">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.get_enum_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_enum_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the valid values for the enum variable.</span>
+<span class="w">        </span><span class="sd">"""Get the valid values for the enum variable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, int]: A dictionary of valid values for the enum variable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span></div>
 
 
 <div class="viewcode-block" id="VariableEnum.get_enum_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.get_enum_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_enum_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the string representation of the enum variable.</span>
+<span class="w">        </span><span class="sd">"""Get the string representation of the enum variable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The string value of the enumerator variable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="n">value</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
 
@@ -1405,18 +1405,18 @@
 <div class="viewcode-block" id="VariableEnum.set_enum_value">
 <a class="viewcode-back" href="../../../autoapi/pyx2cscope/variable/variable/index.html#pyx2cscope.variable.variable.VariableEnum.set_enum_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_enum_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the string representation of the enum variable.</span>
+<span class="w">        </span><span class="sd">"""Get the string representation of the enum variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            new_value (str): The string value of a enum item.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: The string value of the enumerator variable.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">new_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">valid_values</span><span class="p">[</span><span class="n">new_value</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid enum value&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Invalid enum value"</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

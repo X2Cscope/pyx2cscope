@@ -83,13 +83,13 @@
            <div itemprop="articleBody">
              
   <h1>Source code for pyx2cscope.x2cscope</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;X2CScope module for interfacing with the X2C firmware enabled embedded systems.</span>
+<span></span><span class="sd">"""X2CScope module for interfacing with the X2C firmware enabled embedded systems.</span>
 
 <span class="sd">The pyx2cscope Python package communicates with X2Cscope enabled firmwares running on Microchip microcontrollers. It</span>
 <span class="sd">is utilising LNET protocol to communicate with the firmware. LNET protocol is implemented in the mchplnet package.</span>
 <span class="sd">The package provides an interface to connect to the firmware, set up scope channels, request data, and a process</span>
 <span class="sd">received data.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
@@ -107,7 +107,7 @@
 <span class="c1"># Configure logging for debugging and tracking</span>
 <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
     <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
-    <span class="n">filename</span><span class="o">=</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;.log&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="o">=</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">".log"</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Define constants for magic values</span>
@@ -124,14 +124,14 @@
 <div class="viewcode-block" id="get_variable_as_scope_channel">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.get_variable_as_scope_channel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_variable_as_scope_channel</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="n">Variable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScopeChannel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a Variable object to a ScopeChannel object.</span>
+<span class="w">    </span><span class="sd">"""Converts a Variable object to a ScopeChannel object.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        variable (Variable): The variable to be converted to a ScopeChannel.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ScopeChannel: A ScopeChannel object representing the given variable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">ScopeChannel</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="n">source_location</span><span class="o">=</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
@@ -147,15 +147,15 @@
 <div class="viewcode-block" id="TriggerConfig">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TriggerConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration class for scope trigger settings.</span>
+<span class="w">    </span><span class="sd">"""Configuration class for scope trigger settings.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        variable (Variable): The variable to use as the trigger source.</span>
 <span class="sd">        trigger_level (int): The trigger level value for a specified channel.</span>
 <span class="sd">        trigger_mode (int): 0 Auto, 1 Triggered (default) .</span>
-<span class="sd">        trigger_delay (int): The trigger delay (in percentage to the scope size) (default 0).</span>
+<span class="sd">        trigger_delay (int): Number of samples, &gt; 0 pre-trigger, &lt; 0 post-trigger (default 0).</span>
 <span class="sd">        trigger_edge (int): Falling edge 0, rising edge 1.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="TriggerConfig.variable">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.TriggerConfig.variable">[docs]</a>
@@ -183,7 +183,7 @@
 <div class="viewcode-block" id="X2CScope">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">X2CScope</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;X2CScope class for interfacing with the X2C Scope tool.</span>
+<span class="w">    </span><span class="sd">"""X2CScope class for interfacing with the X2C Scope tool.</span>
 
 <span class="sd">    This class provides methods for connecting to the scope, setting up scope channels,</span>
 <span class="sd">    requesting data, and processing received data.</span>
@@ -195,16 +195,16 @@
 <span class="sd">        scope_setup: Configuration for the scope setup.</span>
 <span class="sd">        convert_list (dict): Dictionary to store variable conversion functions.</span>
 <span class="sd">        uc_width (int): the processor architecture 2: 16 bit, 4: 32 bit.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">InterfaceType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the X2CScope instance.</span>
+<span class="w">        </span><span class="sd">"""Initialize the X2CScope instance.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            elf_file (str): Path to the ELF file.</span>
 <span class="sd">            interface (Interface): Communication interface to be used, defaults to None.</span>
 <span class="sd">            **kwargs: Key defined arguments.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">InterfaceFactory</span><span class="o">.</span><span class="n">get_interface</span><span class="p">(</span><span class="n">interface</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span> <span class="o">=</span> <span class="n">LNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span> <span class="o">=</span> <span class="n">VariableFactory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="p">,</span> <span class="n">elf_file</span><span class="p">)</span>
@@ -215,11 +215,11 @@
 <div class="viewcode-block" id="X2CScope.set_interface">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_interface">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="p">:</span> <span class="n">Interface</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the communication interface for the scope.</span>
+<span class="w">        </span><span class="sd">"""Set the communication interface for the scope.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            interface (Interface): The interface to be set for communication.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">interface</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span> <span class="o">=</span> <span class="n">LNet</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_scope_setup</span><span class="p">()</span>
@@ -229,43 +229,43 @@
 <div class="viewcode-block" id="X2CScope.connect">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.connect">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Establish a connection with the scope interface.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Establish a connection with the scope interface."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.disconnect">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.disconnect">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Terminate the connection with the scope interface.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Terminate the connection with the scope interface."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.list_variables">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.list_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all available variables.</span>
+<span class="w">        </span><span class="sd">"""List all available variables.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[str]: A list of available variable names.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_var_list</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.list_sfr">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.list_sfr">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_sfr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all available SFR (Special Function Register) names.</span>
+<span class="w">        </span><span class="sd">"""List all available SFR (Special Function Register) names.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[str]: A list of SFR names.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_sfr_list</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_variable">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_variable">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sfr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a variable by its name.</span>
+<span class="w">        </span><span class="sd">"""Retrieve a variable by its name.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name (str): The name of the variable to retrieve.</span>
@@ -273,62 +273,62 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Variable: The requested variable object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="n">sfr</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_variable_raw">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_variable_raw">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_variable_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_info</span><span class="p">:</span> <span class="n">VariableInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Variable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a variable by its definition encapsulated by VariableInfo Dataclass.</span>
+<span class="w">        </span><span class="sd">"""Retrieve a variable by its definition encapsulated by VariableInfo Dataclass.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            variable_info (VariableInfo): The information of the variable.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Variable: The requested variable object.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">get_variable_raw</span><span class="p">(</span><span class="n">variable_info</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.export_variables">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.export_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">export_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="n">FileType</span> <span class="o">=</span> <span class="n">FileType</span><span class="o">.</span><span class="n">YAML</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the variables registered on the elf file to a pickle file.</span>
+<span class="w">        </span><span class="sd">"""Store the variables registered on the elf file to a pickle file.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            filename (str): The path and name of the file to store data to. Defaults to &#39;elf_file_name.yml&#39;.</span>
+<span class="sd">            filename (str): The path and name of the file to store data to. Defaults to 'elf_file_name.yml'.</span>
 <span class="sd">            ext (FileType): The file extension type to be used (elf, yml, pkl, etc.)</span>
 <span class="sd">            items (List): A list of variable names or variables to export. Export all variables if empty.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">export_variables</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.import_variables">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.import_variables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">import_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Import and load variables registered on the file.</span>
+<span class="w">        </span><span class="sd">"""Import and load variables registered on the file.</span>
 
 <span class="sd">        Currently supported files are Elf (.elf), Pickle (.pkl), and Yaml (.yml).</span>
 <span class="sd">        This method clears any loaded variable.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (str): The name of the file and its path.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">import_variables</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.check_compatibility">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.check_compatibility">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">check_compatibility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check whether the currently loaded ELF appears compatible with the connected target.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Check whether the currently loaded ELF appears compatible with the connected target."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">check_device_compatibility</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.add_scope_channel">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.add_scope_channel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_scope_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="n">Variable</span><span class="p">,</span> <span class="n">trigger</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a variable as a scope channel.</span>
+<span class="w">        </span><span class="sd">"""Add a variable as a scope channel.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            variable (Variable): The variable to be added as a scope channel.</span>
@@ -336,7 +336,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: The ID of the added scope channel.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scope_channel</span> <span class="o">=</span> <span class="n">get_variable_as_scope_channel</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="p">[</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable</span><span class="o">.</span><span class="n">bytes_to_value</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">add_channel</span><span class="p">(</span><span class="n">scope_channel</span><span class="p">,</span> <span class="n">trigger</span><span class="p">)</span></div>
@@ -345,11 +345,11 @@
 <div class="viewcode-block" id="X2CScope.clear_all_scope_channel">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.clear_all_scope_channel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_all_scope_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all variables from the scope channel and reset any trigger.</span>
+<span class="w">        </span><span class="sd">"""Remove all variables from the scope channel and reset any trigger.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">variables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
         <span class="p">)</span>  <span class="c1"># make a copy so we may delete inside the loop</span>
@@ -361,14 +361,14 @@
 <div class="viewcode-block" id="X2CScope.remove_scope_channel">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.remove_scope_channel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">remove_scope_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">:</span> <span class="n">Variable</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a variable from the scope channel.</span>
+<span class="w">        </span><span class="sd">"""Remove a variable from the scope channel.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            variable (Variable): The variable to be removed from the scope channel.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The result of the channel removal operation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">convert_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">remove_channel</span><span class="p">(</span><span class="n">variable</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
@@ -377,29 +377,29 @@
 <div class="viewcode-block" id="X2CScope.get_scope_channel_list">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_channel_list">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_scope_channel_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ScopeChannel</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all scope channels.</span>
+<span class="w">        </span><span class="sd">"""Get a list of all scope channels.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, ScopeChannel]: A dictionary of scope channels with their names as keys.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">list_channels</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.reset_scope_trigger">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.reset_scope_trigger">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_scope_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets scope trigger settings, i.e., no triggering will happen.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Resets scope trigger settings, i.e., no triggering will happen."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">reset_trigger</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.set_scope_trigger">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_scope_trigger">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_scope_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">TriggerConfig</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the scope trigger configuration.</span>
+<span class="w">        </span><span class="sd">"""Set the scope trigger configuration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            config (TriggerConfig): Configuration object for trigger settings.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scope_trigger</span> <span class="o">=</span> <span class="n">ScopeTrigger</span><span class="p">(</span>
             <span class="n">channel</span><span class="o">=</span><span class="n">get_variable_as_scope_channel</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">variable</span><span class="p">),</span>
             <span class="n">trigger_level</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">trigger_level</span><span class="p">,</span>
@@ -417,14 +417,14 @@
 <div class="viewcode-block" id="X2CScope.clear_trigger">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.clear_trigger">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the trigger configuration.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Reset the trigger configuration."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">reset_trigger</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.set_sample_time">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_sample_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_sample_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_time</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the resolution how the samples will be buffered at the internal buffer.</span>
+<span class="w">        </span><span class="sd">"""Define the resolution how the samples will be buffered at the internal buffer.</span>
 
 <span class="sd">        This can be used to extend total sampling time at the cost of resolution.</span>
 <span class="sd">        In the pyX2Cscope API, values start at 1, while LNET uses a 0-based pre-scaler.</span>
@@ -432,7 +432,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            sample_time (int): The sample time factor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">sample_time</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">sample_time</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">sample_time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">set_sample_time_factor</span><span class="p">(</span><span class="n">sample_time</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span></div>
 
@@ -440,36 +440,36 @@
 <div class="viewcode-block" id="X2CScope.set_scope_state">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.set_scope_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_scope_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scope_state</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the state of the scope.</span>
+<span class="w">        </span><span class="sd">"""Set the state of the scope.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            scope_state (int): The desired scope state.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">set_scope_state</span><span class="p">(</span><span class="n">scope_state</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.request_scope_data">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.request_scope_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">request_scope_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request scope data from the LNet layer.</span>
+<span class="w">        </span><span class="sd">"""Request scope data from the LNet layer.</span>
 
 <span class="sd">        Calling this method will start the scope sampling at the microcontroller side.</span>
 <span class="sd">        This function should be called once all the required settings are made for data acquisition.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">save_parameter</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.is_scope_data_ready">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.is_scope_data_ready">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_scope_data_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the sampling of scope data is ready.</span>
+<span class="w">        </span><span class="sd">"""Check if the sampling of scope data is ready.</span>
 
 <span class="sd">        Before calling this method, call request_scope_data() first.</span>
 <span class="sd">        Please insert a delay between is_scope_data_ready().</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the scope data is ready, False otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scope_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">load_parameters</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">scope_data</span><span class="o">.</span><span class="n">scope_state</span> <span class="o">==</span> <span class="mi">0</span>
@@ -480,11 +480,11 @@
 <div class="viewcode-block" id="X2CScope.get_trigger_position">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_trigger_position">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_trigger_position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the position of the trigger event.</span>
+<span class="w">        </span><span class="sd">"""Get the position of the trigger event.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: The index position of the trigger event.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">scope_data</span><span class="p">:</span> <span class="n">LoadScopeData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span>
             <span class="n">scope_data</span><span class="o">.</span><span class="n">trigger_event_position</span>
@@ -495,11 +495,11 @@
 <div class="viewcode-block" id="X2CScope.get_delay_trigger_position">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_delay_trigger_position">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_delay_trigger_position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the position of the delay trigger.</span>
+<span class="w">        </span><span class="sd">"""Get the position of the delay trigger.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: The index position of the delay trigger.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">trigger_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_trigger_position</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">trigger_position</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">scope_trigger</span><span class="o">.</span><span class="n">trigger_delay</span><span class="p">)</span></div>
 
@@ -507,11 +507,11 @@
 <div class="viewcode-block" id="X2CScope._calc_sda_used_length">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._calc_sda_used_length">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_calc_sda_used_length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the used length of the Scope Data Array (SDA).</span>
+<span class="w">        </span><span class="sd">"""Calculate the used length of the Scope Data Array (SDA).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            int: The length of the used portion of the SDA.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">bytes_not_used</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_size</span> <span class="o">%</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">uc_width</span>
         <span class="p">)</span>
@@ -521,11 +521,11 @@
 <div class="viewcode-block" id="X2CScope._read_array_chunks">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._read_array_chunks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_read_array_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bytearray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read array chunks from the LNet layer.</span>
+<span class="w">        </span><span class="sd">"""Read array chunks from the LNet layer.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[bytearray]: A list containing the chunk data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">chunk_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">data_type</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># It will always be 1 for array data</span>
         <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">253</span>  <span class="c1"># Full chunk excluding Service-ID and Error-ID, total bytes 255 (0xFF)</span>
@@ -540,7 +540,7 @@
                 <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
                 <span class="n">chunk_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">chunk_data</span></div>
 
@@ -548,14 +548,14 @@
 <div class="viewcode-block" id="X2CScope.read_array">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.read_array">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bytearray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read an array from the specified address in the MCU memory.</span>
+<span class="w">        </span><span class="sd">"""Read an array from the specified address in the MCU memory.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data_type (int): The type of data to read.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[bytearray]: The read data.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">chunk_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">chunk_size</span> <span class="o">=</span> <span class="p">(</span>
             <span class="mi">253</span>  <span class="c1"># Full chunk excluding CRC and Service-ID, total bytes 255 (0xFF)</span>
@@ -566,28 +566,28 @@
                 <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">get_ram_array</span><span class="p">(</span><span class="n">current_address</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">data_type</span><span class="p">)</span>
                 <span class="n">chunk_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error reading chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">chunk_data</span></div>
 
 
 <div class="viewcode-block" id="X2CScope._sort_channel_data">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope._sort_channel_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_sort_channel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytearray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sort and convert the dataset byte order into channel byte order.</span>
+<span class="w">        </span><span class="sd">"""Sort and convert the dataset byte order into channel byte order.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            data (bytearray): The raw data read from the scope.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, List[Number]]: A dictionary with channel names as keys and lists of sorted data as values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">channels</span> <span class="o">=</span> <span class="p">{</span><span class="n">channel</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">list_channels</span><span class="p">()}</span>
         <span class="n">dataset_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">get_dataset_size</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">dataset_size</span><span class="p">):</span>
             <span class="n">dataset</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">dataset_size</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="o">!=</span> <span class="n">dataset_size</span><span class="p">:</span>
-                <span class="k">continue</span>  <span class="c1"># Skip this dataset if it&#39;s not the complete expected size</span>
+                <span class="k">continue</span>  <span class="c1"># Skip this dataset if it's not the complete expected size</span>
 
             <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">list_channels</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -605,14 +605,14 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_filter_channels</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter the channels to include only valid data.</span>
+<span class="w">        </span><span class="sd">"""Filter the channels to include only valid data.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            channels (Dict[str, List[Number]]): The dictionary of channels with raw data.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, List[Number]]: The filtered dictionary of channels with valid data only.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># there is no need to rearrange the byte vector</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">scope_trigger</span><span class="o">.</span><span class="n">trigger_delay</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">channels</span>
@@ -628,14 +628,14 @@
 <div class="viewcode-block" id="X2CScope.get_scope_channel_data">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_channel_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_scope_channel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">valid_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Number</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the sorted and optionally filtered scope channel data.</span>
+<span class="w">        </span><span class="sd">"""Get the sorted and optionally filtered scope channel data.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            valid_data (bool, optional): If True, return only valid data. Defaults to True.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict[str, List[Number]]: A dictionary with channel names as keys and data lists as values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># handle only if there is at least one channel added to the scope</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_array_chunks</span><span class="p">()</span>
@@ -647,7 +647,7 @@
 <div class="viewcode-block" id="X2CScope.get_scope_sample_time">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_scope_sample_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_scope_sample_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the scope sample time based on user-provided time value.</span>
+<span class="w">        </span><span class="sd">"""Evaluate the scope sample time based on user-provided time value.</span>
 
 <span class="sd">        X2Cscope has an internal buffer which is filled with data at a specific rate.</span>
 <span class="sd">        The argument time relates to the sampling rate of each sample. The total scope</span>
@@ -660,7 +660,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: The real-time duration for the scope functionality in milliseconds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># - `self.scope_setup.channels`: a dictionary of all configured scope channels</span>
         <span class="c1"># - `self.scope_setup.get_dataset_size()`: returns the total size of one dataset in bytes</span>
         <span class="c1"># - `self.lnet.scope_data.data_array_size`: the total size of the data array in bytes</span>
@@ -679,7 +679,7 @@
         <span class="n">total_time_milliseconds</span> <span class="o">=</span> <span class="n">total_time_microseconds</span> <span class="o">/</span> <span class="mi">1000</span>
 
         <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Total time for the scope functionality: </span><span class="si">{</span><span class="n">total_time_milliseconds</span><span class="si">}</span><span class="s2"> ms&quot;</span>
+            <span class="sa">f</span><span class="s2">"Total time for the scope functionality: </span><span class="si">{</span><span class="n">total_time_milliseconds</span><span class="si">}</span><span class="s2"> ms"</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scope_setup</span><span class="o">.</span><span class="n">sample_time_factor</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">total_time_milliseconds</span></div>
 
@@ -687,20 +687,20 @@
 <div class="viewcode-block" id="X2CScope.get_device_info">
 <a class="viewcode-back" href="../../autoapi/pyx2cscope/x2cscope/index.html#pyx2cscope.x2cscope.X2CScope.get_device_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_device_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the device information as a dictionary.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Returns the device information as a dictionary."""</span>
         <span class="n">device_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_factory</span><span class="o">.</span><span class="n">device_info</span>
-        <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">&quot;8-bit&quot;</span>
+        <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">"8-bit"</span>
         <span class="k">if</span> <span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">==</span> <span class="n">UC_WIDTH_16BIT</span><span class="p">:</span>
-            <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">&quot;16-bit&quot;</span>
+            <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">"16-bit"</span>
         <span class="k">elif</span> <span class="n">device_info</span><span class="o">.</span><span class="n">uc_width</span> <span class="o">==</span> <span class="n">UC_WIDTH_32BIT</span><span class="p">:</span>
-            <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">&quot;32-bit&quot;</span>
+            <span class="n">uc_width_value</span> <span class="o">=</span> <span class="s2">"32-bit"</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;processor_id&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span>
-            <span class="s2">&quot;uc_width&quot;</span><span class="p">:</span> <span class="n">uc_width_value</span><span class="p">,</span>
-            <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitor_date</span><span class="p">,</span>  <span class="c1">##TODO Change to APP date once implemented</span>
-            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitor_time</span><span class="p">,</span>  <span class="c1"># TODO Change to APP time once implemented</span>
-            <span class="s2">&quot;AppVer&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">app_version</span><span class="p">,</span>
-            <span class="s2">&quot;dsp_state&quot;</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">dsp_state</span><span class="p">,</span>
+            <span class="s2">"processor_id"</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span>
+            <span class="s2">"uc_width"</span><span class="p">:</span> <span class="n">uc_width_value</span><span class="p">,</span>
+            <span class="s2">"date"</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitor_date</span><span class="p">,</span>  <span class="c1">##TODO Change to APP date once implemented</span>
+            <span class="s2">"time"</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">monitor_time</span><span class="p">,</span>  <span class="c1"># TODO Change to APP time once implemented</span>
+            <span class="s2">"AppVer"</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">app_version</span><span class="p">,</span>
+            <span class="s2">"dsp_state"</span><span class="p">:</span> <span class="n">device_info</span><span class="o">.</span><span class="n">dsp_state</span><span class="p">,</span>
         <span class="p">}</span></div>
 </div>
 
