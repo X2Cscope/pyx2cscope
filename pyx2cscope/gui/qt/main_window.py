@@ -24,6 +24,7 @@ import pyx2cscope
 from pyx2cscope.gui import img as img_src
 from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
 from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
+from pyx2cscope.gui.qt.controllers.session_store import RecentSessions
 from pyx2cscope.gui.qt.models.app_state import AppState
 from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
@@ -32,6 +33,22 @@ from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 from pyx2cscope.utils import get_project_name
+
+
+def _to_float(text, default: float) -> float:
+    """Convert a text field to float, or return default if it is empty or not a number.
+
+    Args:
+        text: The text, e.g. "1.5", "" or an array value "[1, 2]".
+        default: The value used when the text is not a number.
+
+    Returns:
+        float: The number.
+    """
+    try:
+        return float(text) if text not in ("", None) else default
+    except (TypeError, ValueError):
+        return default
 
 
 class MainWindow(QMainWindow):
@@ -53,6 +70,8 @@ class MainWindow(QMainWindow):
                       Relevant keys: ``elf`` (path to ELF file) and
                       ``port`` (COM port), which trigger an automatic
                       connection attempt after the window is displayed.
+                      ``sessions_file`` sets the recent sessions file
+                      (default: the user configuration folder).
         """
         super().__init__(parent)
 
@@ -62,6 +81,7 @@ class MainWindow(QMainWindow):
 
         # Initialize settings
         self._settings = QSettings("Microchip", "pyX2Cscope")
+        self._recent_sessions = RecentSessions(kwargs.get("sessions_file"))
 
         # Initialize app state
         self._app_state = AppState(self)
@@ -76,6 +96,7 @@ class MainWindow(QMainWindow):
         # Setup UI
         self._setup_ui()
         self._setup_connections()
+        self._refresh_recent_sessions()
 
         # Start data poller thread
         self._data_poller.start()
@@ -253,6 +274,10 @@ class MainWindow(QMainWindow):
         self._setup_tab.elf_file_selected.connect(self._on_elf_file_selected)
         self._setup_tab.elf_file_changed.connect(self._update_window_title)
         self._setup_tab.refresh_btn.clicked.connect(self._refresh_ports)
+        self._setup_tab.recent_session_selected.connect(self._open_recent_session)
+        self._setup_tab.recent_session_remove_requested.connect(self._remove_recent_session)
+        self._setup_tab.save_session_requested.connect(self._save_config)
+        self._setup_tab.load_session_requested.connect(self._load_config)
 
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
@@ -292,6 +317,7 @@ class MainWindow(QMainWindow):
             self._setup_tab.set_connected(True)
             self._setup_tab.save_connection_settings()
             self._update_device_info()
+            self._record_session(keep_views=True)
             # Activate WatchView and switch to Data Views tab
             self._watch_view_btn.setChecked(True)
             self._on_view_toggle_changed()
@@ -336,6 +362,10 @@ class MainWindow(QMainWindow):
         # Get connection parameters based on selected interface
         conn_params = self._setup_tab.get_connection_params()
 
+        # Disconnecting: store the session while the views still show it
+        if self._app_state.is_connected():
+            self._record_session()
+
         # Process events to show loading indicator before blocking operation
         QApplication.processEvents()
 
@@ -347,8 +377,61 @@ class MainWindow(QMainWindow):
             self._setup_tab.set_connected(True)
             self._setup_tab.save_connection_settings()
             self._update_device_info()
+            self._record_session(keep_views=True)
         else:
             self._setup_tab.set_connected(False)
+
+    # === Sessions (recent list, Save/Load Session) ===
+
+    def _record_session(self, keep_views: bool = False):
+        """Store the current session in the recent sessions list.
+
+        Args:
+            keep_views: Keep the WatchView/ScopeView settings already stored for this file. Used right
+                after connecting, when the views may still show another project.
+        """
+        try:
+            config = self._build_config()
+        except Exception as e:  # never block connect, disconnect or closing the window
+            logging.warning(f"Could not store the session: {e}")
+            return
+        if config.get("elf_file"):
+            self._recent_sessions.save_session(config, keep_views=keep_views)
+            self._refresh_recent_sessions()
+
+    def _refresh_recent_sessions(self):
+        """Show the recent sessions in the Setup tab."""
+        sessions = [(RecentSessions.describe(e), e["config"]["elf_file"]) for e in self._recent_sessions.entries()]
+        self._setup_tab.set_recent_sessions(sessions, current_file=self._setup_tab.elf_file_path)
+
+    def _open_recent_session(self, elf_file: str):
+        """Open a recent session: fill in file, connection and script, connect, restore the views.
+
+        Args:
+            elf_file: The ELF/YML/PKL file of the session.
+        """
+        if self._app_state.is_connected():
+            return
+        config = self._recent_sessions.get(elf_file)
+        if config is None:
+            return
+        if not os.path.exists(elf_file):
+            self._show_error(
+                f"The file of this session was not found:\n{elf_file}\n\n"
+                "Rebuild the project or remove the session from the list."
+            )
+            self._refresh_recent_sessions()
+            return
+        self._apply_config(config)
+
+    def _remove_recent_session(self, elf_file: str):
+        """Remove a session from the recent sessions list.
+
+        Args:
+            elf_file: The ELF/YML/PKL file of the session.
+        """
+        self._recent_sessions.remove(elf_file)
+        self._refresh_recent_sessions()
 
     def _on_connection_changed(self, connected: bool):
         """Handle connection state change."""
@@ -419,7 +502,18 @@ class MainWindow(QMainWindow):
         self._setup_tab.clear_device_info()
 
     def _save_config(self):
-        """Save current configuration."""
+        """Save the current session (file, connection, views and script) to a JSON file."""
+        self._config_manager.save_config(self._build_config())
+
+    def _build_config(self) -> dict:
+        """Return the current session as a configuration dict.
+
+        The format is shared with the web GUI (watch_view, scope_view, sample_control,
+        trigger_control). The Qt GUI adds elf_file, connection and script, which the web GUI ignores.
+
+        Returns:
+            dict: The configuration.
+        """
         # Determine view mode from toggle buttons
         watch_on = self._watch_view_btn.isChecked()
         scope_on = self._scope_view_btn.isChecked()
@@ -463,9 +557,10 @@ class MainWindow(QMainWindow):
                 "type": primitive,
                 "sfr": watch_qt["sfr"][i] if i < len(watch_qt.get("sfr", [])) else False,
                 "live": watch_qt["live"][i] if i < len(watch_qt.get("live", [])) else False,
-                "value": float(watch_qt["values"][i]) if i < len(watch_qt.get("values", [])) and watch_qt["values"][i] else 0.0,
-                "scaling": float(watch_qt["scaling"][i]) if i < len(watch_qt.get("scaling", [])) and watch_qt["scaling"][i] else 1.0,
-                "offset": float(watch_qt["offsets"][i]) if i < len(watch_qt.get("offsets", [])) and watch_qt["offsets"][i] else 0.0,
+                # Array values ("[1, 2, ...]") or partly typed numbers are stored with the default
+                "value": _to_float(watch_qt["values"][i] if i < len(watch_qt.get("values", [])) else "", 0.0),
+                "scaling": _to_float(watch_qt["scaling"][i] if i < len(watch_qt.get("scaling", [])) else "", 1.0),
+                "offset": _to_float(watch_qt["offsets"][i] if i < len(watch_qt.get("offsets", [])) else "", 0.0),
                 "unit": watch_qt["units"][i] if i < len(watch_qt.get("units", [])) else "",
             })
 
@@ -499,7 +594,17 @@ class MainWindow(QMainWindow):
             sample_control=sample_control,
             trigger_control=trigger_control,
         )
-        self._config_manager.save_config(config)
+        elf_file = self._setup_tab.elf_file_path
+        if elf_file:
+            config["elf_file"] = os.path.abspath(elf_file)
+        try:
+            config["connection"] = self._setup_tab.get_connection_params()
+        except ValueError:
+            # e.g. an empty CAN channel field; keep at least the interface
+            config["connection"] = {"interface": self._setup_tab.interface_type}
+        if self._scripting_tab.script_path:
+            config["script"] = os.path.abspath(self._scripting_tab.script_path)
+        return config
 
     def _export_selected_variables(self):
         """Export variables currently selected in WatchView and ScopeView."""
@@ -524,14 +629,25 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self._show_error(str(e))
 
-    def _load_config(self):  # noqa: PLR0912, PLR0915
-        """Load configuration from file."""
+    def _load_config(self):
+        """Load a session or configuration from a JSON file and apply it."""
         config = self._config_manager.load_config()
-        if not config:
-            return
+        if config:
+            self._apply_config(config)
+
+    def _apply_config(self, config: dict):  # noqa: PLR0912, PLR0915
+        """Apply a session or configuration: file, connection, script, connect, then the views.
+
+        While connected, the file and connection are kept and only the views and script are loaded.
+
+        Args:
+            config: The configuration, as written by :meth:`_build_config` or by the web GUI.
+        """
+        warnings = []
+        connected_before = self._app_state.is_connected()
 
         # Load ELF file
-        elf_path = config.get("elf_file", "")
+        elf_path = "" if connected_before else config.get("elf_file", "")
         if elf_path:
             if self._config_manager.validate_elf_file(elf_path):
                 self._setup_tab.elf_file_path = elf_path
@@ -543,16 +659,12 @@ class MainWindow(QMainWindow):
 
         # Load connection settings (new format with interface support)
         conn_params = config.get("connection", {})
-        if conn_params:
+        if connected_before:
+            pass  # keep the current connection
+        elif conn_params:
+            # Includes the UART port; a port that is not available falls back to AUTO
             self._setup_tab.set_connection_params(conn_params)
-
-            # For UART, also set the port if available
-            if conn_params.get("interface") == "UART":
-                com_port = conn_params.get("port", "")
-                port_combo = self._setup_tab.port_combo
-                if com_port and com_port in [port_combo.itemText(i) for i in range(port_combo.count())]:
-                    port_combo.setCurrentText(com_port)
-        else:
+        elif "baud_rate" in config or "com_port" in config:
             # Legacy config format support
             baud_rate = config.get("baud_rate", "115200")
             self._setup_tab.baud_combo.setCurrentText(baud_rate)
@@ -560,6 +672,14 @@ class MainWindow(QMainWindow):
             port_combo = self._setup_tab.port_combo
             if com_port and com_port in [port_combo.itemText(i) for i in range(port_combo.count())]:
                 port_combo.setCurrentText(com_port)
+
+        # Load the script of the session into the Scripting tab
+        script = config.get("script", "")
+        if script:
+            if os.path.exists(script):
+                self._scripting_tab.set_script(script)
+            else:
+                warnings.append(f"Script not found: {script}")
 
         # Try to connect (only if not already connected)
         if self._setup_tab.elf_file_path and not self._app_state.is_connected():
@@ -643,6 +763,41 @@ class MainWindow(QMainWindow):
         # Activate polling for any live checkboxes that were loaded as checked
         self._activate_loaded_polling()
 
+        if is_connected:
+            missing = self._find_missing_variables(raw_watch, raw_scope)
+            if missing:
+                warnings.append("Variables not found in the ELF file: " + ", ".join(missing))
+            # The views now show this session: store it completely
+            self._record_session()
+        if warnings:
+            self._show_warning("\n\n".join(warnings))
+
+    def _find_missing_variables(self, watch_config: dict, scope_config: dict) -> list:
+        """Return the loaded WatchView/ScopeView variables that the connected ELF file does not contain.
+
+        Args:
+            watch_config: WatchView configuration (dict of lists).
+            scope_config: ScopeView configuration (dict of lists).
+
+        Returns:
+            list: The missing variable names, in load order, without duplicates.
+        """
+        known = set(self._app_state.get_variable_list() or [])
+        missing = []
+        for config in (watch_config, scope_config):
+            sfrs = config.get("sfr", [])
+            for i, name in enumerate(config.get("variables", [])):
+                is_sfr = sfrs[i] if i < len(sfrs) else False
+                # SFRs are not in the variable list; they are checked when they are read
+                if name and not is_sfr and name not in known and name not in missing:
+                    missing.append(name)
+        return missing
+
+    def _show_warning(self, message: str):
+        """Show a warning message to the user."""
+        logging.warning(message)
+        QMessageBox.warning(self, "Warning", message)
+
     def _activate_loaded_polling(self):
         """Activate polling for any live checkboxes that were loaded as checked."""
         # WatchView tab - check live checkboxes
@@ -702,8 +857,9 @@ class MainWindow(QMainWindow):
         # Stop data poller
         self._data_poller.stop()
 
-        # Disconnect if connected
+        # Disconnect if connected, after storing the session
         if self._connection_manager.is_connected():
+            self._record_session()
             self._connection_manager.disconnect()
 
         event.accept()
