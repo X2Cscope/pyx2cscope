@@ -155,8 +155,8 @@ class ScopeViewTab(BaseTab):
         self._trigger_level_edit.setValidator(self.decimal_validator)
         grid.addWidget(self._trigger_level_edit, 5, 1)
 
-        # Trigger delay (combo box with -50% to +50% in 10% steps)
-        grid.addWidget(QLabel("Trigger Delay (%):"), 6, 0)
+        # Trigger delay in samples (combo box with -50 to +50 in steps of 10)
+        grid.addWidget(QLabel("Trigger Delay (samples):"), 6, 0)
         self._trigger_delay_combo = QComboBox()
         self._trigger_delay_combo.addItems(["-50", "-40", "-30", "-20", "-10", "0", "10", "20", "30", "40", "50"])
         self._trigger_delay_combo.setCurrentText("0")

@@ -222,7 +222,7 @@ The Trigger Control panel configures when data capture begins:
 | **Trigger Enable/Disable** | Enable triggers to start capture at a specific condition |
 | **Edge Detection** | Rising edge or Falling edge detection |
 | **Level** | The value threshold that triggers data capture |
-| **Delay** | Pre/post trigger delay (-50% to +50%) |
+| **Delay** | Pre/post trigger delay in samples (-50 to +50) |
 
 #### Trigger Modes
 
@@ -233,17 +233,17 @@ The Trigger Control panel configures when data capture begins:
 **Enabled (Triggered Mode)**
 - Sampling waits until the trigger condition is met
 - The trigger variable crosses the specified level in the specified direction
-- Pre-trigger delay (negative): Capture data before the trigger event
-- Post-trigger delay (positive): Capture data after the trigger event
+- Pre-trigger delay (positive): Capture data before the trigger event
+- Post-trigger delay (negative): Start capturing samples after the trigger event
 
 #### Setting Up a Trigger
 
 1. Enable the trigger by clicking **Enable**
 2. Select **Rising** or **Falling** edge
 3. Enter the trigger **Level** value
-4. Set the **Delay** percentage:
-   - Negative values (-50 to 0): Pre-trigger - see what happened before the event
-   - Positive values (0 to +50): Post-trigger - see what happens after the event
+4. Set the **Delay** as a number of samples:
+   - Positive values (0 to +50): Pre-trigger - keep that many samples from before the event
+   - Negative values (-50 to 0): Post-trigger - start capturing samples after the event
 5. Click **Update Trigger** to apply settings
 6. In the Source Configuration, select which variable acts as the trigger source
 
@@ -385,8 +385,13 @@ The Scripting view allows you to run Python scripts that interact with the conne
 ### Script API
 
 Scripts can use the `x2cscope` global variable, you don't need to instantiate it.
+It is `None` when the web GUI is not connected to a target. The script runs on the server,
+so files it writes are stored on the server and not on the browser's machine.
 
 ```python
+if x2cscope is None:
+    raise SystemExit("Connect to the target first.")
+
 # Read a variable
 value = x2cscope.get_variable("motor_speed").get_value()
 print(f"Motor speed: {value}")
@@ -398,6 +403,8 @@ x2cscope.get_variable("target_speed").set_value(1000)
 if stop_requested():
     print("Script stopped by user")
 ```
+
+To write scripts that also run standalone, see [Running Scripts in the GUI](scripting_scripts.rst).
 
 ---
 
