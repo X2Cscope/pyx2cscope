@@ -28,7 +28,7 @@ from pyx2cscope.gui.qt.controllers.session_store import RecentSessions
 from pyx2cscope.gui.qt.models.app_state import AppState
 from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
-from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab, ScriptRunControl
+from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab, ScriptRunControl, same_path
 from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
@@ -509,7 +509,8 @@ class MainWindow(QMainWindow):
         """Return the current session as a configuration dict.
 
         The format is shared with the web GUI (watch_view, scope_view, sample_control,
-        trigger_control). The Qt GUI adds elf_file, connection and script, which the web GUI ignores.
+        trigger_control). The Qt GUI adds elf_file, connection, script and script_folder, which the
+        web GUI ignores.
 
         Returns:
             dict: The configuration.
@@ -602,8 +603,20 @@ class MainWindow(QMainWindow):
         except ValueError:
             # e.g. an empty CAN channel field; keep at least the interface
             config["connection"] = {"interface": self._setup_tab.interface_type}
+        config.update(self._script_config())
+        return config
+
+    def _script_config(self) -> dict:
+        """Return the script and script folder of the Scripting tab for the configuration.
+
+        Returns:
+            dict: ``script`` and ``script_folder``, each only when set.
+        """
+        config = {}
         if self._scripting_tab.script_path:
             config["script"] = os.path.abspath(self._scripting_tab.script_path)
+        if self._scripting_tab.script_folder:
+            config["script_folder"] = self._scripting_tab.script_folder
         return config
 
     def _export_selected_variables(self):
@@ -680,6 +693,14 @@ class MainWindow(QMainWindow):
                 self._scripting_tab.set_script(script)
             else:
                 warnings.append(f"Script not found: {script}")
+
+        # Then the script folder: it can differ from the script's folder, so it is set after the script
+        script_folder = config.get("script_folder", "")
+        if script_folder:
+            if not os.path.isdir(script_folder):
+                warnings.append(f"Script folder not found: {script_folder}")
+            elif not same_path(script_folder, self._scripting_tab.script_folder):
+                self._scripting_tab.set_script_folder(script_folder)
 
         # Try to connect (only if not already connected)
         if self._setup_tab.elf_file_path and not self._app_state.is_connected():

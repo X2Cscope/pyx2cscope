@@ -2,7 +2,7 @@
 
 A session is the configuration of one project: the ELF/YML/PKL file, the connection settings,
 the WatchView and ScopeView variables with trigger and sample settings, the view mode and the
-script loaded in the Scripting tab. It uses the same JSON format as **Save Config**, so a
+script and script folder of the Scripting tab. It uses the same JSON format as **Save Config**, so a
 session can also be saved to and loaded from a file.
 
 The recent sessions are kept in ``recent_sessions.json`` in the user configuration folder,

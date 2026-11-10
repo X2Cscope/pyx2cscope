@@ -206,6 +206,7 @@ class TestMainWindowSessions:
         config = window._recent_sessions.get(elf_file_path)
         assert [v["variable"] for v in config["watch_view"]] == [variable]
         assert config["script"] == str(script)
+        assert config["script_folder"] == str(tmp_path)
 
     def test_selecting_entry_does_not_connect(self, window, elf_file_path):
         """Test choosing an entry in the Recent list only selects it; nothing is loaded or connected."""
@@ -232,6 +233,7 @@ class TestMainWindowSessions:
         window._watch_view_tab.clear_all_rows()
         window._setup_tab.elf_file_path = ""
         window._scripting_tab._script_path = ""
+        window._scripting_tab.set_script_folder("")
 
         window._setup_tab.recent_combo.setCurrentIndex(1)
         window._setup_tab._load_recent_btn.click()
@@ -239,6 +241,7 @@ class TestMainWindowSessions:
         assert window._app_state.is_connected()
         assert window._setup_tab.elf_file_path == os.path.abspath(elf_file_path)
         assert window._scripting_tab.script_path == str(script)
+        assert window._scripting_tab.script_folder == str(tmp_path)
         assert window._watch_view_tab.get_config()["variables"] == [variable]
         window._show_warning.assert_not_called()
 
@@ -268,6 +271,49 @@ class TestMainWindowSessions:
 
         assert "Script not found" in window._show_warning.call_args.args[0]
 
+    def test_script_folder_restored_when_not_the_scripts_folder(self, window, tmp_path):
+        """Test a script folder that differs from the script's folder is restored after the script."""
+        script_dir = tmp_path / "project"
+        script_dir.mkdir()
+        script = script_dir / "my_script.py"
+        script.write_text("", encoding="utf-8")
+        folder = tmp_path / "library"
+        folder.mkdir()
+        (folder / "other.py").write_text("", encoding="utf-8")
+
+        window._apply_config({"script": str(script), "script_folder": str(folder)})
+
+        assert window._scripting_tab.script_path == str(script)
+        assert window._scripting_tab.script_folder == str(folder)
+        assert window._scripting_tab.script_model.rowCount() == 1
+        window._show_warning.assert_not_called()
+
+    def test_script_folder_without_script(self, window, tmp_path):
+        """Test a session with only a script folder lists its scripts and loads none."""
+        (tmp_path / "a.py").write_text("", encoding="utf-8")
+
+        window._apply_config({"script_folder": str(tmp_path)})
+
+        assert window._scripting_tab.script_folder == str(tmp_path)
+        assert window._scripting_tab.script_path == ""
+
+    def test_session_without_script_folder_uses_scripts_folder(self, window, tmp_path):
+        """Test an older session without script_folder still lists the scripts next to the script."""
+        script = tmp_path / "my_script.py"
+        script.write_text("", encoding="utf-8")
+
+        window._apply_config({"script": str(script)})
+
+        assert window._scripting_tab.script_folder == str(tmp_path)
+
+    def test_missing_script_folder_is_reported(self, window, elf_file_path, tmp_path):
+        """Test a script folder that no longer exists is reported."""
+        _connect(window, elf_file_path)
+
+        window._apply_config({"script_folder": str(tmp_path / "gone")})
+
+        assert "Script folder not found" in window._show_warning.call_args.args[0]
+
     def test_load_while_connected_keeps_file(self, window, elf_file_path, elf_file_path_32bit):
         """Test loading a session while connected keeps the current file and connection."""
         _connect(window, elf_file_path)
@@ -288,7 +334,17 @@ class TestMainWindowSessions:
         assert config["elf_file"] == os.path.abspath(elf_file_path)
         assert config["connection"]["interface"] == "UART"
         assert config["script"] == str(script)
+        assert config["script_folder"] == str(tmp_path)
         assert {"watch_view", "scope_view", "view_mode"} <= config.keys()
+
+    def test_save_config_contains_selected_script_folder(self, window, tmp_path):
+        """Test the script folder is saved even when no script is loaded."""
+        window._scripting_tab.set_script_folder(str(tmp_path))
+
+        config = window._build_config()
+
+        assert config["script_folder"] == str(tmp_path)
+        assert "script" not in config
 
     def test_save_config_with_array_value(self, window, elf_file_path):
         """Test Save Config works when a WatchView row shows an array value (it used to raise ValueError)."""

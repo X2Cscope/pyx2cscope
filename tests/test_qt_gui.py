@@ -347,7 +347,11 @@ class TestQtWidgetCreation:
             app = QApplication([])
         yield app
 
-    def test_main_window_creation(self, qt_application, mocker):
+    # Widgets are registered with qtbot.addWidget(), so pytest-qt closes and deletes them at the
+    # end of the test. Otherwise the garbage collector deletes them at a random later moment, for
+    # example while pytest-qt processes events in another test's teardown, which can crash Qt.
+
+    def test_main_window_creation(self, qtbot, mocker):
         """Test MainWindow can be created."""
         # Mock X2CScope to prevent real connection attempts
         mocker.patch("pyx2cscope.x2cscope.X2CScope")
@@ -355,17 +359,19 @@ class TestQtWidgetCreation:
         from pyx2cscope.gui.qt.main_window import MainWindow
 
         window = MainWindow()
+        qtbot.addWidget(window)
 
         assert window is not None
-        window.close()
+        window.close()  # stops the DataPoller thread
 
-    def test_setup_tab_creation(self, qt_application):
+    def test_setup_tab_creation(self, qtbot):
         """Test SetupTab can be created."""
         from pyx2cscope.gui.qt.models.app_state import AppState
         from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 
         app_state = AppState()
         tab = SetupTab(app_state)
+        qtbot.addWidget(tab)
 
         assert tab is not None
 
@@ -388,33 +394,36 @@ class TestQtWidgetCreation:
         exported_items = mock_x2c.export_variables.call_args.kwargs["items"]
         assert set(exported_items) == {("watch.var", False), ("scope.var", True)}
 
-    def test_scope_view_tab_creation(self, qt_application):
+    def test_scope_view_tab_creation(self, qtbot):
         """Test ScopeViewTab can be created."""
         from pyx2cscope.gui.qt.models.app_state import AppState
         from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
 
         app_state = AppState()
         tab = ScopeViewTab(app_state)
+        qtbot.addWidget(tab)
 
         assert tab is not None
 
-    def test_watch_view_tab_creation(self, qt_application):
+    def test_watch_view_tab_creation(self, qtbot):
         """Test WatchViewTab can be created."""
         from pyx2cscope.gui.qt.models.app_state import AppState
         from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 
         app_state = AppState()
         tab = WatchViewTab(app_state)
+        qtbot.addWidget(tab)
 
         assert tab is not None
 
-    def test_scripting_tab_creation(self, qt_application):
+    def test_scripting_tab_creation(self, qtbot):
         """Test ScriptingTab can be created."""
         from pyx2cscope.gui.qt.models.app_state import AppState
         from pyx2cscope.gui.qt.tabs.scripting_tab import ScriptingTab
 
         app_state = AppState()
         tab = ScriptingTab(app_state)
+        qtbot.addWidget(tab)
 
         assert tab is not None
 
