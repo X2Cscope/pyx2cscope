@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.7.2 documentation</title>
+  <title>pyx2cscope.x2cscope &mdash; pyX2Cscope 0.7.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=6dfdf7c3"></script>
+        <script src="../../_static/documentation_options.js?v=c98573da"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
             pyX2Cscope
           </a>
               <div class="version">
-                0.7.2
+                0.7.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -467,14 +467,16 @@
 <span class="sd">        Before calling this method, call request_scope_data() first.</span>
 <span class="sd">        Please insert a delay between is_scope_data_ready().</span>
 
+<span class="sd">        The capture is complete only when the target reports an idle scope (scope_state == 0).</span>
+<span class="sd">        The data array pointer is not a completion criterion: in triggered mode the target writes</span>
+<span class="sd">        a ring buffer, so the pointer reaches the end of the used length on every pass, also</span>
+<span class="sd">        while the post-trigger samples are still being written (see issue #141).</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if the scope data is ready, False otherwise.</span>
 <span class="sd">        """</span>
         <span class="n">scope_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lnet</span><span class="o">.</span><span class="n">load_parameters</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">scope_data</span><span class="o">.</span><span class="n">scope_state</span> <span class="o">==</span> <span class="mi">0</span>
-            <span class="ow">or</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_pointer</span> <span class="o">==</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">data_array_used_length</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">scope_state</span> <span class="o">==</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="X2CScope.get_trigger_position">

@@ -299,6 +299,11 @@ Attributes
       Before calling this method, call request_scope_data() first.
       Please insert a delay between is_scope_data_ready().
 
+      The capture is complete only when the target reports an idle scope (scope_state == 0).
+      The data array pointer is not a completion criterion: in triggered mode the target writes
+      a ring buffer, so the pointer reaches the end of the used length on every pass, also
+      while the post-trigger samples are still being written (see issue #141).
+
       Returns:
           bool: True if the scope data is ready, False otherwise.
 
