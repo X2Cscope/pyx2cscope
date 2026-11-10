@@ -133,7 +133,13 @@ You can enable both views simultaneously for a split-screen layout. You can chan
 The **Run Script** button beside the view toggles runs the script loaded in the **Scripting** tab (see below),
 so you can start a script and watch its effect in WatchView and ScopeView without switching tabs.
 
-- The button is disabled until a script is loaded in the Scripting tab with **Browse** or **New Script**.
+- The dropdown left of the button lists the scripts of the script folder selected in the Scripting tab. Pick a
+  script there to load it, then click **Run Script**. The dropdown and the one in the Scripting tab always show
+  the same script. It is disabled while a script runs and when no script folder is selected.
+- The button is disabled until a script is loaded, with the dropdown or in the Scripting tab with **Browse** or
+  **New Script**. It is also disabled when the script folder has no valid script, or when the loaded script is
+  not one of the scripts listed in the dropdown (for example after selecting another folder or deleting the
+  file). The **Execute** button of the Scripting tab follows the same rule.
 - While the script runs, the button changes to **Stop Script**. Clicking it requests the script to stop, like
   the **Stop** button of the Scripting tab (the script must check `stop_requested()` in its loops).
 - The status beside the button shows **Running...**, **Completed**, or the exit code if the script ended with
@@ -225,9 +231,17 @@ The Scripting tab allows you to run Python scripts with direct access to the x2c
 
 ### Script Selection
 
-1. Click **Browse** to select a Python script (.py file).
-2. Click **Edit (IDLE)** to open the script in Python's IDLE editor.
-3. Click **Help** for documentation on writing scripts.
+1. Click **Folder...** to select a folder with your scripts. Its Python scripts (`.py` files, without
+   sub-folders and without files starting with `__` such as `__init__.py`) are listed in the **Script**
+   dropdown, here and on the Data Views tab. The folder is remembered for the next start.
+2. Pick a script in the **Script** dropdown. The list is read again each time it is opened, so new scripts
+   show up without selecting the folder again.
+3. Alternatively, click **Browse** to select a Python script (.py file) anywhere. Its folder becomes the
+   script folder. **New Script** does the same with the new file.
+4. Click **Edit Script** to open the script in the editor associated with `.py` files.
+5. Click **Help** for documentation on writing scripts.
+
+A script loaded with **Load Config** or a session also makes its folder the script folder.
 
 ### Execution Controls
 
