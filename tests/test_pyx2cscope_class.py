@@ -11,6 +11,20 @@ from tests.utils.serial_stub import fake_serial
 
 LNET_SAMPLE_TIME_THIRD_SAMPLE = 2
 
+# Warnings raised by mchplnet when X2CScope is created without interface and port
+NO_INTERFACE_WARNING = "No interface select, setting Serial as default."
+NO_PORT_WARNING = "No port provided, will attempt auto-detection"
+
+
+def _matching(recorded, text):
+    """Return the indexes of the recorded warnings whose message contains text.
+
+    Only the expected messages are checked, so warnings from unrelated code (for example a
+    ResourceWarning emitted when the garbage collector frees an object of an earlier test)
+    don't break the test.
+    """
+    return [i for i, item in enumerate(recorded) if text in str(item.message)]
+
 
 class TestPyX2CScope:
     """Tests related to the PyX2CScope class."""
@@ -50,10 +64,14 @@ class TestPyX2CScope:
             # This should now generate a warning instead of raising an exception
             scope = X2CScope(elf_file=self.elf_file)
 
-            # Verify the warning was raised
-            assert len(w) == 2  # noqa: PLR2004
-            assert issubclass(w[-1].category, Warning) is True
-            assert "No interface select, setting Serial as default." in str(w[0].message)
+            # Verify the warnings were raised (other warnings, e.g. ResourceWarnings
+            # released by the garbage collector, are ignored)
+            interface_warnings = _matching(w, NO_INTERFACE_WARNING)
+            port_warnings = _matching(w, NO_PORT_WARNING)
+            all_messages = [str(item.message) for item in w]
+            assert len(interface_warnings) == 1, all_messages
+            assert len(port_warnings) == 1, all_messages
+            assert interface_warnings[0] < port_warnings[0], all_messages
 
             # Clean up
             scope.disconnect()
@@ -72,10 +90,8 @@ class TestPyX2CScope:
             # This should now generate a warning instead of raising an exception
             scope = X2CScope(elf_file=self.elf_file)
 
-            # Verify the warning was raised
-            assert len(w) == 2  # noqa: PLR2004
-            assert issubclass(w[-1].category, Warning) is True
-            assert "No port provided, will attempt auto-detection" in str(w[-1].message)
+            # Verify the warning was raised (unrelated warnings are ignored)
+            assert len(_matching(w, NO_PORT_WARNING)) == 1, [str(item.message) for item in w]
 
             # Clean up
             scope.disconnect()

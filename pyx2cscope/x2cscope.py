@@ -291,14 +291,16 @@ class X2CScope:
         Before calling this method, call request_scope_data() first.
         Please insert a delay between is_scope_data_ready().
 
+        The capture is complete only when the target reports an idle scope (scope_state == 0).
+        The data array pointer is not a completion criterion: in triggered mode the target writes
+        a ring buffer, so the pointer reaches the end of the used length on every pass, also
+        while the post-trigger samples are still being written (see issue #141).
+
         Returns:
             bool: True if the scope data is ready, False otherwise.
         """
         scope_data = self.lnet.load_parameters()
-        return (
-            scope_data.scope_state == 0
-            or scope_data.data_array_pointer == scope_data.data_array_used_length
-        )
+        return scope_data.scope_state == 0
 
     def get_trigger_position(self) -> int:
         """Get the position of the trigger event.
