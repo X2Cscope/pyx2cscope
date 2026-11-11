@@ -136,3 +136,33 @@ def test_slider_reads_and_writes_variable(qtbot):
         var.set_value.assert_called_with(SLIDER_WRITE)
     finally:
         win.toggle_run(False)
+
+
+@pytest.mark.parametrize("extension", ["yml", "pkl"])
+def test_dashboard_variables_from_yml_pkl(mocker, tmp_path, extension):
+    """The Dashboard offers the variables of an exported YML/PKL file and reads them like ELF variables."""
+    from pyx2cscope.gui.qt.dashboard.main_window import DashboardWindow
+    from pyx2cscope.gui.qt.models.app_state import AppState
+    from pyx2cscope.variable.variable_factory import FileType
+    from pyx2cscope.x2cscope import X2CScope
+    from tests import data
+    from tests.utils.serial_stub import fake_serial
+
+    elf = os.path.join(os.path.dirname(data.__file__), "qspin_foc_same54.elf")
+    fake_serial(mocker, 32, device_profile="arm")
+    exporter = X2CScope(elf_file=elf, port="COM0")
+    name = exporter.list_variables()[0]
+    exported = str(tmp_path / f"vars.{extension}")
+    exporter.export_variables(exported, ext=FileType.YAML if extension == "yml" else FileType.PICKLE,
+                              items=[exporter.get_variable(name)])
+    exporter.disconnect()
+
+    fake_serial(mocker, 32, device_profile="arm")
+    state = AppState()
+    scope = X2CScope(port="COM0")
+    scope.import_variables(exported)  # the same call the GUI's connection manager makes
+    state.set_x2cscope(scope)
+    win = DashboardWindow(state)
+    assert win.variable_names()[0] == [name]
+    assert state.read_variable_value(name) is not None
+    state.x2cscope.disconnect()
