@@ -41,6 +41,7 @@ See the following sections for details:
 
    cli
    gui_qt
+   dashboard
    gui_web
    scripting_scripts
    vscode

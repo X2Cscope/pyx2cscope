@@ -107,6 +107,7 @@ class AppState(QObject):
         super().__init__(parent)
         self._mutex = QMutex()
         self._x2cscope: Optional[X2CScope] = None
+        self._variable_refs: Dict[Any, Any] = {}  # (name, sfr) -> variable, used by read_variable_value()
 
         # Connection state
         self._port: str = ""
@@ -161,6 +162,7 @@ class AppState(QObject):
         self._mutex.lock()
         try:
             self._x2cscope = x2cscope
+            self._variable_refs = {}
             if x2cscope:
                 self._variable_list = x2cscope.list_variables() or []
                 self._connected = True
@@ -378,6 +380,40 @@ class AppState(QObject):
         finally:
             self._mutex.unlock()
         return None
+
+    def read_variable_value(self, name: str, sfr: bool = False) -> Optional[float]:
+        """Read a variable from the device by name (thread-safe).
+
+        The variable object is cached, so repeated reads are cheap. Used by the Dashboard tab.
+
+        Args:
+            name: The variable name.
+            sfr: When True, look up the name in the SFR register map.
+
+        Returns:
+            float: The value, or None when not connected, the name is unknown or the value is not a number.
+        """
+        if not name:
+            return None
+        self._mutex.lock()
+        try:
+            if not self._x2cscope:
+                return None
+            var = self._variable_refs.get((name, sfr))
+            if var is None:
+                var = self._x2cscope.get_variable(name, sfr=sfr)
+                if var is None:
+                    return None
+                self._variable_refs[(name, sfr)] = var
+            value = var.get_value()
+            if isinstance(value, (list, tuple)):
+                value = value[0] if value else None
+            return None if value is None else float(value)
+        except Exception as e:
+            logging.error(f"Error reading variable {name}: {e}")
+            return None
+        finally:
+            self._mutex.unlock()
 
     def write_variable(self, name: str, value: float, sfr: bool = False) -> bool:
         """Write a variable value to the device (thread-safe).

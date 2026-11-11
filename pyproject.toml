@@ -64,6 +64,9 @@ pyx2cscope = "pyx2cscope.__main__:main"
 [tool.setuptools.packages.find]
 include = ["pyx2cscope*"]
 
+[tool.setuptools.package-data]
+"pyx2cscope.gui.qt.dashboard" = ["examples/*.json"]
+
 [tool.ruff]
 line-length = 120
 # only allow the specified pydocstyle convention
@@ -77,6 +80,11 @@ lint.select = ["D"]
 lint.extend-select = ["I", "N", "F", "PL", "D"]
 exclude = ["mchplnet/*"]
 lint.ignore = ["PLR0913"]
+
+[tool.ruff.lint.per-file-ignores]
+# The dashboard editor was imported from the standalone Dashboard Configurator and is not yet documented in
+# Google style. Qt overrides (mouseMoveEvent, ...) and signal names are camelCase by design.
+"pyx2cscope/gui/qt/dashboard/*" = ["D", "N", "PLR", "PLC", "PLW"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

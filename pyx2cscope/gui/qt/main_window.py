@@ -25,6 +25,7 @@ from pyx2cscope.gui import img as img_src
 from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
 from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
 from pyx2cscope.gui.qt.controllers.session_store import RecentSessions
+from pyx2cscope.gui.qt.dashboard.main_window import DashboardWindow
 from pyx2cscope.gui.qt.models.app_state import AppState
 from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
@@ -231,10 +232,14 @@ class MainWindow(QMainWindow):
 
         self._tab_widget.addTab(self._data_views_tab, "Data Views")
 
-        # Tab 3: Scripting
+        # Tab 3: Dashboard (widgets whose data sources can be variables of the ELF file)
+        self._dashboard_tab = DashboardWindow(self._app_state, self)
+        self._tab_widget.addTab(self._dashboard_tab, "Dashboard")
+
+        # Tab 4: Scripting
         self._tab_widget.addTab(self._scripting_tab, "Scripting")
 
-        # Tab 4: Help
+        # Tab 5: Help
         self._help_tab = HelpTab(self)
         self._tab_widget.addTab(self._help_tab, "Help")
 
@@ -872,6 +877,11 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):  # noqa: N802
         """Handle window close event."""
+        # Offer to save the dashboard first; the user can cancel closing
+        if not self._dashboard_tab.confirm_close():
+            event.ignore()
+            return
+
         # Save window state before closing
         self._save_window_state()
 
