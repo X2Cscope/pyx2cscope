@@ -26,6 +26,7 @@ from pyx2cscope.gui.qt.controllers.config_manager import ConfigManager
 from pyx2cscope.gui.qt.controllers.connection_manager import ConnectionManager
 from pyx2cscope.gui.qt.controllers.session_store import RecentSessions
 from pyx2cscope.gui.qt.dashboard.main_window import DashboardWindow
+from pyx2cscope.gui.qt.dashboard.viewer import DashboardViewer
 from pyx2cscope.gui.qt.models.app_state import AppState
 from pyx2cscope.gui.qt.tabs.help_tab import HelpTab
 from pyx2cscope.gui.qt.tabs.scope_view_tab import ScopeViewTab
@@ -232,9 +233,10 @@ class MainWindow(QMainWindow):
 
         self._tab_widget.addTab(self._data_views_tab, "Data Views")
 
-        # Tab 3: Dashboard (widgets whose data sources can be variables of the ELF file)
-        self._dashboard_tab = DashboardWindow(self._app_state, self)
+        # Tab 3: Dashboard viewer (loads dashboards made with the Dashboard Creator, see the Setup tab)
+        self._dashboard_tab = DashboardViewer(self._app_state, self)
         self._tab_widget.addTab(self._dashboard_tab, "Dashboard")
+        self._dashboard_creator = None  # created when first opened from the Setup tab
 
         # Tab 4: Scripting
         self._tab_widget.addTab(self._scripting_tab, "Scripting")
@@ -283,6 +285,7 @@ class MainWindow(QMainWindow):
         self._setup_tab.recent_session_remove_requested.connect(self._remove_recent_session)
         self._setup_tab.save_session_requested.connect(self._save_config)
         self._setup_tab.load_session_requested.connect(self._load_config)
+        self._setup_tab.dashboard_creator_requested.connect(self._open_dashboard_creator)
 
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
@@ -329,6 +332,14 @@ class MainWindow(QMainWindow):
             self._tab_widget.setCurrentIndex(1)
         else:
             self._setup_tab.set_connected(False)
+
+    def _open_dashboard_creator(self):
+        """Open the Dashboard Creator in its own window (one instance)."""
+        if self._dashboard_creator is None:
+            self._dashboard_creator = DashboardWindow(self._app_state, self)
+        self._dashboard_creator.show()
+        self._dashboard_creator.raise_()
+        self._dashboard_creator.activateWindow()
 
     def _on_ports_refreshed(self, ports: list):
         """Handle ports refreshed signal."""
@@ -878,9 +889,12 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):  # noqa: N802
         """Handle window close event."""
         # Offer to save the dashboard first; the user can cancel closing
-        if not self._dashboard_tab.confirm_close():
+        if self._dashboard_creator is not None and not self._dashboard_creator.confirm_close():
             event.ignore()
             return
+        if self._dashboard_creator is not None:
+            self._dashboard_creator.hide()
+        self._dashboard_tab.shutdown()
 
         # Save window state before closing
         self._save_window_state()

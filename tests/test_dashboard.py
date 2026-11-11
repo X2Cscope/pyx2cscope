@@ -166,3 +166,40 @@ def test_dashboard_variables_from_yml_pkl(mocker, tmp_path, extension):
     assert win.variable_names()[0] == [name]
     assert state.read_variable_value(name) is not None
     state.x2cscope.disconnect()
+
+
+def test_viewer_loads_dashboard_and_runs(qtbot, tmp_path):
+    """The Dashboard tab loads a saved dashboard and shows the live value of its variables."""
+    import json
+
+    from PyQt5.QtCore import QRect
+
+    from pyx2cscope.gui.qt.dashboard.main_window import DashboardWindow
+    from pyx2cscope.gui.qt.dashboard.viewer import DashboardViewer
+    from pyx2cscope.gui.qt.models.app_state import AppState
+
+    state = AppState()
+    scope = MagicMock()
+    scope.list_variables.return_value = ["speed"]
+    scope.list_sfr.return_value = []
+    scope.get_variable.return_value.get_value.return_value = VALUE
+    state.set_x2cscope(scope)
+
+    creator = DashboardWindow(state)
+    qtbot.addWidget(creator)
+    creator.canvas.clear()
+    creator.canvas.add_widget("lcd", QRect(0, 0, 100, 40), {"source": "$speed"})
+    path = tmp_path / "test.dash.json"
+    path.write_text(json.dumps(creator.canvas.to_dict()), encoding="utf-8")
+
+    viewer = DashboardViewer(state)
+    qtbot.addWidget(viewer)
+    assert viewer.load(str(path))
+    try:
+        deadline = time.time() + TIMEOUT_S
+        while viewer.bridge.value("$speed") != VALUE and time.time() < deadline:
+            time.sleep(0.01)
+        viewer._tick()
+        assert viewer.canvas.frames[0].inner.value() == pytest.approx(VALUE)
+    finally:
+        viewer.shutdown()

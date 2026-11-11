@@ -145,3 +145,21 @@ class VariableBridge:
                     with self._lock:
                         self._values[key] = value
             time.sleep(POLL_PAUSE_S if got_any else IDLE_PAUSE_S)
+
+
+def variable_sources(frames) -> list:
+    """Return the data sources of the dashboard widgets that read a variable of the target.
+
+    Args:
+        frames: The widget frames of a dashboard canvas.
+
+    Returns:
+        list: The ``$name`` / ``$sfr:name`` data source strings.
+    """
+    sources = []
+    for frame in frames:
+        for prop in frame.spec.props:
+            value = frame.props.get(prop.key)
+            if prop.kind == "source" and parse_source(value):
+                sources.append(value)
+    return sources

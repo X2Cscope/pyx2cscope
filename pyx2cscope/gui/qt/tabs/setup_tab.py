@@ -48,6 +48,7 @@ class SetupTab(QWidget):
     recent_session_remove_requested = pyqtSignal(str)  # ELF/YML/PKL file of the session to remove
     save_session_requested = pyqtSignal()  # Save to File...
     load_session_requested = pyqtSignal()  # Load from File...
+    dashboard_creator_requested = pyqtSignal()  # Dashboard Creator button
 
     RECENT_PLACEHOLDER = "Select a recent session..."
 
@@ -295,6 +296,7 @@ class SetupTab(QWidget):
         right_layout.addWidget(device_group)
         right_layout.addSpacing(10)
         right_layout.addWidget(self._create_sessions_group())
+        right_layout.addWidget(self._create_tools_group())
         right_layout.addStretch()
 
         main_layout.addLayout(right_layout)
@@ -304,6 +306,20 @@ class SetupTab(QWidget):
 
         # Set initial interface visibility
         self._on_interface_changed("UART")
+
+    def _create_tools_group(self) -> QGroupBox:
+        """Create the Tools group with the button that opens the Dashboard Creator window."""
+        tools_group = QGroupBox("Tools")
+        tools_layout = QHBoxLayout()
+        tools_layout.setContentsMargins(10, 15, 10, 10)
+        tools_group.setLayout(tools_layout)
+        tools_group.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self._dashboard_creator_btn = QPushButton("Dashboard Creator...")
+        self._dashboard_creator_btn.setFixedWidth(160)
+        self._dashboard_creator_btn.setToolTip("Build a dashboard in a separate window, then load it in the Dashboard tab")
+        self._dashboard_creator_btn.clicked.connect(self.dashboard_creator_requested.emit)
+        tools_layout.addWidget(self._dashboard_creator_btn)
+        return tools_group
 
     def _create_sessions_group(self) -> QGroupBox:
         """Create the Sessions group: recent sessions list, Load Session and file buttons."""

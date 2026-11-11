@@ -25,7 +25,7 @@ from .canvas import MIME, Canvas
 from .properties import PropertyEditor
 from .registry import SPECS
 from .svgimage import choose_svg
-from .variables import VariableBridge, parse_source
+from .variables import VariableBridge, parse_source, variable_sources
 
 FILTER = "Dashboard (*.dash.json *.json)"
 
@@ -130,7 +130,6 @@ class DashboardWindow(QMainWindow):
             parent: Optional parent widget.
         """
         super().__init__(parent)
-        self.setWindowFlags(Qt.Widget)  # a tab page, not a top-level window
         self.app_state = app_state
         self.bridge = VariableBridge(app_state.read_variable_value, self._write_variable) if app_state is not None else None
         self.resize(1500, 920)
@@ -603,14 +602,7 @@ class DashboardWindow(QMainWindow):
         self._update_status()
 
     def _variable_sources(self):
-        """Return the data sources of all widgets that read a variable of the target."""
-        sources = []
-        for f in self.canvas.frames:
-            for pr in f.spec.props:
-                value = f.props.get(pr.key)
-                if pr.kind == "source" and parse_source(value):
-                    sources.append(value)
-        return sources
+        return variable_sources(self.canvas.frames)
 
     def _write_variable(self, name, value, sfr):
         return self.app_state.write_variable(name, value, sfr=sfr)
