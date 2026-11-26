@@ -18,6 +18,7 @@ import pytest
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 from tests import data
+from tests.utils.lnet_frames import device_info_response, load_parameter_response
 
 
 @pytest.fixture
@@ -492,22 +493,9 @@ class TestCANConnectionManager:
             app_state = AppState()
             conn_manager = ConnectionManager(app_state)
 
-            device_info_frame = bytearray(
-                b'\x55\x2E\x01\x11\x00'
-                b'\x01\x00'
-                b'\x01\x00'
-                b'\x10\x82'
-                b'01/01/2024'
-                b'1200'
-                b'01/01/2024'
-                b'1200'
-                b'\x01'
-                b'\x00\x00'
-                b'\x00\x00\x00\x00'
-                b'\x00\x00\x00\x00'
-                b'\x00'
-            )
-            load_param_frame = bytearray(b'\x55\x00\x01\x12\x00\x00')
+            # Valid LNet responses: Get Device Info (16-bit dsPIC, 0x8210), Load Parameter (scope idle)
+            device_info_frame = device_info_response(processor_id=0x8210)
+            load_param_frame = load_parameter_response()
 
             with patch('mchplnet.interfaces.can.LNetCan.read') as mock_read, \
                  patch('mchplnet.interfaces.can.LNetCan.write'):

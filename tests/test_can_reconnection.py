@@ -13,6 +13,7 @@ import pytest
 from mchplnet.interfaces.can import LNetCan
 from pyx2cscope.x2cscope import X2CScope
 from tests import data
+from tests.utils.lnet_frames import device_info_response, load_parameter_response
 
 EXPECTED_BUS_CALLS_AFTER_RECONNECT = 2
 RECONNECT_CYCLES = 3
@@ -142,34 +143,13 @@ class TestCANReconnection:
         with patch('mchplnet.interfaces.can.LNetCan.read') as mock_read, \
              patch('mchplnet.interfaces.can.LNetCan.write'):
 
-            # Mock read to return valid LNet DeviceInfo frame
-            # Frame structure (49+ bytes):
-            # SYN(0x55), SIZE, NODE, SERVICE_ID, STATUS,
-            # MONITOR_VER(2), APP_VER(2), PROCESSOR_ID(2),
-            # MONITOR_DATE(9), MONITOR_TIME(4), APP_DATE(9), APP_TIME(4),
-            # DSP_STATE(1), EVENT_TYPE(2), EVENT_ID(4), TABLE_STRUCT_ADD(4)
-            device_info_frame = bytearray(
-                b'\x55\x2E\x01\x11\x00'  # SYN, SIZE(46 data bytes), NODE, SERVICE_ID, STATUS
-                b'\x01\x00'              # Monitor version (little-endian)
-                b'\x01\x00'              # App version (little-endian)
-                b'\x10\x82'              # Processor ID 0x8210 (16-bit generic dsPIC)
-                b'01/01/2024'            # Monitor date (9 bytes)
-                b'1200'                  # Monitor time (4 bytes)
-                b'01/01/2024'            # App date (9 bytes)
-                b'1200'                  # App time (4 bytes)
-                b'\x01'                  # DSP state (0x01 = Application runs on target)
-                b'\x00\x00'              # Event type (2 bytes)
-                b'\x00\x00\x00\x00'      # Event ID (4 bytes)
-                b'\x00\x00\x00\x00'      # Table struct address (4 bytes)
-                b'\x00'                  # CRC
-            )
-            # Mock LoadParameters frame (simpler, just status response)
-            load_param_frame = bytearray(b'\x55\x00\x01\x12\x00\x00')
-            # Mock LoadScopeData frame
-            load_scope_frame = bytearray(b'\x55\x08\x01\x13\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+            # Valid LNet responses for the connection handshake:
+            # Get Device Info (16-bit dsPIC, processor ID 0x8210) and Load Parameter (scope idle)
+            device_info_frame = device_info_response(processor_id=0x8210)
+            load_param_frame = load_parameter_response()
 
             # Return different frames for each call
-            mock_read.side_effect = [device_info_frame, load_param_frame, load_scope_frame]
+            mock_read.side_effect = [device_info_frame, load_param_frame, load_parameter_response()]
 
             # Create X2CScope with CAN interface
             x2cscope = X2CScope(

@@ -166,12 +166,12 @@ class SerialStub:
         if self.device_profile == DEVICE_PROFILE_ARM:
             return bytearray(
                 b"\x55.\x01\x00\x00\x05\x00\x01\x00\xff\x10\x83Mar 320191220Mar 320191220\x01"
-                b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 T"
+                b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 E"  # checksum 0x45 for processor ID 0x8310
             )
         if self.device_profile == DEVICE_PROFILE_DSPIC33A:
             return bytearray(
                 b"\x55.\x01\x00\x00\x05\x00\x01\x00\xff@\x82Apr 120241200Apr 120241200\x01"
-                b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 T"
+                b"\x00\x00\x00\x00\x00\x00\x00\x00\x00 j"  # checksum 0x6A for processor ID 0x8240
             )
         raise ValueError("Mocker fake_serial: unsupported device profile")
 
