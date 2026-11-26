@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 from PyQt5.QtCore import QMutex, QObject, pyqtSignal
 
 from pyx2cscope.variable.variable_factory import FileType
-from pyx2cscope.x2cscope import TriggerConfig, X2CScope
+from pyx2cscope.x2cscope import RebootResult, TriggerConfig, X2CScope
 
 
 @dataclass
@@ -270,6 +270,23 @@ class AppState(QObject):
         except Exception as e:
             logging.error(f"Error fetching device info: {e}")
             return None
+        finally:
+            self._mutex.unlock()
+
+    def reboot_device(self) -> RebootResult:
+        """Ask the connected device to restart (thread-safe).
+
+        Returns:
+            RebootResult: The result of X2CScope.reboot(); FAILED if not connected.
+        """
+        self._mutex.lock()
+        try:
+            if not self._x2cscope:
+                return RebootResult.FAILED
+            return self._x2cscope.reboot()
+        except Exception as e:
+            logging.error(f"Error rebooting the device: {e}")
+            return RebootResult.FAILED
         finally:
             self._mutex.unlock()
 
