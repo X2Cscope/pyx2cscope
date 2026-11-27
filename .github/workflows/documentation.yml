@@ -61,6 +61,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: ${{ github.base_ref != 'main' }}  # mchplnet, see "Use mchplnet from the submodule"
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -88,6 +90,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
 
+    # Pull requests into develop test against mchplnet develop (the submodule), pull requests into
+    # main (releases) against the released mchplnet version from PyPI pinned in pyproject.toml.
+    - name: Use mchplnet from the submodule (not for PRs into main)
+      if: github.base_ref != 'main'
+      run: pip install --no-deps -e ./mchplnet
+
     - name: Run tests
       env:
         QT_QPA_PLATFORM: offscreen
@@ -105,6 +113,8 @@ jobs:
         python-version: ["3.10", "3.13", "3.14"]
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: ${{ github.base_ref != 'main' }}  # mchplnet, see "Use mchplnet from the submodule"
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -132,6 +142,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
 
+    # Pull requests into develop test against mchplnet develop (the submodule), pull requests into
+    # main (releases) against the released mchplnet version from PyPI pinned in pyproject.toml.
+    - name: Use mchplnet from the submodule (not for PRs into main)
+      if: github.base_ref != 'main'
+      run: pip install --no-deps -e ./mchplnet
+
     - name: Run tests
       env:
         QT_QPA_PLATFORM: offscreen
@@ -146,6 +162,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: ${{ github.base_ref != 'main' }}  # mchplnet, see "Use mchplnet from the submodule"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -156,6 +174,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[docs]"
+
+      - name: Use mchplnet from the submodule (not for PRs into main)
+        if: github.base_ref != 'main'
+        run: pip install --no-deps -e ./mchplnet
 
       - name: Build documentation
         run: |
@@ -170,6 +192,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: ${{ github.base_ref != 'main' }}  # mchplnet, see "Use mchplnet from the submodule"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -180,6 +204,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[docs]"
+
+      - name: Use mchplnet from the submodule (not for PRs into main)
+        if: github.base_ref != 'main'
+        run: pip install --no-deps -e ./mchplnet
 
       - name: Build documentation
         run: |

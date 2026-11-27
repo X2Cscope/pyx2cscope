@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 from PyQt5.QtCore import QMutex, QObject, pyqtSignal
 
 from pyx2cscope.variable.variable_factory import FileType
-from pyx2cscope.x2cscope import RebootResult, TriggerConfig, X2CScope
+from pyx2cscope.x2cscope import ServiceResult, TriggerConfig, X2CScope
 
 
 @dataclass
@@ -273,20 +273,21 @@ class AppState(QObject):
         finally:
             self._mutex.unlock()
 
-    def reboot_device(self) -> RebootResult:
-        """Ask the connected device to restart (thread-safe).
+    def reset_device(self) -> ServiceResult:
+        """Ask the connected device to reset (thread-safe).
 
         Returns:
-            RebootResult: The result of X2CScope.reboot(); FAILED if not connected.
+            ServiceResult: The ``(code, text)`` result of X2CScope.reset_device().
+
+        Raises:
+            RuntimeError: If no device is connected.
+            Exception: Any error of X2CScope.reset_device(), e.g. if the request could not be sent.
         """
         self._mutex.lock()
         try:
             if not self._x2cscope:
-                return RebootResult.FAILED
-            return self._x2cscope.reboot()
-        except Exception as e:
-            logging.error(f"Error rebooting the device: {e}")
-            return RebootResult.FAILED
+                raise RuntimeError("No device connected")
+            return self._x2cscope.reset_device()
         finally:
             self._mutex.unlock()
 
