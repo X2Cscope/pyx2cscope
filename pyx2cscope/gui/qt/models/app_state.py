@@ -273,21 +273,21 @@ class AppState(QObject):
         finally:
             self._mutex.unlock()
 
-    def reboot_device(self) -> ServiceResult:
-        """Ask the connected device to restart (thread-safe).
+    def reset_device(self) -> ServiceResult:
+        """Ask the connected device to reset (thread-safe).
 
         Returns:
-            ServiceResult: The ``(code, text)`` result of X2CScope.reboot().
+            ServiceResult: The ``(code, text)`` result of X2CScope.reset_device().
 
         Raises:
             RuntimeError: If no device is connected.
-            Exception: Any error of X2CScope.reboot(), e.g. if the request could not be sent.
+            Exception: Any error of X2CScope.reset_device(), e.g. if the request could not be sent.
         """
         self._mutex.lock()
         try:
             if not self._x2cscope:
                 raise RuntimeError("No device connected")
-            return self._x2cscope.reboot()
+            return self._x2cscope.reset_device()
         finally:
             self._mutex.unlock()
 

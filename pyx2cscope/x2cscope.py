@@ -500,22 +500,22 @@ class X2CScope:
             "dsp_state": device_info.dsp_state,
         }
 
-    def reboot(self) -> ServiceResult:
-        """Ask the device to restart.
+    def reset_device(self) -> ServiceResult:
+        """Ask the device to reset.
 
-        Whether a reboot is possible is decided by the firmware: it may not support it, or refuse it
-        in the current state (e.g. while a motor is running). On success the device restarts and the
-        connection is lost; call :meth:`disconnect` and create a new connection once it is running again.
+        Whether a reset is possible is decided by the firmware: it may not support it, or not allow it
+        at the moment. On success the device resets and the connection is lost; call :meth:`disconnect`
+        and create a new connection once it is running again.
 
         Returns:
             ServiceResult: A ``(code, text)`` tuple. ``code`` is 0 (``result.success`` is True) if the device
-            restarts; otherwise ``text`` describes why it did not.
+            resets; otherwise ``text`` describes why it did not.
 
         Example:
-            >>> code, text = x2c_scope.reboot()
+            >>> code, text = x2c_scope.reset_device()
             >>> if code == 0:
             ...     x2c_scope.disconnect()
             ... else:
-            ...     print(f"Reboot not possible: {text}")
+            ...     print(f"Reset not possible: {text}")
         """
-        return self.lnet.reboot_device()
+        return self.lnet.reset_device()
