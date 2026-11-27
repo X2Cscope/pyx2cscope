@@ -160,6 +160,11 @@ class AppState(QObject):
         """Set the X2CScope instance (thread-safe)."""
         self._mutex.lock()
         try:
+            if x2cscope is not self._x2cscope:
+                # The cached variables read through the previous connection (closed on disconnect);
+                # they are looked up again on the new X2CScope at the next read.
+                for var in self._watch_vars + self._live_watch_vars:
+                    var.var_ref = None
             self._x2cscope = x2cscope
             if x2cscope:
                 self._variable_list = x2cscope.list_variables() or []
@@ -367,7 +372,7 @@ class AppState(QObject):
                     return watch_var.var_ref.get_value()
                 elif watch_var.name and self._x2cscope:
                     # Fallback: get and cache the variable
-                    var_ref = self._x2cscope.get_variable(watch_var.name)
+                    var_ref = self._x2cscope.get_variable(watch_var.name, sfr=watch_var.sfr)
                     if var_ref is not None:
                         watch_var.var_ref = var_ref
                         return var_ref.get_value()
@@ -387,7 +392,7 @@ class AppState(QObject):
                     return live_var.var_ref.get_value()
                 elif live_var.name and self._x2cscope:
                     # Fallback: get and cache the variable
-                    var_ref = self._x2cscope.get_variable(live_var.name)
+                    var_ref = self._x2cscope.get_variable(live_var.name, sfr=live_var.sfr)
                     if var_ref is not None:
                         live_var.var_ref = var_ref
                         return var_ref.get_value()

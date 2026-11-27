@@ -39,6 +39,7 @@ class WatchViewTab(BaseTab):
 
     # Signal emitted when live polling state changes: (index, is_live)
     live_polling_changed = pyqtSignal(int, bool)
+    live_indices_changed = pyqtSignal(list)  # indices of all live rows, after rows were removed
     # Signal emitted when the user changes the live update rate: interval in ms
     live_interval_changed = pyqtSignal(int)
 
@@ -264,6 +265,9 @@ class WatchViewTab(BaseTab):
 
         # Rearrange grid
         self._rearrange_grid()
+
+        # The rows after the removed one moved up: report the new indices of the live rows
+        self.live_indices_changed.emit([i for i, cb in enumerate(self._live_checkboxes) if cb.isChecked()])
 
     def _rearrange_grid(self):
         """Rearrange the grid after row removal."""

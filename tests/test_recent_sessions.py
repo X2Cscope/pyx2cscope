@@ -4,7 +4,9 @@ Tests cover:
 - RecentSessions store: add, update, order, limit, keep views, remove, damaged file, text
 - MainWindow: a session is recorded on connect and disconnect, a recent session reopens
   file, connection, script and WatchView variables, Save Config contains file, connection
-  and script, missing variables are reported
+  and script, missing variables are reported; loading a session while connected switches
+  file and interface (UART, TCP/IP) when they differ
+- WatchView live variables keep updating after a reconnect and after a row is removed
 - SetupTab: Recent list, Remove button and enabled state while connected
 
 The serial port is mocked with tests/utils/serial_stub.py and QSettings is redirected to a
@@ -314,13 +316,91 @@ class TestMainWindowSessions:
 
         assert "Script folder not found" in window._show_warning.call_args.args[0]
 
-    def test_load_while_connected_keeps_file(self, window, elf_file_path, elf_file_path_32bit):
-        """Test loading a session while connected keeps the current file and connection."""
+    def test_load_while_connected_same_session_keeps_connection(self, window, elf_file_path, mocker):
+        """Test loading a session with the current file and connection keeps the connection, loads the views."""
+        _connect(window, elf_file_path)
+        x2cscope = window._app_state.x2cscope
+        variable = window._app_state.get_variable_list()[0]
+        disconnect = mocker.spy(window._connection_manager, "disconnect")
+
+        window._apply_config(_config(elf_file_path, watch_view=[{"variable": variable}]))
+
+        disconnect.assert_not_called()
+        assert window._app_state.x2cscope is x2cscope
+        assert window._watch_view_tab.get_config()["variables"] == [variable]
+
+    def test_load_while_connected_other_file_reconnects(self, window, elf_file_path, elf_file_path_32bit):
+        """Test loading a session with another file while connected reconnects with the session's file."""
         _connect(window, elf_file_path)
 
         window._apply_config(_config(elf_file_path_32bit))
 
+        assert window._setup_tab.elf_file_path == os.path.abspath(elf_file_path_32bit)
+        assert window._recent_sessions.get(elf_file_path) is not None  # the previous session was stored
+
+    def test_load_while_connected_other_interface(self, window, elf_file_path, mocker):
+        """Test loading a TCP/IP session while connected over UART switches the interface (and reconnects)."""
+        _connect(window, elf_file_path)
+        connect = mocker.patch.object(window._connection_manager, "connect", return_value=False)  # no device
+
+        window._apply_config(
+            {"elf_file": elf_file_path, "connection": {"interface": "TCP/IP", "host": "10.0.0.2", "tcp_port": TCP_PORT}}
+        )
+
+        assert not window._app_state.is_connected()
+        assert window._setup_tab.interface_type == "TCP/IP"
+        assert window._setup_tab.get_connection_params()["host"] == "10.0.0.2"
+        assert connect.call_args.kwargs["interface"] == "TCP/IP"
+
+    def test_load_while_connected_missing_file_keeps_connection(self, window, elf_file_path, tmp_path, mocker):
+        """Test a session whose file is missing keeps the connection when no other file is selected."""
+        _connect(window, elf_file_path)
+        x2cscope = window._app_state.x2cscope
+        variable = window._app_state.get_variable_list()[0]
+        mocker.patch.object(window._config_manager, "show_file_not_found_warning")
+        mocker.patch.object(window._config_manager, "prompt_for_elf_file", return_value=None)  # cancelled
+        config = {
+            "elf_file": str(tmp_path / "gone.elf"),
+            "connection": {"interface": "TCP/IP", "host": "10.0.0.2", "tcp_port": TCP_PORT},
+            "watch_view": [{"variable": variable}],
+        }
+
+        window._apply_config(config)
+
+        assert window._app_state.x2cscope is x2cscope
         assert window._setup_tab.elf_file_path == elf_file_path
+        assert window._setup_tab.interface_type == "UART"
+        assert window._watch_view_tab.get_config()["variables"] == [variable]
+        assert config["elf_file"].endswith("gone.elf")  # the caller's config is not changed
+
+    def test_load_while_connected_missing_file_uses_selected_file(
+        self, window, elf_file_path, elf_file_path_32bit, tmp_path, mocker
+    ):
+        """Test a session whose file is missing reconnects with the file selected instead."""
+        _connect(window, elf_file_path)
+        mocker.patch.object(window._config_manager, "show_file_not_found_warning")
+        mocker.patch.object(window._config_manager, "prompt_for_elf_file", return_value=elf_file_path_32bit)
+
+        window._apply_config(_config(str(tmp_path / "gone.elf")))
+
+        assert window._setup_tab.elf_file_path == os.path.abspath(elf_file_path_32bit)
+
+    def test_load_session_switches_interface(self, window, elf_file_path):
+        """Test loading a UART session while disconnected switches from TCP/IP to UART."""
+        window._setup_tab.set_interface("TCP/IP")
+
+        window._apply_config(_config(elf_file_path))
+
+        assert window._setup_tab.interface_type == "UART"
+        assert window._app_state.is_connected()
+
+    def test_legacy_config_switches_to_uart(self, window):
+        """Test an older config without "connection" (UART only) selects UART."""
+        window._setup_tab.set_interface("TCP/IP")
+
+        window._apply_config({"baud_rate": "115200", "com_port": PORT})
+
+        assert window._setup_tab.interface_type == "UART"
 
     def test_save_config_contains_session(self, window, elf_file_path, tmp_path):
         """Test Save Config/Save Session writes file, connection and script with the views."""
@@ -367,6 +447,78 @@ class TestMainWindowSessions:
         assert window._recent_sessions.entries() == []
         assert window._setup_tab.recent_combo.count() == 1
 
+
+class TestLiveWatch:
+    """Tests for the WatchView live variables across reconnects and row changes."""
+
+    @pytest.fixture(autouse=True)
+    def _no_poller_thread(self, window):
+        """Stop the DataPoller thread; the tests poll directly (the serial stub is not thread-safe)."""
+        window._data_poller.stop()
+
+    @staticmethod
+    def _scalars(win, count):
+        """Return the first scalar variables of the ELF file (live_var_updated carries one float)."""
+        x2c = win._app_state.x2cscope
+        names = []
+        for name in win._app_state.get_variable_list():
+            variable = x2c.get_variable(name)
+            if variable is not None and not variable.is_array():
+                names.append(name)
+                if len(names) == count:
+                    break
+        return names
+
+    @staticmethod
+    def _live_rows(win, variables):
+        """Load WatchView rows with the given variables, all set to live."""
+        win._apply_config({"watch_view": [{"variable": v, "live": True} for v in variables]})
+
+    def test_live_update_after_reconnect(self, window, elf_file_path, mocker, qtbot):
+        """Test live variables are read through the new connection after Disconnect and Connect."""
+        _connect(window, elf_file_path)
+        self._live_rows(window, self._scalars(window, 1))
+        old_lnet = window._app_state.x2cscope.lnet
+
+        _disconnect(window)
+        _connect(window, elf_file_path)
+
+        # The previous connection is closed: reading through it fails
+        mocker.patch.object(old_lnet, "get_ram", side_effect=OSError("port closed"))
+        with qtbot.waitSignal(window._data_poller.live_var_updated, timeout=1000):
+            window._data_poller._poll_live_variables()
+        assert window._app_state.get_live_watch_var(0).var_ref.l_net is window._app_state.x2cscope.lnet
+
+    def test_reconnect_keeps_sfr_flag(self, window, elf_file_path, mocker):
+        """Test the lookup after a reconnect uses the SFR flag of the row."""
+        _connect(window, elf_file_path)
+        self._live_rows(window, self._scalars(window, 1))
+        window._app_state.update_live_watch_var_field(0, "sfr", True)
+        _disconnect(window)
+        _connect(window, elf_file_path)
+        get_variable = mocker.spy(window._app_state.x2cscope, "get_variable")
+
+        window._app_state.read_live_watch_var_value(0)
+
+        assert get_variable.call_args.kwargs["sfr"] is True
+
+    def test_remove_row_updates_live_indices(self, window, elf_file_path):
+        """Test removing a row moves the polled indices of the following live rows up."""
+        _connect(window, elf_file_path)
+        variables = self._scalars(window, 3)
+        self._live_rows(window, variables)
+        window._watch_view_tab._live_checkboxes[1].setChecked(False)
+        assert sorted(window._data_poller._active_live_indices) == [0, 2]
+
+        window._watch_view_tab._remove_variable_row(0)
+
+        assert window._data_poller._active_live_indices == [1]  # the third variable is now row 1
+        assert window._app_state.get_live_watch_var(1).name == variables[2]
+
+        window._watch_view_tab._remove_variable_row(1)
+
+        assert window._data_poller._active_live_indices == []
+        assert not window._data_poller._live_polling_enabled
 
 class TestSetupTabSessions:
     """Tests for the Sessions group of the Setup tab."""
