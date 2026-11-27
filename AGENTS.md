@@ -20,7 +20,8 @@ embedded target (dsPIC, PIC32, SAM/ARM, dsPIC33A). Human-facing docs live in `RE
 pyx2cscope/                 Package source
   __init__.py               __version__ and set_logger()
   __main__.py               CLI: build_parser() (argparse) and main(), launches the Qt or web GUI
-  x2cscope.py               Public API: X2CScope class, TriggerConfig
+  x2cscope.py               Public API: X2CScope class, TriggerConfig. High level only: LNet services,
+                            frames and error IDs belong to mchplnet
   utils.py                  Reads/creates config.ini in the current working directory, get_project_name()
   vscode.py                 Writes the "Run pyX2Cscope" task to .vscode/tasks.json (--vscode-task)
   parser/                   ELF parsing: ElfParser (ABC), DummyParser, GenericParser (pyelftools)
@@ -52,8 +53,13 @@ python -m venv .venv
 .venv\Scripts\activate            # Windows
 source .venv/bin/activate         # Linux/macOS
 pip install -e ".[dev,docs,build]"
-git submodule update --init       # only needed to browse mchplnet sources; runtime uses PyPI mchplnet
+git submodule update --init       # mchplnet develop, needed on the develop branch:
+pip install --no-deps -e ./mchplnet
 ```
+
+`develop` is tested against mchplnet `develop` (the submodule commit). CI does the same for pull
+requests into `develop`; pull requests into `main` (releases) are tested against the released mchplnet
+pinned in `pyproject.toml`. Before a release, release mchplnet and raise that pin.
 
 | Task | Command |
 |---|---|

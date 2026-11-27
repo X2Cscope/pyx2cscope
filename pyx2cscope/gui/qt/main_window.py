@@ -33,9 +33,8 @@ from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 from pyx2cscope.utils import get_project_name
-from pyx2cscope.x2cscope import RebootResult
 
-REBOOT_DIALOG_TITLE = "Reboot Device"
+RESET_DIALOG_TITLE = "Reset Device"
 
 
 def _to_float(text, default: float) -> float:
@@ -281,7 +280,7 @@ class MainWindow(QMainWindow):
         self._setup_tab.recent_session_remove_requested.connect(self._remove_recent_session)
         self._setup_tab.save_session_requested.connect(self._save_config)
         self._setup_tab.load_session_requested.connect(self._load_config)
-        self._setup_tab.reboot_requested.connect(self._on_reboot_requested)
+        self._setup_tab.reset_requested.connect(self._on_reset_requested)
 
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
@@ -505,12 +504,12 @@ class MainWindow(QMainWindow):
         """Clear device info labels."""
         self._setup_tab.clear_device_info()
 
-    def _on_reboot_requested(self):
-        """Ask for confirmation, reboot the device and show the result."""
+    def _on_reset_requested(self):
+        """Ask for confirmation, reset the device and show the result."""
         answer = QMessageBox.question(
             self,
-            REBOOT_DIALOG_TITLE,
-            "Restart the connected device?\n\nThe running application on the device stops.",
+            RESET_DIALOG_TITLE,
+            "Reset the connected device?\n\nThe running application on the device stops immediately.",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -519,37 +518,28 @@ class MainWindow(QMainWindow):
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
-            result = self._app_state.reboot_device()
+            code, text = self._app_state.reset_device()
+        except Exception as e:
+            logging.error(f"Error resetting the device: {e}")
+            QMessageBox.critical(self, RESET_DIALOG_TITLE, f"Reset failed: {e}")
+            return
         finally:
             QApplication.restoreOverrideCursor()
 
-        if result is RebootResult.SUCCESS:
-            # The device restarts and drops the connection: close it here, the user reconnects
+        if code == 0:
+            # The device resets and drops the connection: close it here, the user reconnects
             self._connection_manager.disconnect()
             QMessageBox.information(
                 self,
-                REBOOT_DIALOG_TITLE,
-                "Reboot successful: the device is restarting.\n\n"
+                RESET_DIALOG_TITLE,
+                "Reset successful: the device is restarting.\n\n"
                 "The connection was closed. Connect again when the device is running.",
             )
-        elif result is RebootResult.NOT_IMPLEMENTED:
-            QMessageBox.warning(
-                self,
-                REBOOT_DIALOG_TITLE,
-                "Reboot not implemented: the firmware of this device does not support a reboot request.",
-            )
-        elif result is RebootResult.REFUSED:
-            QMessageBox.warning(
-                self,
-                REBOOT_DIALOG_TITLE,
-                "Reboot failed: the firmware does not allow a reboot in its current state "
-                "(e.g. while a motor is running).",
-            )
         else:
-            QMessageBox.critical(
+            QMessageBox.warning(
                 self,
-                REBOOT_DIALOG_TITLE,
-                "Reboot failed: the request could not be completed. See the log file for details.",
+                RESET_DIALOG_TITLE,
+                f"Reset not executed: {text} (code 0x{code:02X}).",
             )
 
     def _save_config(self):
