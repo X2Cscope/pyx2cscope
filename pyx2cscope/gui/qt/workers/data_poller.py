@@ -210,7 +210,8 @@ class DataPoller(QThread):
     def set_active_live_indices(self, indices: List[int]):
         """Set which live variable indices should be polled."""
         self._mutex.lock()
-        self._active_live_indices = indices.copy()
+        self._active_live_indices = list(indices)
+        self._live_polling_enabled = len(self._active_live_indices) > 0
         self._mutex.unlock()
 
     def add_active_live_index(self, index: int):

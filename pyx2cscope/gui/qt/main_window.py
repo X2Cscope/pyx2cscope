@@ -285,6 +285,7 @@ class MainWindow(QMainWindow):
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
         self._watch_view_tab.live_polling_changed.connect(self._on_live_watch_changed)
+        self._watch_view_tab.live_indices_changed.connect(self._data_poller.set_active_live_indices)
         self._watch_view_tab.live_interval_changed.connect(self._data_poller.set_live_interval)
 
     def _refresh_ports(self):
@@ -689,16 +690,56 @@ class MainWindow(QMainWindow):
         if config:
             self._apply_config(config)
 
+    def _session_differs_from_connection(self, config: dict) -> bool:
+        """Return True if the configuration uses another file or connection than the current one.
+
+        Only the settings present in the configuration are compared; a UART port "AUTO" matches any port.
+
+        Args:
+            config: The configuration, as written by :meth:`_build_config` or by the web GUI.
+        """
+        elf_file = config.get("elf_file", "")
+        if elf_file and not same_path(elf_file, self._setup_tab.elf_file_path):
+            return True
+        wanted = dict(config.get("connection") or {})
+        if not wanted and ("baud_rate" in config or "com_port" in config):
+            # Legacy config format (UART only)
+            wanted = {"interface": "UART", "baud_rate": config.get("baud_rate"), "port": config.get("com_port")}
+        if not wanted:
+            return False
+        try:
+            current = self._setup_tab.get_connection_params()
+        except ValueError:  # e.g. an empty CAN channel field
+            return True
+        if wanted.get("interface", "UART") != current.get("interface"):
+            return True
+        if "port" in wanted and "tcp_port" not in wanted and current.get("interface") == "TCP/IP":
+            wanted["tcp_port"] = wanted.pop("port")  # older config files use "port" for the TCP port
+        for key, value in wanted.items():
+            if key == "interface" or value in (None, "") or (key == "port" and value == "AUTO"):
+                continue
+            if key in current and str(current[key]) != str(value):
+                return True
+        return False
+
     def _apply_config(self, config: dict):  # noqa: PLR0912, PLR0915
         """Apply a session or configuration: file, connection, script, connect, then the views.
 
-        While connected, the file and connection are kept and only the views and script are loaded.
+        While connected, a session with another file or connection (e.g. UART instead of TCP/IP) closes the
+        current connection and opens the session's one. With the same file and connection, or without
+        file and connection in the configuration, the connection is kept and only the views and script are
+        loaded.
 
         Args:
             config: The configuration, as written by :meth:`_build_config` or by the web GUI.
         """
         warnings = []
         connected_before = self._app_state.is_connected()
+        if connected_before and self._session_differs_from_connection(config):
+            # Store the current session like a disconnect does, then apply the session's file and connection
+            self._record_session()
+            self._connection_manager.disconnect()
+            connected_before = False
 
         # Load ELF file
         elf_path = "" if connected_before else config.get("elf_file", "")
@@ -719,7 +760,8 @@ class MainWindow(QMainWindow):
             # Includes the UART port; a port that is not available falls back to AUTO
             self._setup_tab.set_connection_params(conn_params)
         elif "baud_rate" in config or "com_port" in config:
-            # Legacy config format support
+            # Legacy config format support (UART only)
+            self._setup_tab.set_interface("UART")
             baud_rate = config.get("baud_rate", "115200")
             self._setup_tab.baud_combo.setCurrentText(baud_rate)
             com_port = config.get("com_port", "")
