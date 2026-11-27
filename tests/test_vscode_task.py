@@ -1,4 +1,4 @@
-"""Tests for creating the VS Code "Run pyX2Cscope" task (pyx2cscope.vscode and --vscode-task).
+"""Tests for creating the VS Code "Run pyX2Cscope" task (pyx2cscope.utils.vscode and --vscode-task).
 
 Tests cover:
 - Finding the MPLAB VS Code project file and its ELF configurations
@@ -13,7 +13,8 @@ import os
 import pytest
 
 from pyx2cscope import __main__ as cli
-from pyx2cscope import vscode
+from pyx2cscope.utils import get_project_name, vscode
+from pyx2cscope.utils.project import find_vscode_project_files
 
 PROJECT = "LAB1_HALL"
 FOLDER_VAR = "${workspaceFolder:" + PROJECT + "}"
@@ -58,6 +59,22 @@ class TestFindProject:
         (project_dir / ".vscode" / "aaa_other.mplab.json").write_text("{}", encoding="utf-8")
 
         assert vscode.find_mplab_project(project_dir).name == f"{PROJECT}.mplab.json"
+
+    def test_suffix_case_insensitive(self, tmp_path):
+        """Test the project file is found regardless of the case of its suffix, on every OS."""
+        project_dir = tmp_path / PROJECT
+        (project_dir / ".vscode").mkdir(parents=True)
+        (project_dir / ".vscode" / f"{PROJECT}.MPLAB.json").write_text("{}", encoding="utf-8")
+
+        assert vscode.find_mplab_project(project_dir).name == f"{PROJECT}.MPLAB.json"
+
+    def test_same_lookup_as_project_name(self, tmp_path):
+        """Test the task and the project name use the same .vscode/*.mplab.json lookup."""
+        project_dir = _make_project(tmp_path)
+        elf = project_dir / "out" / PROJECT / "default.elf"
+
+        assert find_vscode_project_files(project_dir) == [vscode.find_mplab_project(project_dir)]
+        assert get_project_name(str(elf)) == PROJECT
 
     def test_elf_images(self, tmp_path):
         """Test the configurations and their ELF files are read."""

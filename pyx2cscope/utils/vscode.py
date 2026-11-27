@@ -16,11 +16,16 @@ import os
 import sys
 from pathlib import Path
 
+from pyx2cscope.utils.project import (
+    MPLAB_PROJECT_SUFFIX,
+    VSCODE_DIR_NAME,
+    find_vscode_project_files,
+    vscode_project_name,
+)
+
 TASK_LABEL = "Run pyX2Cscope"
 TASKS_FILE_NAME = "tasks.json"
 TASKS_VERSION = "2.0.0"
-MPLAB_PROJECT_SUFFIX = ".mplab.json"
-VSCODE_DIR_NAME = ".vscode"
 BACKUP_SUFFIX = ".bak"
 DEFAULT_PORT = "AUTO"
 # Paths up to this many folders above the project are written relative to it, others absolute.
@@ -133,14 +138,14 @@ def find_mplab_project(project_dir: Path) -> Path:
     Raises:
         VSCodeTaskError: If no project file is found.
     """
-    vscode_dir = project_dir / VSCODE_DIR_NAME
-    candidates = sorted(vscode_dir.glob(f"*{MPLAB_PROJECT_SUFFIX}")) if vscode_dir.is_dir() else []
+    candidates = find_vscode_project_files(project_dir)
     if not candidates:
         raise VSCodeTaskError(
-            f"No MPLAB VS Code project found: {vscode_dir / ('*' + MPLAB_PROJECT_SUFFIX)} does not exist."
+            f"No MPLAB VS Code project found: "
+            f"{project_dir / VSCODE_DIR_NAME / ('*' + MPLAB_PROJECT_SUFFIX)} does not exist."
         )
     for candidate in candidates:
-        if candidate.name[: -len(MPLAB_PROJECT_SUFFIX)].lower() == project_dir.name.lower():
+        if vscode_project_name(candidate).lower() == project_dir.name.lower():
             return candidate
     return candidates[0]
 
