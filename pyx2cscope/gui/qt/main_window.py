@@ -33,6 +33,9 @@ from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 from pyx2cscope.utils import get_project_name
+from pyx2cscope.x2cscope import RebootResult
+
+REBOOT_DIALOG_TITLE = "Reboot Device"
 
 
 def _to_float(text, default: float) -> float:
@@ -278,6 +281,7 @@ class MainWindow(QMainWindow):
         self._setup_tab.recent_session_remove_requested.connect(self._remove_recent_session)
         self._setup_tab.save_session_requested.connect(self._save_config)
         self._setup_tab.load_session_requested.connect(self._load_config)
+        self._setup_tab.reboot_requested.connect(self._on_reboot_requested)
 
         # Tab polling control signals -> DataPoller
         self._scope_view_tab.scope_sampling_changed.connect(self._on_scope_sampling_changed)
@@ -500,6 +504,53 @@ class MainWindow(QMainWindow):
     def _clear_device_info(self):
         """Clear device info labels."""
         self._setup_tab.clear_device_info()
+
+    def _on_reboot_requested(self):
+        """Ask for confirmation, reboot the device and show the result."""
+        answer = QMessageBox.question(
+            self,
+            REBOOT_DIALOG_TITLE,
+            "Restart the connected device?\n\nThe running application on the device stops.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if answer != QMessageBox.Yes:
+            return
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            result = self._app_state.reboot_device()
+        finally:
+            QApplication.restoreOverrideCursor()
+
+        if result is RebootResult.SUCCESS:
+            # The device restarts and drops the connection: close it here, the user reconnects
+            self._connection_manager.disconnect()
+            QMessageBox.information(
+                self,
+                REBOOT_DIALOG_TITLE,
+                "Reboot successful: the device is restarting.\n\n"
+                "The connection was closed. Connect again when the device is running.",
+            )
+        elif result is RebootResult.NOT_IMPLEMENTED:
+            QMessageBox.warning(
+                self,
+                REBOOT_DIALOG_TITLE,
+                "Reboot not implemented: the firmware of this device does not support a reboot request.",
+            )
+        elif result is RebootResult.REFUSED:
+            QMessageBox.warning(
+                self,
+                REBOOT_DIALOG_TITLE,
+                "Reboot failed: the firmware does not allow a reboot in its current state "
+                "(e.g. while a motor is running).",
+            )
+        else:
+            QMessageBox.critical(
+                self,
+                REBOOT_DIALOG_TITLE,
+                "Reboot failed: the request could not be completed. See the log file for details.",
+            )
 
     def _save_config(self):
         """Save the current session (file, connection, views and script) to a JSON file."""

@@ -35,6 +35,7 @@ class SetupTab(QWidget):
     - CAN settings (Bus Type, Channel, Baudrate, Mode, Tx-ID, Rx-ID)
     - File selection (.elf, .yml, .pkl)
     - Device info display
+    - Device reboot
     """
 
     # Constants
@@ -48,6 +49,7 @@ class SetupTab(QWidget):
     recent_session_remove_requested = pyqtSignal(str)  # ELF/YML/PKL file of the session to remove
     save_session_requested = pyqtSignal()  # Save to File...
     load_session_requested = pyqtSignal()  # Load from File...
+    reboot_requested = pyqtSignal()  # Reboot Device
 
     RECENT_PLACEHOLDER = "Select a recent session..."
 
@@ -292,6 +294,13 @@ class SetupTab(QWidget):
             label.setMinimumWidth(150)
             device_layout.addWidget(label, i, 1, Qt.AlignLeft)
 
+        self._reboot_btn = QPushButton("Reboot Device")
+        self._reboot_btn.setFixedWidth(125)
+        self._reboot_btn.setToolTip("Restart the connected device (if its firmware supports it)")
+        self._reboot_btn.setEnabled(False)
+        self._reboot_btn.clicked.connect(self.reboot_requested.emit)
+        device_layout.addWidget(self._reboot_btn, len(self._device_info_labels), 1, Qt.AlignLeft)
+
         right_layout.addWidget(device_group)
         right_layout.addSpacing(10)
         right_layout.addWidget(self._create_sessions_group())
@@ -481,6 +490,11 @@ class SetupTab(QWidget):
         return self._refresh_btn
 
     @property
+    def reboot_btn(self) -> QPushButton:
+        """Get the Reboot Device button."""
+        return self._reboot_btn
+
+    @property
     def elf_file_path(self) -> str:
         """Get the selected file path."""
         return self._elf_file_path
@@ -512,6 +526,7 @@ class SetupTab(QWidget):
         self._connect_btn.setEnabled(True)
 
         self._connect_btn.setText("Disconnect" if connected else "Connect")
+        self._reboot_btn.setEnabled(connected)
 
         # Disable/enable interface selection and ELF button
         self._interface_combo.setEnabled(not connected)
