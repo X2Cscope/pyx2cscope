@@ -24,7 +24,7 @@ dependencies = [
   "matplotlib>=3.7.2,<4.0.0",
   "PyQt5>=5.15.9,<6.0.0",
   "pyqtgraph>=0.13.7,<0.14.0",
-  "mchplnet==0.5.1",
+  "mchplnet==0.6.0",
   "flask>=3.0.3,<4.0.0",
   "flask-socketio>=5.3.4,<6.0.0",
 ]
