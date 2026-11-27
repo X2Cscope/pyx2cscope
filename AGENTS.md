@@ -21,7 +21,11 @@ pyx2cscope/                 Package source
   __init__.py               __version__ and set_logger()
   __main__.py               CLI: build_parser() (argparse) and main(), launches the Qt or web GUI
   x2cscope.py               Public API: X2CScope class, TriggerConfig
-  utils.py                  Reads/creates config.ini in the current working directory, get_project_name()
+  utils/                    Helpers for scripts and the CLI; __init__ re-exports the public functions
+                            (`from pyx2cscope.utils import get_com_port` keeps working)
+    config.py               Reads/creates config.ini in the current working directory
+    project.py              MPLAB X / VS Code project detection: get_project_name(), .vscode/*.mplab.json
+    vscode.py               Writes the "Run pyX2Cscope" task to .vscode/tasks.json (--vscode-task)
   parser/                   ELF parsing: ElfParser (ABC), DummyParser, GenericParser (pyelftools)
   variable/                 Variable types (Int8..Uint64, Float, Enum) and VariableFactory (ELF/YAML/PKL)
   gui/qt/                   Qt GUI: main_window, controllers/, models/, tabs/, workers/, dialogs/
@@ -29,7 +33,6 @@ pyx2cscope/                 Package source
                             templates/, static/
   gui/watchView/            Legacy matplotlib/PyQt5 GUI
   gui/resources/            Scripting tab help and template
-  gui/vscode.py             Writes the "Run pyX2Cscope" task to .vscode/tasks.json (--vscode-task)
   examples/                 Example scripts (all need real hardware)
 tests/                      pytest suite; tests/data/ holds reference ELF files
 doc/                        Sphinx sources (conf.py, *.rst, *.md)

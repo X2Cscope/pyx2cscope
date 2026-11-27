@@ -29,6 +29,20 @@ def _touch(path):
     return path
 
 
+def test_utils_public_imports():
+    """The helpers documented as pyx2cscope.utils are re-exported from their modules."""
+    from pyx2cscope import utils
+    from pyx2cscope.utils import config, project
+
+    assert utils.get_project_name is project.get_project_name
+    for name in ("get_config_file", "get_elf_file_path", "get_com_port", "get_host_address", "get_can_config"):
+        assert getattr(utils, name) is getattr(config, name)
+    assert sorted(utils.__all__) == sorted(
+        ["get_project_name", "get_config_file", "get_elf_file_path", "get_com_port", "get_host_address",
+         "get_can_config"]
+    )
+
+
 class TestGetProjectName:
     """Tests for get_project_name."""
 

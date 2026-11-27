@@ -29,7 +29,7 @@ import argparse
 
 import pyx2cscope
 from pyx2cscope import gui, utils
-from pyx2cscope.gui import vscode
+from pyx2cscope.utils import vscode
 
 _EPILOG = """\
 examples:
