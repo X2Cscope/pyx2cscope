@@ -352,6 +352,39 @@ class TestMainWindowSessions:
         assert window._setup_tab.get_connection_params()["host"] == "10.0.0.2"
         assert connect.call_args.kwargs["interface"] == "TCP/IP"
 
+    def test_load_while_connected_missing_file_keeps_connection(self, window, elf_file_path, tmp_path, mocker):
+        """Test a session whose file is missing keeps the connection when no other file is selected."""
+        _connect(window, elf_file_path)
+        x2cscope = window._app_state.x2cscope
+        variable = window._app_state.get_variable_list()[0]
+        mocker.patch.object(window._config_manager, "show_file_not_found_warning")
+        mocker.patch.object(window._config_manager, "prompt_for_elf_file", return_value=None)  # cancelled
+        config = {
+            "elf_file": str(tmp_path / "gone.elf"),
+            "connection": {"interface": "TCP/IP", "host": "10.0.0.2", "tcp_port": TCP_PORT},
+            "watch_view": [{"variable": variable}],
+        }
+
+        window._apply_config(config)
+
+        assert window._app_state.x2cscope is x2cscope
+        assert window._setup_tab.elf_file_path == elf_file_path
+        assert window._setup_tab.interface_type == "UART"
+        assert window._watch_view_tab.get_config()["variables"] == [variable]
+        assert config["elf_file"].endswith("gone.elf")  # the caller's config is not changed
+
+    def test_load_while_connected_missing_file_uses_selected_file(
+        self, window, elf_file_path, elf_file_path_32bit, tmp_path, mocker
+    ):
+        """Test a session whose file is missing reconnects with the file selected instead."""
+        _connect(window, elf_file_path)
+        mocker.patch.object(window._config_manager, "show_file_not_found_warning")
+        mocker.patch.object(window._config_manager, "prompt_for_elf_file", return_value=elf_file_path_32bit)
+
+        window._apply_config(_config(str(tmp_path / "gone.elf")))
+
+        assert window._setup_tab.elf_file_path == os.path.abspath(elf_file_path_32bit)
+
     def test_load_session_switches_interface(self, window, elf_file_path):
         """Test loading a UART session while disconnected switches from TCP/IP to UART."""
         window._setup_tab.set_interface("TCP/IP")

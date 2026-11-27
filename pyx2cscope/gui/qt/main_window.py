@@ -726,15 +726,27 @@ class MainWindow(QMainWindow):
         """Apply a session or configuration: file, connection, script, connect, then the views.
 
         While connected, a session with another file or connection (e.g. UART instead of TCP/IP) closes the
-        current connection and opens the session's one. With the same file and connection, or without
-        file and connection in the configuration, the connection is kept and only the views and script are
-        loaded.
+        current connection and opens the session's one. With the same file and connection, without file and
+        connection in the configuration, or if the session's file is missing and no other file is selected,
+        the connection is kept and only the views and script are loaded.
 
         Args:
             config: The configuration, as written by :meth:`_build_config` or by the web GUI.
         """
         warnings = []
         connected_before = self._app_state.is_connected()
+
+        # Resolve the session's file first: a working connection is only closed for a file that exists
+        elf_path = config.get("elf_file", "")
+        if elf_path and not self._config_manager.validate_elf_file(elf_path):
+            self._config_manager.show_file_not_found_warning(elf_path)
+            elf_path = self._config_manager.prompt_for_elf_file() or ""
+            if elf_path:
+                config = {**config, "elf_file": elf_path}
+            elif connected_before:
+                # No file for the session: keep the current file and connection
+                config = {k: v for k, v in config.items() if k not in ("elf_file", "connection", "baud_rate", "com_port")}
+
         if connected_before and self._session_differs_from_connection(config):
             # Store the current session like a disconnect does, then apply the session's file and connection
             self._record_session()
@@ -742,15 +754,8 @@ class MainWindow(QMainWindow):
             connected_before = False
 
         # Load ELF file
-        elf_path = "" if connected_before else config.get("elf_file", "")
-        if elf_path:
-            if self._config_manager.validate_elf_file(elf_path):
-                self._setup_tab.elf_file_path = elf_path
-            else:
-                self._config_manager.show_file_not_found_warning(elf_path)
-                new_path = self._config_manager.prompt_for_elf_file()
-                if new_path:
-                    self._setup_tab.elf_file_path = new_path
+        if elf_path and not connected_before:
+            self._setup_tab.elf_file_path = elf_path
 
         # Load connection settings (new format with interface support)
         conn_params = config.get("connection", {})
