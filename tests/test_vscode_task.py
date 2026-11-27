@@ -1,4 +1,4 @@
-"""Tests for creating the VS Code "Run pyX2Cscope" task (pyx2cscope.vscode and --vscode-task).
+"""Tests for creating the VS Code "Run pyX2Cscope" task (pyx2cscope.gui.vscode and --vscode-task).
 
 Tests cover:
 - Finding the MPLAB VS Code project file and its ELF configurations
@@ -13,7 +13,7 @@ import os
 import pytest
 
 from pyx2cscope import __main__ as cli
-from pyx2cscope import vscode
+from pyx2cscope.gui import vscode
 
 PROJECT = "LAB1_HALL"
 FOLDER_VAR = "${workspaceFolder:" + PROJECT + "}"
