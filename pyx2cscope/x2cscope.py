@@ -8,10 +8,10 @@ received data.
 
 import logging
 from dataclasses import dataclass
-from enum import Enum
 from numbers import Number
 from typing import Dict, List, Optional
 
+from mchplnet.errors import ServiceResult
 from mchplnet.interfaces.abstract_interface import Interface
 from mchplnet.interfaces.factory import InterfaceFactory, InterfaceType
 from mchplnet.lnet import LNet
@@ -29,51 +29,6 @@ logging.basicConfig(
 # Define constants for magic values
 UC_WIDTH_16BIT = 2
 UC_WIDTH_32BIT = 4
-
-# LNet Reboot service and the device error IDs it can answer with
-LNET_SERVICE_REBOOT = 0x19
-LNET_ERROR_SERVICE_NOT_AVAILABLE = 0x21  # firmware does not implement the reboot
-LNET_ERROR_INVALID_DSP_STATE = 0x22  # the application refused the reboot
-LNET_RESERVED_VALUES = (0x55, 0x02)  # inside a frame, each is followed by a 0x00 fill byte
-LNET_RESPONSE_MIN_LENGTH = 5  # SYN, SIZE, NODE, service ID, error ID
-
-
-class RebootResult(Enum):
-    """Result of :meth:`X2CScope.reboot`."""
-
-    SUCCESS = "success"
-    """The device accepted the request and restarts; the connection must be re-established."""
-    NOT_IMPLEMENTED = "not implemented"
-    """The firmware does not support a reboot request."""
-    REFUSED = "refused"
-    """The firmware supports the reboot but did not allow it now (e.g. motor running)."""
-    FAILED = "failed"
-    """The request could not be sent or the device answered with an unexpected error."""
-
-
-def _legacy_reboot_error_id(response) -> Optional[int]:
-    """Return the error ID of a raw Reboot response, as returned by older mchplnet versions.
-
-    Older mchplnet versions (e.g. 0.5.1) return the response frame (SYN, SIZE, NODE, service ID, error ID, ...,
-    checksum, including fill bytes) instead of raising an error.
-
-    Args:
-        response: The raw response frame.
-
-    Returns:
-        Optional[int]: The error ID, or None if the response is not a Reboot response.
-    """
-    frame = bytearray()
-    skip_fill = False
-    for index, byte in enumerate(bytes(response)):
-        if skip_fill and byte == 0:
-            skip_fill = False
-            continue
-        frame.append(byte)
-        skip_fill = index > 0 and byte in LNET_RESERVED_VALUES
-    if len(frame) < LNET_RESPONSE_MIN_LENGTH or frame[3] != LNET_SERVICE_REBOOT:
-        return None
-    return frame[4]
 
 
 def get_variable_as_scope_channel(variable: Variable) -> ScopeChannel:
@@ -545,7 +500,7 @@ class X2CScope:
             "dsp_state": device_info.dsp_state,
         }
 
-    def reboot(self) -> RebootResult:
+    def reboot(self) -> ServiceResult:
         """Ask the device to restart.
 
         Whether a reboot is possible is decided by the firmware: it may not support it, or refuse it
@@ -553,39 +508,14 @@ class X2CScope:
         connection is lost; call :meth:`disconnect` and create a new connection once it is running again.
 
         Returns:
-            RebootResult: SUCCESS, NOT_IMPLEMENTED, REFUSED or FAILED.
+            ServiceResult: A ``(code, text)`` tuple. ``code`` is 0 (``result.success`` is True) if the device
+            restarts; otherwise ``text`` describes why it did not.
 
         Example:
-            >>> result = x2c_scope.reboot()
-            >>> if result is RebootResult.SUCCESS:
+            >>> code, text = x2c_scope.reboot()
+            >>> if code == 0:
             ...     x2c_scope.disconnect()
+            ... else:
+            ...     print(f"Reboot not possible: {text}")
         """
-        try:
-            response = self.lnet.reboot_device()
-        except TimeoutError:
-            # older mchplnet versions raise when the rebooting device does not answer
-            logging.info("Reboot requested, the device did not answer (rebooting)")
-            return RebootResult.SUCCESS
-        except Exception as e:  # newer mchplnet versions raise LNetDeviceError, which carries the error ID
-            error_id = getattr(e, "error_id", None)
-            if error_id is None:
-                logging.error(f"Reboot request failed: {e}")
-                return RebootResult.FAILED
-        else:
-            error_id = _legacy_reboot_error_id(response) if response else None
-            if error_id is None and response:
-                logging.error(f"Reboot request failed, unexpected response: {bytes(response).hex()}")
-                return RebootResult.FAILED
-        return self._reboot_result(error_id)
-
-    @staticmethod
-    def _reboot_result(error_id: Optional[int]) -> RebootResult:
-        """Map the device error ID of a Reboot request to a RebootResult."""
-        if not error_id:  # no answer or no error: the device restarts
-            return RebootResult.SUCCESS
-        if error_id == LNET_ERROR_SERVICE_NOT_AVAILABLE:
-            return RebootResult.NOT_IMPLEMENTED
-        if error_id == LNET_ERROR_INVALID_DSP_STATE:
-            return RebootResult.REFUSED
-        logging.error(f"Reboot request failed, device error 0x{error_id:02X}")
-        return RebootResult.FAILED
+        return self.lnet.reboot_device()

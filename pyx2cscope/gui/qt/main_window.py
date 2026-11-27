@@ -33,7 +33,6 @@ from pyx2cscope.gui.qt.tabs.setup_tab import SetupTab
 from pyx2cscope.gui.qt.tabs.watch_view_tab import WatchViewTab
 from pyx2cscope.gui.qt.workers.data_poller import DataPoller
 from pyx2cscope.utils import get_project_name
-from pyx2cscope.x2cscope import RebootResult
 
 REBOOT_DIALOG_TITLE = "Reboot Device"
 
@@ -519,11 +518,15 @@ class MainWindow(QMainWindow):
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
-            result = self._app_state.reboot_device()
+            code, text = self._app_state.reboot_device()
+        except Exception as e:
+            logging.error(f"Error rebooting the device: {e}")
+            QMessageBox.critical(self, REBOOT_DIALOG_TITLE, f"Reboot failed: {e}")
+            return
         finally:
             QApplication.restoreOverrideCursor()
 
-        if result is RebootResult.SUCCESS:
+        if code == 0:
             # The device restarts and drops the connection: close it here, the user reconnects
             self._connection_manager.disconnect()
             QMessageBox.information(
@@ -532,24 +535,11 @@ class MainWindow(QMainWindow):
                 "Reboot successful: the device is restarting.\n\n"
                 "The connection was closed. Connect again when the device is running.",
             )
-        elif result is RebootResult.NOT_IMPLEMENTED:
-            QMessageBox.warning(
-                self,
-                REBOOT_DIALOG_TITLE,
-                "Reboot not implemented: the firmware of this device does not support a reboot request.",
-            )
-        elif result is RebootResult.REFUSED:
-            QMessageBox.warning(
-                self,
-                REBOOT_DIALOG_TITLE,
-                "Reboot failed: the firmware does not allow a reboot in its current state "
-                "(e.g. while a motor is running).",
-            )
         else:
-            QMessageBox.critical(
+            QMessageBox.warning(
                 self,
                 REBOOT_DIALOG_TITLE,
-                "Reboot failed: the request could not be completed. See the log file for details.",
+                f"Reboot not executed: {text} (code 0x{code:02X}).",
             )
 
     def _save_config(self):
